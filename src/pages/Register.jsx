@@ -7,15 +7,16 @@ export default function Register() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  // Define se o registro é via rede social baseado na presença do e-mail na URL
-  const isSocialRegistration = !!searchParams.get('email');
+  // Detecta se a origem é o Google
+  const isFromGoogle = searchParams.get('from_google') === 'true';
 
   const [formData, setFormData] = useState({
     name: searchParams.get('name') || '',
     email: searchParams.get('email') || '',
     cpf_cnpj: '',
     password: '',
-    password_confirmation: ''
+    password_confirmation: '',
+    from_google: isFromGoogle
   });
 
   const handleChange = (e) => {
@@ -25,12 +26,22 @@ export default function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    // Se veio do Google, o Laravel precisa de uma senha, mas o usuário não precisa criar uma.
+    // Enviamos uma senha automática que o usuário não precisa saber.
+    const dataToSend = { ...formData };
+    if (isFromGoogle) {
+      const autoPass = "GoogleAuth_" + Math.random().toString(36).slice(-8);
+      dataToSend.password = autoPass;
+      dataToSend.password_confirmation = autoPass;
+    }
+
     try {
-      await api.post('/api/v1/register', formData);
-      alert('Conta criada com sucesso!');
-      navigate('/');
+      await api.post('/api/v1/register', dataToSend);
+      alert('Cadastro concluído!');
+      navigate('/'); // Volta para o login ou Dashboard
     } catch (error) {
-      alert(error.response?.data?.message || 'Erro ao cadastrar');
+      alert(error.response?.data?.message || 'Erro ao completar cadastro');
     } finally {
       setLoading(false);
     }
@@ -39,74 +50,47 @@ export default function Register() {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h3>{isSocialRegistration ? 'Finalize seu Cadastro' : 'Crie sua conta profissional'}</h3>
-
-        {/* Banner informativo exibido apenas se vier do Google */}
-        {isSocialRegistration && (
-          <div style={{ 
-            background: '#f0f7ff', 
-            padding: '10px', 
-            borderRadius: '8px', 
-            marginBottom: '20px',
-            fontSize: '14px',
-            borderLeft: '4px solid #4285f4' 
-          }}>
-            Logado como: <strong>{formData.email}</strong>
-          </div>
-        )}
+        <h3>{isFromGoogle ? 'Complete seu cadastro' : 'Crie sua conta'}</h3>
         
         <form onSubmit={handleRegister} className="auth-form">
-          
-          {/* Só exibe Nome e Email se NÃO for registro social */}
-          {!isSocialRegistration && (
+          <label>Nome Completo</label>
+          <input 
+            name="name" 
+            value={formData.name} 
+            onChange={handleChange} 
+            readOnly={isFromGoogle} // Se veio do Google, não deixa editar o nome
+            className={isFromGoogle ? 'input-disabled' : ''}
+          />
+
+          <label>E-mail</label>
+          <input 
+            name="email" 
+            value={formData.email} 
+            readOnly={isFromGoogle} 
+            className={isFromGoogle ? 'input-disabled' : ''}
+          />
+
+          <label>CPF ou CNPJ</label>
+          <input 
+            name="cpf_cnpj" 
+            placeholder="Obrigatório para continuar" 
+            onChange={handleChange} 
+            required 
+            autoFocus 
+          />
+
+          {/* O SEGREDO: Se NÃO veio do Google, pede senha. Se veio, esconde tudo. */}
+          {!isFromGoogle && (
             <>
-              <input 
-                name="name"
-                placeholder="Nome Completo" 
-                value={formData.name} 
-                onChange={handleChange} 
-                required 
-              />
-              
-              <input 
-                name="email"
-                type="email"
-                placeholder="E-mail" 
-                value={formData.email} 
-                onChange={handleChange} 
-                required 
-              />
+              <label>Crie uma Senha</label>
+              <input name="password" type="password" onChange={handleChange} required={!isFromGoogle} />
+              <label>Confirme a Senha</label>
+              <input name="password_confirmation" type="password" onChange={handleChange} required={!isFromGoogle} />
             </>
           )}
 
-          <input 
-            name="cpf_cnpj"
-            placeholder="CPF ou CNPJ" 
-            value={formData.cpf_cnpj} 
-            onChange={handleChange} 
-            required 
-          />
-
-          <input 
-            name="password"
-            type="password" 
-            placeholder="Senha" 
-            value={formData.password} 
-            onChange={handleChange} 
-            required 
-          />
-
-          <input 
-            name="password_confirmation"
-            type="password" 
-            placeholder="Confirmar Senha" 
-            value={formData.password_confirmation} 
-            onChange={handleChange} 
-            required 
-          />
-
-          <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? 'Processando...' : isSocialRegistration ? 'Concluir Cadastro' : 'Cadastrar'}
+          <button type="submit" disabled={loading}>
+            {loading ? 'Salvando...' : 'Finalizar Cadastro'}
           </button>
         </form>
       </div>
