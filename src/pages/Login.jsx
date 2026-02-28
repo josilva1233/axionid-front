@@ -18,7 +18,7 @@ useEffect(() => {
     if (needsCpf === 'true') {
       // O usuário foi criado pelo Google, mas está incompleto.
       // NÃO vamos salvar o token. Vamos mandar para o registro.
-      console.log("Usuário incompleto detectado. Redirecionando para Registro...");
+      //console.log("Usuário incompleto detectado. Redirecionando para Registro...");
       
       // Opcional: Você pode passar os dados via URL para o registro
       navigate('/register', { replace: true });
