@@ -6,8 +6,10 @@ export default function Register() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  
+  // Controle de etapas: 1 = Boas-vindas, 2 = CPF, 3 = Senha
+  const [step, setStep] = useState(1);
 
-  // Detecta se veio do Google
   const isSocialRegistration = !!searchParams.get('from_google');
 
   const [formData, setFormData] = useState({
@@ -23,23 +25,21 @@ export default function Register() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleNextStep = () => setStep(step + 1);
+  const handlePrevStep = () => setStep(step - 1);
+
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
-      // Envia os dados para o seu servidor Ubuntu
       const response = await api.post('/api/v1/register', formData);
-      
       if (response.data.token) {
         localStorage.setItem('axion_token', response.data.token);
-        localStorage.setItem('@AxionID:role', response.data.user?.is_admin ? 'admin' : 'user');
       }
-
-      alert('Cadastro finalizado com sucesso!');
+      alert('Cadastro finalizado!');
       navigate('/dashboard');
     } catch (error) {
-      alert(error.response?.data?.message || 'Erro ao realizar cadastro');
+      alert(error.response?.data?.message || 'Erro ao cadastrar');
     } finally {
       setLoading(false);
     }
@@ -47,76 +47,97 @@ export default function Register() {
 
   return (
     <div className="auth-container">
-      <div className="auth-card">
-        <h3>{isSocialRegistration ? 'Finalize seu Cadastro' : 'Crie sua conta'}</h3>
+      <div className="auth-card onboarding-card">
         
+        {/* Barra de Progresso Visual */}
+        <div className="progress-bar">
+          <div className="progress-fill" style={{ width: `${(step / 3) * 100}%` }}></div>
+        </div>
+
         <form onSubmit={handleRegister} className="auth-form">
           
-          <div className="input-group">
-            <label>Nome Completo</label>
-            <input 
-              name="name"
-              value={formData.name} 
-              onChange={handleChange}
-              readOnly={isSocialRegistration} // Bloqueia edição se vier do Google
-              style={isSocialRegistration ? { backgroundColor: '#f5f5f5', cursor: 'not-allowed' } : {}}
-              required 
-            />
-          </div>
+          {/* ETAPA 1: Boas-vindas (Nome e E-mail) */}
+          {step === 1 && (
+            <div className="step-content animate-in">
+              <h3>Bem-vindo ao AxionID</h3>
+              <p>Confirme seus dados de acesso:</p>
+              
+              <div className="input-group">
+                <label>Nome Completo</label>
+                <input name="name" value={formData.name} readOnly className="input-readonly" />
+              </div>
 
-          <div className="input-group">
-            <label>E-mail</label>
-            <input 
-              name="email"
-              type="email"
-              value={formData.email} 
-              onChange={handleChange}
-              readOnly={isSocialRegistration} // Bloqueia edição se vier do Google
-              style={isSocialRegistration ? { backgroundColor: '#f5f5f5', cursor: 'not-allowed' } : {}}
-              required 
-            />
-          </div>
+              <div className="input-group">
+                <label>E-mail</label>
+                <input name="email" value={formData.email} readOnly className="input-readonly" />
+              </div>
 
-          <div className="input-group">
-            <label>CPF ou CNPJ</label>
-            <input 
-              name="cpf_cnpj"
-              placeholder="000.000.000-00" 
-              value={formData.cpf_cnpj} 
-              onChange={handleChange} 
-              required 
-              autoFocus 
-            />
-          </div>
+              <button type="button" className="btn-primary" onClick={handleNextStep}>
+                Confirmar e Avançar
+              </button>
+            </div>
+          )}
 
-          {/* Campos de Senha (Sempre visíveis conforme solicitado) */}
-          <div className="input-group">
-            <label>Defina uma Senha</label>
-            <input 
-              name="password"
-              type="password" 
-              placeholder="Mínimo 8 caracteres" 
-              value={formData.password} 
-              onChange={handleChange} 
-              required 
-            />
-          </div>
+          {/* ETAPA 2: Documento */}
+          {step === 2 && (
+            <div className="step-content animate-in">
+              <h3>Identificação</h3>
+              <p>Agora, informe seu CPF ou CNPJ para continuar:</p>
+              
+              <div className="input-group">
+                <input 
+                  name="cpf_cnpj" 
+                  placeholder="000.000.000-00" 
+                  value={formData.cpf_cnpj} 
+                  onChange={handleChange} 
+                  autoFocus 
+                  required 
+                />
+              </div>
 
-          <div className="input-group">
-            <label>Confirme a Senha</label>
-            <input 
-              name="password_confirmation"
-              type="password" 
-              placeholder="Repita a senha" 
-              value={formData.password_confirmation} 
-              onChange={handleChange} 
-              required 
-            />
-          </div>
+              <div className="btn-group">
+                <button type="button" className="btn-secondary" onClick={handlePrevStep}>Voltar</button>
+                <button type="button" className="btn-primary" onClick={handleNextStep} disabled={!formData.cpf_cnpj}>
+                  Avançar
+                </button>
+              </div>
+            </div>
+          )}
 
-          <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? 'Processando...' : 'Concluir Cadastro'}
-          </button>
+          {/* ETAPA 3: Segurança (Senha) */}
+          {step === 3 && (
+            <div className="step-content animate-in">
+              <h3>Segurança</h3>
+              <p>Para finalizar, defina sua senha de acesso:</p>
+              
+              <div className="input-group">
+                <input 
+                  name="password" 
+                  type="password" 
+                  placeholder="Defina uma senha" 
+                  onChange={handleChange} 
+                  required 
+                />
+              </div>
+
+              <div className="input-group">
+                <input 
+                  name="password_confirmation" 
+                  type="password" 
+                  placeholder="Confirme a senha" 
+                  onChange={handleChange} 
+                  required 
+                />
+              </div>
+
+              <div className="btn-group">
+                <button type="button" className="btn-secondary" onClick={handlePrevStep}>Voltar</button>
+                <button type="submit" className="btn-primary" disabled={loading}>
+                  {loading ? 'Finalizando...' : 'Concluir Cadastro'}
+                </button>
+              </div>
+            </div>
+          )}
         </form>
       </div>
     </div>
