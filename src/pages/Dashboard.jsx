@@ -14,16 +14,40 @@ export default function Dashboard() {
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
-  useEffect(() => {
-    // Se for admin, carrega a lista
-    if (role === 'admin') {
-      fetchUsers();
-    }
-    
-    // Opcional: Atualiza os dados do usuário atual direto da API para garantir que o alerta suma após completar
-    refreshUserData();
-  }, [role]);
+// Dentro do seu Dashboard.jsx
 
+useEffect(() => {
+  const verificarStatusSempre = async () => {
+    try {
+      // Buscamos a lista de usuários
+      const response = await api.get('/api/v1/users');
+      
+      // Pegamos o e-mail do usuário logado (que foi salvo no login)
+      const emailLogado = localStorage.getItem('@AxionID:email'); 
+      
+      if (response.data && response.data.data) {
+        // Encontra o registro exato de quem está logado agora
+        const euMesmo = response.data.data.find(u => u.email === emailLogado);
+        
+        if (euMesmo) {
+          setCurrentUser(euMesmo);
+          // Atualiza o storage para garantir
+          localStorage.setItem('user_data', JSON.stringify(euMesmo));
+          
+          // FORÇAR EXIBIÇÃO: Se completed for 0 ou não tiver CPF/CEP, o alerta DEVE aparecer
+          // Independente de ser novo ou antigo
+          if (euMesmo.completed === 0 || !euMesmo.cpf_cnpj) {
+            console.log("Usuário incompleto detectado, exibindo alerta...");
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao validar status do usuário");
+    }
+  };
+
+  verificarStatusSempre();
+}, []);
   const refreshUserData = async () => {
     try {
       // Tente usar um endpoint específico para "mim" ou filtre pelo email no storage
