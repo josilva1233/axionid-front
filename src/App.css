@@ -1,5 +1,5 @@
 /* =========================================
-   1. VARIÁVEIS E CONFIGURAÇÃO BASE
+   1. RESET E BASE (MANTIDO)
    ========================================= */
 :root {
   --primary: #646cff;
@@ -9,238 +9,153 @@
   --text-main: #ffffff;
   --text-dim: #a1a1a1;
   --border: #333;
-  --error: #ff4d4d;
-  --success: #4cd137;
-  --input-bg: #0a0a0a;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
-  min-height: 100vh;
   background-color: var(--bg-dark);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', sans-serif;
   color: var(--text-main);
-  line-height: 1.5;
+  /* Removemos o display flex do body para evitar conflitos com o Dashboard */
 }
 
 /* =========================================
-   2. CONTAINERS DE LAYOUT
+   2. CONTAINERS (O SEGREDO DA CENTRALIZAÇÃO)
    ========================================= */
-
-/* Para Login e Registro (Centralizados) */
 .auth-container {
-  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
+  min-height: 100vh;
+  width: 100%;
+  padding: 20px;
 }
 
 .auth-card {
   background: var(--card-bg);
-  padding: 2.5rem;
-  border-radius: 16px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-  border: 1px solid var(--border);
   width: 100%;
-  max-width: 450px; /* Aumentado levemente para não espremer */
-  transition: all 0.3s ease;
-}
-
-/* Onboarding Specifics */
-.onboarding-card {
-  min-height: 400px;
+  max-width: 480px; /* Largura ideal para não espremer */
+  min-height: 450px;
+  padding: 40px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+  
+  /* Centraliza o conteúdo interno do card */
   display: flex;
   flex-direction: column;
-}
-
-.step-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  text-align: left;
-}
-
-.step-content h3 {
-  margin: 0;
-  font-size: 1.5rem;
-  color: var(--text-main);
-}
-
-.step-content p {
-  margin: 0;
-  color: var(--text-dim);
-  font-size: 0.95rem;
 }
 
 /* =========================================
-   3. FORMULÁRIOS E INPUTS
+   3. ONBOARDING STEPS (LAYOUT INTERNO)
    ========================================= */
-.auth-form {
+.step-content {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  flex: 1; /* Garante que ocupe o espaço disponível */
 }
 
+.step-content h3 {
+  font-size: 1.8rem;
+  margin: 0 0 10px 0;
+  text-align: left;
+}
+
+.step-content p {
+  color: var(--text-dim);
+  margin-bottom: 30px;
+  text-align: left;
+}
+
+/* Campos de Input */
 .input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  margin-bottom: 20px;
   width: 100%;
 }
 
 .input-group label {
+  display: block;
   font-size: 0.85rem;
+  margin-bottom: 8px;
   color: var(--text-dim);
-  font-weight: 500;
 }
 
 .auth-form input {
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 14px 16px;
-  color: white;
-  font-size: 1rem;
   width: 100%;
-  transition: all 0.2s ease;
+  background: #0a0a0a;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  color: #fff;
+  font-size: 1rem;
+  transition: border-color 0.3s;
 }
 
 .auth-form input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(100, 108, 255, 0.1);
 }
 
 .input-readonly {
-  background: #1a1a1a !important;
-  color: var(--text-dim) !important;
+  background: #151515 !important;
+  color: #666 !important;
   cursor: not-allowed;
 }
 
 /* =========================================
-   4. BOTÕES E COMPONENTES
+   4. BOTÕES E PROGRESSO
    ========================================= */
 .btn-group {
   display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
+  gap: 15px;
+  margin-top: auto; /* Empurra os botões para o rodapé do card */
+  padding-top: 20px;
 }
 
 .btn-primary, .btn-secondary {
-  padding: 14px 24px;
-  border-radius: 8px;
+  flex: 1;
+  padding: 16px;
+  border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
   border: none;
-  transition: all 0.2s;
-  flex: 1;
+  font-size: 1rem;
+  transition: transform 0.2s, background 0.2s;
 }
 
-.btn-primary {
-  background-color: var(--primary);
-  color: white;
-}
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
 
-.btn-primary:hover:not(:disabled) {
-  background-color: var(--primary-hover);
-  transform: translateY(-1px);
-}
+.btn-secondary { background: #2a2a2a; color: white; }
+.btn-secondary:hover { background: #333; }
 
-.btn-secondary {
-  background-color: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-main);
-}
-
-.btn-secondary:hover {
-  background: rgba(255,255,255,0.05);
-}
-
-/* Progress Bar */
+/* Barra de Progresso */
 .progress-bar {
   width: 100%;
-  height: 4px;
-  background: var(--border);
+  height: 6px;
+  background: #333;
   border-radius: 10px;
-  margin-bottom: 2rem;
+  margin-bottom: 35px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
   background: var(--primary);
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.4s ease-out;
 }
 
 /* =========================================
-   5. DASHBOARD (FULL WIDTH)
-   ========================================= */
-.dashboard-container {
-  width: 100%;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.dashboard-header {
-  width: 100%;
-  background: #121212;
-  border-bottom: 1px solid var(--border);
-  padding: 1rem 5%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.dashboard-content {
-  padding: 2rem 5%;
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-/* Tabela Responsiva */
-.table-responsive {
-  overflow-x: auto;
-  margin-top: 1.5rem;
-}
-
-.user-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 600px;
-}
-
-.user-table th {
-  text-align: left;
-  color: var(--text-dim);
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  padding: 1rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.user-table td {
-  padding: 1rem;
-  border-bottom: 1px solid #252525;
-}
-
-/* =========================================
-   6. ANIMAÇÕES
+   5. ANIMAÇÃO DE TRANSIÇÃO
    ========================================= */
 .animate-in {
-  animation: fadeInStep 0.4s ease-out forwards;
+  animation: slideFade 0.4s ease-out forwards;
 }
 
-@keyframes fadeInStep {
-  from { opacity: 0; transform: translateX(10px); }
-  to { opacity: 1; transform: translateX(0); }
+@keyframes slideFade {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
 }
