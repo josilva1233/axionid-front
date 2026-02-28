@@ -6,25 +6,42 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [role] = useState(localStorage.getItem('@AxionID:role'));
   const [users, setUsers] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null); // Para o alerta de perfil
   const [loading, setLoading] = useState(false);
 
-  // Busca inicial automática para Admins
   useEffect(() => {
+    // 1. Busca dados do usuário logado para verificar o 'completed'
+    fetchCurrentUser();
+
+    // 2. Busca lista de usuários se for Admin
     if (role === 'admin') {
       fetchUsers();
     }
   }, [role]);
 
+  const fetchCurrentUser = async () => {
+    try {
+      // Usualmente buscamos o primeiro da lista ou um endpoint /me
+      const response = await api.get('/api/v1/users'); 
+      if (response.data && response.data.data) {
+        // Assume-se que o primeiro registro (ou um filtro) seja o usuário logado
+        // Se tiver um endpoint /api/v1/me, é melhor usá-lo.
+        setCurrentUser(response.data.data[0]); 
+      }
+    } catch (error) {
+      console.error("Erro ao carregar perfil logado");
+    }
+  };
+
   const fetchUsers = async () => {
     setLoading(true);
     try {
       const response = await api.get('/api/v1/users');
-      // Acessa a estrutura de paginação do Laravel: data.data
       if (response.data && response.data.data) {
         setUsers(response.data.data);
       }
     } catch (error) {
-      // Falha silenciosa em caso de erro de rede ou 401
+      // Falha silenciosa
     } finally {
       setLoading(false);
     }
@@ -41,6 +58,21 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container">
+      
+      {/* ALERTA LATERAL: Aparece apenas se o perfil estiver incompleto */}
+      {currentUser && currentUser.completed === 0 && (
+        <div className="profile-sidebar-alert animate-in">
+          <div className="alert-header">
+            <span className="alert-icon">⚠️</span>
+            <strong>Ação Requerida</strong>
+          </div>
+          <p>Seu perfil de endereço está incompleto. Por favor, finalize seu cadastro.</p>
+          <button onClick={() => navigate('/complete-profile')} className="btn-alert-link">
+            Completar agora →
+          </button>
+        </div>
+      )}
+
       <header className="dashboard-header">
         <div className="brand">
           <h1>Axion<span>ID</span></h1>
