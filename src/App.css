@@ -12,6 +12,7 @@
   --error: #ff4d4d;
   --success: #4cd137;
   --input-bg: #0a0a0a;
+  --warning: #ffa500;
 }
 
 * {
@@ -25,18 +26,20 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color: var(--text-main);
   line-height: 1.5;
+  /* Garante que o conteúdo base não flutue horizontalmente */
+  display: block; 
 }
 
 /* =========================================
-   2. CONTAINERS DE LAYOUT
+   2. CONTAINERS DE LAYOUT (CENTRALIZAÇÃO)
    ========================================= */
 
-/* Para Login e Registro (Centralizados) */
 .auth-container {
   min-height: 100vh;
+  width: 100%;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: center; /* Centraliza horizontalmente */
+  align-items: center;     /* Centraliza verticalmente */
   padding: 2rem;
 }
 
@@ -47,34 +50,18 @@ body {
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
   border: 1px solid var(--border);
   width: 100%;
-  max-width: 450px; /* Aumentado levemente para não espremer */
+  max-width: 450px; 
+  text-align: center; /* Centraliza textos base como o H1 */
   transition: all 0.3s ease;
 }
 
-/* Onboarding Specifics */
-.onboarding-card {
-  min-height: 400px;
-  display: flex;
-  flex-direction: column;
+.brand h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
 }
 
-.step-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  text-align: left;
-}
-
-.step-content h3 {
-  margin: 0;
-  font-size: 1.5rem;
-  color: var(--text-main);
-}
-
-.step-content p {
-  margin: 0;
-  color: var(--text-dim);
-  font-size: 0.95rem;
+.brand span {
+  color: var(--primary);
 }
 
 /* =========================================
@@ -84,12 +71,20 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  width: 100%;
 }
 
 .input-group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  width: 100%;
+  text-align: left; /* Garante que Labels fiquem na esquerda */
+}
+
+.input-row {
+  display: flex;
+  gap: 1rem;
   width: 100%;
 }
 
@@ -117,8 +112,8 @@ body {
 }
 
 .input-readonly {
-  background: #1a1a1a !important;
-  color: var(--text-dim) !important;
+  background: #151515 !important;
+  color: #666 !important;
   cursor: not-allowed;
 }
 
@@ -129,6 +124,7 @@ body {
   display: flex;
   gap: 1rem;
   margin-top: 1rem;
+  width: 100%;
 }
 
 .btn-primary, .btn-secondary {
@@ -138,53 +134,58 @@ body {
   cursor: pointer;
   border: none;
   transition: all 0.2s;
-  flex: 1;
+  flex: 1; /* Faz os botões dividirem o espaço igualmente */
 }
 
-.btn-primary {
-  background-color: var(--primary);
-  color: white;
-}
+.btn-primary { background-color: var(--primary); color: white; }
+.btn-primary:hover:not(:disabled) { background-color: var(--primary-hover); transform: translateY(-1px); }
 
-.btn-primary:hover:not(:disabled) {
-  background-color: var(--primary-hover);
-  transform: translateY(-1px);
-}
+.btn-secondary { background-color: #2a2a2a; color: white; }
 
-.btn-secondary {
-  background-color: transparent;
+/* =========================================
+   5. ALERTA LATERAL (DASHBOARD)
+   ========================================= */
+.profile-sidebar-alert {
+  position: fixed;
+  top: 90px;
+  right: 20px;
+  width: 300px;
+  background: #1a1a1a;
   border: 1px solid var(--border);
-  color: var(--text-main);
+  border-left: 4px solid var(--warning);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  z-index: 1000;
+  text-align: left;
 }
 
-.btn-secondary:hover {
-  background: rgba(255,255,255,0.05);
+.alert-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0.5rem;
+  color: var(--warning);
+  font-weight: bold;
 }
 
-/* Progress Bar */
-.progress-bar {
-  width: 100%;
-  height: 4px;
-  background: var(--border);
-  border-radius: 10px;
-  margin-bottom: 2rem;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--primary);
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+.btn-alert-link {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 10px;
+  font-size: 0.9rem;
 }
 
 /* =========================================
-   5. DASHBOARD (FULL WIDTH)
+   6. DASHBOARD E TABELAS
    ========================================= */
 .dashboard-container {
   width: 100%;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
 }
 
 .dashboard-header {
@@ -195,52 +196,56 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 100;
 }
 
-.dashboard-content {
-  padding: 2rem 5%;
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
+.user-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
 }
 
-/* Tabela Responsiva */
-.table-responsive {
-  overflow-x: auto;
-  margin-top: 1.5rem;
-}
-
-.user-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 600px;
-}
-
-.user-table th {
-  text-align: left;
-  color: var(--text-dim);
+.user-info {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
   font-size: 0.85rem;
-  text-transform: uppercase;
-  padding: 1rem;
-  border-bottom: 1px solid var(--border);
 }
 
-.user-table td {
-  padding: 1rem;
-  border-bottom: 1px solid #252525;
+.user-status { color: var(--success); font-weight: bold; }
+
+.btn-logout {
+  background: rgba(255, 77, 77, 0.1);
+  color: var(--error);
+  border: 1px solid rgba(255, 77, 77, 0.2);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
 }
+
+.tag-active { color: var(--success); background: rgba(76, 209, 55, 0.1); padding: 4px 8px; border-radius: 4px; }
+.tag-blocked { color: var(--error); background: rgba(255, 77, 77, 0.1); padding: 4px 8px; border-radius: 4px; }
 
 /* =========================================
-   6. ANIMAÇÕES
+   7. ANIMAÇÕES
    ========================================= */
 .animate-in {
   animation: fadeInStep 0.4s ease-out forwards;
 }
 
 @keyframes fadeInStep {
-  from { opacity: 0; transform: translateX(10px); }
-  to { opacity: 1; transform: translateX(0); }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .profile-sidebar-alert {
+    position: relative;
+    top: 0;
+    right: 0;
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+  .input-row {
+    flex-direction: column;
+  }
 }
