@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 
 export default function Login() {
@@ -7,29 +7,28 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
 
-useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get('token');
-  const needsCpf = params.get('needs_cpf');
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const needsCpf = params.get('needs_cpf');
+    const isAdmin = params.get('is_admin');
 
-  if (token) {
-    if (needsCpf === 'true') {
-      // O usuário foi criado pelo Google, mas está incompleto.
-      // NÃO vamos salvar o token. Vamos mandar para o registro.
-      //console.log("Usuário incompleto detectado. Redirecionando para Registro...");
-      
-      // Opcional: Você pode passar os dados via URL para o registro
-      navigate('/register', { replace: true });
-    } else {
-      // Usuário já tem CPF e está tudo certo. Loga normalmente.
+    if (token) {
+      // SALVAMOS O TOKEN SEMPRE (para ele ter acesso ao Dashboard)
       localStorage.setItem('@AxionID:token', token);
-      localStorage.setItem('@AxionID:role', params.get('is_admin') === '1' ? 'admin' : 'user');
-      navigate('/dashboard', { replace: true });
+      localStorage.setItem('@AxionID:role', isAdmin === '1' ? 'admin' : 'user');
+
+      // Se o usuário veio do Google mas não tem CPF:
+      if (needsCpf === 'true') {
+         // Opcional: Você pode mandar direto para o CompleteProfile 
+         // OU apenas mandar para o Dashboard e deixar o Alerta Lateral aparecer.
+         navigate('/dashboard', { replace: true });
+      } else {
+         navigate('/dashboard', { replace: true });
+      }
     }
-  }
-}, [navigate]);
+  }, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -43,10 +42,16 @@ useEffect(() => {
 
       navigate('/dashboard', { replace: true });
     } catch (error) {
-      // Falha silenciosa
+      // Tratar erro aqui
     } finally {
       setLoading(false);
     }
+  };
+
+  // Função para chamar o Google com a ORIGIN dinâmica
+  const handleGoogleLogin = () => {
+    const origin = window.location.origin; // Detecta se é localhost ou vercel
+    window.location.href = `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
   };
 
   return (
@@ -79,7 +84,7 @@ useEffect(() => {
           <button 
             type="button" 
             className="btn-google" 
-            onClick={() => window.location.href = 'http://163.176.168.224/api/v1/auth/google'}
+            onClick={handleGoogleLogin} // Chamada dinâmica corrigida
           >
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google" /> 
             Google Workspace
