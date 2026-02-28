@@ -13,20 +13,23 @@ export default function Login() {
     const token = params.get('token');
     const needsCpf = params.get('needs_cpf');
     const isAdmin = params.get('is_admin');
+    const fromGoogle = params.get('from_google');
 
+    // AJUSTE: Se veio do Google mas não tem token (usuário novo total)
+    if (fromGoogle === 'true' && !token) {
+      // Mandamos para o registro mas carregando os dados do Google na URL
+      navigate(`/register${window.location.search}`, { replace: true });
+      return;
+    }
+
+    // Se a API retornou um token (Usuário já existe ou acaba de ser vinculado)
     if (token) {
-      // SALVAMOS O TOKEN SEMPRE (para ele ter acesso ao Dashboard)
       localStorage.setItem('@AxionID:token', token);
       localStorage.setItem('@AxionID:role', isAdmin === '1' ? 'admin' : 'user');
 
-      // Se o usuário veio do Google mas não tem CPF:
-      if (needsCpf === 'true') {
-         // Opcional: Você pode mandar direto para o CompleteProfile 
-         // OU apenas mandar para o Dashboard e deixar o Alerta Lateral aparecer.
-         navigate('/dashboard', { replace: true });
-      } else {
-         navigate('/dashboard', { replace: true });
-      }
+      // Se needsCpf for true, o alerta lateral no Dashboard cuidará de avisar o usuário
+      // Mas o login já está garantido e o google_id gravado no banco!
+      navigate('/dashboard', { replace: true });
     }
   }, [navigate]);
 
@@ -42,15 +45,15 @@ export default function Login() {
 
       navigate('/dashboard', { replace: true });
     } catch (error) {
-      // Tratar erro aqui
+      console.error("Erro no login manual");
     } finally {
       setLoading(false);
     }
   };
 
-  // Função para chamar o Google com a ORIGIN dinâmica
   const handleGoogleLogin = () => {
-    const origin = window.location.origin; // Detecta se é localhost ou vercel
+    const origin = window.location.origin;
+    // Usando a URL da API conforme seu Swagger
     window.location.href = `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
   };
 
@@ -84,7 +87,7 @@ export default function Login() {
           <button 
             type="button" 
             className="btn-google" 
-            onClick={handleGoogleLogin} // Chamada dinâmica corrigida
+            onClick={handleGoogleLogin}
           >
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google" /> 
             Google Workspace
