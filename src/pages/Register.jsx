@@ -15,7 +15,8 @@ export default function Register() {
   const [formData, setFormData] = useState({
     name: searchParams.get('name') || '',
     email: searchParams.get('email') || '',
-    google_id: googleIdFromUrl(searchParams) || '',
+    google_id: googleIdFromUrl(searchParams) || '',   
+  // Controle de etapas: 1 = Boas-vindas, 2 = CPF, 3 = Senha
     cpf_cnpj: '',
     password: '',
     password_confirmation: '',
