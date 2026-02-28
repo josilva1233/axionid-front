@@ -36,7 +36,6 @@ export default function Register() {
       
       if (response.data.token) {
         localStorage.setItem('axion_token', response.data.token);
-        // Opcional: Salvar os dados do usuário para o Dashboard ler o alerta de endereço
         localStorage.setItem('user_data', JSON.stringify(response.data.user));
       }
 
@@ -63,17 +62,34 @@ export default function Register() {
           {/* ETAPA 1: Boas-vindas (Nome e E-mail) */}
           {step === 1 && (
             <div className="step-content animate-in">
-              <h3>Bem-vindo ao AxionID</h3>
-              <p>Confirme seus dados de acesso vindos do Google:</p>
+              <h3>{isSocialRegistration ? 'Bem-vindo ao AxionID' : 'Crie sua conta'}</h3>
+              <p>{isSocialRegistration ? 'Confirme seus dados vindos do Google:' : 'Informe seus dados básicos:'}</p>
               
               <div className="input-group">
                 <label>Nome Completo</label>
-                <input name="name" value={formData.name} readOnly className="input-readonly" />
+                <input 
+                  name="name" 
+                  value={formData.name} 
+                  onChange={handleChange}
+                  /* ALTERAÇÃO AQUI: Só fica readOnly se vier do Google */
+                  readOnly={isSocialRegistration} 
+                  className={isSocialRegistration ? "input-readonly" : "input-standard"} 
+                  required 
+                />
               </div>
 
               <div className="input-group">
                 <label>E-mail</label>
-                <input name="email" value={formData.email} readOnly className="input-readonly" />
+                <input 
+                  name="email" 
+                  type="email"
+                  value={formData.email} 
+                  onChange={handleChange}
+                  /* ALTERAÇÃO AQUI: Só fica readOnly se vier do Google */
+                  readOnly={isSocialRegistration} 
+                  className={isSocialRegistration ? "input-readonly" : "input-standard"} 
+                  required 
+                />
               </div>
 
               <button type="button" className="btn-primary" onClick={handleNextStep}>

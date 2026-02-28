@@ -6,30 +6,37 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [role] = useState(localStorage.getItem('@AxionID:role'));
   const [users, setUsers] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null); // Para o alerta de perfil
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    // 1. Busca dados do usuário logado para verificar o 'completed'
-    fetchCurrentUser();
+  // Pega os dados do usuário logado direto do storage (salvo no login/register)
+  const [currentUser, setCurrentUser] = useState(() => {
+    const savedUser = localStorage.getItem('user_data');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
 
-    // 2. Busca lista de usuários se for Admin
+  useEffect(() => {
+    // Se for admin, carrega a lista
     if (role === 'admin') {
       fetchUsers();
     }
+    
+    // Opcional: Atualiza os dados do usuário atual direto da API para garantir que o alerta suma após completar
+    refreshUserData();
   }, [role]);
 
-  const fetchCurrentUser = async () => {
+  const refreshUserData = async () => {
     try {
-      // Usualmente buscamos o primeiro da lista ou um endpoint /me
-      const response = await api.get('/api/v1/users'); 
+      // Tente usar um endpoint específico para "mim" ou filtre pelo email no storage
+      const response = await api.get('/api/v1/users');
       if (response.data && response.data.data) {
-        // Assume-se que o primeiro registro (ou um filtro) seja o usuário logado
-        // Se tiver um endpoint /api/v1/me, é melhor usá-lo.
-        setCurrentUser(response.data.data[0]); 
+        const me = response.data.data.find(u => u.email === currentUser?.email);
+        if (me) {
+          setCurrentUser(me);
+          localStorage.setItem('user_data', JSON.stringify(me));
+        }
       }
     } catch (error) {
-      console.error("Erro ao carregar perfil logado");
+      console.error("Erro ao sincronizar perfil");
     }
   };
 
@@ -41,7 +48,7 @@ export default function Dashboard() {
         setUsers(response.data.data);
       }
     } catch (error) {
-      // Falha silenciosa
+      console.error("Erro ao carregar usuários");
     } finally {
       setLoading(false);
     }
@@ -59,14 +66,14 @@ export default function Dashboard() {
   return (
     <div className="dashboard-container">
       
-      {/* ALERTA LATERAL: Aparece apenas se o perfil estiver incompleto */}
-      {currentUser && currentUser.completed === 0 && (
+      {/* ALERTA: Agora checa o campo 'completed' ou se o endereço existe */}
+      {currentUser && (currentUser.completed === 0 || !currentUser.zip_code) && (
         <div className="profile-sidebar-alert animate-in">
           <div className="alert-header">
             <span className="alert-icon">⚠️</span>
             <strong>Ação Requerida</strong>
           </div>
-          <p>Seu perfil de endereço está incompleto. Por favor, finalize seu cadastro.</p>
+          <p>Olá {currentUser.name}, seu cadastro está incompleto. Por favor, informe seu endereço.</p>
           <button onClick={() => navigate('/complete-profile')} className="btn-alert-link">
             Completar agora →
           </button>
@@ -112,24 +119,18 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.length > 0 ? (
-                    users.map((user) => (
-                      <tr key={user.id}>
-                        <td className="txt-bold">{user.name}</td>
-                        <td>{user.email}</td>
-                        <td>{user.cpf_cnpj || '---'}</td>
-                        <td>
-                          <span className={user.is_active ? 'tag-active' : 'tag-blocked'}>
-                            {user.is_active ? 'Ativo' : 'Inativo'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="4" className="txt-center">Nenhum usuário encontrado.</td>
+                  {users.map((user) => (
+                    <tr key={user.id}>
+                      <td className="txt-bold">{user.name}</td>
+                      <td>{user.email}</td>
+                      <td>{user.cpf_cnpj || '---'}</td>
+                      <td>
+                        <span className={user.is_active ? 'tag-active' : 'tag-blocked'}>
+                          {user.is_active ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </td>
                     </tr>
-                  )}
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -137,7 +138,8 @@ export default function Dashboard() {
         ) : (
           <div className="content-card">
             <h3>Área Operacional</h3>
-            <p>Bem-vindo ao AxionID. Você tem acesso de visualização comum.</p>
+            <p>Bem-vindo, <strong>{currentUser?.name}</strong>.</p>
+            <p>Seu acesso é de visualização comum.</p>
           </div>
         )}
       </main>
