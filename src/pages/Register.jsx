@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
@@ -7,8 +7,8 @@ export default function Register() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  // 1. Lógica de detecção: se tem 'from_google', mudamos o comportamento do form
-  const isFromGoogle = searchParams.get('from_google') === 'true';
+  // Detecta se veio do Google
+  const isSocialRegistration = !!searchParams.get('from_google');
 
   const [formData, setFormData] = useState({
     name: searchParams.get('name') || '',
@@ -16,7 +16,7 @@ export default function Register() {
     cpf_cnpj: '',
     password: '',
     password_confirmation: '',
-    from_google: isFromGoogle
+    from_google: isSocialRegistration
   });
 
   const handleChange = (e) => {
@@ -27,29 +27,19 @@ export default function Register() {
     e.preventDefault();
     setLoading(true);
 
-    // 2. Preparação do payload: 
-    // Se veio do Google, o usuário não criou senha. Geramos uma automática 
-    // para não quebrar a validação 'required' do Laravel.
-    const dataToSend = { ...formData };
-    if (isFromGoogle) {
-      const autoPass = "SocialAuth_" + Math.random().toString(36).slice(-8);
-      dataToSend.password = autoPass;
-      dataToSend.password_confirmation = autoPass;
-    }
-
     try {
-      const response = await api.post('/api/v1/register', dataToSend);
+      // Envia os dados para o seu servidor Ubuntu
+      const response = await api.post('/api/v1/register', formData);
       
-      // 3. Se o registro deu certo, salvamos o token e entramos
       if (response.data.token) {
         localStorage.setItem('axion_token', response.data.token);
+        localStorage.setItem('@AxionID:role', response.data.user?.is_admin ? 'admin' : 'user');
       }
 
       alert('Cadastro finalizado com sucesso!');
-      navigate('/dashboard'); 
-
+      navigate('/dashboard');
     } catch (error) {
-      alert(error.response?.data?.message || 'Erro ao finalizar cadastro');
+      alert(error.response?.data?.message || 'Erro ao realizar cadastro');
     } finally {
       setLoading(false);
     }
@@ -58,75 +48,71 @@ export default function Register() {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h3>{isFromGoogle ? 'Só mais um passo!' : 'Crie sua conta'}</h3>
+        <h3>{isSocialRegistration ? 'Finalize seu Cadastro' : 'Crie sua conta'}</h3>
         
-        {isFromGoogle && (
-          <p style={{ fontSize: '14px', color: '#666', marginBottom: '20px' }}>
-            Olá <strong>{formData.name}</strong>, confirme seus dados e informe seu CPF para concluir.
-          </p>
-        )}
-
         <form onSubmit={handleRegister} className="auth-form">
           
-          {/* Nome e Email: Desabilitados se vierem do Google */}
           <div className="input-group">
+            <label>Nome Completo</label>
             <input 
-              name="name" 
-              placeholder="Nome Completo"
+              name="name"
               value={formData.name} 
-              onChange={handleChange} 
-              disabled={isFromGoogle}
+              onChange={handleChange}
+              readOnly={isSocialRegistration} // Bloqueia edição se vier do Google
+              style={isSocialRegistration ? { backgroundColor: '#f5f5f5', cursor: 'not-allowed' } : {}}
               required 
             />
           </div>
 
           <div className="input-group">
+            <label>E-mail</label>
             <input 
-              name="email" 
+              name="email"
               type="email"
-              placeholder="E-mail"
               value={formData.email} 
-              onChange={handleChange} 
-              disabled={isFromGoogle}
+              onChange={handleChange}
+              readOnly={isSocialRegistration} // Bloqueia edição se vier do Google
+              style={isSocialRegistration ? { backgroundColor: '#f5f5f5', cursor: 'not-allowed' } : {}}
               required 
             />
           </div>
 
-          {/* O campo principal que falta */}
           <div className="input-group">
+            <label>CPF ou CNPJ</label>
             <input 
-              name="cpf_cnpj" 
-              placeholder="Digite seu CPF ou CNPJ" 
-              value={formData.cpf_cnpj}
+              name="cpf_cnpj"
+              placeholder="000.000.000-00" 
+              value={formData.cpf_cnpj} 
               onChange={handleChange} 
               required 
               autoFocus 
             />
           </div>
 
-          {/* SÓ exibe campos de senha se NÃO for Google */}
-          {!isFromGoogle && (
-            <>
-              <div className="input-group">
-                <input 
-                  name="password" 
-                  type="password" 
-                  placeholder="Crie uma senha"
-                  onChange={handleChange} 
-                  required 
-                />
-              </div>
-              <div className="input-group">
-                <input 
-                  name="password_confirmation" 
-                  type="password" 
-                  placeholder="Confirme a senha"
-                  onChange={handleChange} 
-                  required 
-                />
-              </div>
-            </>
-          )}
+          {/* Campos de Senha (Sempre visíveis conforme solicitado) */}
+          <div className="input-group">
+            <label>Defina uma Senha</label>
+            <input 
+              name="password"
+              type="password" 
+              placeholder="Mínimo 8 caracteres" 
+              value={formData.password} 
+              onChange={handleChange} 
+              required 
+            />
+          </div>
+
+          <div className="input-group">
+            <label>Confirme a Senha</label>
+            <input 
+              name="password_confirmation"
+              type="password" 
+              placeholder="Repita a senha" 
+              value={formData.password_confirmation} 
+              onChange={handleChange} 
+              required 
+            />
+          </div>
 
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? 'Processando...' : 'Concluir Cadastro'}
