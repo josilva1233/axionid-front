@@ -25,6 +25,24 @@ export default function Onboarding() {
     } finally {
       setLoading(false);
     }
+    // No Dashboard.jsx
+useEffect(() => {
+  const checkUserProfile = async () => {
+    try {
+      const response = await api.get('/api/v1/me'); // Rota que retorna os dados do usuário logado
+      const user = response.data;
+
+      if (!user.cpf_cnpj) {
+        alert("Bem-vindo! Precisamos que você complete seu cadastro antes de continuar.");
+        navigate('/register?from_google=true&name=' + user.name + '&email=' + user.email);
+      }
+    } catch (error) {
+      console.error("Erro ao validar perfil");
+    }
+  };
+
+  checkUserProfile();
+}, []);
   };
 
   return (

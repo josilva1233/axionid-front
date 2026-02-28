@@ -43,6 +43,57 @@ export default function Register() {
     } finally {
       setLoading(false);
     }
+
+    // No seu Register.jsx refatorado
+const [step, setStep] = useState(1);
+
+const renderStep = () => {
+  switch(step) {
+    case 1:
+      return (
+        <div className="step-container animate-in">
+          <h2>Bem-vindo, {formData.name}!</h2>
+          <p>Seu e-mail <strong>{formData.email}</strong> foi validado com sucesso.</p>
+          <button type="button" onClick={() => setStep(2)} className="btn-primary">
+            Avançar
+          </button>
+        </div>
+      );
+    case 2:
+      return (
+        <div className="step-container animate-in">
+          <h2>Identificação</h2>
+          <label>Informe seu CPF ou CNPJ:</label>
+          <input 
+            name="cpf_cnpj" 
+            value={formData.cpf_cnpj} 
+            onChange={handleChange} 
+            placeholder="000.000.000-00"
+            required
+          />
+          <div className="btn-group">
+            <button type="button" onClick={() => setStep(1)} className="btn-secondary">Voltar</button>
+            <button type="button" onClick={() => setStep(3)} className="btn-primary" disabled={!formData.cpf_cnpj}>
+              Avançar
+            </button>
+          </div>
+        </div>
+      );
+    case 3:
+      return (
+        <div className="step-container animate-in">
+          <h2>Segurança</h2>
+          <label>Crie sua senha de acesso:</label>
+          <input name="password" type="password" onChange={handleChange} required />
+          <input name="password_confirmation" type="password" onChange={handleChange} required />
+          <div className="btn-group">
+            <button type="button" onClick={() => setStep(2)} className="btn-secondary">Voltar</button>
+            <button type="submit" className="btn-primary">Concluir Cadastro</button>
+          </div>
+        </div>
+      );
+  }
+};
   };
 
   return (
