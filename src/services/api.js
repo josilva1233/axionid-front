@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://163.176.168.224',
+  baseURL: import.meta.env.VITE_API_URL
 });
 
 // Este é o "segredo" para parar o erro 401
