@@ -6,120 +6,183 @@ export default function Register() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const tempKey = searchParams.get('t') || ''; 
+  // 1. CAPTURE OS DADOS DA URL
+  const tempKey = searchParams.get('t') || ''; // Chave segura do cache
+  const nameFromUrl = searchParams.get('name') || '';
+  const emailFromUrl = searchParams.get('email') || '';
+  const googleIdFromUrl = searchParams.get('google_id') || ''; 
   const isSocialRegistration = searchParams.get('from_google') === 'true';
 
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
 
+  // 2. INICIALIZE O FORMULÁRIO
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    google_id: '',
+    name: nameFromUrl,
+    email: emailFromUrl,
+    google_id: googleIdFromUrl,
     cpf_cnpj: '',
     password: '',
     password_confirmation: '',
     from_google: isSocialRegistration
   });
 
-  // 1. BUSCA DADOS E TRAVA NO ESTADO
+  // 3. BUSCA DADOS SEGUROS (Se houver chave 't')
   useEffect(() => {
     if (tempKey) {
-      console.log("Tentando buscar dados para a chave:", tempKey);
-      
       api.get(`/api/v1/auth/temp-data/${tempKey}`)
         .then(res => {
-          // SE ESTE LOG APARECER VAZIO, O PROBLEMA É NO LARAVEL (CACHE)
-          console.log("RESPOSTA DO SERVIDOR (CACHE):", res.data);
-
-          if (res.data) {
-            setFormData(prev => {
-              const newData = {
-                ...prev,
-                name: res.data.name || '',
-                email: res.data.email || '',
-                google_id: res.data.google_id || ''
-              };
-              console.log("ESTADO ATUALIZADO COM SUCESSO:", newData);
-              return newData;
-            });
-          }
+          setFormData(prev => ({
+            ...prev,
+            name: res.data.name,
+            email: res.data.email,
+            google_id: res.data.google_id || prev.google_id
+          }));
         })
-        .catch(err => {
-          console.error("ERRO AO BUSCAR CACHE:", err.response?.data || err.message);
-        });
+        .catch(err => console.error("Erro ao recuperar dados temporários", err));
     }
   }, [tempKey]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+  const handleNextStep = () => setStep(step + 1);
+  const handlePrevStep = () => setStep(step - 1);
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    
-    // Verificação final antes do POST
-    console.log("CONFERÊNCIA FINAL ANTES DE ENVIAR:", formData);
-
-    if (!formData.name || !formData.email || !formData.google_id) {
-        alert("Erro crítico: Dados do Google não encontrados no formulário. Verifique o console.");
-        return;
-    }
-
     setLoading(true);
     try {
       const response = await api.post('/api/v1/register', formData);
-      alert('Sucesso!');
+      
+      if (response.data.token) {
+        localStorage.setItem('axion_token', response.data.token);
+        localStorage.setItem('user_data', JSON.stringify(response.data.user));
+        localStorage.setItem('@AxionID:email', response.data.user.email);
+      }
+
+      alert('Cadastro finalizado!');
       navigate('/dashboard');
     } catch (error) {
-      console.error("ERRO 422:", error.response?.data);
-      alert("Falha no registro: " + JSON.stringify(error.response?.data));
+      alert(error.response?.data?.message || 'Erro ao cadastrar');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>Passo {step} de 3</h2>
-      <form onSubmit={handleRegister}>
+    <div className="auth-container">
+      <div className="auth-card onboarding-card">
         
-        {step === 1 && (
-          <div>
-            <label>Nome:</label>
-            <input name="name" value={formData.name} onChange={handleChange} readOnly={isSocialRegistration} />
-            <br />
-            <label>Email:</label>
-            <input name="email" value={formData.email} onChange={handleChange} readOnly={isSocialRegistration} />
-            <br />
-            <button type="button" onClick={() => setStep(2)}>Próximo</button>
-          </div>
-        )}
+        {/* Barra de Progresso Visual */}
+        <div className="progress-bar">
+          <div className="progress-fill" style={{ width: `${(step / 3) * 100}%` }}></div>
+        </div>
 
-        {step === 2 && (
-          <div>
-            <label>CPF/CNPJ:</label>
-            <input name="cpf_cnpj" value={formData.cpf_cnpj} onChange={handleChange} required />
-            <br />
-            <button type="button" onClick={() => setStep(1)}>Voltar</button>
-            <button type="button" onClick={() => setStep(3)}>Próximo</button>
-          </div>
-        )}
+        <form onSubmit={handleRegister} className="auth-form">
+          
+          {/* ETAPA 1: Boas-vindas (Nome e E-mail) */}
+          {step === 1 && (
+            <div className="step-content animate-in">
+              <h3>{isSocialRegistration ? 'Bem-vindo ao AxionID' : 'Crie sua conta'}</h3>
+              <p>{isSocialRegistration ? 'Confirme seus dados vindos do Google:' : 'Informe seus dados básicos:'}</p>
+              
+              <div className="input-group">
+                <label>Nome Completo</label>
+                <input 
+                  name="name" 
+                  value={formData.name} 
+                  onChange={handleChange}
+                  readOnly={isSocialRegistration && formData.name !== ''} 
+                  className={isSocialRegistration ? "input-readonly" : "input-standard"} 
+                  required 
+                />
+              </div>
 
-        {step === 3 && (
-          <div>
-            <label>Senha:</label>
-            <input type="password" name="password" value={formData.password} onChange={handleChange} required />
-            <br />
-            <label>Confirme a Senha:</label>
-            <input type="password" name="password_confirmation" value={formData.password_confirmation} onChange={handleChange} required />
-            <br />
-            <button type="button" onClick={() => setStep(2)}>Voltar</button>
-            <button type="submit" disabled={loading}>FINALIZAR</button>
-          </div>
-        )}
-      </form>
+              <div className="input-group">
+                <label>E-mail</label>
+                <input 
+                  name="email" 
+                  type="email"
+                  value={formData.email} 
+                  onChange={handleChange}
+                  readOnly={isSocialRegistration && formData.email !== ''} 
+                  className={isSocialRegistration ? "input-readonly" : "input-standard"} 
+                  required 
+                />
+              </div>
+
+              <button type="button" className="btn-primary" onClick={handleNextStep}>
+                Confirmar e Avançar
+              </button>
+            </div>
+          )}
+
+          {/* ETAPA 2: Documento */}
+          {step === 2 && (
+            <div className="step-content animate-in">
+              <h3>Identificação</h3>
+              <p>Agora, informe seu CPF ou CNPJ para continuar:</p>
+              
+              <div className="input-group">
+                <input 
+                  name="cpf_cnpj" 
+                  placeholder="000.000.000-00" 
+                  value={formData.cpf_cnpj} 
+                  onChange={handleChange} 
+                  autoFocus 
+                  required 
+                />
+              </div>
+
+              <div className="btn-group">
+                <button type="button" className="btn-secondary" onClick={handlePrevStep}>Voltar</button>
+                <button type="button" className="btn-primary" onClick={handleNextStep} disabled={!formData.cpf_cnpj}>
+                  Avançar
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ETAPA 3: Segurança (Senha) */}
+          {step === 3 && (
+            <div className="step-content animate-in">
+              <h3>Segurança</h3>
+              <p>Para finalizar, defina sua senha de acesso:</p>
+              
+              <div className="input-group">
+                <input 
+                  name="password" 
+                  type="password" 
+                  placeholder="Defina uma senha" 
+                  value={formData.password}
+                  onChange={handleChange} 
+                  required 
+                />
+              </div>
+
+              <div className="input-group">
+                <input 
+                  name="password_confirmation" 
+                  type="password" 
+                  placeholder="Confirme a senha" 
+                  value={formData.password_confirmation}
+                  onChange={handleChange} 
+                  required 
+                />
+              </div>
+
+              <div className="btn-group">
+                <button type="button" className="btn-secondary" onClick={handlePrevStep}>Voltar</button>
+                <button type="submit" className="btn-primary" disabled={loading}>
+                  {loading ? 'Finalizando...' : 'Concluir Cadastro'}
+                </button>
+              </div>
+            </div>
+          )}
+        </form>
+      </div>
     </div>
   );
 }
