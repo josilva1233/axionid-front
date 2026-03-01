@@ -12,7 +12,6 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
 
-  // 1. ESTADO INICIAL
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -23,178 +22,104 @@ export default function Register() {
     from_google: isSocialRegistration
   });
 
-  // 2. BUSCA DADOS NO CACHE (Executa apenas uma vez ao montar ou se tempKey mudar)
+  // 1. BUSCA DADOS E TRAVA NO ESTADO
   useEffect(() => {
     if (tempKey) {
+      console.log("Tentando buscar dados para a chave:", tempKey);
+      
       api.get(`/api/v1/auth/temp-data/${tempKey}`)
         .then(res => {
-          console.log("DADOS CACHE RECUPERADOS:", res.data);
-          // Usamos o retorno funcional para garantir que não sobrescrevemos o que o usuário já digitou
-          setFormData(prev => ({
-            ...prev,
-            name: res.data.name || prev.name,
-            email: res.data.email || prev.email,
-            google_id: res.data.google_id || prev.google_id
-          }));
+          // SE ESTE LOG APARECER VAZIO, O PROBLEMA É NO LARAVEL (CACHE)
+          console.log("RESPOSTA DO SERVIDOR (CACHE):", res.data);
+
+          if (res.data) {
+            setFormData(prev => {
+              const newData = {
+                ...prev,
+                name: res.data.name || '',
+                email: res.data.email || '',
+                google_id: res.data.google_id || ''
+              };
+              console.log("ESTADO ATUALIZADO COM SUCESSO:", newData);
+              return newData;
+            });
+          }
         })
-        .catch(err => console.error("Erro ao buscar cache:", err));
+        .catch(err => {
+          console.error("ERRO AO BUSCAR CACHE:", err.response?.data || err.message);
+        });
     }
   }, [tempKey]);
 
-  // 3. ATUALIZAÇÃO DE ESTADO (Versão funcional para evitar perda de dados entre steps)
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleNextStep = () => setStep(prev => prev + 1);
-  const handlePrevStep = () => setStep(prev => prev - 1);
-
-  // 4. ENVIO FINAL
   const handleRegister = async (e) => {
     e.preventDefault();
     
-    // Log para conferência no console (F12)
-    console.log("PAYLOAD SENDING...", formData);
+    // Verificação final antes do POST
+    console.log("CONFERÊNCIA FINAL ANTES DE ENVIAR:", formData);
 
-    // Validação de segurança no Front
-    if (!formData.name || !formData.email) {
-      alert("Erro: Nome e E-mail são obrigatórios. Volte ao passo 1.");
-      setStep(1);
-      return;
+    if (!formData.name || !formData.email || !formData.google_id) {
+        alert("Erro crítico: Dados do Google não encontrados no formulário. Verifique o console.");
+        return;
     }
 
     setLoading(true);
     try {
       const response = await api.post('/api/v1/register', formData);
-      
-      if (response.data.token) {
-        localStorage.setItem('axion_token', response.data.token);
-        localStorage.setItem('user_data', JSON.stringify(response.data.user));
-      }
-
-      alert('Cadastro realizado com sucesso!');
+      alert('Sucesso!');
       navigate('/dashboard');
     } catch (error) {
-      console.error("ERRO 422 DETALHADO:", error.response?.data);
-      const msg = error.response?.data?.message || "Erro ao cadastrar. Verifique os dados.";
-      alert(msg);
+      console.error("ERRO 422:", error.response?.data);
+      alert("Falha no registro: " + JSON.stringify(error.response?.data));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card onboarding-card">
+    <div style={{ padding: '20px' }}>
+      <h2>Passo {step} de 3</h2>
+      <form onSubmit={handleRegister}>
         
-        <div className="progress-bar">
-          <div className="progress-fill" style={{ width: `${(step / 3) * 100}%` }}></div>
-        </div>
+        {step === 1 && (
+          <div>
+            <label>Nome:</label>
+            <input name="name" value={formData.name} onChange={handleChange} readOnly={isSocialRegistration} />
+            <br />
+            <label>Email:</label>
+            <input name="email" value={formData.email} onChange={handleChange} readOnly={isSocialRegistration} />
+            <br />
+            <button type="button" onClick={() => setStep(2)}>Próximo</button>
+          </div>
+        )}
 
-        <form onSubmit={handleRegister} className="auth-form">
-          
-          {/* STEP 1: DADOS BÁSICOS */}
-          {step === 1 && (
-            <div className="step-content animate-in">
-              <h3>{isSocialRegistration ? 'Confirme seus dados' : 'Crie sua conta'}</h3>
-              <div className="input-group">
-                <label>Nome Completo</label>
-                <input 
-                  type="text"
-                  name="name" 
-                  value={formData.name} 
-                  onChange={handleChange}
-                  readOnly={isSocialRegistration} 
-                  className={isSocialRegistration ? "input-readonly" : "input-standard"} 
-                  required 
-                />
-              </div>
-              <div className="input-group">
-                <label>E-mail</label>
-                <input 
-                  type="email"
-                  name="email" 
-                  value={formData.email} 
-                  onChange={handleChange}
-                  readOnly={isSocialRegistration} 
-                  className={isSocialRegistration ? "input-readonly" : "input-standard"} 
-                  required 
-                />
-              </div>
-              <button type="button" className="btn-primary" onClick={handleNextStep}>
-                Avançar
-              </button>
-            </div>
-          )}
+        {step === 2 && (
+          <div>
+            <label>CPF/CNPJ:</label>
+            <input name="cpf_cnpj" value={formData.cpf_cnpj} onChange={handleChange} required />
+            <br />
+            <button type="button" onClick={() => setStep(1)}>Voltar</button>
+            <button type="button" onClick={() => setStep(3)}>Próximo</button>
+          </div>
+        )}
 
-          {/* STEP 2: CPF/CNPJ */}
-          {step === 2 && (
-            <div className="step-content animate-in">
-              <h3>Identificação</h3>
-              <div className="input-group">
-                <label>CPF ou CNPJ</label>
-                <input 
-                  type="text"
-                  name="cpf_cnpj" 
-                  placeholder="000.000.000-00"
-                  value={formData.cpf_cnpj} 
-                  onChange={handleChange} 
-                  required 
-                />
-              </div>
-              <div className="btn-group">
-                <button type="button" className="btn-secondary" onClick={handlePrevStep}>Voltar</button>
-                <button type="button" className="btn-primary" onClick={handleNextStep} disabled={!formData.cpf_cnpj}>
-                  Avançar
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 3: SENHA */}
-          {step === 3 && (
-            <div className="step-content animate-in">
-              <h3>Segurança</h3>
-              <div className="input-group">
-                <label>Senha</label>
-                <input 
-                  type="password"
-                  name="password" 
-                  value={formData.password}
-                  onChange={handleChange} 
-                  required 
-                />
-              </div>
-              <div className="input-group">
-                <label>Confirmar Senha</label>
-                <input 
-                  type="password"
-                  name="password_confirmation" 
-                  value={formData.password_confirmation}
-                  onChange={handleChange} 
-                  required 
-                />
-              </div>
-              
-              {/* CAMPOS OCULTOS PARA GARANTIR O ENVIO CASO O DOM TENHA SIDO LIMPO */}
-              <input type="hidden" name="name" value={formData.name} />
-              <input type="hidden" name="email" value={formData.email} />
-              <input type="hidden" name="google_id" value={formData.google_id} />
-
-              <div className="btn-group">
-                <button type="button" className="btn-secondary" onClick={handlePrevStep}>Voltar</button>
-                <button type="submit" className="btn-primary" disabled={loading}>
-                  {loading ? 'Cadastrando...' : 'Concluir Cadastro'}
-                </button>
-              </div>
-            </div>
-          )}
-        </form>
-      </div>
+        {step === 3 && (
+          <div>
+            <label>Senha:</label>
+            <input type="password" name="password" value={formData.password} onChange={handleChange} required />
+            <br />
+            <label>Confirme a Senha:</label>
+            <input type="password" name="password_confirmation" value={formData.password_confirmation} onChange={handleChange} required />
+            <br />
+            <button type="button" onClick={() => setStep(2)}>Voltar</button>
+            <button type="submit" disabled={loading}>FINALIZAR</button>
+          </div>
+        )}
+      </form>
     </div>
   );
 }
