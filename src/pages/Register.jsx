@@ -6,8 +6,8 @@ export default function Register() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // 1. CAPTURE OS DADOS DA URL
-  const tempKey = searchParams.get('t') || ''; // Chave segura do cache
+  // 1. CAPTURA INICIAL DOS DADOS DA URL (Fallback imediato)
+  const tempKey = searchParams.get('t') || ''; 
   const nameFromUrl = searchParams.get('name') || '';
   const emailFromUrl = searchParams.get('email') || '';
   const googleIdFromUrl = searchParams.get('google_id') || ''; 
@@ -16,7 +16,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
 
-  // 2. INICIALIZE O FORMULÁRIO
+  // 2. ESTADO DO FORMULÁRIO (Inicia com o que houver na URL)
   const [formData, setFormData] = useState({
     name: nameFromUrl,
     email: emailFromUrl,
@@ -27,31 +27,51 @@ export default function Register() {
     from_google: isSocialRegistration
   });
 
-  // 3. BUSCA DADOS SEGUROS (Se houver chave 't')
+  // 3. BUSCA REFORÇADA NO CACHE DO BACKEND
   useEffect(() => {
     if (tempKey) {
+      console.log("Buscando cache para chave:", tempKey);
       api.get(`/api/v1/auth/temp-data/${tempKey}`)
         .then(res => {
+          console.log("Dados do Cache recebidos:", res.data);
           setFormData(prev => ({
             ...prev,
-            name: res.data.name,
-            email: res.data.email,
+            // Prioriza o que vem do cache, mas mantém o da URL se o cache falhar
+            name: res.data.name || prev.name,
+            email: res.data.email || prev.email,
             google_id: res.data.google_id || prev.google_id
           }));
         })
-        .catch(err => console.error("Erro ao recuperar dados temporários", err));
+        .catch(err => {
+          console.error("Erro ao recuperar dados do cache:", err);
+        });
     }
   }, [tempKey]);
 
+  // 4. ATUALIZAÇÃO DE ESTADO SEGURA
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const handleNextStep = () => setStep(step + 1);
-  const handlePrevStep = () => setStep(step - 1);
+  const handleNextStep = () => setStep(prev => prev + 1);
+  const handlePrevStep = () => setStep(prev => prev - 1);
 
+  // 5. FINALIZAÇÃO DO CADASTRO (Onde o 422 acontecia)
   const handleRegister = async (e) => {
     e.preventDefault();
+    
+    // Verificação de segurança no console
+    console.log("PAYLOAD FINAL PARA ENVIO:", formData);
+
+    if (isSocialRegistration && !formData.google_id) {
+        alert("Erro: ID do Google não detectado. Tente refazer o login.");
+        return;
+    }
+
     setLoading(true);
     try {
       const response = await api.post('/api/v1/register', formData);
@@ -62,10 +82,12 @@ export default function Register() {
         localStorage.setItem('@AxionID:email', response.data.user.email);
       }
 
-      alert('Cadastro finalizado!');
+      alert('Cadastro realizado com sucesso!');
       navigate('/dashboard');
     } catch (error) {
-      alert(error.response?.data?.message || 'Erro ao cadastrar');
+      console.error("ERRO NO REGISTRO:", error.response?.data);
+      const errorMsg = error.response?.data?.message || 'Erro ao cadastrar. Verifique os dados.';
+      alert(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -75,18 +97,18 @@ export default function Register() {
     <div className="auth-container">
       <div className="auth-card onboarding-card">
         
-        {/* Barra de Progresso Visual */}
+        {/* Barra de Progresso */}
         <div className="progress-bar">
           <div className="progress-fill" style={{ width: `${(step / 3) * 100}%` }}></div>
         </div>
 
         <form onSubmit={handleRegister} className="auth-form">
           
-          {/* ETAPA 1: Boas-vindas (Nome e E-mail) */}
+          {/* STEP 1: DADOS BÁSICOS */}
           {step === 1 && (
             <div className="step-content animate-in">
-              <h3>{isSocialRegistration ? 'Bem-vindo ao AxionID' : 'Crie sua conta'}</h3>
-              <p>{isSocialRegistration ? 'Confirme seus dados vindos do Google:' : 'Informe seus dados básicos:'}</p>
+              <h3>{isSocialRegistration ? 'Confirme seus dados' : 'Crie sua conta'}</h3>
+              <p>Passo 1 de 3: Informações básicas</p>
               
               <div className="input-group">
                 <label>Nome Completo</label>
@@ -94,7 +116,7 @@ export default function Register() {
                   name="name" 
                   value={formData.name} 
                   onChange={handleChange}
-                  readOnly={isSocialRegistration && formData.name !== ''} 
+                  readOnly={isSocialRegistration && formData.name !== ''}
                   className={isSocialRegistration ? "input-readonly" : "input-standard"} 
                   required 
                 />
@@ -107,28 +129,29 @@ export default function Register() {
                   type="email"
                   value={formData.email} 
                   onChange={handleChange}
-                  readOnly={isSocialRegistration && formData.email !== ''} 
+                  readOnly={isSocialRegistration && formData.email !== ''}
                   className={isSocialRegistration ? "input-readonly" : "input-standard"} 
                   required 
                 />
               </div>
 
               <button type="button" className="btn-primary" onClick={handleNextStep}>
-                Confirmar e Avançar
+                Próximo Passo
               </button>
             </div>
           )}
 
-          {/* ETAPA 2: Documento */}
+          {/* STEP 2: IDENTIFICAÇÃO */}
           {step === 2 && (
             <div className="step-content animate-in">
               <h3>Identificação</h3>
-              <p>Agora, informe seu CPF ou CNPJ para continuar:</p>
+              <p>Passo 2 de 3: Documento obrigatório</p>
               
               <div className="input-group">
+                <label>CPF ou CNPJ</label>
                 <input 
                   name="cpf_cnpj" 
-                  placeholder="000.000.000-00" 
+                  placeholder="Apenas números" 
                   value={formData.cpf_cnpj} 
                   onChange={handleChange} 
                   autoFocus 
@@ -145,17 +168,22 @@ export default function Register() {
             </div>
           )}
 
-          {/* ETAPA 3: Segurança (Senha) */}
+          {/* STEP 3: SEGURANÇA E SUBMIT */}
           {step === 3 && (
             <div className="step-content animate-in">
               <h3>Segurança</h3>
-              <p>Para finalizar, defina sua senha de acesso:</p>
+              <p>Passo 3 de 3: Defina sua senha</p>
               
+              {/* INPUTS HIDDEN: Garantem que esses valores sejam enviados no POST final */}
+              <input type="hidden" name="name" value={formData.name} />
+              <input type="hidden" name="email" value={formData.email} />
+              <input type="hidden" name="google_id" value={formData.google_id} />
+
               <div className="input-group">
+                <label>Senha</label>
                 <input 
                   name="password" 
                   type="password" 
-                  placeholder="Defina uma senha" 
                   value={formData.password}
                   onChange={handleChange} 
                   required 
@@ -163,10 +191,10 @@ export default function Register() {
               </div>
 
               <div className="input-group">
+                <label>Confirmar Senha</label>
                 <input 
                   name="password_confirmation" 
                   type="password" 
-                  placeholder="Confirme a senha" 
                   value={formData.password_confirmation}
                   onChange={handleChange} 
                   required 
@@ -176,7 +204,7 @@ export default function Register() {
               <div className="btn-group">
                 <button type="button" className="btn-secondary" onClick={handlePrevStep}>Voltar</button>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                  {loading ? 'Finalizando...' : 'Concluir Cadastro'}
+                  {loading ? 'Processando...' : 'Concluir Cadastro'}
                 </button>
               </div>
             </div>
