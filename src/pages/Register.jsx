@@ -6,45 +6,44 @@ export default function Register() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // 1. CAPTURE OS DADOS DA URL (Backup caso o cache falhe)
+  // 1. CAPTURA DOS PARÂMETROS DA URL
   const tempKey = searchParams.get('t') || ''; 
-  const nameFromUrl = searchParams.get('name') || '';
-  const emailFromUrl = searchParams.get('email') || '';
-  const googleIdFromUrl = searchParams.get('google_id') || ''; 
   const isSocialRegistration = searchParams.get('from_google') === 'true';
 
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
 
-  // 2. INICIALIZE O FORMULÁRIO COM OS DADOS DA URL
+  // 2. ESTADO INICIAL DO FORMULÁRIO
   const [formData, setFormData] = useState({
-    name: nameFromUrl,
-    email: emailFromUrl,
-    google_id: googleIdFromUrl, // Começa com o que veio da URL
+    name: '',
+    email: '',
+    google_id: '', // Será preenchido pelo useEffect
     cpf_cnpj: '',
     password: '',
     password_confirmation: '',
     from_google: isSocialRegistration
   });
 
-  // 3. BUSCA DADOS SEGUROS NO CACHE (Se houver chave 't')
-useEffect(() => {
-  // Se existir a chave 't', buscamos o google_id no servidor
-  if (tempKey) {
-    api.get(`/api/v1/auth/temp-data/${tempKey}`)
-      .then(res => {
-        console.log("Dados recuperados do cache:", res.data); // Verifique isso no console!
-        setFormData(prev => ({
-          ...prev,
-          // Aqui garantimos que o google_id seja preenchido vindo do cache do Laravel
-          google_id: res.data.google_id || prev.google_id,
-          name: res.data.name || prev.name,
-          email: res.data.email || prev.email
-        }));
-      })
-      .catch(err => console.error("Erro ao buscar cache no servidor:", err));
-  }
-}, [tempKey]);
+  // 3. BUSCA DADOS SEGUROS NO CACHE DO BACKEND
+  useEffect(() => {
+    // Se existir a chave 't', buscamos o google_id no servidor para garantir integridade
+    if (tempKey) {
+      api.get(`/api/v1/auth/temp-data/${tempKey}`)
+        .then(res => {
+          console.log("Dados recuperados do cache com sucesso:", res.data);
+          setFormData(prev => ({
+            ...prev,
+            name: res.data.name || prev.name,
+            email: res.data.email || prev.email,
+            google_id: res.data.google_id || prev.google_id
+          }));
+        })
+        .catch(err => {
+          console.error("Erro ao recuperar dados temporários do servidor:", err);
+          // Opcional: Redirecionar para login se o cache expirar
+        });
+    }
+  }, [tempKey]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -53,15 +52,15 @@ useEffect(() => {
   const handleNextStep = () => setStep(step + 1);
   const handlePrevStep = () => setStep(step - 1);
 
+  // 4. FINALIZAÇÃO DO CADASTRO
   const handleRegister = async (e) => {
     e.preventDefault();
     
-    // DEBUG: Veja no console (F12) se o google_id está aqui antes de enviar
-    console.log("Dados sendo enviados para o AxionID:", formData);
+    // Verificação de segurança no console antes de disparar a API
+    console.log("Enviando payload final para o AxionID:", formData);
 
     setLoading(true);
     try {
-      // O formData aqui JÁ contém o google_id capturado no início
       const response = await api.post('/api/v1/register', formData);
       
       if (response.data.token) {
@@ -74,7 +73,9 @@ useEffect(() => {
       navigate('/dashboard');
     } catch (error) {
       console.error("Erro no registro:", error.response?.data);
-      alert(error.response?.data?.message || 'Erro ao cadastrar. Verifique os dados.');
+      // Exibe erros de validação do Laravel (como CPF já existente)
+      const errorMsg = error.response?.data?.message || 'Erro ao cadastrar. Verifique os dados.';
+      alert(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -84,17 +85,18 @@ useEffect(() => {
     <div className="auth-container">
       <div className="auth-card onboarding-card">
         
+        {/* Barra de Progresso Visual */}
         <div className="progress-bar">
           <div className="progress-fill" style={{ width: `${(step / 3) * 100}%` }}></div>
         </div>
 
         <form onSubmit={handleRegister} className="auth-form">
           
-          {/* ETAPA 1: Dados Básicos */}
+          {/* ETAPA 1: Dados Básicos (Confirmar dados do Google) */}
           {step === 1 && (
             <div className="step-content animate-in">
-              <h3>{isSocialRegistration ? 'Bem-vindo ao AxionID' : 'Crie sua conta'}</h3>
-              <p>{isSocialRegistration ? 'Confirme seus dados do Google:' : 'Informe seus dados básicos:'}</p>
+              <h3>{isSocialRegistration ? 'Confirme seus dados' : 'Crie sua conta'}</h3>
+              <p>Passo 1 de 3: Informações básicas</p>
               
               <div className="input-group">
                 <label>Nome Completo</label>
@@ -102,7 +104,7 @@ useEffect(() => {
                   name="name" 
                   value={formData.name} 
                   onChange={handleChange}
-                  readOnly={isSocialRegistration} 
+                  readOnly={isSocialRegistration} // Impede edição se vier do Google
                   className={isSocialRegistration ? "input-readonly" : "input-standard"} 
                   required 
                 />
@@ -122,21 +124,22 @@ useEffect(() => {
               </div>
 
               <button type="button" className="btn-primary" onClick={handleNextStep}>
-                Confirmar e Avançar
+                Próximo Passo
               </button>
             </div>
           )}
 
-          {/* ETAPA 2: CPF/CNPJ */}
+          {/* ETAPA 2: Documentação */}
           {step === 2 && (
             <div className="step-content animate-in">
               <h3>Identificação</h3>
-              <p>Informe seu CPF ou CNPJ:</p>
+              <p>Passo 2 de 3: Documento obrigatório</p>
               
               <div className="input-group">
+                <label>CPF ou CNPJ</label>
                 <input 
                   name="cpf_cnpj" 
-                  placeholder="000.000.000-00" 
+                  placeholder="Apenas números" 
                   value={formData.cpf_cnpj} 
                   onChange={handleChange} 
                   autoFocus 
@@ -153,17 +156,18 @@ useEffect(() => {
             </div>
           )}
 
-          {/* ETAPA 3: Senha e Finalização */}
+          {/* ETAPA 3: Senha e Envio */}
           {step === 3 && (
             <div className="step-content animate-in">
               <h3>Segurança</h3>
-              <p>Defina sua senha de acesso:</p>
+              <p>Passo 3 de 3: Defina sua senha</p>
               
               <div className="input-group">
+                <label>Senha</label>
                 <input 
                   name="password" 
                   type="password" 
-                  placeholder="Senha" 
+                  placeholder="Mínimo 8 caracteres" 
                   value={formData.password}
                   onChange={handleChange} 
                   required 
@@ -171,10 +175,11 @@ useEffect(() => {
               </div>
 
               <div className="input-group">
+                <label>Confirmar Senha</label>
                 <input 
                   name="password_confirmation" 
                   type="password" 
-                  placeholder="Confirme a senha" 
+                  placeholder="Repita a senha" 
                   value={formData.password_confirmation}
                   onChange={handleChange} 
                   required 
@@ -184,7 +189,7 @@ useEffect(() => {
               <div className="btn-group">
                 <button type="button" className="btn-secondary" onClick={handlePrevStep}>Voltar</button>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                  {loading ? 'Finalizando...' : 'Concluir Cadastro'}
+                  {loading ? 'Processando...' : 'Concluir Cadastro'}
                 </button>
               </div>
             </div>
