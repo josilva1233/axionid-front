@@ -6,49 +6,47 @@ export default function Register() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // 1. CAPTURA INICIAL DOS DADOS DA URL (Fallback imediato)
+  // 1. Captura de parâmetros da URL
   const tempKey = searchParams.get('t') || ''; 
-  const nameFromUrl = searchParams.get('name') || '';
-  const emailFromUrl = searchParams.get('email') || '';
-  const googleIdFromUrl = searchParams.get('google_id') || ''; 
   const isSocialRegistration = searchParams.get('from_google') === 'true';
 
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
 
-  // 2. ESTADO DO FORMULÁRIO (Inicia com o que houver na URL)
+  // 2. Estado inicial do formulário
   const [formData, setFormData] = useState({
-    name: nameFromUrl,
-    email: emailFromUrl,
-    google_id: googleIdFromUrl,
+    name: '',
+    email: '',
+    google_id: '',
     cpf_cnpj: '',
     password: '',
     password_confirmation: '',
     from_google: isSocialRegistration
   });
 
-useEffect(() => {
-  if (tempKey) {
-    // Busca os dados sensíveis (google_id) que estão escondidos no servidor
-    api.get(`/api/v1/auth/temp-data/${tempKey}`)
-      .then(res => {
-        console.log("DADOS RECUPERADOS COM SEGURANÇA:", res.data);
-        
-        setFormData(prev => ({
-          ...prev,
-          name: res.data.name || prev.name,
-          email: res.data.email || prev.email,
-          google_id: res.data.google_id // O ID entra aqui vindo do servidor, não da URL
-        }));
-      })
-      .catch(err => {
-        console.error("Erro: A chave expirou ou é inválida.");
-        // Opcional: alert("Sessão expirada. Tente o login novamente.");
-      });
-  }
-}, [tempKey]);
+  // 3. Busca de dados no Cache (Segurança)
+  useEffect(() => {
+    if (tempKey) {
+      console.log("Buscando dados seguros para a chave:", tempKey);
+      
+      api.get(`/api/v1/auth/temp-data/${tempKey}`)
+        .then(res => {
+          console.log("DADOS RECUPERADOS DO SERVIDOR:", res.data);
+          
+          setFormData(prev => ({
+            ...prev,
+            name: res.data.name || prev.name,
+            email: res.data.email || prev.email,
+            google_id: res.data.google_id || '' // O ID entra aqui vindo do servidor
+          }));
+        })
+        .catch(err => {
+          console.error("Erro: A chave expirou ou é inválida.", err);
+        });
+    }
+  }, [tempKey]);
 
-  // 4. ATUALIZAÇÃO DE ESTADO SEGURA
+  // 4. Atualização de estado
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -60,15 +58,15 @@ useEffect(() => {
   const handleNextStep = () => setStep(prev => prev + 1);
   const handlePrevStep = () => setStep(prev => prev - 1);
 
-  // 5. FINALIZAÇÃO DO CADASTRO (Onde o 422 acontecia)
+  // 5. Finalização do Cadastro
   const handleRegister = async (e) => {
     e.preventDefault();
     
-    // Verificação de segurança no console
+    // Verificação de segurança no console para você conferir antes de disparar
     console.log("PAYLOAD FINAL PARA ENVIO:", formData);
 
     if (isSocialRegistration && !formData.google_id) {
-        alert("Erro: ID do Google não detectado. Tente refazer o login.");
+        alert("Erro: ID do Google não detectado. Por favor, tente refazer o login via Google.");
         return;
     }
 
@@ -174,7 +172,7 @@ useEffect(() => {
               <h3>Segurança</h3>
               <p>Passo 3 de 3: Defina sua senha</p>
               
-              {/* INPUTS HIDDEN: Garantem que esses valores sejam enviados no POST final */}
+              {/* Inputs Hidden para garantir que o estado seja preservado no submit */}
               <input type="hidden" name="name" value={formData.name} />
               <input type="hidden" name="email" value={formData.email} />
               <input type="hidden" name="google_id" value={formData.google_id} />
