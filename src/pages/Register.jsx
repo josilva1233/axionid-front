@@ -6,8 +6,8 @@ export default function Register() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // 1. CAPTURE OS DADOS DA URL
-  const tempKey = searchParams.get('t') || ''; // Chave segura do cache
+  // 1. CAPTURE OS DADOS DA URL (Backup caso o cache falhe)
+  const tempKey = searchParams.get('t') || ''; 
   const nameFromUrl = searchParams.get('name') || '';
   const emailFromUrl = searchParams.get('email') || '';
   const googleIdFromUrl = searchParams.get('google_id') || ''; 
@@ -16,27 +16,29 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
 
-  // 2. INICIALIZE O FORMULÁRIO
+  // 2. INICIALIZE O FORMULÁRIO COM OS DADOS DA URL
   const [formData, setFormData] = useState({
     name: nameFromUrl,
     email: emailFromUrl,
-    google_id: googleIdFromUrl,
+    google_id: googleIdFromUrl, // Começa com o que veio da URL
     cpf_cnpj: '',
     password: '',
     password_confirmation: '',
     from_google: isSocialRegistration
   });
 
-  // 3. BUSCA DADOS SEGUROS (Se houver chave 't')
+  // 3. BUSCA DADOS SEGUROS NO CACHE (Se houver chave 't')
   useEffect(() => {
     if (tempKey) {
       api.get(`/api/v1/auth/temp-data/${tempKey}`)
         .then(res => {
+          // IMPORTANTE: Atualiza o estado sem apagar o que já temos
           setFormData(prev => ({
             ...prev,
-            name: res.data.name,
-            email: res.data.email,
-            google_id: res.data.google_id || prev.google_id
+            name: res.data.name || prev.name,
+            email: res.data.email || prev.email,
+            // Se o cache tiver o google_id, usa ele. Se não, mantém o da URL.
+            google_id: res.data.google_id || prev.google_id 
           }));
         })
         .catch(err => console.error("Erro ao recuperar dados temporários", err));
@@ -52,8 +54,13 @@ export default function Register() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    
+    // DEBUG: Veja no console (F12) se o google_id está aqui antes de enviar
+    console.log("Dados sendo enviados para o AxionID:", formData);
+
     setLoading(true);
     try {
+      // O formData aqui JÁ contém o google_id capturado no início
       const response = await api.post('/api/v1/register', formData);
       
       if (response.data.token) {
@@ -62,10 +69,11 @@ export default function Register() {
         localStorage.setItem('@AxionID:email', response.data.user.email);
       }
 
-      alert('Cadastro finalizado!');
+      alert('Cadastro finalizado com sucesso!');
       navigate('/dashboard');
     } catch (error) {
-      alert(error.response?.data?.message || 'Erro ao cadastrar');
+      console.error("Erro no registro:", error.response?.data);
+      alert(error.response?.data?.message || 'Erro ao cadastrar. Verifique os dados.');
     } finally {
       setLoading(false);
     }
@@ -75,18 +83,17 @@ export default function Register() {
     <div className="auth-container">
       <div className="auth-card onboarding-card">
         
-        {/* Barra de Progresso Visual */}
         <div className="progress-bar">
           <div className="progress-fill" style={{ width: `${(step / 3) * 100}%` }}></div>
         </div>
 
         <form onSubmit={handleRegister} className="auth-form">
           
-          {/* ETAPA 1: Boas-vindas (Nome e E-mail) */}
+          {/* ETAPA 1: Dados Básicos */}
           {step === 1 && (
             <div className="step-content animate-in">
               <h3>{isSocialRegistration ? 'Bem-vindo ao AxionID' : 'Crie sua conta'}</h3>
-              <p>{isSocialRegistration ? 'Confirme seus dados vindos do Google:' : 'Informe seus dados básicos:'}</p>
+              <p>{isSocialRegistration ? 'Confirme seus dados do Google:' : 'Informe seus dados básicos:'}</p>
               
               <div className="input-group">
                 <label>Nome Completo</label>
@@ -94,7 +101,7 @@ export default function Register() {
                   name="name" 
                   value={formData.name} 
                   onChange={handleChange}
-                  readOnly={isSocialRegistration && formData.name !== ''} 
+                  readOnly={isSocialRegistration} 
                   className={isSocialRegistration ? "input-readonly" : "input-standard"} 
                   required 
                 />
@@ -107,7 +114,7 @@ export default function Register() {
                   type="email"
                   value={formData.email} 
                   onChange={handleChange}
-                  readOnly={isSocialRegistration && formData.email !== ''} 
+                  readOnly={isSocialRegistration} 
                   className={isSocialRegistration ? "input-readonly" : "input-standard"} 
                   required 
                 />
@@ -119,11 +126,11 @@ export default function Register() {
             </div>
           )}
 
-          {/* ETAPA 2: Documento */}
+          {/* ETAPA 2: CPF/CNPJ */}
           {step === 2 && (
             <div className="step-content animate-in">
               <h3>Identificação</h3>
-              <p>Agora, informe seu CPF ou CNPJ para continuar:</p>
+              <p>Informe seu CPF ou CNPJ:</p>
               
               <div className="input-group">
                 <input 
@@ -145,17 +152,17 @@ export default function Register() {
             </div>
           )}
 
-          {/* ETAPA 3: Segurança (Senha) */}
+          {/* ETAPA 3: Senha e Finalização */}
           {step === 3 && (
             <div className="step-content animate-in">
               <h3>Segurança</h3>
-              <p>Para finalizar, defina sua senha de acesso:</p>
+              <p>Defina sua senha de acesso:</p>
               
               <div className="input-group">
                 <input 
                   name="password" 
                   type="password" 
-                  placeholder="Defina uma senha" 
+                  placeholder="Senha" 
                   value={formData.password}
                   onChange={handleChange} 
                   required 
