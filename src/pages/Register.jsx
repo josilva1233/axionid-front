@@ -6,31 +6,30 @@ export default function Register() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // 1. CAPTURA DOS PARÂMETROS DA URL
   const tempKey = searchParams.get('t') || ''; 
   const isSocialRegistration = searchParams.get('from_google') === 'true';
 
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
 
-  // 2. ESTADO INICIAL DO FORMULÁRIO
+  // 1. ESTADO INICIAL
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    google_id: '', // Será preenchido pelo useEffect
+    google_id: '',
     cpf_cnpj: '',
     password: '',
     password_confirmation: '',
     from_google: isSocialRegistration
   });
 
-  // 3. BUSCA DADOS SEGUROS NO CACHE DO BACKEND
+  // 2. BUSCA DADOS NO CACHE (Executa apenas uma vez ao montar ou se tempKey mudar)
   useEffect(() => {
-    // Se existir a chave 't', buscamos o google_id no servidor para garantir integridade
     if (tempKey) {
       api.get(`/api/v1/auth/temp-data/${tempKey}`)
         .then(res => {
-          console.log("Dados recuperados do cache com sucesso:", res.data);
+          console.log("DADOS CACHE RECUPERADOS:", res.data);
+          // Usamos o retorno funcional para garantir que não sobrescrevemos o que o usuário já digitou
           setFormData(prev => ({
             ...prev,
             name: res.data.name || prev.name,
@@ -38,26 +37,35 @@ export default function Register() {
             google_id: res.data.google_id || prev.google_id
           }));
         })
-        .catch(err => {
-          console.error("Erro ao recuperar dados temporários do servidor:", err);
-          // Opcional: Redirecionar para login se o cache expirar
-        });
+        .catch(err => console.error("Erro ao buscar cache:", err));
     }
   }, [tempKey]);
 
+  // 3. ATUALIZAÇÃO DE ESTADO (Versão funcional para evitar perda de dados entre steps)
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const handleNextStep = () => setStep(step + 1);
-  const handlePrevStep = () => setStep(step - 1);
+  const handleNextStep = () => setStep(prev => prev + 1);
+  const handlePrevStep = () => setStep(prev => prev - 1);
 
-  // 4. FINALIZAÇÃO DO CADASTRO
+  // 4. ENVIO FINAL
   const handleRegister = async (e) => {
     e.preventDefault();
     
-    // Verificação de segurança no console antes de disparar a API
-    console.log("Enviando payload final para o AxionID:", formData);
+    // Log para conferência no console (F12)
+    console.log("PAYLOAD SENDING...", formData);
+
+    // Validação de segurança no Front
+    if (!formData.name || !formData.email) {
+      alert("Erro: Nome e E-mail são obrigatórios. Volte ao passo 1.");
+      setStep(1);
+      return;
+    }
 
     setLoading(true);
     try {
@@ -66,16 +74,14 @@ export default function Register() {
       if (response.data.token) {
         localStorage.setItem('axion_token', response.data.token);
         localStorage.setItem('user_data', JSON.stringify(response.data.user));
-        localStorage.setItem('@AxionID:email', response.data.user.email);
       }
 
-      alert('Cadastro finalizado com sucesso!');
+      alert('Cadastro realizado com sucesso!');
       navigate('/dashboard');
     } catch (error) {
-      console.error("Erro no registro:", error.response?.data);
-      // Exibe erros de validação do Laravel (como CPF já existente)
-      const errorMsg = error.response?.data?.message || 'Erro ao cadastrar. Verifique os dados.';
-      alert(errorMsg);
+      console.error("ERRO 422 DETALHADO:", error.response?.data);
+      const msg = error.response?.data?.message || "Erro ao cadastrar. Verifique os dados.";
+      alert(msg);
     } finally {
       setLoading(false);
     }
@@ -85,36 +91,33 @@ export default function Register() {
     <div className="auth-container">
       <div className="auth-card onboarding-card">
         
-        {/* Barra de Progresso Visual */}
         <div className="progress-bar">
           <div className="progress-fill" style={{ width: `${(step / 3) * 100}%` }}></div>
         </div>
 
         <form onSubmit={handleRegister} className="auth-form">
           
-          {/* ETAPA 1: Dados Básicos (Confirmar dados do Google) */}
+          {/* STEP 1: DADOS BÁSICOS */}
           {step === 1 && (
             <div className="step-content animate-in">
               <h3>{isSocialRegistration ? 'Confirme seus dados' : 'Crie sua conta'}</h3>
-              <p>Passo 1 de 3: Informações básicas</p>
-              
               <div className="input-group">
                 <label>Nome Completo</label>
                 <input 
+                  type="text"
                   name="name" 
                   value={formData.name} 
                   onChange={handleChange}
-                  readOnly={isSocialRegistration} // Impede edição se vier do Google
+                  readOnly={isSocialRegistration} 
                   className={isSocialRegistration ? "input-readonly" : "input-standard"} 
                   required 
                 />
               </div>
-
               <div className="input-group">
                 <label>E-mail</label>
                 <input 
-                  name="email" 
                   type="email"
+                  name="email" 
                   value={formData.email} 
                   onChange={handleChange}
                   readOnly={isSocialRegistration} 
@@ -122,31 +125,27 @@ export default function Register() {
                   required 
                 />
               </div>
-
               <button type="button" className="btn-primary" onClick={handleNextStep}>
-                Próximo Passo
+                Avançar
               </button>
             </div>
           )}
 
-          {/* ETAPA 2: Documentação */}
+          {/* STEP 2: CPF/CNPJ */}
           {step === 2 && (
             <div className="step-content animate-in">
               <h3>Identificação</h3>
-              <p>Passo 2 de 3: Documento obrigatório</p>
-              
               <div className="input-group">
                 <label>CPF ou CNPJ</label>
                 <input 
+                  type="text"
                   name="cpf_cnpj" 
-                  placeholder="Apenas números" 
+                  placeholder="000.000.000-00"
                   value={formData.cpf_cnpj} 
                   onChange={handleChange} 
-                  autoFocus 
                   required 
                 />
               </div>
-
               <div className="btn-group">
                 <button type="button" className="btn-secondary" onClick={handlePrevStep}>Voltar</button>
                 <button type="button" className="btn-primary" onClick={handleNextStep} disabled={!formData.cpf_cnpj}>
@@ -156,40 +155,40 @@ export default function Register() {
             </div>
           )}
 
-          {/* ETAPA 3: Senha e Envio */}
+          {/* STEP 3: SENHA */}
           {step === 3 && (
             <div className="step-content animate-in">
               <h3>Segurança</h3>
-              <p>Passo 3 de 3: Defina sua senha</p>
-              
               <div className="input-group">
                 <label>Senha</label>
                 <input 
+                  type="password"
                   name="password" 
-                  type="password" 
-                  placeholder="Mínimo 8 caracteres" 
                   value={formData.password}
                   onChange={handleChange} 
                   required 
                 />
               </div>
-
               <div className="input-group">
                 <label>Confirmar Senha</label>
                 <input 
+                  type="password"
                   name="password_confirmation" 
-                  type="password" 
-                  placeholder="Repita a senha" 
                   value={formData.password_confirmation}
                   onChange={handleChange} 
                   required 
                 />
               </div>
+              
+              {/* CAMPOS OCULTOS PARA GARANTIR O ENVIO CASO O DOM TENHA SIDO LIMPO */}
+              <input type="hidden" name="name" value={formData.name} />
+              <input type="hidden" name="email" value={formData.email} />
+              <input type="hidden" name="google_id" value={formData.google_id} />
 
               <div className="btn-group">
                 <button type="button" className="btn-secondary" onClick={handlePrevStep}>Voltar</button>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                  {loading ? 'Processando...' : 'Concluir Cadastro'}
+                  {loading ? 'Cadastrando...' : 'Concluir Cadastro'}
                 </button>
               </div>
             </div>
