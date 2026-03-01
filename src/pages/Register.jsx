@@ -36,7 +36,7 @@ export default function Register() {
             ...prev,
             name: res.data.name,
             email: res.data.email,
-            google_id: res.data.google_id
+            google_id: res.data.google_id || prev.google_id
           }));
         })
         .catch(err => console.error("Erro ao recuperar dados temporários", err));
