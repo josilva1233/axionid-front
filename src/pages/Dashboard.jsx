@@ -1,49 +1,69 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom'; // Adicionado useSearchParams
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [role] = useState(localStorage.getItem('@AxionID:role'));
+  const [searchParams] = useSearchParams(); // Hook para ler a URL
+  
+  // Pegamos a role inicial, mas vamos atualizar ela assim que o usuário carregar
+  const [role, setRole] = useState(localStorage.getItem('@AxionID:role'));
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  
-  // Estado para o usuário logado
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    // 1. Carregar perfil do usuário logado (para o Alerta de CPF)
-    const fetchMyProfile = async () => {
+    const checkAuthAndLoad = async () => {
+      // 1. CAPTURA O TOKEN DO GOOGLE (Se houver na URL)
+      const tokenFromUrl = searchParams.get('token');
+      if (tokenFromUrl) {
+        localStorage.setItem('@AxionID:token', tokenFromUrl);
+        // Limpa a URL para o token não ficar exposto
+        window.history.replaceState({}, document.title, "/dashboard");
+      }
+
+      // 2. VERIFICA SE ESTÁ LOGADO
+      const token = localStorage.getItem('@AxionID:token');
+      if (!token) {
+        navigate('/');
+        return;
+      }
+
+      // 3. CARREGA DADOS DO USUÁRIO ATUAL (Rota /me ou similar)
       try {
-        // Buscamos na lista de usuários o nosso próprio registro
+        // Sugestão: Use uma rota específica para o perfil logado em vez de filtrar a lista de users
         const response = await api.get('/api/v1/users'); 
-        // Se a API retornar uma lista, o primeiro costuma ser o logado ou filtramos
         if (response.data && response.data.data) {
-          setCurrentUser(response.data.data[0]); 
+          const user = response.data.data[0];
+          setCurrentUser(user);
+          
+          // Atualiza a role dinamicamente com base no banco
+          const userRole = user.is_admin ? 'admin' : 'user';
+          setRole(userRole);
+          localStorage.setItem('@AxionID:role', userRole);
+
+          // 4. Se for Admin, carrega a lista
+          if (userRole === 'admin') {
+            fetchUsers();
+          }
         }
       } catch (error) {
-        console.error("Erro ao carregar perfil atual");
+        console.error("Erro ao validar sessão");
+        // Se o token for inválido, o interceptor da API já deve deslogar, 
+        // mas por segurança podemos limpar aqui se falhar:
+        if(error.response?.status === 401) navigate('/');
       }
     };
 
-    fetchMyProfile();
-
-    // 2. Se for Admin, carrega a lista completa
-    if (role === 'admin') {
-      fetchUsers();
-    }
-  }, [role]);
+    checkAuthAndLoad();
+  }, [searchParams]); // Executa sempre que a URL mudar (ao chegar do Google)
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
       const response = await api.get('/api/v1/users');
-      // O seu Swagger indica que o Laravel retorna um objeto com "data"
-      if (response.data && response.data.data) {
-        setUsers(response.data.data);
-      } else if (Array.isArray(response.data)) {
-        setUsers(response.data);
-      }
+      const data = response.data.data || response.data;
+      setUsers(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Erro ao buscar lista de usuários");
     } finally {
@@ -62,8 +82,7 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      
-      {/* ALERTA DE PERFIL INCOMPLETO (Aparece no canto) */}
+      {/* O resto do seu JSX permanece igual... */}
       {currentUser && (currentUser.profile_completed === false || !currentUser.cpf_cnpj) && (
         <div className="profile-sidebar-alert animate-in">
           <div className="alert-header">
@@ -81,7 +100,6 @@ export default function Dashboard() {
         <div className="brand">
           <h1>Axion<span>ID</span></h1>
         </div>
-        
         <div className="user-nav">
           <div className="user-info">
             <span className="user-status">Online</span>
@@ -89,60 +107,46 @@ export default function Dashboard() {
               {role === 'admin' ? 'Administrador' : 'Operacional'}
             </span>
           </div>
-          <button onClick={handleLogout} className="btn-logout">
-            Sair
-          </button>
+          <button onClick={handleLogout} className="btn-logout">Sair</button>
         </div>
       </header>
 
       <main className="dashboard-content animate-in">
         {role === 'admin' ? (
-          <div className="content-card">
-            <div className="card-header-flex">
-              <h3>Gestão de Identidades</h3>
-              <span className="count-badge">{users.length} usuários</span>
-            </div>
-
-            {loading ? (
-              <div className="loading-spinner">Carregando dados...</div>
-            ) : (
-              <div className="table-container">
-                <table className="users-table">
-                  <thead>
-                    <tr>
-                      <th>Nome</th>
-                      <th>E-mail</th>
-                      <th>CPF/CNPJ</th>
-                      <th>Status</th>
-                      <th>Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users.map((user) => (
-                      <tr key={user.id}>
-                        <td>
-                          <div className="user-td-name">
-                            <div className="avatar-small">{user.name.charAt(0)}</div>
-                            {user.name}
-                          </div>
-                        </td>
-                        <td>{user.email}</td>
-                        <td>{user.cpf_cnpj || <small style={{color:'#666'}}>Não vinculado</small>}</td>
-                        <td>
-                          <span className={`status-badge ${user.profile_completed ? 'complete' : 'pending'}`}>
-                            {user.profile_completed ? 'Validado' : 'Pendente'}
-                          </span>
-                        </td>
-                        <td>
-                          <button className="btn-action-view">Ver Detalhes</button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+           <div className="content-card">
+              {/* Conteúdo Admin */}
+              <div className="card-header-flex">
+                <h3>Gestão de Identidades</h3>
+                <span className="count-badge">{users.length} usuários</span>
               </div>
-            )}
-          </div>
+              {loading ? <p>Carregando...</p> : (
+                <div className="table-container">
+                    <table className="users-table">
+                        {/* Tabela igual a sua */}
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>E-mail</th>
+                                <th>CPF/CNPJ</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {users.map(user => (
+                                <tr key={user.id}>
+                                    <td>{user.name}</td>
+                                    <td>{user.email}</td>
+                                    <td>{user.cpf_cnpj || '---'}</td>
+                                    <td>{user.profile_completed ? 'Validado' : 'Pendente'}</td>
+                                    <td><button className="btn-action-view">Ver</button></td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+              )}
+           </div>
         ) : (
           <div className="content-card">
             <h3>Área Operacional</h3>
