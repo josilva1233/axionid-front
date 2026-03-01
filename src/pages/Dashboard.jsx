@@ -1,58 +1,49 @@
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  
-  // Estados
-  const [role, setRole] = useState(localStorage.getItem('@AxionID:role'));
+  const [role] = useState(localStorage.getItem('@AxionID:role'));
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
+  
+  // Estado para o usuário logado
   const [currentUser, setCurrentUser] = useState(null);
 
-useEffect(() => {
-  const initialize = async () => {
-    // 1. Pega o token da URL (Google Login)
-    const tokenFromUrl = searchParams.get('token');
-    
-    if (tokenFromUrl) {
-      // SALVA COM A CHAVE NOVA
-      localStorage.setItem('@AxionID:token', tokenFromUrl);
-      api.defaults.headers.common['Authorization'] = `Bearer ${tokenFromUrl}`;
-      window.history.replaceState({}, document.title, "/dashboard");
+  useEffect(() => {
+    // 1. Carregar perfil do usuário logado (para o Alerta de CPF)
+    const fetchMyProfile = async () => {
+      try {
+        // Buscamos na lista de usuários o nosso próprio registro
+        const response = await api.get('/api/v1/users'); 
+        // Se a API retornar uma lista, o primeiro costuma ser o logado ou filtramos
+        if (response.data && response.data.data) {
+          setCurrentUser(response.data.data[0]); 
+        }
+      } catch (error) {
+        console.error("Erro ao carregar perfil atual");
+      }
+    };
+
+    fetchMyProfile();
+
+    // 2. Se for Admin, carrega a lista completa
+    if (role === 'admin') {
+      fetchUsers();
     }
-
-    // 2. Tenta recuperar o token (seja da URL que acabou de salvar ou do login normal)
-    const token = localStorage.getItem('@AxionID:token');
-
-    if (!token) {
-      navigate('/'); // Se não tem token nenhum, volta pro login
-      return;
-    }
-
-    // 3. Agora que garantimos o token, buscamos os dados
-    try {
-      const response = await api.get('/api/v1/me');
-      setCurrentUser(response.data);
-      setRole(response.data.is_admin ? 'admin' : 'user');
-    } catch (error) {
-      // Se der erro 401 aqui, o INTERCEPTOR já vai te jogar para o '/'
-      console.error("Erro na autenticação");
-    }
-  };
-
-  initialize();
-}, [searchParams, navigate]);
+  }, [role]);
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
       const response = await api.get('/api/v1/users');
-      // Ajuste conforme o retorno da sua API (objeto com data ou array)
-      const data = response.data.data || response.data;
-      setUsers(Array.isArray(data) ? data : []);
+      // O seu Swagger indica que o Laravel retorna um objeto com "data"
+      if (response.data && response.data.data) {
+        setUsers(response.data.data);
+      } else if (Array.isArray(response.data)) {
+        setUsers(response.data);
+      }
     } catch (error) {
       console.error("Erro ao buscar lista de usuários");
     } finally {
@@ -63,11 +54,8 @@ useEffect(() => {
   const handleLogout = async () => {
     try {
       await api.post('/api/v1/logout');
-    } catch (e) {
-      console.warn("Sessão já expirada no servidor");
     } finally {
       localStorage.clear();
-      delete api.defaults.headers.common['Authorization'];
       navigate('/', { replace: true });
     }
   };
@@ -75,15 +63,15 @@ useEffect(() => {
   return (
     <div className="dashboard-container">
       
-      {/* ALERTA DE PERFIL INCOMPLETO */}
-      {currentUser && (currentUser.profile_completed === 0 || !currentUser.cpf_cnpj) && (
+      {/* ALERTA DE PERFIL INCOMPLETO (Aparece no canto) */}
+      {currentUser && (currentUser.profile_completed === false || !currentUser.cpf_cnpj) && (
         <div className="profile-sidebar-alert animate-in">
           <div className="alert-header">
             <span className="alert-icon">⚠️</span>
             <strong>Ação Requerida</strong>
           </div>
           <p>Olá <strong>{currentUser.name}</strong>, finalize seu cadastro para validar sua identidade.</p>
-          <button onClick={() => navigate('/register?step=2&from_google=true')} className="btn-alert-link">
+          <button onClick={() => navigate('/complete-profile')} className="btn-alert-link">
             Completar agora →
           </button>
         </div>
@@ -134,7 +122,7 @@ useEffect(() => {
                       <tr key={user.id}>
                         <td>
                           <div className="user-td-name">
-                            <div className="avatar-small">{(user.name || 'U').charAt(0)}</div>
+                            <div className="avatar-small">{user.name.charAt(0)}</div>
                             {user.name}
                           </div>
                         </td>
