@@ -28,22 +28,23 @@ export default function Register() {
   });
 
   // 3. BUSCA DADOS SEGUROS NO CACHE (Se houver chave 't')
-  useEffect(() => {
-    if (tempKey) {
-      api.get(`/api/v1/auth/temp-data/${tempKey}`)
-        .then(res => {
-          // IMPORTANTE: Atualiza o estado sem apagar o que já temos
-          setFormData(prev => ({
-            ...prev,
-            name: res.data.name || prev.name,
-            email: res.data.email || prev.email,
-            // Se o cache tiver o google_id, usa ele. Se não, mantém o da URL.
-            google_id: res.data.google_id || prev.google_id 
-          }));
-        })
-        .catch(err => console.error("Erro ao recuperar dados temporários", err));
-    }
-  }, [tempKey]);
+useEffect(() => {
+  // Se existir a chave 't', buscamos o google_id no servidor
+  if (tempKey) {
+    api.get(`/api/v1/auth/temp-data/${tempKey}`)
+      .then(res => {
+        console.log("Dados recuperados do cache:", res.data); // Verifique isso no console!
+        setFormData(prev => ({
+          ...prev,
+          // Aqui garantimos que o google_id seja preenchido vindo do cache do Laravel
+          google_id: res.data.google_id || prev.google_id,
+          name: res.data.name || prev.name,
+          email: res.data.email || prev.email
+        }));
+      })
+      .catch(err => console.error("Erro ao buscar cache no servidor:", err));
+  }
+}, [tempKey]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
