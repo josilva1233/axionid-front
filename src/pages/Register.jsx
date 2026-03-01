@@ -27,13 +27,15 @@ export default function Register() {
   });
 
   // 3. Salva o token no localStorage assim que carregar (essencial para o complete-profile)
-  useEffect(() => {
-    if (tokenFromUrl) {
-      localStorage.setItem('axion_token', tokenFromUrl);
-      // Configura o header do axios para as próximas chamadas
-      api.defaults.headers.common['Authorization'] = `Bearer ${tokenFromUrl}`;
-    }
-  }, [tokenFromUrl]);
+useEffect(() => {
+  const tokenFromUrl = new URLSearchParams(window.location.search).get('token');
+  if (tokenFromUrl) {
+    localStorage.setItem('axion_token', tokenFromUrl);
+    api.defaults.headers.common['Authorization'] = `Bearer ${tokenFromUrl}`;
+    // Limpa a URL para o token não ficar exposto na barra de endereços
+    window.history.replaceState({}, document.title, "/dashboard");
+  }
+}, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
