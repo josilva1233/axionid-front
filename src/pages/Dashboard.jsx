@@ -1,49 +1,67 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [role] = useState(localStorage.getItem('@AxionID:role'));
+  const [searchParams] = useSearchParams();
+  
+  // Estados
+  const [role, setRole] = useState(localStorage.getItem('@AxionID:role'));
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  
-  // Estado para o usuário logado
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    // 1. Carregar perfil do usuário logado (para o Alerta de CPF)
-    const fetchMyProfile = async () => {
+    const initializeDashboard = async () => {
+      // 1. Captura o token da URL (Caso venha do redirecionamento do Google)
+      const tokenFromUrl = searchParams.get('token');
+      
+      if (tokenFromUrl) {
+        localStorage.setItem('axion_token', tokenFromUrl);
+        api.defaults.headers.common['Authorization'] = `Bearer ${tokenFromUrl}`;
+        // Limpa a URL para não expor o token e para não reprocessar
+        window.history.replaceState({}, document.title, "/dashboard");
+      }
+
+      // 2. Verifica se existe um token (na URL ou no LocalStorage)
+      const token = localStorage.getItem('axion_token');
+      if (!token) {
+        navigate('/'); // Se não tem nada, volta pro login
+        return;
+      }
+
+      // 3. Carregar perfil do usuário logado (usando a rota /me)
       try {
-        // Buscamos na lista de usuários o nosso próprio registro
-        const response = await api.get('/api/v1/users'); 
-        // Se a API retornar uma lista, o primeiro costuma ser o logado ou filtramos
-        if (response.data && response.data.data) {
-          setCurrentUser(response.data.data[0]); 
+        const response = await api.get('/api/v1/me');
+        const userData = response.data;
+        setCurrentUser(userData);
+        
+        // Atualiza a Role no storage caso tenha mudado
+        const userRole = userData.is_admin ? 'admin' : 'user';
+        setRole(userRole);
+        localStorage.setItem('@AxionID:role', userRole);
+
+        // 4. Se for Admin, carrega a lista completa de usuários
+        if (userData.is_admin) {
+          fetchUsers();
         }
       } catch (error) {
-        console.error("Erro ao carregar perfil atual");
+        console.error("Erro ao carregar perfil atual ou token inválido");
+        handleLogout(); // Se o token falhar, desloga
       }
     };
 
-    fetchMyProfile();
-
-    // 2. Se for Admin, carrega a lista completa
-    if (role === 'admin') {
-      fetchUsers();
-    }
-  }, [role]);
+    initializeDashboard();
+  }, [searchParams]);
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
       const response = await api.get('/api/v1/users');
-      // O seu Swagger indica que o Laravel retorna um objeto com "data"
-      if (response.data && response.data.data) {
-        setUsers(response.data.data);
-      } else if (Array.isArray(response.data)) {
-        setUsers(response.data);
-      }
+      // Ajuste conforme o retorno da sua API (objeto com data ou array)
+      const data = response.data.data || response.data;
+      setUsers(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Erro ao buscar lista de usuários");
     } finally {
@@ -54,8 +72,11 @@ export default function Dashboard() {
   const handleLogout = async () => {
     try {
       await api.post('/api/v1/logout');
+    } catch (e) {
+      console.warn("Sessão já expirada no servidor");
     } finally {
       localStorage.clear();
+      delete api.defaults.headers.common['Authorization'];
       navigate('/', { replace: true });
     }
   };
@@ -63,15 +84,15 @@ export default function Dashboard() {
   return (
     <div className="dashboard-container">
       
-      {/* ALERTA DE PERFIL INCOMPLETO (Aparece no canto) */}
-      {currentUser && (currentUser.profile_completed === false || !currentUser.cpf_cnpj) && (
+      {/* ALERTA DE PERFIL INCOMPLETO */}
+      {currentUser && (currentUser.profile_completed === 0 || !currentUser.cpf_cnpj) && (
         <div className="profile-sidebar-alert animate-in">
           <div className="alert-header">
             <span className="alert-icon">⚠️</span>
             <strong>Ação Requerida</strong>
           </div>
           <p>Olá <strong>{currentUser.name}</strong>, finalize seu cadastro para validar sua identidade.</p>
-          <button onClick={() => navigate('/complete-profile')} className="btn-alert-link">
+          <button onClick={() => navigate('/register?step=2&from_google=true')} className="btn-alert-link">
             Completar agora →
           </button>
         </div>
@@ -122,7 +143,7 @@ export default function Dashboard() {
                       <tr key={user.id}>
                         <td>
                           <div className="user-td-name">
-                            <div className="avatar-small">{user.name.charAt(0)}</div>
+                            <div className="avatar-small">{(user.name || 'U').charAt(0)}</div>
                             {user.name}
                           </div>
                         </td>
