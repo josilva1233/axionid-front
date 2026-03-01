@@ -27,26 +27,26 @@ export default function Register() {
     from_google: isSocialRegistration
   });
 
-  // 3. BUSCA REFORÇADA NO CACHE DO BACKEND
-  useEffect(() => {
-    if (tempKey) {
-      console.log("Buscando cache para chave:", tempKey);
-      api.get(`/api/v1/auth/temp-data/${tempKey}`)
-        .then(res => {
-          console.log("Dados do Cache recebidos:", res.data);
-          setFormData(prev => ({
-            ...prev,
-            // Prioriza o que vem do cache, mas mantém o da URL se o cache falhar
-            name: res.data.name || prev.name,
-            email: res.data.email || prev.email,
-            google_id: res.data.google_id || prev.google_id
-          }));
-        })
-        .catch(err => {
-          console.error("Erro ao recuperar dados do cache:", err);
-        });
-    }
-  }, [tempKey]);
+useEffect(() => {
+  if (tempKey) {
+    // Busca os dados sensíveis (google_id) que estão escondidos no servidor
+    api.get(`/api/v1/auth/temp-data/${tempKey}`)
+      .then(res => {
+        console.log("DADOS RECUPERADOS COM SEGURANÇA:", res.data);
+        
+        setFormData(prev => ({
+          ...prev,
+          name: res.data.name || prev.name,
+          email: res.data.email || prev.email,
+          google_id: res.data.google_id // O ID entra aqui vindo do servidor, não da URL
+        }));
+      })
+      .catch(err => {
+        console.error("Erro: A chave expirou ou é inválida.");
+        // Opcional: alert("Sessão expirada. Tente o login novamente.");
+      });
+  }
+}, [tempKey]);
 
   // 4. ATUALIZAÇÃO DE ESTADO SEGURA
   const handleChange = (e) => {
