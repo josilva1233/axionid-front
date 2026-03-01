@@ -12,48 +12,39 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
 
-  useEffect(() => {
-    const initializeDashboard = async () => {
-      // 1. Captura o token da URL (Caso venha do redirecionamento do Google)
-      const tokenFromUrl = searchParams.get('token');
-      
-      if (tokenFromUrl) {
-        localStorage.setItem('axion_token', tokenFromUrl);
-        api.defaults.headers.common['Authorization'] = `Bearer ${tokenFromUrl}`;
-        // Limpa a URL para não expor o token e para não reprocessar
-        window.history.replaceState({}, document.title, "/dashboard");
-      }
+useEffect(() => {
+  const initialize = async () => {
+    // 1. Pega o token da URL (Google Login)
+    const tokenFromUrl = searchParams.get('token');
+    
+    if (tokenFromUrl) {
+      // SALVA COM A CHAVE NOVA
+      localStorage.setItem('@AxionID:token', tokenFromUrl);
+      api.defaults.headers.common['Authorization'] = `Bearer ${tokenFromUrl}`;
+      window.history.replaceState({}, document.title, "/dashboard");
+    }
 
-      // 2. Verifica se existe um token (na URL ou no LocalStorage)
-      const token = localStorage.getItem('axion_token');
-      if (!token) {
-        navigate('/'); // Se não tem nada, volta pro login
-        return;
-      }
+    // 2. Tenta recuperar o token (seja da URL que acabou de salvar ou do login normal)
+    const token = localStorage.getItem('@AxionID:token');
 
-      // 3. Carregar perfil do usuário logado (usando a rota /me)
-      try {
-        const response = await api.get('/api/v1/me');
-        const userData = response.data;
-        setCurrentUser(userData);
-        
-        // Atualiza a Role no storage caso tenha mudado
-        const userRole = userData.is_admin ? 'admin' : 'user';
-        setRole(userRole);
-        localStorage.setItem('@AxionID:role', userRole);
+    if (!token) {
+      navigate('/'); // Se não tem token nenhum, volta pro login
+      return;
+    }
 
-        // 4. Se for Admin, carrega a lista completa de usuários
-        if (userData.is_admin) {
-          fetchUsers();
-        }
-      } catch (error) {
-        console.error("Erro ao carregar perfil atual ou token inválido");
-        handleLogout(); // Se o token falhar, desloga
-      }
-    };
+    // 3. Agora que garantimos o token, buscamos os dados
+    try {
+      const response = await api.get('/api/v1/me');
+      setCurrentUser(response.data);
+      setRole(response.data.is_admin ? 'admin' : 'user');
+    } catch (error) {
+      // Se der erro 401 aqui, o INTERCEPTOR já vai te jogar para o '/'
+      console.error("Erro na autenticação");
+    }
+  };
 
-    initializeDashboard();
-  }, [searchParams]);
+  initialize();
+}, [searchParams, navigate]);
 
   const fetchUsers = async () => {
     setLoading(true);
