@@ -1,27 +1,47 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 export default function Register() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  // 1. CAPTURE OS DADOS DA URL
+  const tempKey = searchParams.get('t') || ''; // Chave segura do cache
+  const nameFromUrl = searchParams.get('name') || '';
+  const emailFromUrl = searchParams.get('email') || '';
+  const googleIdFromUrl = searchParams.get('google_id') || ''; 
+  const isSocialRegistration = searchParams.get('from_google') === 'true';
+
   const [loading, setLoading] = useState(false);
-  
-  // Controle de etapas: 1 = Boas-vindas, 2 = CPF, 3 = Senha
   const [step, setStep] = useState(1);
 
-  const isSocialRegistration = !!searchParams.get('from_google');
-
+  // 2. INICIALIZE O FORMULÁRIO
   const [formData, setFormData] = useState({
-    name: searchParams.get('name') || '',
-    email: searchParams.get('email') || '',
-    google_id: googleIdFromUrl(searchParams) || '',   
-  // Controle de etapas: 1 = Boas-vindas, 2 = CPF, 3 = Senha
+    name: nameFromUrl,
+    email: emailFromUrl,
+    google_id: googleIdFromUrl,
     cpf_cnpj: '',
     password: '',
     password_confirmation: '',
     from_google: isSocialRegistration
   });
+
+  // 3. BUSCA DADOS SEGUROS (Se houver chave 't')
+  useEffect(() => {
+    if (tempKey) {
+      api.get(`/api/v1/auth/temp-data/${tempKey}`)
+        .then(res => {
+          setFormData(prev => ({
+            ...prev,
+            name: res.data.name,
+            email: res.data.email,
+            google_id: res.data.google_id
+          }));
+        })
+        .catch(err => console.error("Erro ao recuperar dados temporários", err));
+    }
+  }, [tempKey]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -39,6 +59,7 @@ export default function Register() {
       if (response.data.token) {
         localStorage.setItem('axion_token', response.data.token);
         localStorage.setItem('user_data', JSON.stringify(response.data.user));
+        localStorage.setItem('@AxionID:email', response.data.user.email);
       }
 
       alert('Cadastro finalizado!');
@@ -73,8 +94,7 @@ export default function Register() {
                   name="name" 
                   value={formData.name} 
                   onChange={handleChange}
-                  /* ALTERAÇÃO AQUI: Só fica readOnly se vier do Google */
-                  readOnly={isSocialRegistration} 
+                  readOnly={isSocialRegistration && formData.name !== ''} 
                   className={isSocialRegistration ? "input-readonly" : "input-standard"} 
                   required 
                 />
@@ -87,8 +107,7 @@ export default function Register() {
                   type="email"
                   value={formData.email} 
                   onChange={handleChange}
-                  /* ALTERAÇÃO AQUI: Só fica readOnly se vier do Google */
-                  readOnly={isSocialRegistration} 
+                  readOnly={isSocialRegistration && formData.email !== ''} 
                   className={isSocialRegistration ? "input-readonly" : "input-standard"} 
                   required 
                 />
