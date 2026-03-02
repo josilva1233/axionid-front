@@ -8,13 +8,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-O Gemini disse
-Perfeito! Para que o seu Login.jsx (ou sua rota principal) reconheça esse usuário que já tem o google_id e o CPF e o mande direto para o Dashboard, o código deve ser exatamente este abaixo.
 
-Note que agora incluímos a captura do is_admin que o seu Backend está enviando.
-
-Ajuste no Login.jsx
-JavaScript
 useEffect(() => {
   const params = new URLSearchParams(window.location.search);
   const token = params.get('token');
