@@ -11,36 +11,31 @@ export default function Login() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
-    const needsCpf = params.get('needs_cpf');
-    const isAdmin = params.get('is_admin');
     
-    // Capturamos nome e e-mail vindos da URL do Google
-    const userName = params.get('name');
-    const userEmail = params.get('email');
-
     if (token) {
-      // 1. Salvamos o Token e a Role no localStorage
+      const needsCpf = params.get('needs_cpf');
+      const isAdmin = params.get('is_admin');
+      const userName = params.get('name');
+      const userEmail = params.get('email');
+
+      // 1. SALVAR DADOS IMEDIATAMENTE
       localStorage.setItem('@AxionID:token', token);
-      const userRole = isAdmin === '1' ? 'admin' : 'user';
-      localStorage.setItem('@AxionID:role', userRole);
-
-      // 2. Criamos o objeto de usuário para o estado global da aplicação
-      const userData = {
-        name: userName || 'Usuário Google',
-        email: userEmail || '',
+      localStorage.setItem('@AxionID:role', isAdmin === '1' ? 'admin' : 'user');
+      localStorage.setItem('user_data', JSON.stringify({
+        name: userName,
+        email: userEmail,
         is_admin: isAdmin === '1'
-      };
-      localStorage.setItem('user_data', JSON.stringify(userData));
+      }));
 
-      // 3. LIMPEZA DA URL (Remove os parâmetros da barra de endereços por segurança)
+      // 2. LIMPAR A URL PARA EVITAR LOOP (O "PISCA")
       window.history.replaceState({}, document.title, "/");
 
-      // 4. LOGICA DE REDIRECIONAMENTO BASEADA NOS CENÁRIOS
+      // 3. LOGICA DE REDIRECIONAMENTO DOS CENÁRIOS
       if (needsCpf === 'true') {
-        // CENÁRIO 2: Usuário novo via Google, precisa coletar CPF
+        // Cenário 2: Falta CPF
         navigate('/register', { replace: true });
       } else {
-        // CENÁRIO 1 e 3: Usuário já tem CPF no banco, login direto no Dashboard
+        // Cenário 1 e 3: Tudo ok, vai pro Dashboard
         navigate('/dashboard', { replace: true });
       }
     }
@@ -50,19 +45,14 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     try {
-      // Login via CPF/CNPJ e Senha (Manual)
       const response = await api.post('/api/v1/login', { username, password });
-      
       localStorage.setItem('@AxionID:token', response.data.token);
       localStorage.setItem('user_data', JSON.stringify(response.data.user));
-      
       const isAdmin = response.data.user.is_admin === 1 || response.data.user.is_admin === true;
       localStorage.setItem('@AxionID:role', isAdmin ? 'admin' : 'user');
-
       navigate('/dashboard', { replace: true });
     } catch (error) {
-      console.error("Erro no login manual");
-      alert("Credenciais inválidas ou erro no servidor");
+      alert("Credenciais inválidas");
     } finally {
       setLoading(false);
     }
@@ -70,50 +60,25 @@ export default function Login() {
 
   const handleGoogleLogin = () => {
     const origin = window.location.origin;
-    // URL da API que inicia o fluxo do Socialite
     window.location.href = `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
   };
 
   return (
     <div className="auth-container">
-      <div className="auth-card animate-in">
+      <div className="auth-card">
         <div className="brand"><h1>Axion<span>ID</span></h1></div>
-        <p className="subtitle">Identidade Digital Profissional</p>
-
         <form onSubmit={handleLogin} className="auth-form">
-          <input 
-            type="text" 
-            placeholder="CPF ou CNPJ" 
-            value={username} 
-            onChange={e => setUsername(e.target.value)} 
-            required 
-          />
-          <input 
-            type="password" 
-            placeholder="Senha" 
-            value={password} 
-            onChange={e => setPassword(e.target.value)} 
-            required 
-          />
+          <input type="text" placeholder="CPF ou CNPJ" value={username} onChange={e => setUsername(e.target.value)} required />
+          <input type="password" placeholder="Senha" value={password} onChange={e => setPassword(e.target.value)} required />
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? 'Autenticando...' : 'Acessar Painel'}
           </button>
-          
-          <div className="divider"><span>ou continue com</span></div>
-          
-          <button 
-            type="button" 
-            className="btn-google" 
-            onClick={handleGoogleLogin}
-          >
+          <div className="divider"><span>ou</span></div>
+          <button type="button" className="btn-google" onClick={handleGoogleLogin}>
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google" /> 
             Google Workspace
           </button>
         </form>
-
-        <div className="auth-footer">
-          <p>Ainda não tem acesso? <Link to="/register">Criar Conta AxionID</Link></p>
-        </div>
       </div>
     </div>
   );
