@@ -9,16 +9,21 @@ export default function Login() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    // Tenta capturar tanto de window.location.search quanto de window.location.hash
+    const query = window.location.search || window.location.hash.substring(window.location.hash.indexOf('?'));
+    const params = new URLSearchParams(query);
+    
     const token = params.get('token');
     
     if (token) {
+      console.log("Token detectado, iniciando autenticação...");
+      
       const needsCpf = params.get('needs_cpf');
       const isAdmin = params.get('is_admin');
       const userName = params.get('name');
       const userEmail = params.get('email');
 
-      // 1. SALVAR DADOS IMEDIATAMENTE
+      // 1. Grava tudo no LocalStorage
       localStorage.setItem('@AxionID:token', token);
       localStorage.setItem('@AxionID:role', isAdmin === '1' ? 'admin' : 'user');
       localStorage.setItem('user_data', JSON.stringify({
@@ -27,15 +32,15 @@ export default function Login() {
         is_admin: isAdmin === '1'
       }));
 
-      // 2. LIMPAR A URL PARA EVITAR LOOP (O "PISCA")
+      // 2. Limpa a URL para evitar loops
       window.history.replaceState({}, document.title, "/");
 
-      // 3. LOGICA DE REDIRECIONAMENTO DOS CENÁRIOS
+      // 3. Redirecionamento baseado nos seus requisitos
       if (needsCpf === 'true') {
-        // Cenário 2: Falta CPF
+        // Cenário 2: Novo usuário via Google (Falta CPF)
         navigate('/register', { replace: true });
       } else {
-        // Cenário 1 e 3: Tudo ok, vai pro Dashboard
+        // Cenário 1 e 3: Já tem CPF (Manual vinculado ou Antigo do Google)
         navigate('/dashboard', { replace: true });
       }
     }
