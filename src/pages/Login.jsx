@@ -14,18 +14,17 @@ export default function Login() {
     const needsCpf = params.get('needs_cpf');
     const isAdmin = params.get('is_admin');
     
-    // Capturamos também nome e e-mail que o Back envia para o Onboarding
+    // Capturamos nome e e-mail vindos da URL do Google
     const userName = params.get('name');
     const userEmail = params.get('email');
 
     if (token) {
-      // 1. Salvamos o Token e a Role
+      // 1. Salvamos o Token e a Role no localStorage
       localStorage.setItem('@AxionID:token', token);
       const userRole = isAdmin === '1' ? 'admin' : 'user';
       localStorage.setItem('@AxionID:role', userRole);
 
-      // 2. Criamos um objeto básico de usuário para o Dashboard não quebrar
-      // Isso garante que o nome apareça mesmo vindo do Google
+      // 2. Criamos o objeto de usuário para o estado global da aplicação
       const userData = {
         name: userName || 'Usuário Google',
         email: userEmail || '',
@@ -33,15 +32,15 @@ export default function Login() {
       };
       localStorage.setItem('user_data', JSON.stringify(userData));
 
-      // 3. LIMPEZA DA URL (Remove o token da barra de endereços)
+      // 3. LIMPEZA DA URL (Remove os parâmetros da barra de endereços por segurança)
       window.history.replaceState({}, document.title, "/");
 
-      // 4. LOGICA DE REDIRECIONAMENTO
+      // 4. LOGICA DE REDIRECIONAMENTO BASEADA NOS CENÁRIOS
       if (needsCpf === 'true') {
-        // Usuário logado via Google, google_id gravado, mas falta CPF
+        // CENÁRIO 2: Usuário novo via Google, precisa coletar CPF
         navigate('/register', { replace: true });
       } else {
-        // CASO B: LOGIN DIRETO (Já tem google_id e CPF no banco)
+        // CENÁRIO 1 e 3: Usuário já tem CPF no banco, login direto no Dashboard
         navigate('/dashboard', { replace: true });
       }
     }
@@ -51,7 +50,7 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     try {
-      // Login via CPF/CNPJ e Senha
+      // Login via CPF/CNPJ e Senha (Manual)
       const response = await api.post('/api/v1/login', { username, password });
       
       localStorage.setItem('@AxionID:token', response.data.token);
@@ -63,7 +62,7 @@ export default function Login() {
       navigate('/dashboard', { replace: true });
     } catch (error) {
       console.error("Erro no login manual");
-      alert("Credenciais inválidas");
+      alert("Credenciais inválidas ou erro no servidor");
     } finally {
       setLoading(false);
     }
@@ -71,7 +70,7 @@ export default function Login() {
 
   const handleGoogleLogin = () => {
     const origin = window.location.origin;
-    // URL da sua API Laravel que processa o Socialite
+    // URL da API que inicia o fluxo do Socialite
     window.location.href = `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
   };
 
