@@ -8,30 +8,38 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    const needsCpf = params.get('needs_cpf');
-    const isAdmin = params.get('is_admin');
-    const fromGoogle = params.get('from_google');
+O Gemini disse
+Perfeito! Para que o seu Login.jsx (ou sua rota principal) reconheça esse usuário que já tem o google_id e o CPF e o mande direto para o Dashboard, o código deve ser exatamente este abaixo.
 
-    // AJUSTE: Se veio do Google mas não tem token (usuário novo total)
-    if (fromGoogle === 'true' && !token) {
-      // Mandamos para o registro mas carregando os dados do Google na URL
-      navigate(`/register${window.location.search}`, { replace: true });
-      return;
-    }
+Note que agora incluímos a captura do is_admin que o seu Backend está enviando.
 
-    // Se a API retornou um token (Usuário já existe ou acaba de ser vinculado)
-    if (token) {
-      localStorage.setItem('@AxionID:token', token);
-      localStorage.setItem('@AxionID:role', isAdmin === '1' ? 'admin' : 'user');
+Ajuste no Login.jsx
+JavaScript
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  const needsCpf = params.get('needs_cpf');
+  const isAdmin = params.get('is_admin');
 
-      // Se needsCpf for true, o alerta lateral no Dashboard cuidará de avisar o usuário
-      // Mas o login já está garantido e o google_id gravado no banco!
+  if (token) {
+    // 1. Salvamos as credenciais que o Google/Backend nos deu
+    localStorage.setItem('@AxionID:token', token);
+    
+    // Define a role: admin ou user
+    const userRole = isAdmin === '1' ? 'admin' : 'user';
+    localStorage.setItem('@AxionID:role', userRole);
+
+    // 2. LOGICA DE REDIRECIONAMENTO
+    if (needsCpf === 'true') {
+      // Caso o google_id tenha sido gravado mas o CPF ainda falte
+      navigate('/register', { replace: true });
+    } else {
+      // CASO B: Usuário antigo do Google (já tem tudo no banco)
+      // Vai direto para o Dashboard sem escalas!
       navigate('/dashboard', { replace: true });
     }
-  }, [navigate]);
+  }
+}, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
