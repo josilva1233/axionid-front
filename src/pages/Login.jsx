@@ -8,39 +8,54 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-
-useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get('token');
-  const needsCpf = params.get('needs_cpf');
-  const isAdmin = params.get('is_admin');
-
-  if (token) {
-    // 1. Salvamos as credenciais que o Google/Backend nos deu
-    localStorage.setItem('@AxionID:token', token);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const needsCpf = params.get('needs_cpf');
+    const isAdmin = params.get('is_admin');
     
-    // Define a role: admin ou user
-    const userRole = isAdmin === '1' ? 'admin' : 'user';
-    localStorage.setItem('@AxionID:role', userRole);
+    // Capturamos também nome e e-mail que o Back envia para o Onboarding
+    const userName = params.get('name');
+    const userEmail = params.get('email');
 
-    // 2. LOGICA DE REDIRECIONAMENTO
-    if (needsCpf === 'true') {
-      // Caso o google_id tenha sido gravado mas o CPF ainda falte
-      navigate('/register', { replace: true });
-    } else {
-      // CASO B: Usuário antigo do Google (já tem tudo no banco)
-      // Vai direto para o Dashboard sem escalas!
-      navigate('/dashboard', { replace: true });
+    if (token) {
+      // 1. Salvamos o Token e a Role
+      localStorage.setItem('@AxionID:token', token);
+      const userRole = isAdmin === '1' ? 'admin' : 'user';
+      localStorage.setItem('@AxionID:role', userRole);
+
+      // 2. Criamos um objeto básico de usuário para o Dashboard não quebrar
+      // Isso garante que o nome apareça mesmo vindo do Google
+      const userData = {
+        name: userName || 'Usuário Google',
+        email: userEmail || '',
+        is_admin: isAdmin === '1'
+      };
+      localStorage.setItem('user_data', JSON.stringify(userData));
+
+      // 3. LIMPEZA DA URL (Remove o token da barra de endereços)
+      window.history.replaceState({}, document.title, "/");
+
+      // 4. LOGICA DE REDIRECIONAMENTO
+      if (needsCpf === 'true') {
+        // Usuário logado via Google, google_id gravado, mas falta CPF
+        navigate('/register', { replace: true });
+      } else {
+        // CASO B: LOGIN DIRETO (Já tem google_id e CPF no banco)
+        navigate('/dashboard', { replace: true });
+      }
     }
-  }
-}, [navigate]);
+  }, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
+      // Login via CPF/CNPJ e Senha
       const response = await api.post('/api/v1/login', { username, password });
+      
       localStorage.setItem('@AxionID:token', response.data.token);
+      localStorage.setItem('user_data', JSON.stringify(response.data.user));
       
       const isAdmin = response.data.user.is_admin === 1 || response.data.user.is_admin === true;
       localStorage.setItem('@AxionID:role', isAdmin ? 'admin' : 'user');
@@ -48,6 +63,7 @@ useEffect(() => {
       navigate('/dashboard', { replace: true });
     } catch (error) {
       console.error("Erro no login manual");
+      alert("Credenciais inválidas");
     } finally {
       setLoading(false);
     }
@@ -55,7 +71,7 @@ useEffect(() => {
 
   const handleGoogleLogin = () => {
     const origin = window.location.origin;
-    // Usando a URL da API conforme seu Swagger
+    // URL da sua API Laravel que processa o Socialite
     window.location.href = `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
   };
 
