@@ -3,83 +3,90 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 
 export default function Login() {
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState(''); // CPF ou CNPJ
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // ==========================================
+  // 1. Efeito para capturar o retorno do Google
+  // ==========================================
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
 
-    // 🚨 Só executa se realmente vier do Google
-    if (!token) return;
+    if (token) {
+      console.log("Token do Google detectado, processando...");
+      
+      const needsCpf = params.get('needs_cpf') === 'true';
+      const isAdmin = params.get('is_admin');
+      const userName = params.get('name');
+      const userEmail = params.get('email');
 
-    console.log("Login via Google detectado");
+      // 🔐 Armazena o token e configura o header da API IMEDIATAMENTE
+      localStorage.setItem('@AxionID:token', token);
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-    const needsCpf = params.get('needs_cpf');
-    const isAdmin = params.get('is_admin');
-    const userName = params.get('name');
-    const userEmail = params.get('email');
+      // 👤 Salva dados básicos do usuário
+      const role = isAdmin === '1' ? 'admin' : 'user';
+      localStorage.setItem('@AxionID:role', role);
+      localStorage.setItem('user_data', JSON.stringify({
+        name: userName,
+        email: userEmail,
+        is_admin: isAdmin === '1'
+      }));
 
-    // 🔐 Salva token
-    localStorage.setItem('@AxionID:token', token);
-
-    // 👤 Define role
-    const role = isAdmin === '1' ? 'admin' : 'user';
-    localStorage.setItem('@AxionID:role', role);
-
-    // 💾 Salva dados do usuário
-    localStorage.setItem('user_data', JSON.stringify({
-      name: userName,
-      email: userEmail,
-      is_admin: isAdmin === '1'
-    }));
-
-    // 🔥 Remove query string da URL
-    window.history.replaceState({}, document.title, "/");
-
-    // 🔥 Delay mínimo para evitar conflito de navegação
-    setTimeout(() => {
-      if (needsCpf === 'true') {
-        navigate('/register', { replace: true });
+      // 🔥 Lógica de Redirecionamento
+      if (needsCpf) {
+        // Se falta CPF, vai para o Register levando os params (nome, e-mail, etc)
+        navigate(`/register${window.location.search}`, { replace: true });
       } else {
+        // Perfil completo, vai direto para o dashboard
         navigate('/dashboard', { replace: true });
       }
-    }, 50);
-
+    }
   }, [navigate]);
 
+  // ==========================================
+  // 2. Handler para Login Manual (CPF/CNPJ + Senha)
+  // ==========================================
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const response = await api.post('/api/v1/login', { username, password });
+      const response = await api.post('/api/v1/login', { 
+        username, // O backend deve estar esperando 'username' ou 'cpf_cnpj'
+        password 
+      });
 
-      localStorage.setItem('@AxionID:token', response.data.token);
-      localStorage.setItem('user_data', JSON.stringify(response.data.user));
+      const { token, user } = response.data;
 
-      const isAdmin =
-        response.data.user.is_admin === 1 ||
-        response.data.user.is_admin === true;
-
+      // Persistência
+      localStorage.setItem('@AxionID:token', token);
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
+      const isAdmin = user.is_admin === 1 || user.is_admin === true;
       localStorage.setItem('@AxionID:role', isAdmin ? 'admin' : 'user');
+      localStorage.setItem('user_data', JSON.stringify(user));
 
       navigate('/dashboard', { replace: true });
 
     } catch (error) {
       console.error("Erro no login manual:", error);
-      alert("Credenciais inválidas. Verifique seu CPF/CNPJ e senha.");
+      alert(error.response?.data?.message || "Credenciais inválidas.");
     } finally {
       setLoading(false);
     }
   };
 
+  // ==========================================
+  // 3. Redirecionamento para o Google
+  // ==========================================
   const handleGoogleLogin = () => {
     const origin = window.location.origin;
-    window.location.href =
-      `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
+    // URL do seu backend Laravel
+    window.location.href = `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
   };
 
   return (
@@ -91,21 +98,25 @@ export default function Login() {
         <p className="subtitle">Identidade Digital Profissional</p>
 
         <form onSubmit={handleLogin} className="auth-form">
-          <input
-            type="text"
-            placeholder="CPF ou CNPJ"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
-            required
-          />
+          <div className="input-group">
+            <input
+              type="text"
+              placeholder="CPF ou CNPJ"
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+              required
+            />
+          </div>
 
-          <input
-            type="password"
-            placeholder="Senha"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-          />
+          <div className="input-group">
+            <input
+              type="password"
+              placeholder="Senha"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? 'Autenticando...' : 'Acessar Painel'}
