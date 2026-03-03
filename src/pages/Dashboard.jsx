@@ -4,46 +4,73 @@ import api from '../services/api';
 
 export default function Dashboard() {
   const navigate = useNavigate();
+
   const [role] = useState(localStorage.getItem('@AxionID:role'));
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  
-  // Estado para o usuário logado
   const [currentUser, setCurrentUser] = useState(null);
 
+  // =============================
+  // 🔐 1️⃣ Controle de Token
+  // =============================
   useEffect(() => {
-    // 1. Carregar perfil do usuário logado (para o Alerta de CPF)
-    const fetchMyProfile = async () => {
-      try {
-        // Buscamos na lista de usuários o nosso próprio registro
-        const response = await api.get('/api/v1/users'); 
-        // Se a API retornar uma lista, o primeiro costuma ser o logado ou filtramos
-        if (response.data && response.data.data) {
-          setCurrentUser(response.data.data[0]); 
-        }
-      } catch (error) {
-        console.error("Erro ao carregar perfil atual");
-      }
-    };
+    const params = new URLSearchParams(window.location.search);
+    const tokenFromUrl = params.get('token');
 
+    if (tokenFromUrl) {
+      localStorage.setItem('@AxionID:token', tokenFromUrl);
+      api.defaults.headers.common['Authorization'] = `Bearer ${tokenFromUrl}`;
+
+      // Remove token da URL por segurança
+      window.history.replaceState({}, document.title, "/dashboard");
+    }
+
+    const savedToken = localStorage.getItem('@AxionID:token');
+
+    if (!savedToken) {
+      navigate('/login', { replace: true });
+    } else {
+      api.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
+    }
+
+  }, [navigate]);
+
+  // =============================
+  // 👤 2️⃣ Carrega dados
+  // =============================
+  useEffect(() => {
     fetchMyProfile();
 
-    // 2. Se for Admin, carrega a lista completa
     if (role === 'admin') {
       fetchUsers();
     }
   }, [role]);
 
-  const fetchUsers = async () => {
-    setLoading(true);
+  const fetchMyProfile = async () => {
     try {
       const response = await api.get('/api/v1/users');
-      // O seu Swagger indica que o Laravel retorna um objeto com "data"
+
+      if (response.data && response.data.data) {
+        setCurrentUser(response.data.data[0]);
+      }
+
+    } catch (error) {
+      console.error("Erro ao carregar perfil atual");
+    }
+  };
+
+  const fetchUsers = async () => {
+    setLoading(true);
+
+    try {
+      const response = await api.get('/api/v1/users');
+
       if (response.data && response.data.data) {
         setUsers(response.data.data);
       } else if (Array.isArray(response.data)) {
         setUsers(response.data);
       }
+
     } catch (error) {
       console.error("Erro ao buscar lista de usuários");
     } finally {
@@ -62,16 +89,21 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      
-      {/* ALERTA DE PERFIL INCOMPLETO (Aparece no canto) */}
+
+      {/* ⚠️ ALERTA DE PERFIL INCOMPLETO */}
       {currentUser && (currentUser.profile_completed === false || !currentUser.cpf_cnpj) && (
         <div className="profile-sidebar-alert animate-in">
           <div className="alert-header">
             <span className="alert-icon">⚠️</span>
             <strong>Ação Requerida</strong>
           </div>
-          <p>Olá <strong>{currentUser.name}</strong>, finalize seu cadastro para validar sua identidade.</p>
-          <button onClick={() => navigate('/complete-profile')} className="btn-alert-link">
+          <p>
+            Olá <strong>{currentUser.name}</strong>, finalize seu cadastro para validar sua identidade.
+          </p>
+          <button
+            onClick={() => navigate('/complete-profile')}
+            className="btn-alert-link"
+          >
             Completar agora →
           </button>
         </div>
@@ -81,7 +113,7 @@ export default function Dashboard() {
         <div className="brand">
           <h1>Axion<span>ID</span></h1>
         </div>
-        
+
         <div className="user-nav">
           <div className="user-info">
             <span className="user-status">Online</span>
@@ -122,19 +154,33 @@ export default function Dashboard() {
                       <tr key={user.id}>
                         <td>
                           <div className="user-td-name">
-                            <div className="avatar-small">{user.name.charAt(0)}</div>
+                            <div className="avatar-small">
+                              {user.name.charAt(0)}
+                            </div>
                             {user.name}
                           </div>
                         </td>
                         <td>{user.email}</td>
-                        <td>{user.cpf_cnpj || <small style={{color:'#666'}}>Não vinculado</small>}</td>
                         <td>
-                          <span className={`status-badge ${user.profile_completed ? 'complete' : 'pending'}`}>
+                          {user.cpf_cnpj || (
+                            <small style={{ color: '#666' }}>
+                              Não vinculado
+                            </small>
+                          )}
+                        </td>
+                        <td>
+                          <span
+                            className={`status-badge ${
+                              user.profile_completed ? 'complete' : 'pending'
+                            }`}
+                          >
                             {user.profile_completed ? 'Validado' : 'Pendente'}
                           </span>
                         </td>
                         <td>
-                          <button className="btn-action-view">Ver Detalhes</button>
+                          <button className="btn-action-view">
+                            Ver Detalhes
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -147,12 +193,17 @@ export default function Dashboard() {
           <div className="content-card">
             <h3>Área Operacional</h3>
             <div className="welcome-box">
-               <p>Bem-vindo, <strong>{currentUser?.name || 'Usuário'}</strong>.</p>
-               <p>Seu nível de acesso permite a visualização de seus dados e protocolos.</p>
+              <p>
+                Bem-vindo, <strong>{currentUser?.name || 'Usuário'}</strong>.
+              </p>
+              <p>
+                Seu nível de acesso permite a visualização de seus dados e protocolos.
+              </p>
             </div>
           </div>
         )}
       </main>
+
     </div>
   );
 }
