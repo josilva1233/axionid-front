@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
@@ -6,42 +6,43 @@ export default function Register() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // 1. Memoizamos a verificação social para evitar re-renderizações infinitas
-  const socialData = useMemo(() => ({
-    name: searchParams.get('name') || '',
-    email: searchParams.get('email') || '',
-    token: searchParams.get('token') || '',
-    isSocial: !!searchParams.get('token')
-  }), [searchParams]);
+  // 1. Extração imediata dos dados da URL para evitar delays de renderização
+  const nameFromUrl = searchParams.get('name') || '';
+  const emailFromUrl = searchParams.get('email') || '';
+  const tokenFromUrl = searchParams.get('token') || '';
+  const isSocial = !!tokenFromUrl;
 
+  // 2. Estados inicializados com base na presença do Token (Google)
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState(1);
+  
+  // Se for Google, o 'step' já começa em 2 (Identificação/CPF)
+  const [step, setStep] = useState(isSocial ? 2 : 1);
 
-  // 2. O estado inicial já nasce com os dados da URL se existirem
   const [formData, setFormData] = useState({
-    name: socialData.name,
-    email: socialData.email,
+    name: nameFromUrl,
+    email: emailFromUrl,
     cpf_cnpj: '',
     password: '',
     password_confirmation: '',
   });
 
-  // 3. Efeito para configurar o Token e garantir que os campos preencham
+  // 3. Efeito para travar o Token no sistema assim que o componente monta
   useEffect(() => {
-    if (socialData.isSocial) {
-      console.log("Login via Google detectado. Travando campos de identificação.");
+    if (isSocial) {
+      console.log("Login via Google detectado. Nome:", nameFromUrl);
       
-      // Forçamos o preenchimento caso o estado inicial tenha falhado por delay da URL
+      // Persiste o token para as chamadas de API
+      localStorage.setItem('@AxionID:token', tokenFromUrl);
+      api.defaults.headers.common['Authorization'] = `Bearer ${tokenFromUrl}`;
+
+      // Garante que o formData tenha os dados da URL (caso o estado inicial tenha falhado)
       setFormData(prev => ({
         ...prev,
-        name: socialData.name,
-        email: socialData.email
+        name: nameFromUrl,
+        email: emailFromUrl
       }));
-
-      localStorage.setItem('@AxionID:token', socialData.token);
-      api.defaults.headers.common['Authorization'] = `Bearer ${socialData.token}`;
     }
-  }, [socialData]);
+  }, [isSocial, nameFromUrl, emailFromUrl, tokenFromUrl]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -53,8 +54,8 @@ export default function Register() {
     setLoading(true);
 
     try {
-      if (socialData.isSocial) {
-        // UPDATE para usuários vindos do Google
+      if (isSocial) {
+        // Fluxo Google: O usuário já existe, apenas completamos os dados
         await api.post('/api/v1/complete-profile', {
           cpf_cnpj: formData.cpf_cnpj,
           password: formData.password,
@@ -62,7 +63,7 @@ export default function Register() {
         });
         alert('Cadastro via Google finalizado!');
       } else {
-        // CREATE para registro manual
+        // Fluxo Manual: Criação do zero
         const response = await api.post('/api/v1/register', formData);
         localStorage.setItem('@AxionID:token', response.data.token);
         alert('Cadastro manual realizado com sucesso!');
@@ -70,7 +71,7 @@ export default function Register() {
 
       navigate('/dashboard', { replace: true });
     } catch (error) {
-      const errorMsg = error.response?.data?.message || 'Erro ao processar. Verifique os dados.';
+      const errorMsg = error.response?.data?.message || 'Erro ao processar dados.';
       alert(errorMsg);
     } finally {
       setLoading(false);
@@ -80,53 +81,37 @@ export default function Register() {
   return (
     <div className="auth-container">
       <div className="auth-card onboarding-card">
+        {/* Barra de Progresso - Mostra 66% se for Google (já no step 2) */}
         <div className="progress-bar">
           <div className="progress-fill" style={{ width: `${(step / 3) * 100}%` }}></div>
         </div>
 
         <form onSubmit={handleRegister} className="auth-form">
           
-          {/* STEP 1: NOME E EMAIL */}
+          {/* STEP 1: SÓ APARECE NO REGISTRO MANUAL */}
           {step === 1 && (
             <div className="step-content animate-in">
-              <h3>{socialData.isSocial ? 'Verifique seus dados' : 'Crie sua conta'}</h3>
-              
+              <h3>Crie sua conta</h3>
               <div className="input-group">
                 <label>Nome Completo</label>
-                <input 
-                  name="name" 
-                  value={formData.name} 
-                  onChange={handleChange}
-                  readOnly={socialData.isSocial} // Bloqueia edição se for Google
-                  className={socialData.isSocial ? 'input-blocked' : ''}
-                  required 
-                />
+                <input name="name" value={formData.name} onChange={handleChange} required />
               </div>
-
               <div className="input-group">
                 <label>E-mail</label>
-                <input 
-                  name="email" 
-                  type="email" 
-                  value={formData.email} 
-                  onChange={handleChange}
-                  readOnly={socialData.isSocial} // Bloqueia edição se for Google
-                  className={socialData.isSocial ? 'input-blocked' : ''}
-                  required 
-                />
+                <input name="email" type="email" value={formData.email} onChange={handleChange} required />
               </div>
-
               <button type="button" className="btn-primary" onClick={() => setStep(2)}>
-                {socialData.isSocial ? 'Confirmar e Continuar' : 'Próximo Passo'}
+                Próximo Passo
               </button>
             </div>
           )}
 
-          {/* STEP 2: CPF/CNPJ */}
+          {/* STEP 2: IDENTIFICAÇÃO (Ponto de entrada do Google) */}
           {step === 2 && (
             <div className="step-content animate-in">
-              <h3>Identificação</h3>
-              <p>Olá {formData.name.split(' ')[0]}, informe seu documento:</p>
+              <h3>Olá, {formData.name ? formData.name.split(' ')[0] : 'usuário'}!</h3>
+              <p>Precisamos do seu CPF ou CNPJ para continuar.</p>
+              
               <div className="input-group">
                 <label>CPF ou CNPJ</label>
                 <input 
@@ -138,8 +123,9 @@ export default function Register() {
                   required 
                 />
               </div>
+              
               <div className="btn-group">
-                {!socialData.isSocial && (
+                {!isSocial && (
                   <button type="button" className="btn-secondary" onClick={() => setStep(1)}>Voltar</button>
                 )}
                 <button type="button" className="btn-primary" onClick={() => setStep(3)} disabled={!formData.cpf_cnpj}>
@@ -153,6 +139,7 @@ export default function Register() {
           {step === 3 && (
             <div className="step-content animate-in">
               <h3>Segurança</h3>
+              <p>Defina sua senha de acesso ao AxionID.</p>
               <div className="input-group">
                 <label>Senha</label>
                 <input name="password" type="password" value={formData.password} onChange={handleChange} required />
@@ -171,16 +158,6 @@ export default function Register() {
           )}
         </form>
       </div>
-
-      {/* Adicione este estilo simples ao seu arquivo CSS para feedback visual */}
-      <style>{`
-        .input-blocked {
-          background-color: #1a1a1a !important;
-          color: #888 !important;
-          cursor: not-allowed;
-          border: 1px solid #333 !important;
-        }
-      `}</style>
     </div>
   );
 }
