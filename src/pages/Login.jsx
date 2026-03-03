@@ -11,41 +11,38 @@ export default function Login() {
   // ==========================================
   // 1. Efeito para capturar o retorno do Google
   // ==========================================
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
 
-    if (token) {
-      console.log("Token do Google detectado, processando...");
-      
-      const needsCpf = params.get('needs_cpf') === 'true';
-      const isAdmin = params.get('is_admin');
-      const userName = params.get('name');
-      const userEmail = params.get('email');
+  if (token) {
+    const needsCpf = params.get('needs_cpf') === 'true';
+    const isAdmin = params.get('is_admin');
 
-      // 🔐 Armazena o token e configura o header da API IMEDIATAMENTE
-      localStorage.setItem('@AxionID:token', token);
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    // 1. Persistência
+    localStorage.setItem('@AxionID:token', token);
+    
+    // 2. 🔥 CRUCIAL: Configura a instância da API imediatamente
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-      // 👤 Salva dados básicos do usuário
-      const role = isAdmin === '1' ? 'admin' : 'user';
-      localStorage.setItem('@AxionID:role', role);
-      localStorage.setItem('user_data', JSON.stringify({
-        name: userName,
-        email: userEmail,
-        is_admin: isAdmin === '1'
-      }));
+    const role = isAdmin === '1' ? 'admin' : 'user';
+    localStorage.setItem('@AxionID:role', role);
+    localStorage.setItem('user_data', JSON.stringify({
+      name: params.get('name'),
+      email: params.get('email'),
+      is_admin: isAdmin === '1'
+    }));
 
-      // 🔥 Lógica de Redirecionamento
-      if (needsCpf) {
-        // Se falta CPF, vai para o Register levando os params (nome, e-mail, etc)
-        navigate(`/register${window.location.search}`, { replace: true });
-      } else {
-        // Perfil completo, vai direto para o dashboard
-        navigate('/dashboard', { replace: true });
-      }
+    // 3. Limpa a URL (remove o token da barra de endereços por segurança)
+    window.history.replaceState({}, document.title, window.location.pathname);
+
+    if (needsCpf) {
+      navigate(`/register${window.location.search}`, { replace: true });
+    } else {
+      navigate('/dashboard', { replace: true });
     }
-  }, [navigate]);
+  }
+}, [navigate]);
 
   // ==========================================
   // 2. Handler para Login Manual (CPF/CNPJ + Senha)
