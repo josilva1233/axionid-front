@@ -6,24 +6,16 @@ export default function Register() {
   const navigate = useNavigate();
 
   // =============================
-  // 1️⃣ Extração dos parâmetros da URL
+  // 1️⃣ Extração dos parâmetros
   // =============================
   const params = new URLSearchParams(window.location.search);
 
   const nameFromUrl = params.get('name') || '';
   const emailFromUrl = params.get('email') || '';
   const tokenFromUrl = params.get('token') || '';
-  const firstLoginFromUrl = params.get('firstLogin');
+  const needsCpfFromUrl = params.get('needs_cpf') === 'true';
 
-  const isSocial = !!tokenFromUrl;
-
-  // 🔎 DEBUG
-  console.log({
-    nameFromUrl,
-    emailFromUrl,
-    tokenFromUrl,
-    firstLoginFromUrl
-  });
+  const isSocial = !!tokenFromUrl && needsCpfFromUrl;
 
   // =============================
   // 2️⃣ Controle de Step
@@ -40,16 +32,23 @@ export default function Register() {
   });
 
   // =============================
-  // 3️⃣ Configuração inicial
+  // 3️⃣ Proteção automática
   // =============================
   useEffect(() => {
-    if (isSocial) {
-      console.log("Login via Google detectado.");
+    // Se veio token mas NÃO precisa CPF → manda direto pro dashboard
+    if (tokenFromUrl && !needsCpfFromUrl) {
+      localStorage.setItem('@AxionID:token', tokenFromUrl);
+      api.defaults.headers.common['Authorization'] = `Bearer ${tokenFromUrl}`;
+      navigate('/dashboard', { replace: true });
+    }
 
+    // Se precisa completar perfil
+    if (isSocial) {
       localStorage.setItem('@AxionID:token', tokenFromUrl);
       api.defaults.headers.common['Authorization'] = `Bearer ${tokenFromUrl}`;
     }
-  }, [isSocial, tokenFromUrl]);
+
+  }, [tokenFromUrl, needsCpfFromUrl, isSocial, navigate]);
 
   // =============================
   // 4️⃣ Handlers
@@ -73,6 +72,7 @@ export default function Register() {
       } else {
         const response = await api.post('/api/v1/register', formData);
         localStorage.setItem('@AxionID:token', response.data.token);
+        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
       }
 
       navigate('/dashboard', { replace: true });
@@ -92,7 +92,7 @@ export default function Register() {
       <div className="auth-card onboarding-card">
         <form onSubmit={handleRegister} className="auth-form">
 
-          {/* STEP 1 */}
+          {/* STEP 1 - Cadastro normal */}
           {step === 1 && !isSocial && (
             <div className="step-content animate-in">
               <h3>Crie sua conta</h3>
@@ -103,7 +103,6 @@ export default function Register() {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="Seu nome"
                   required
                 />
               </div>
@@ -115,7 +114,6 @@ export default function Register() {
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="seu@email.com"
                   required
                 />
               </div>
@@ -125,30 +123,28 @@ export default function Register() {
                 className="btn-primary"
                 onClick={() => setStep(2)}
               >
-                Próximo Passo
+                Próximo
               </button>
             </div>
           )}
 
-          {/* STEP 2 */}
+          {/* STEP 2 - CPF */}
           {step === 2 && (
             <div className="step-content animate-in">
-              <h3 style={{ fontSize: '24px', fontWeight: 'bold', textAlign: 'center' }}>
+              <h3 style={{ textAlign: 'center' }}>
                 Olá, {formData.name ? formData.name.split(' ')[0] : 'Seja bem-vindo'}!
               </h3>
 
               <p style={{ textAlign: 'center', marginBottom: '20px' }}>
-                Precisamos do seu CPF ou CNPJ para continuar.
+                Precisamos do seu CPF ou CNPJ.
               </p>
 
               <div className="input-group">
                 <label>CPF ou CNPJ</label>
                 <input
                   name="cpf_cnpj"
-                  placeholder="Apenas números"
                   value={formData.cpf_cnpj}
                   onChange={handleChange}
-                  autoFocus
                   required
                 />
               </div>
@@ -176,11 +172,10 @@ export default function Register() {
             </div>
           )}
 
-          {/* STEP 3 */}
+          {/* STEP 3 - Senha */}
           {step === 3 && (
             <div className="step-content animate-in">
-              <h3>Segurança</h3>
-              <p>Defina sua senha de acesso.</p>
+              <h3>Defina sua senha</h3>
 
               <div className="input-group">
                 <label>Senha</label>
@@ -218,7 +213,7 @@ export default function Register() {
                   className="btn-primary"
                   disabled={loading}
                 >
-                  {loading ? 'Finalizando...' : 'Concluir Registro'}
+                  {loading ? 'Finalizando...' : 'Concluir'}
                 </button>
               </div>
             </div>
