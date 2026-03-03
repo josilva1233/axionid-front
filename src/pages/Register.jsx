@@ -13,10 +13,10 @@ export default function Register() {
   const isSocialRegistration = !!tokenFromUrl;
 
   const [loading, setLoading] = useState(false);
-  // Se vier do google, pula para o Step 2 (CPF)
-  const [step, setStep] = useState(isSocialRegistration ? 2 : 1);
+  // Se for Google, mantemos no step 1 para ele confirmar os dados antes do CPF
+  const [step, setStep] = useState(1);
 
-  // Estado inicial já tenta pegar o que veio da URL
+  // Estado inicial
   const [formData, setFormData] = useState({
     name: nameFromUrl,
     email: emailFromUrl,
@@ -25,23 +25,23 @@ export default function Register() {
     password_confirmation: '',
   });
 
-  // 2. Efeito para garantir preenchimento e configurar Token
+  // 2. Efeito para Sincronização e Configuração de Token
   useEffect(() => {
-    if (nameFromUrl || emailFromUrl) {
+    if (isSocialRegistration) {
+      console.log("Login via Google detectado. Configurando ambiente...");
+      
+      // Garante que o estado tenha os dados da URL
       setFormData(prev => ({
         ...prev,
         name: nameFromUrl,
         email: emailFromUrl
       }));
-    }
-    
-    if (tokenFromUrl) {
-      // Salva com a chave correta que o seu api.js utiliza
+
+      // Salva o token para o interceptor do api.js funcionar
       localStorage.setItem('@AxionID:token', tokenFromUrl);
-      // Configura o cabeçalho imediatamente para a próxima requisição
       api.defaults.headers.common['Authorization'] = `Bearer ${tokenFromUrl}`;
     }
-  }, [nameFromUrl, emailFromUrl, tokenFromUrl]);
+  }, [isSocialRegistration, nameFromUrl, emailFromUrl, tokenFromUrl]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -51,7 +51,7 @@ export default function Register() {
   const handleNextStep = () => setStep(prev => prev + 1);
   const handlePrevStep = () => setStep(prev => prev - 1);
 
-  // 3. Finalização do Cadastro Corrigida
+  // 3. Finalização do Cadastro (Create ou Update)
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -59,24 +59,18 @@ export default function Register() {
     const token = localStorage.getItem('@AxionID:token');
 
     try {
-      // Se detectarmos que é social ou temos token, usamos UPDATE em vez de CREATE
       if (isSocialRegistration || token) {
-        console.log("Fluxo Social: Atualizando perfil existente...");
-        
+        // Fluxo Google: O usuário já existe, vamos apenas completar (Update)
         await api.post('/api/v1/complete-profile', {
           cpf_cnpj: formData.cpf_cnpj,
           password: formData.password,
           password_confirmation: formData.password_confirmation
         });
-
-        alert('Perfil finalizado com sucesso!');
+        alert('Cadastro via Google finalizado!');
       } else {
-        // Registro manual padrão
-        console.log("Fluxo Manual: Criando novo usuário...");
-        
+        // Fluxo Manual: Criação do zero (Post)
         const response = await api.post('/api/v1/register', formData);
         localStorage.setItem('@AxionID:token', response.data.token);
-        
         alert('Cadastro realizado com sucesso!');
       }
 
@@ -84,9 +78,7 @@ export default function Register() {
 
     } catch (error) {
       console.error("Erro no registro:", error.response?.data);
-      
       if (error.response?.status === 422) {
-        // Aqui o erro de "Email already taken" não deve mais ocorrer no fluxo Google
         const messages = error.response.data.errors;
         alert("Erro de validação: " + Object.values(messages).flat().join(", "));
       } else {
@@ -100,23 +92,24 @@ export default function Register() {
   return (
     <div className="auth-container">
       <div className="auth-card onboarding-card">
-        {/* Barra de Progresso */}
         <div className="progress-bar">
           <div className="progress-fill" style={{ width: `${(step / 3) * 100}%` }}></div>
         </div>
 
         <form onSubmit={handleRegister} className="auth-form">
           
-          {/* STEP 1: NOME E EMAIL (Apenas fluxo manual) */}
+          {/* STEP 1: DADOS BÁSICOS (Bloqueados se for Google) */}
           {step === 1 && (
             <div className="step-content animate-in">
-              <h3>Crie sua conta</h3>
+              <h3>{isSocialRegistration ? 'Confirme seus dados' : 'Crie sua conta'}</h3>
               <div className="input-group">
                 <label>Nome Completo</label>
                 <input 
                   name="name" 
                   value={formData.name} 
                   onChange={handleChange} 
+                  readOnly={isSocialRegistration}
+                  className={isSocialRegistration ? 'input-readonly' : ''}
                   placeholder="Seu nome"
                   required 
                 />
@@ -128,20 +121,23 @@ export default function Register() {
                   type="email" 
                   value={formData.email} 
                   onChange={handleChange} 
+                  readOnly={isSocialRegistration}
+                  className={isSocialRegistration ? 'input-readonly' : ''}
                   placeholder="seu@email.com"
                   required 
                 />
               </div>
-              <button type="button" className="btn-primary" onClick={handleNextStep}>Próximo Passo</button>
+              <button type="button" className="btn-primary" onClick={handleNextStep}>
+                {isSocialRegistration ? 'Dados corretos, prosseguir' : 'Próximo Passo'}
+              </button>
             </div>
           )}
 
-          {/* STEP 2: CPF/CNPJ (Início do fluxo Google) */}
+          {/* STEP 2: CPF/CNPJ */}
           {step === 2 && (
             <div className="step-content animate-in">
-              <h3>Olá, {formData.name ? formData.name.split(' ')[0] : 'seja bem-vindo'}!</h3>
-              <p>Confirme seu e-mail: <strong>{formData.email}</strong></p>
-              <p>Agora, informe seu documento para continuar.</p>
+              <h3>{isSocialRegistration ? `Olá, ${formData.name.split(' ')[0]}` : 'Identificação'}</h3>
+              <p>Precisamos do seu documento para continuar.</p>
               
               <div className="input-group">
                 <label>CPF ou CNPJ</label>
@@ -156,9 +152,7 @@ export default function Register() {
               </div>
               
               <div className="btn-group">
-                {!isSocialRegistration && (
-                  <button type="button" className="btn-secondary" onClick={handlePrevStep}>Voltar</button>
-                )}
+                <button type="button" className="btn-secondary" onClick={handlePrevStep}>Voltar</button>
                 <button type="button" className="btn-primary" onClick={handleNextStep} disabled={!formData.cpf_cnpj}>
                   Avançar
                 </button>
@@ -170,7 +164,7 @@ export default function Register() {
           {step === 3 && (
             <div className="step-content animate-in">
               <h3>Defina sua senha</h3>
-              <p>Sua segurança é nossa prioridade.</p>
+              <p>Último passo para acessar o AxionID.</p>
               <div className="input-group">
                 <label>Senha</label>
                 <input name="password" type="password" value={formData.password} onChange={handleChange} required />
