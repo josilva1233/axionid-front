@@ -10,25 +10,30 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
 
-  // =============================
-  // 🔐 1️⃣ Controle de Token
-  // =============================
 useEffect(() => {
   const params = new URLSearchParams(window.location.search);
-  const tokenFromUrl = params.get('token');
 
-  // 🔵 Se veio token pela URL (login Google)
+  const tokenFromUrl = params.get('token');
+  const isAdminFromUrl = params.get('is_admin');
+
+  // 🔵 Se veio do Google
   if (tokenFromUrl) {
     localStorage.setItem('@AxionID:token', tokenFromUrl);
+
+    if (isAdminFromUrl !== null) {
+      localStorage.setItem(
+        '@AxionID:role',
+        isAdminFromUrl === '1' ? 'admin' : 'operacional'
+      );
+    }
+
     api.defaults.headers.common['Authorization'] = `Bearer ${tokenFromUrl}`;
 
-    // Remove token da URL
     window.history.replaceState({}, document.title, "/dashboard");
 
-    return; // 🚨 IMPORTANTE: para aqui e NÃO executa o resto
+    return;
   }
 
-  // 🔴 Se não veio token, verifica se já existe salvo
   const savedToken = localStorage.getItem('@AxionID:token');
 
   if (!savedToken) {
@@ -38,6 +43,7 @@ useEffect(() => {
   }
 
 }, [navigate]);
+
 
 
   // =============================
