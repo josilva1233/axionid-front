@@ -6,16 +6,17 @@ export default function Register() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // Captura inicial dos dados da URL
+  // 1. Captura inicial dos dados da URL
   const nameFromUrl = searchParams.get('name') || '';
   const emailFromUrl = searchParams.get('email') || '';
   const tokenFromUrl = searchParams.get('token') || '';
   const isSocialRegistration = !!tokenFromUrl;
 
   const [loading, setLoading] = useState(false);
-  // Se vier do google (isSocialRegistration), pula para o Step 2 (CPF)
+  // Se vier do google, pula para o Step 2 (CPF)
   const [step, setStep] = useState(isSocialRegistration ? 2 : 1);
 
+  // Estado inicial já tenta pegar o que veio da URL
   const [formData, setFormData] = useState({
     name: nameFromUrl,
     email: emailFromUrl,
@@ -24,7 +25,7 @@ export default function Register() {
     password_confirmation: '',
   });
 
-  // Sincroniza o formData se os parâmetros da URL demorarem a carregar
+  // 2. Efeito para garantir preenchimento e configurar Token
   useEffect(() => {
     if (nameFromUrl || emailFromUrl) {
       setFormData(prev => ({
@@ -35,7 +36,9 @@ export default function Register() {
     }
     
     if (tokenFromUrl) {
+      // Salva com a chave correta que o seu api.js utiliza
       localStorage.setItem('@AxionID:token', tokenFromUrl);
+      // Configura o cabeçalho imediatamente para a próxima requisição
       api.defaults.headers.common['Authorization'] = `Bearer ${tokenFromUrl}`;
     }
   }, [nameFromUrl, emailFromUrl, tokenFromUrl]);
@@ -48,6 +51,7 @@ export default function Register() {
   const handleNextStep = () => setStep(prev => prev + 1);
   const handlePrevStep = () => setStep(prev => prev - 1);
 
+  // 3. Finalização do Cadastro Corrigida
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -55,31 +59,38 @@ export default function Register() {
     const token = localStorage.getItem('@AxionID:token');
 
     try {
-      // Se é registro social ou já possuímos um token, usamos UPDATE (complete-profile)
+      // Se detectarmos que é social ou temos token, usamos UPDATE em vez de CREATE
       if (isSocialRegistration || token) {
-        console.log("Executando UPDATE (complete-profile)...");
+        console.log("Fluxo Social: Atualizando perfil existente...");
+        
         await api.post('/api/v1/complete-profile', {
           cpf_cnpj: formData.cpf_cnpj,
           password: formData.password,
           password_confirmation: formData.password_confirmation
         });
-        alert('Cadastro via Google finalizado!');
+
+        alert('Perfil finalizado com sucesso!');
       } else {
-        // Registro manual do zero
-        console.log("Executando CREATE (register)...");
+        // Registro manual padrão
+        console.log("Fluxo Manual: Criando novo usuário...");
+        
         const response = await api.post('/api/v1/register', formData);
         localStorage.setItem('@AxionID:token', response.data.token);
-        alert('Conta criada com sucesso!');
+        
+        alert('Cadastro realizado com sucesso!');
       }
 
       navigate('/dashboard', { replace: true });
+
     } catch (error) {
-      console.error("Erro no processo:", error.response?.data);
-      if (error.response && error.response.status === 422) {
+      console.error("Erro no registro:", error.response?.data);
+      
+      if (error.response?.status === 422) {
+        // Aqui o erro de "Email already taken" não deve mais ocorrer no fluxo Google
         const messages = error.response.data.errors;
         alert("Erro de validação: " + Object.values(messages).flat().join(", "));
       } else {
-        alert(error.response?.data?.message || "Erro ao processar cadastro.");
+        alert(error.response?.data?.message || "Ocorreu um erro inesperado.");
       }
     } finally {
       setLoading(false);
@@ -89,45 +100,49 @@ export default function Register() {
   return (
     <div className="auth-container">
       <div className="auth-card onboarding-card">
+        {/* Barra de Progresso */}
         <div className="progress-bar">
           <div className="progress-fill" style={{ width: `${(step / 3) * 100}%` }}></div>
         </div>
 
         <form onSubmit={handleRegister} className="auth-form">
-          {/* STEP 1: DADOS BÁSICOS (Sempre visível no manual, oculto no social por iniciar no step 2) */}
+          
+          {/* STEP 1: NOME E EMAIL (Apenas fluxo manual) */}
           {step === 1 && (
             <div className="step-content animate-in">
               <h3>Crie sua conta</h3>
               <div className="input-group">
                 <label>Nome Completo</label>
                 <input 
-                    name="name" 
-                    value={formData.name} 
-                    onChange={handleChange} 
-                    required 
+                  name="name" 
+                  value={formData.name} 
+                  onChange={handleChange} 
+                  placeholder="Seu nome"
+                  required 
                 />
               </div>
               <div className="input-group">
                 <label>E-mail</label>
                 <input 
-                    name="email" 
-                    type="email" 
-                    value={formData.email} 
-                    onChange={handleChange} 
-                    required 
+                  name="email" 
+                  type="email" 
+                  value={formData.email} 
+                  onChange={handleChange} 
+                  placeholder="seu@email.com"
+                  required 
                 />
               </div>
               <button type="button" className="btn-primary" onClick={handleNextStep}>Próximo Passo</button>
             </div>
           )}
 
-          {/* STEP 2: IDENTIFICAÇÃO (Aqui o usuário Google começa) */}
+          {/* STEP 2: CPF/CNPJ (Início do fluxo Google) */}
           {step === 2 && (
             <div className="step-content animate-in">
-              <h3>Olá, {formData.name ? formData.name.split(' ')[0] : 'usuário'}</h3>
-              <p>Precisamos do seu CPF ou CNPJ para continuar.</p>
+              <h3>Olá, {formData.name ? formData.name.split(' ')[0] : 'seja bem-vindo'}!</h3>
+              <p>Confirme seu e-mail: <strong>{formData.email}</strong></p>
+              <p>Agora, informe seu documento para continuar.</p>
               
-              {/* Campos Nome/Email ocultos mas presentes no state */}
               <div className="input-group">
                 <label>CPF ou CNPJ</label>
                 <input 
@@ -139,6 +154,7 @@ export default function Register() {
                   required 
                 />
               </div>
+              
               <div className="btn-group">
                 {!isSocialRegistration && (
                   <button type="button" className="btn-secondary" onClick={handlePrevStep}>Voltar</button>
@@ -153,8 +169,8 @@ export default function Register() {
           {/* STEP 3: SENHA */}
           {step === 3 && (
             <div className="step-content animate-in">
-              <h3>Segurança</h3>
-              <p>Defina sua senha de acesso.</p>
+              <h3>Defina sua senha</h3>
+              <p>Sua segurança é nossa prioridade.</p>
               <div className="input-group">
                 <label>Senha</label>
                 <input name="password" type="password" value={formData.password} onChange={handleChange} required />
@@ -166,7 +182,7 @@ export default function Register() {
               <div className="btn-group">
                 <button type="button" className="btn-secondary" onClick={handlePrevStep}>Voltar</button>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                  {loading ? 'Finalizando...' : 'Concluir Cadastro'}
+                  {loading ? 'Finalizando...' : 'Concluir Registro'}
                 </button>
               </div>
             </div>
