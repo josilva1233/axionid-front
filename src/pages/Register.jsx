@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
@@ -6,61 +6,55 @@ export default function Register() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // 1. Captura inicial dos dados da URL
-  const nameFromUrl = searchParams.get('name') || '';
-  const emailFromUrl = searchParams.get('email') || '';
-  const tokenFromUrl = searchParams.get('token') || '';
-  const isSocialRegistration = !!tokenFromUrl;
+  // 1. Memoizamos a verificação social para evitar re-renderizações infinitas
+  const socialData = useMemo(() => ({
+    name: searchParams.get('name') || '',
+    email: searchParams.get('email') || '',
+    token: searchParams.get('token') || '',
+    isSocial: !!searchParams.get('token')
+  }), [searchParams]);
 
   const [loading, setLoading] = useState(false);
-  // Se for Google, mantemos no step 1 para ele confirmar os dados antes do CPF
   const [step, setStep] = useState(1);
 
-  // Estado inicial
+  // 2. O estado inicial já nasce com os dados da URL se existirem
   const [formData, setFormData] = useState({
-    name: nameFromUrl,
-    email: emailFromUrl,
+    name: socialData.name,
+    email: socialData.email,
     cpf_cnpj: '',
     password: '',
     password_confirmation: '',
   });
 
-  // 2. Efeito para Sincronização e Configuração de Token
+  // 3. Efeito para configurar o Token e garantir que os campos preencham
   useEffect(() => {
-    if (isSocialRegistration) {
-      console.log("Login via Google detectado. Configurando ambiente...");
+    if (socialData.isSocial) {
+      console.log("Login via Google detectado. Travando campos de identificação.");
       
-      // Garante que o estado tenha os dados da URL
+      // Forçamos o preenchimento caso o estado inicial tenha falhado por delay da URL
       setFormData(prev => ({
         ...prev,
-        name: nameFromUrl,
-        email: emailFromUrl
+        name: socialData.name,
+        email: socialData.email
       }));
 
-      // Salva o token para o interceptor do api.js funcionar
-      localStorage.setItem('@AxionID:token', tokenFromUrl);
-      api.defaults.headers.common['Authorization'] = `Bearer ${tokenFromUrl}`;
+      localStorage.setItem('@AxionID:token', socialData.token);
+      api.defaults.headers.common['Authorization'] = `Bearer ${socialData.token}`;
     }
-  }, [isSocialRegistration, nameFromUrl, emailFromUrl, tokenFromUrl]);
+  }, [socialData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleNextStep = () => setStep(prev => prev + 1);
-  const handlePrevStep = () => setStep(prev => prev - 1);
-
-  // 3. Finalização do Cadastro (Create ou Update)
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    const token = localStorage.getItem('@AxionID:token');
-
     try {
-      if (isSocialRegistration || token) {
-        // Fluxo Google: O usuário já existe, vamos apenas completar (Update)
+      if (socialData.isSocial) {
+        // UPDATE para usuários vindos do Google
         await api.post('/api/v1/complete-profile', {
           cpf_cnpj: formData.cpf_cnpj,
           password: formData.password,
@@ -68,22 +62,16 @@ export default function Register() {
         });
         alert('Cadastro via Google finalizado!');
       } else {
-        // Fluxo Manual: Criação do zero (Post)
+        // CREATE para registro manual
         const response = await api.post('/api/v1/register', formData);
         localStorage.setItem('@AxionID:token', response.data.token);
-        alert('Cadastro realizado com sucesso!');
+        alert('Cadastro manual realizado com sucesso!');
       }
 
       navigate('/dashboard', { replace: true });
-
     } catch (error) {
-      console.error("Erro no registro:", error.response?.data);
-      if (error.response?.status === 422) {
-        const messages = error.response.data.errors;
-        alert("Erro de validação: " + Object.values(messages).flat().join(", "));
-      } else {
-        alert(error.response?.data?.message || "Ocorreu um erro inesperado.");
-      }
+      const errorMsg = error.response?.data?.message || 'Erro ao processar. Verifique os dados.';
+      alert(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -98,37 +86,38 @@ export default function Register() {
 
         <form onSubmit={handleRegister} className="auth-form">
           
-          {/* STEP 1: DADOS BÁSICOS (Bloqueados se for Google) */}
+          {/* STEP 1: NOME E EMAIL */}
           {step === 1 && (
             <div className="step-content animate-in">
-              <h3>{isSocialRegistration ? 'Confirme seus dados' : 'Crie sua conta'}</h3>
+              <h3>{socialData.isSocial ? 'Verifique seus dados' : 'Crie sua conta'}</h3>
+              
               <div className="input-group">
                 <label>Nome Completo</label>
                 <input 
                   name="name" 
                   value={formData.name} 
-                  onChange={handleChange} 
-                  readOnly={isSocialRegistration}
-                  className={isSocialRegistration ? 'input-readonly' : ''}
-                  placeholder="Seu nome"
+                  onChange={handleChange}
+                  readOnly={socialData.isSocial} // Bloqueia edição se for Google
+                  className={socialData.isSocial ? 'input-blocked' : ''}
                   required 
                 />
               </div>
+
               <div className="input-group">
                 <label>E-mail</label>
                 <input 
                   name="email" 
                   type="email" 
                   value={formData.email} 
-                  onChange={handleChange} 
-                  readOnly={isSocialRegistration}
-                  className={isSocialRegistration ? 'input-readonly' : ''}
-                  placeholder="seu@email.com"
+                  onChange={handleChange}
+                  readOnly={socialData.isSocial} // Bloqueia edição se for Google
+                  className={socialData.isSocial ? 'input-blocked' : ''}
                   required 
                 />
               </div>
-              <button type="button" className="btn-primary" onClick={handleNextStep}>
-                {isSocialRegistration ? 'Dados corretos, prosseguir' : 'Próximo Passo'}
+
+              <button type="button" className="btn-primary" onClick={() => setStep(2)}>
+                {socialData.isSocial ? 'Confirmar e Continuar' : 'Próximo Passo'}
               </button>
             </div>
           )}
@@ -136,9 +125,8 @@ export default function Register() {
           {/* STEP 2: CPF/CNPJ */}
           {step === 2 && (
             <div className="step-content animate-in">
-              <h3>{isSocialRegistration ? `Olá, ${formData.name.split(' ')[0]}` : 'Identificação'}</h3>
-              <p>Precisamos do seu documento para continuar.</p>
-              
+              <h3>Identificação</h3>
+              <p>Olá {formData.name.split(' ')[0]}, informe seu documento:</p>
               <div className="input-group">
                 <label>CPF ou CNPJ</label>
                 <input 
@@ -150,10 +138,11 @@ export default function Register() {
                   required 
                 />
               </div>
-              
               <div className="btn-group">
-                <button type="button" className="btn-secondary" onClick={handlePrevStep}>Voltar</button>
-                <button type="button" className="btn-primary" onClick={handleNextStep} disabled={!formData.cpf_cnpj}>
+                {!socialData.isSocial && (
+                  <button type="button" className="btn-secondary" onClick={() => setStep(1)}>Voltar</button>
+                )}
+                <button type="button" className="btn-primary" onClick={() => setStep(3)} disabled={!formData.cpf_cnpj}>
                   Avançar
                 </button>
               </div>
@@ -163,8 +152,7 @@ export default function Register() {
           {/* STEP 3: SENHA */}
           {step === 3 && (
             <div className="step-content animate-in">
-              <h3>Defina sua senha</h3>
-              <p>Último passo para acessar o AxionID.</p>
+              <h3>Segurança</h3>
               <div className="input-group">
                 <label>Senha</label>
                 <input name="password" type="password" value={formData.password} onChange={handleChange} required />
@@ -174,7 +162,7 @@ export default function Register() {
                 <input name="password_confirmation" type="password" value={formData.password_confirmation} onChange={handleChange} required />
               </div>
               <div className="btn-group">
-                <button type="button" className="btn-secondary" onClick={handlePrevStep}>Voltar</button>
+                <button type="button" className="btn-secondary" onClick={() => setStep(2)}>Voltar</button>
                 <button type="submit" className="btn-primary" disabled={loading}>
                   {loading ? 'Finalizando...' : 'Concluir Registro'}
                 </button>
@@ -183,6 +171,16 @@ export default function Register() {
           )}
         </form>
       </div>
+
+      {/* Adicione este estilo simples ao seu arquivo CSS para feedback visual */}
+      <style>{`
+        .input-blocked {
+          background-color: #1a1a1a !important;
+          color: #888 !important;
+          cursor: not-allowed;
+          border: 1px solid #333 !important;
+        }
+      `}</style>
     </div>
   );
 }
