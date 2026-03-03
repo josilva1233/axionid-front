@@ -5,15 +5,23 @@ import api from '../services/api';
 export default function Register() {
   const navigate = useNavigate();
 
-  // 1. Extração Síncrona: Pegamos os dados antes do primeiro render do componente
+  // =============================
+  // 1️⃣ Extração dos parâmetros da URL
+  // =============================
   const params = new URLSearchParams(window.location.search);
+
   const nameFromUrl = params.get('name') || '';
   const emailFromUrl = params.get('email') || '';
   const tokenFromUrl = params.get('token') || '';
-  const isSocial = !!tokenFromUrl;
+  const firstLoginFromUrl = params.get('firstLogin') === 'true';
 
-  // 2. Definimos o Step inicial: Se for social, forçamos o Step 2 (Boas-vindas)
-  const [step, setStep] = useState(isSocial ? 2 : 1);
+  const isSocial = !!tokenFromUrl;
+  const isFirstSocialLogin = isSocial && firstLoginFromUrl;
+
+  // =============================
+  // 2️⃣ Controle de Step
+  // =============================
+  const [step, setStep] = useState(isFirstSocialLogin ? 2 : 1);
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -24,16 +32,25 @@ export default function Register() {
     password_confirmation: '',
   });
 
-  // 3. Configuração de segurança e API
+  // =============================
+  // 3️⃣ Configuração inicial
+  // =============================
   useEffect(() => {
     if (isSocial) {
-      console.log("Fluxo Google Ativo: Redirecionando para CPF.");
-      // Salva o token para que as chamadas ao backend funcionem
+      // Salva token
       localStorage.setItem('@AxionID:token', tokenFromUrl);
       api.defaults.headers.common['Authorization'] = `Bearer ${tokenFromUrl}`;
     }
-  }, [isSocial, tokenFromUrl]);
 
+    // 🔥 Se NÃO for primeiro login social → vai direto para dashboard
+    if (isSocial && !isFirstSocialLogin) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isSocial, isFirstSocialLogin, tokenFromUrl, navigate]);
+
+  // =============================
+  // 4️⃣ Handlers
+  // =============================
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -44,129 +61,168 @@ export default function Register() {
     setLoading(true);
 
     try {
-      if (isSocial) {
-        // Rota para completar o perfil (usuário já criado pelo Google no backend)
+      if (isFirstSocialLogin) {
+        // Completa cadastro do Google
         await api.post('/api/v1/complete-profile', {
           cpf_cnpj: formData.cpf_cnpj,
           password: formData.password,
           password_confirmation: formData.password_confirmation
         });
       } else {
-        // Rota de registro manual completo
+        // Registro manual
         const response = await api.post('/api/v1/register', formData);
         localStorage.setItem('@AxionID:token', response.data.token);
       }
+
       navigate('/dashboard', { replace: true });
+
     } catch (error) {
-      alert(error.response?.data?.message || "Ocorreu um erro ao finalizar o cadastro.");
+      alert(error.response?.data?.message || "Erro ao finalizar cadastro.");
     } finally {
       setLoading(false);
     }
   };
 
+  // =============================
+  // 5️⃣ Render
+  // =============================
   return (
     <div className="auth-container">
       <div className="auth-card onboarding-card">
         <form onSubmit={handleRegister} className="auth-form">
-          
-          {/* STEP 1: Só aparece se NÃO for registro social */}
+
+          {/* STEP 1 - Registro Manual */}
           {step === 1 && !isSocial && (
             <div className="step-content animate-in">
               <h3>Crie sua conta</h3>
+
               <div className="input-group">
                 <label>Nome Completo</label>
-                <input 
-                  name="name" 
-                  value={formData.name} 
-                  onChange={handleChange} 
+                <input
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
                   placeholder="Seu nome"
-                  required 
+                  required
                 />
               </div>
+
               <div className="input-group">
                 <label>E-mail</label>
-                <input 
-                  name="email" 
-                  type="email" 
-                  value={formData.email} 
-                  onChange={handleChange} 
+                <input
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
                   placeholder="seu@email.com"
-                  required 
+                  required
                 />
               </div>
-              <button type="button" className="btn-primary" onClick={() => setStep(2)}>
+
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => setStep(2)}
+              >
                 Próximo Passo
               </button>
             </div>
           )}
 
-          {/* STEP 2: TELA DE BOAS-VINDAS (Olá, Juliane!) */}
+          {/* STEP 2 - CPF / CNPJ */}
           {step === 2 && (
             <div className="step-content animate-in">
-              {/* Extrai apenas o primeiro nome para a saudação */}
               <h3 style={{ fontSize: '24px', fontWeight: 'bold', textAlign: 'center' }}>
                 Olá, {formData.name ? formData.name.split(' ')[0] : 'Seja bem-vindo'}!
               </h3>
+
               <p style={{ textAlign: 'center', marginBottom: '20px' }}>
                 Precisamos do seu CPF ou CNPJ para continuar.
               </p>
-              
+
               <div className="input-group">
                 <label>CPF ou CNPJ</label>
-                <input 
-                  name="cpf_cnpj" 
-                  placeholder="Apenas números" 
-                  value={formData.cpf_cnpj} 
-                  onChange={handleChange} 
-                  autoFocus 
-                  required 
+                <input
+                  name="cpf_cnpj"
+                  placeholder="Apenas números"
+                  value={formData.cpf_cnpj}
+                  onChange={handleChange}
+                  autoFocus
+                  required
                 />
               </div>
-              
+
               <div className="btn-group">
                 {!isSocial && (
-                  <button type="button" className="btn-secondary" onClick={() => setStep(1)}>Voltar</button>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => setStep(1)}
+                  >
+                    Voltar
+                  </button>
                 )}
-                <button type="button" className="btn-primary" onClick={() => setStep(3)} disabled={!formData.cpf_cnpj}>
+
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => setStep(3)}
+                  disabled={!formData.cpf_cnpj}
+                >
                   Avançar
                 </button>
               </div>
             </div>
           )}
 
-          {/* STEP 3: DEFINIÇÃO DE SENHA (Segurança) */}
+          {/* STEP 3 - Senha */}
           {step === 3 && (
             <div className="step-content animate-in">
               <h3>Segurança</h3>
               <p>Defina sua senha de acesso.</p>
+
               <div className="input-group">
                 <label>Senha</label>
-                <input 
-                  name="password" 
-                  type="password" 
-                  value={formData.password} 
-                  onChange={handleChange} 
-                  required 
+                <input
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
                 />
               </div>
+
               <div className="input-group">
                 <label>Confirmar Senha</label>
-                <input 
-                  name="password_confirmation" 
-                  type="password" 
-                  value={formData.password_confirmation} 
-                  onChange={handleChange} 
-                  required 
+                <input
+                  name="password_confirmation"
+                  type="password"
+                  value={formData.password_confirmation}
+                  onChange={handleChange}
+                  required
                 />
               </div>
+
               <div className="btn-group">
-                <button type="button" className="btn-secondary" onClick={() => setStep(2)}>Voltar</button>
-                <button type="submit" className="btn-primary" disabled={loading}>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setStep(2)}
+                >
+                  Voltar
+                </button>
+
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={loading}
+                >
                   {loading ? 'Finalizando...' : 'Concluir Registro'}
                 </button>
               </div>
             </div>
           )}
+
         </form>
       </div>
     </div>
