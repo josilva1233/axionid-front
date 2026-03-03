@@ -13,27 +13,32 @@ export default function Dashboard() {
   // =============================
   // 🔐 1️⃣ Controle de Token
   // =============================
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const tokenFromUrl = params.get('token');
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const tokenFromUrl = params.get('token');
 
-    if (tokenFromUrl) {
-      localStorage.setItem('@AxionID:token', tokenFromUrl);
-      api.defaults.headers.common['Authorization'] = `Bearer ${tokenFromUrl}`;
+  // 🔵 Se veio token pela URL (login Google)
+  if (tokenFromUrl) {
+    localStorage.setItem('@AxionID:token', tokenFromUrl);
+    api.defaults.headers.common['Authorization'] = `Bearer ${tokenFromUrl}`;
 
-      // Remove token da URL por segurança
-      window.history.replaceState({}, document.title, "/dashboard");
-    }
+    // Remove token da URL
+    window.history.replaceState({}, document.title, "/dashboard");
 
-    const savedToken = localStorage.getItem('@AxionID:token');
+    return; // 🚨 IMPORTANTE: para aqui e NÃO executa o resto
+  }
 
-    if (!savedToken) {
-      navigate('/login', { replace: true });
-    } else {
-      api.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
-    }
+  // 🔴 Se não veio token, verifica se já existe salvo
+  const savedToken = localStorage.getItem('@AxionID:token');
 
-  }, [navigate]);
+  if (!savedToken) {
+    navigate('/login', { replace: true });
+  } else {
+    api.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
+  }
+
+}, [navigate]);
+
 
   // =============================
   // 👤 2️⃣ Carrega dados
