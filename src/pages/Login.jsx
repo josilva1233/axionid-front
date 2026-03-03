@@ -1,140 +1,229 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
-export default function Login() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+export default function Register() {
   const navigate = useNavigate();
 
+  // =============================
+  // 1️⃣ Extração dos parâmetros da URL
+  // =============================
+  const params = new URLSearchParams(window.location.search);
+
+  const nameFromUrl = params.get('name') || '';
+  const emailFromUrl = params.get('email') || '';
+  const tokenFromUrl = params.get('token') || '';
+  const firstLoginFromUrl = params.get('firstLogin') === 'true';
+
+  const isSocial = !!tokenFromUrl;
+  const isFirstSocialLogin = isSocial && firstLoginFromUrl;
+
+  // =============================
+  // 2️⃣ Controle de Step
+  // =============================
+  const [step, setStep] = useState(isFirstSocialLogin ? 2 : 1);
+  const [loading, setLoading] = useState(false);
+
+  const [formData, setFormData] = useState({
+    name: nameFromUrl,
+    email: emailFromUrl,
+    cpf_cnpj: '',
+    password: '',
+    password_confirmation: '',
+  });
+
+  // =============================
+  // 3️⃣ Configuração inicial
+  // =============================
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
+    if (isSocial) {
+      // Salva token
+      localStorage.setItem('@AxionID:token', tokenFromUrl);
+      api.defaults.headers.common['Authorization'] = `Bearer ${tokenFromUrl}`;
+    }
 
-    // 🚨 Só executa se realmente vier do Google
-    if (!token) return;
+    // 🔥 Se NÃO for primeiro login social → vai direto para dashboard
+    if (isSocial && !isFirstSocialLogin) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isSocial, isFirstSocialLogin, tokenFromUrl, navigate]);
 
-    console.log("Login via Google detectado");
+  // =============================
+  // 4️⃣ Handlers
+  // =============================
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
-    const needsCpf = params.get('needs_cpf');
-    const isAdmin = params.get('is_admin');
-    const userName = params.get('name');
-    const userEmail = params.get('email');
-
-    // 🔐 Salva token
-    localStorage.setItem('@AxionID:token', token);
-
-    // 👤 Define role
-    const role = isAdmin === '1' ? 'admin' : 'user';
-    localStorage.setItem('@AxionID:role', role);
-
-    // 💾 Salva dados do usuário
-    localStorage.setItem('user_data', JSON.stringify({
-      name: userName,
-      email: userEmail,
-      is_admin: isAdmin === '1'
-    }));
-
-    // 🔥 Remove query string da URL
-    window.history.replaceState({}, document.title, "/");
-
-    // 🔥 Delay mínimo para evitar conflito de navegação
-    setTimeout(() => {
-      if (needsCpf === 'true') {
-        navigate('/register', { replace: true });
-      } else {
-        navigate('/dashboard', { replace: true });
-      }
-    }, 50);
-
-  }, [navigate]);
-
-  const handleLogin = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const response = await api.post('/api/v1/login', { username, password });
-
-      localStorage.setItem('@AxionID:token', response.data.token);
-      localStorage.setItem('user_data', JSON.stringify(response.data.user));
-
-      const isAdmin =
-        response.data.user.is_admin === 1 ||
-        response.data.user.is_admin === true;
-
-      localStorage.setItem('@AxionID:role', isAdmin ? 'admin' : 'user');
+      if (isFirstSocialLogin) {
+        // Completa cadastro do Google
+        await api.post('/api/v1/complete-profile', {
+          cpf_cnpj: formData.cpf_cnpj,
+          password: formData.password,
+          password_confirmation: formData.password_confirmation
+        });
+      } else {
+        // Registro manual
+        const response = await api.post('/api/v1/register', formData);
+        localStorage.setItem('@AxionID:token', response.data.token);
+      }
 
       navigate('/dashboard', { replace: true });
 
     } catch (error) {
-      console.error("Erro no login manual:", error);
-      alert("Credenciais inválidas. Verifique seu CPF/CNPJ e senha.");
+      alert(error.response?.data?.message || "Erro ao finalizar cadastro.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleLogin = () => {
-    const origin = window.location.origin;
-    window.location.href =
-      `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
-  };
-
+  // =============================
+  // 5️⃣ Render
+  // =============================
   return (
     <div className="auth-container">
-      <div className="auth-card">
-        <div className="brand">
-          <h1>Axion<span>ID</span></h1>
-        </div>
-        <p className="subtitle">Identidade Digital Profissional</p>
+      <div className="auth-card onboarding-card">
+        <form onSubmit={handleRegister} className="auth-form">
 
-        <form onSubmit={handleLogin} className="auth-form">
-          <input
-            type="text"
-            placeholder="CPF ou CNPJ"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
-            required
-          />
+          {/* STEP 1 - Registro Manual */}
+          {step === 1 && !isSocial && (
+            <div className="step-content animate-in">
+              <h3>Crie sua conta</h3>
 
-          <input
-            type="password"
-            placeholder="Senha"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-          />
+              <div className="input-group">
+                <label>Nome Completo</label>
+                <input
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Seu nome"
+                  required
+                />
+              </div>
 
-          <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? 'Autenticando...' : 'Acessar Painel'}
-          </button>
+              <div className="input-group">
+                <label>E-mail</label>
+                <input
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="seu@email.com"
+                  required
+                />
+              </div>
 
-          <div className="divider">
-            <span>ou continue com</span>
-          </div>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => setStep(2)}
+              >
+                Próximo Passo
+              </button>
+            </div>
+          )}
 
-          <button
-            type="button"
-            className="btn-google"
-            onClick={handleGoogleLogin}
-          >
-            <img
-              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-              width="20"
-              alt="Google"
-            />
-            Google Workspace
-          </button>
+          {/* STEP 2 - CPF / CNPJ */}
+          {step === 2 && (
+            <div className="step-content animate-in">
+              <h3 style={{ fontSize: '24px', fontWeight: 'bold', textAlign: 'center' }}>
+                Olá, {formData.name ? formData.name.split(' ')[0] : 'Seja bem-vindo'}!
+              </h3>
+
+              <p style={{ textAlign: 'center', marginBottom: '20px' }}>
+                Precisamos do seu CPF ou CNPJ para continuar.
+              </p>
+
+              <div className="input-group">
+                <label>CPF ou CNPJ</label>
+                <input
+                  name="cpf_cnpj"
+                  placeholder="Apenas números"
+                  value={formData.cpf_cnpj}
+                  onChange={handleChange}
+                  autoFocus
+                  required
+                />
+              </div>
+
+              <div className="btn-group">
+                {!isSocial && (
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => setStep(1)}
+                  >
+                    Voltar
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => setStep(3)}
+                  disabled={!formData.cpf_cnpj}
+                >
+                  Avançar
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3 - Senha */}
+          {step === 3 && (
+            <div className="step-content animate-in">
+              <h3>Segurança</h3>
+              <p>Defina sua senha de acesso.</p>
+
+              <div className="input-group">
+                <label>Senha</label>
+                <input
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Confirmar Senha</label>
+                <input
+                  name="password_confirmation"
+                  type="password"
+                  value={formData.password_confirmation}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="btn-group">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setStep(2)}
+                >
+                  Voltar
+                </button>
+
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={loading}
+                >
+                  {loading ? 'Finalizando...' : 'Concluir Registro'}
+                </button>
+              </div>
+            </div>
+          )}
+
         </form>
-
-        <div className="auth-footer">
-          <p>
-            Ainda não tem acesso?
-            <Link to="/register"> Criar Conta AxionID</Link>
-          </p>
-        </div>
       </div>
     </div>
   );
