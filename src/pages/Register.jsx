@@ -6,43 +6,41 @@ export default function Register() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // 1. Extração imediata dos dados da URL para evitar delays de renderização
-  const nameFromUrl = searchParams.get('name') || '';
-  const emailFromUrl = searchParams.get('email') || '';
-  const tokenFromUrl = searchParams.get('token') || '';
-  const isSocial = !!tokenFromUrl;
-
-  // 2. Estados inicializados com base na presença do Token (Google)
   const [loading, setLoading] = useState(false);
   
-  // Se for Google, o 'step' já começa em 2 (Identificação/CPF)
-  const [step, setStep] = useState(isSocial ? 2 : 1);
-
+  // 1. Iniciamos os estados vazios para evitar inconsistências
+  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    name: nameFromUrl,
-    email: emailFromUrl,
+    name: '',
+    email: '',
     cpf_cnpj: '',
     password: '',
     password_confirmation: '',
   });
 
-  // 3. Efeito para travar o Token no sistema assim que o componente monta
+  // 2. Este efeito roda IMEDIATAMENTE após o carregamento para definir o fluxo
   useEffect(() => {
-    if (isSocial) {
-      console.log("Login via Google detectado. Nome:", nameFromUrl);
-      
-      // Persiste o token para as chamadas de API
-      localStorage.setItem('@AxionID:token', tokenFromUrl);
-      api.defaults.headers.common['Authorization'] = `Bearer ${tokenFromUrl}`;
+    const nameUrl = searchParams.get('name');
+    const emailUrl = searchParams.get('email');
+    const tokenUrl = searchParams.get('token');
 
-      // Garante que o formData tenha os dados da URL (caso o estado inicial tenha falhado)
+    if (tokenUrl) {
+      console.log("Login via Google detectado. Nome:", nameUrl);
+      
+      // Preenche os dados e pula direto para o STEP 2 (Boas-vindas/CPF)
       setFormData(prev => ({
         ...prev,
-        name: nameFromUrl,
-        email: emailFromUrl
+        name: nameUrl || '',
+        email: emailUrl || ''
       }));
+      
+      setStep(2); // Pula a tela de "Crie sua conta"
+
+      // Configura o Token
+      localStorage.setItem('@AxionID:token', tokenUrl);
+      api.defaults.headers.common['Authorization'] = `Bearer ${tokenUrl}`;
     }
-  }, [isSocial, nameFromUrl, emailFromUrl, tokenFromUrl]);
+  }, [searchParams]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -52,27 +50,22 @@ export default function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
+    const isSocial = !!searchParams.get('token');
 
     try {
       if (isSocial) {
-        // Fluxo Google: O usuário já existe, apenas completamos os dados
         await api.post('/api/v1/complete-profile', {
           cpf_cnpj: formData.cpf_cnpj,
           password: formData.password,
           password_confirmation: formData.password_confirmation
         });
-        alert('Cadastro via Google finalizado!');
       } else {
-        // Fluxo Manual: Criação do zero
         const response = await api.post('/api/v1/register', formData);
         localStorage.setItem('@AxionID:token', response.data.token);
-        alert('Cadastro manual realizado com sucesso!');
       }
-
       navigate('/dashboard', { replace: true });
     } catch (error) {
-      const errorMsg = error.response?.data?.message || 'Erro ao processar dados.';
-      alert(errorMsg);
+      alert(error.response?.data?.message || "Erro no cadastro.");
     } finally {
       setLoading(false);
     }
@@ -81,14 +74,9 @@ export default function Register() {
   return (
     <div className="auth-container">
       <div className="auth-card onboarding-card">
-        {/* Barra de Progresso - Mostra 66% se for Google (já no step 2) */}
-        <div className="progress-bar">
-          <div className="progress-fill" style={{ width: `${(step / 3) * 100}%` }}></div>
-        </div>
-
         <form onSubmit={handleRegister} className="auth-form">
           
-          {/* STEP 1: SÓ APARECE NO REGISTRO MANUAL */}
+          {/* STEP 1: DADOS BÁSICOS (Apenas registro manual) */}
           {step === 1 && (
             <div className="step-content animate-in">
               <h3>Crie sua conta</h3>
@@ -106,10 +94,10 @@ export default function Register() {
             </div>
           )}
 
-          {/* STEP 2: IDENTIFICAÇÃO (Ponto de entrada do Google) */}
+          {/* STEP 2: TELA "OLÁ, JULIANE!" (Ponto de entrada do Google) */}
           {step === 2 && (
             <div className="step-content animate-in">
-              <h3>Olá, {formData.name ? formData.name.split(' ')[0] : 'usuário'}!</h3>
+              <h3>Olá, {formData.name ? formData.name.split(' ')[0] : 'Seja bem-vindo'}!</h3>
               <p>Precisamos do seu CPF ou CNPJ para continuar.</p>
               
               <div className="input-group">
@@ -125,7 +113,7 @@ export default function Register() {
               </div>
               
               <div className="btn-group">
-                {!isSocial && (
+                {!searchParams.get('token') && (
                   <button type="button" className="btn-secondary" onClick={() => setStep(1)}>Voltar</button>
                 )}
                 <button type="button" className="btn-primary" onClick={() => setStep(3)} disabled={!formData.cpf_cnpj}>
@@ -135,11 +123,11 @@ export default function Register() {
             </div>
           )}
 
-          {/* STEP 3: SENHA */}
+          {/* STEP 3: SEGURANÇA */}
           {step === 3 && (
             <div className="step-content animate-in">
               <h3>Segurança</h3>
-              <p>Defina sua senha de acesso ao AxionID.</p>
+              <p>Defina sua senha de acesso.</p>
               <div className="input-group">
                 <label>Senha</label>
                 <input name="password" type="password" value={formData.password} onChange={handleChange} required />
