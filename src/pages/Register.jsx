@@ -13,15 +13,22 @@ export default function Register() {
   const nameFromUrl = params.get('name') || '';
   const emailFromUrl = params.get('email') || '';
   const tokenFromUrl = params.get('token') || '';
-  const firstLoginFromUrl = params.get('firstLogin') === 'true';
+  const firstLoginFromUrl = params.get('firstLogin');
 
   const isSocial = !!tokenFromUrl;
-  const isFirstSocialLogin = isSocial && firstLoginFromUrl;
+
+  // 🔎 DEBUG
+  console.log({
+    nameFromUrl,
+    emailFromUrl,
+    tokenFromUrl,
+    firstLoginFromUrl
+  });
 
   // =============================
   // 2️⃣ Controle de Step
   // =============================
-  const [step, setStep] = useState(isFirstSocialLogin ? 2 : 1);
+  const [step, setStep] = useState(isSocial ? 2 : 1);
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -37,16 +44,12 @@ export default function Register() {
   // =============================
   useEffect(() => {
     if (isSocial) {
-      // Salva token
+      console.log("Login via Google detectado.");
+
       localStorage.setItem('@AxionID:token', tokenFromUrl);
       api.defaults.headers.common['Authorization'] = `Bearer ${tokenFromUrl}`;
     }
-
-    // 🔥 Se NÃO for primeiro login social → vai direto para dashboard
-    if (isSocial && !isFirstSocialLogin) {
-      navigate('/dashboard', { replace: true });
-    }
-  }, [isSocial, isFirstSocialLogin, tokenFromUrl, navigate]);
+  }, [isSocial, tokenFromUrl]);
 
   // =============================
   // 4️⃣ Handlers
@@ -61,15 +64,13 @@ export default function Register() {
     setLoading(true);
 
     try {
-      if (isFirstSocialLogin) {
-        // Completa cadastro do Google
+      if (isSocial) {
         await api.post('/api/v1/complete-profile', {
           cpf_cnpj: formData.cpf_cnpj,
           password: formData.password,
           password_confirmation: formData.password_confirmation
         });
       } else {
-        // Registro manual
         const response = await api.post('/api/v1/register', formData);
         localStorage.setItem('@AxionID:token', response.data.token);
       }
@@ -91,7 +92,7 @@ export default function Register() {
       <div className="auth-card onboarding-card">
         <form onSubmit={handleRegister} className="auth-form">
 
-          {/* STEP 1 - Registro Manual */}
+          {/* STEP 1 */}
           {step === 1 && !isSocial && (
             <div className="step-content animate-in">
               <h3>Crie sua conta</h3>
@@ -129,7 +130,7 @@ export default function Register() {
             </div>
           )}
 
-          {/* STEP 2 - CPF / CNPJ */}
+          {/* STEP 2 */}
           {step === 2 && (
             <div className="step-content animate-in">
               <h3 style={{ fontSize: '24px', fontWeight: 'bold', textAlign: 'center' }}>
@@ -175,7 +176,7 @@ export default function Register() {
             </div>
           )}
 
-          {/* STEP 3 - Senha */}
+          {/* STEP 3 */}
           {step === 3 && (
             <div className="step-content animate-in">
               <h3>Segurança</h3>
