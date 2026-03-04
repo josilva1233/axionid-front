@@ -96,109 +96,112 @@ export default function CompleteProfile() {
           <div className="progress-fill" style={{ width: step === 1 ? '50%' : '100%' }}></div>
         </div>
 
-        <form onSubmit={handleSubmit} className="auth-form">
-          
-          {/* PASSO 1: DOCUMENTAÇÃO */}
-          {step === 1 && (
-            <div className="step-content animate-in">
-              <h3>Identificação</h3>
-              <p>Confirme seu documento para prosseguir.</p>
-              <div className="input-group">
-                <label>CPF ou CNPJ</label>
-                <input 
-                  name="cpf_cnpj" 
-                  placeholder="Apenas números" 
-                  value={formData.cpf_cnpj}
-                  onChange={handleChange} 
-                  required 
-                />
-                {errors.cpf_cnpj && <span className="error-msg">{errors.cpf_cnpj[0]}</span>}
-              </div>
-              <button 
-                type="button" 
-                className="btn-primary" 
-                onClick={() => setStep(2)} 
-                disabled={!formData.cpf_cnpj}
-              >
-                Próximo passo
-              </button>
-            </div>
-          )}
+<form onSubmit={handleSubmit} className="auth-form">
+  
+  {/* PASSO 1: IDENTIFICAÇÃO (CPF/CNPJ) */}
+  {step === 1 && (
+    <div className="step-content animate-in">
+      <h3>Identificação</h3>
+      <p>Confirme seu documento para prosseguir.</p>
+      <div className="input-group">
+        <label>CPF ou CNPJ</label>
+        <input 
+          name="cpf_cnpj" 
+          placeholder="Apenas números" 
+          value={formData.cpf_cnpj}
+          onChange={handleChange} 
+          required 
+        />
+      </div>
+      <button 
+        type="button" 
+        className="btn-primary" 
+        onClick={() => setStep(2)} 
+        disabled={!formData.cpf_cnpj}
+      >
+        Próximo: Endereço
+      </button>
+    </div>
+  )}
 
-          {/* PASSO 2: ENDEREÇO E SEGURANÇA */}
-          {step === 2 && (
-            <div className="step-content animate-in">
-              <h3>Endereço e Segurança</h3>
-              <p>Complete seus dados para finalizar o acesso.</p>
-              
-              <div className="input-group">
-                <label>CEP</label>
-                <input 
-                  name="zip_code" 
-                  placeholder="00000-000" 
-                  onBlur={handleZipCodeBlur}
-                  onChange={handleChange}
-                  required 
-                />
-              </div>
+  {/* PASSO 2: ENDEREÇO (Sem as senhas aqui) */}
+  {step === 2 && (
+    <div className="step-content animate-in">
+      <h3>Endereço</h3>
+      <p>Onde você reside?</p>
+      
+      <div className="input-group">
+        <label>CEP</label>
+        <input name="zip_code" placeholder="00000-000" onBlur={handleZipCodeBlur} onChange={handleChange} required />
+      </div>
 
-              <div className="input-row" style={{ display: 'flex', gap: '10px' }}>
-                <div className="input-group" style={{ flex: 3 }}>
-                  <label>Rua</label>
-                  <input name="street" value={formData.street} readOnly className="input-readonly" />
-                </div>
-                <div className="input-group" style={{ flex: 1 }}>
-                  <label>Nº</label>
-                  <input name="number" placeholder="123" onChange={handleChange} required />
-                </div>
-              </div>
+      <div className="input-row" style={{ display: 'flex', gap: '10px' }}>
+        <div className="input-group" style={{ flex: 3 }}>
+          <label>Rua</label>
+          <input name="street" value={formData.street} readOnly className="input-readonly" />
+        </div>
+        <div className="input-group" style={{ flex: 1 }}>
+          <label>Nº</label>
+          <input name="number" placeholder="123" onChange={handleChange} required />
+        </div>
+      </div>
 
-              <div className="input-row" style={{ display: 'flex', gap: '10px' }}>
-                <div className="input-group" style={{ flex: 2 }}>
-                  <label>Bairro</label>
-                  <input name="neighborhood" value={formData.neighborhood} readOnly className="input-readonly" />
-                </div>
-                <div className="input-group" style={{ flex: 1 }}>
-                  <label>UF</label>
-                  <input name="state" value={formData.state} readOnly className="input-readonly" />
-                </div>
-              </div>
+      <div className="input-row" style={{ display: 'flex', gap: '10px' }}>
+        <div className="input-group" style={{ flex: 2 }}>
+          <label>Bairro</label>
+          <input name="neighborhood" value={formData.neighborhood} readOnly className="input-readonly" />
+        </div>
+        <div className="input-group" style={{ flex: 1 }}>
+          <label>UF</label>
+          <input name="state" value={formData.state} readOnly className="input-readonly" />
+        </div>
+      </div>
 
-              <hr style={{ margin: '20px 0', border: '0', borderTop: '1px solid #eee' }} />
+      <div className="btn-group">
+        <button type="button" className="btn-secondary" onClick={() => setStep(1)}>Voltar</button>
+        <button type="button" className="btn-primary" onClick={() => setStep(3)}>Próximo: Segurança</button>
+      </div>
+    </div>
+  )}
 
-              {/* CAMPOS DE SENHA */}
-              <div className="input-group">
-                <label>Definir Nova Senha</label>
-                <input 
-                  type="password"
-                  name="password" 
-                  placeholder="Mínimo 6 caracteres" 
-                  onChange={handleChange}
-                  required 
-                />
-                {errors.password && <span className="error-msg">{errors.password[0]}</span>}
-              </div>
+  {/* PASSO 3: SEGURANÇA (SENHAS) */}
+  {step === 3 && (
+    <div className="step-content animate-in">
+      <h3>Segurança</h3>
+      <p>Crie uma senha forte para sua conta.</p>
 
-              <div className="input-group">
-                <label>Confirmar Senha</label>
-                <input 
-                  type="password"
-                  name="password_confirmation" 
-                  placeholder="Repita a senha" 
-                  onChange={handleChange}
-                  required 
-                />
-              </div>
+      <div className="input-group">
+        <label>Definir Nova Senha</label>
+        <input 
+          type="password"
+          name="password" 
+          placeholder="Mínimo 6 caracteres" 
+          onChange={handleChange}
+          required 
+        />
+        {errors.password && <span className="error-msg">{errors.password[0]}</span>}
+      </div>
 
-              <div className="btn-group">
-                <button type="button" className="btn-secondary" onClick={() => setStep(1)}>Voltar</button>
-                <button type="submit" className="btn-primary" disabled={loading}>
-                  {loading ? 'Finalizando...' : 'Concluir Cadastro'}
-                </button>
-              </div>
-            </div>
-          )}
-        </form>
+      <div className="input-group">
+        <label>Confirmar Senha</label>
+        <input 
+          type="password"
+          name="password_confirmation" 
+          placeholder="Repita a senha" 
+          onChange={handleChange}
+          required 
+        />
+      </div>
+
+      <div className="btn-group">
+        <button type="button" className="btn-secondary" onClick={() => setStep(2)}>Voltar</button>
+        <button type="submit" className="btn-primary" disabled={loading}>
+          {loading ? 'Finalizando...' : 'Concluir Cadastro'}
+        </button>
+      </div>
+    </div>
+  )}
+</form>
       </div>
     </div>
   );
