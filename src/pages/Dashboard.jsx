@@ -11,28 +11,36 @@ export default function Dashboard() {
   // Estado para o usuário logado
   const [currentUser, setCurrentUser] = useState(null);
 
-  useEffect(() => {
-    // 1. Carregar perfil do usuário logado (para o Alerta de CPF)
-    const fetchMyProfile = async () => {
-      try {
-        // Buscamos na lista de usuários o nosso próprio registro
-        const response = await api.get('/api/v1/users'); 
-        // Se a API retornar uma lista, o primeiro costuma ser o logado ou filtramos
-        if (response.data && response.data.data) {
-          setCurrentUser(response.data.data[0]); 
+useEffect(() => {
+    const token = localStorage.getItem('@AxionID:token');
+    const storedRole = localStorage.getItem('@AxionID:role');
+
+    // Se não tem token ou role ainda, não faz nada e espera
+    if (!token || !storedRole) return;
+
+    const loadData = async () => {
+        try {
+            // SÓ CHAMA SE FOR ADMIN
+            if (storedRole === 'admin') {
+                const response = await api.get('/api/v1/users');
+                if (response.data && response.data.data) {
+                    setUsers(response.data.data);
+                    // Define o usuário logado como o primeiro da lista para o Alerta
+                    setCurrentUser(response.data.data[0]); 
+                }
+            } else {
+                // Se não for admin, você precisa de uma rota que o USER possa acessar
+                // Se não tiver essa rota, remova a chamada abaixo para evitar o 401/403
+                // const response = await api.get('/api/v1/me'); 
+                // setCurrentUser(response.data);
+            }
+        } catch (error) {
+            console.error("Erro ao carregar dados. Provavelmente falta de permissão.");
         }
-      } catch (error) {
-        console.error("Erro ao carregar perfil atual");
-      }
     };
 
-    fetchMyProfile();
-
-    // 2. Se for Admin, carrega a lista completa
-    if (role === 'admin') {
-      fetchUsers();
-    }
-  }, [role]);
+    loadData();
+}, [navigate]); // Remova o 'role' da dependência para evitar loops se o estado demorar
 
   const fetchUsers = async () => {
     setLoading(true);

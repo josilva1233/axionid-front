@@ -14,27 +14,22 @@ export default function Login() {
     const token = params.get('token');
     const isAdmin = params.get('is_admin');
 
-    if (token) {
-      // 1. Salva as credenciais imediatamente
-      localStorage.setItem('@AxionID:token', token);
-      localStorage.setItem('@AxionID:role', isAdmin === '1' ? 'admin' : 'user');
+// Dentro do useEffect do Login.js, quando houver token:
+if (token) {
+    const roleValue = isAdmin === '1' ? 'admin' : 'user';
+    
+    localStorage.setItem('@AxionID:token', token);
+    localStorage.setItem('@AxionID:role', roleValue);
 
-      // 2. IMPORTANTE: Atualiza o cabeçalho da API na hora
-      // Isso evita que o Dashboard tente carregar dados sem token
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    // Injeta o token no Axios na hora para a próxima página já ler
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-      // 3. Limpa a URL para estética e segurança
-      window.history.replaceState({}, document.title, "/login");
+    window.history.replaceState({}, document.title, "/login");
 
-      console.log("Autenticado via Google. Redirecionando...");
-      
-      // 4. Usa um pequeno delay para garantir que o storage foi escrito
-      const timer = setTimeout(() => {
+    setTimeout(() => {
         navigate('/dashboard', { replace: true });
-      }, 100);
-
-      return () => clearTimeout(timer);
-    }
+    }, 300); 
+}
   }, [navigate]);
 
   const handleLogin = async (e) => {
@@ -66,8 +61,8 @@ export default function Login() {
   const handleGoogleLogin = () => {
     const origin = window.location.origin;
     // Garante que o redirecionamento aponte para o IP correto do backend
-    //window.location.href = `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
-    window.location.href = `http://163.176.168.224/api/v1/auth/google`;
+    window.location.href = `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
+    
   };
 
   return (
