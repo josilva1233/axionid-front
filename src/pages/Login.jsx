@@ -6,40 +6,58 @@ export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get('token');
-  const isAdmin = params.get('is_admin');
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const isAdmin = params.get('is_admin');
 
-  if (token) {
-    // 1. Salva as credenciais
-    localStorage.setItem('@AxionID:token', token);
-    localStorage.setItem('@AxionID:role', isAdmin === '1' ? 'admin' : 'user');
+    if (token) {
+      // 1. Salva as credenciais imediatamente
+      localStorage.setItem('@AxionID:token', token);
+      localStorage.setItem('@AxionID:role', isAdmin === '1' ? 'admin' : 'user');
 
-    // 2. Limpa a URL (remove o token da barra de endereços por segurança)
-    window.history.replaceState({}, document.title, "/login");
+      // 2. IMPORTANTE: Atualiza o cabeçalho da API na hora
+      // Isso evita que o Dashboard tente carregar dados sem token
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-    // 3. Agora sim, vai para o dashboard
-    console.log("Autenticado via Google, redirecionando...");
-    navigate('/dashboard', { replace: true });
-  }
-}, [navigate]);
+      // 3. Limpa a URL para estética e segurança
+      window.history.replaceState({}, document.title, "/login");
+
+      console.log("Autenticado via Google. Redirecionando...");
+      
+      // 4. Usa um pequeno delay para garantir que o storage foi escrito
+      const timer = setTimeout(() => {
+        navigate('/dashboard', { replace: true });
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
+
     try {
       const response = await api.post('/api/v1/login', { username, password });
-      localStorage.setItem('@AxionID:token', response.data.token);
       
-      const isAdmin = response.data.user.is_admin === 1 || response.data.user.is_admin === true;
-      localStorage.setItem('@AxionID:role', isAdmin ? 'admin' : 'user');
+      const { token, user } = response.data;
+      localStorage.setItem('@AxionID:token', token);
+      
+      const role = (user.is_admin === 1 || user.is_admin === true) ? 'admin' : 'user';
+      localStorage.setItem('@AxionID:role', role);
+
+      // Configura o token para as próximas chamadas
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
       navigate('/dashboard', { replace: true });
-    } catch (error) {
-      console.error("Erro no login manual");
+    } catch (err) {
+      setError('Usuário ou senha incorretos.');
+      console.error("Erro no login manual", err);
     } finally {
       setLoading(false);
     }
@@ -47,7 +65,7 @@ useEffect(() => {
 
   const handleGoogleLogin = () => {
     const origin = window.location.origin;
-    // Usando a URL da API conforme seu Swagger
+    // Garante que o redirecionamento aponte para o IP correto do backend
     window.location.href = `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
   };
 
@@ -56,6 +74,8 @@ useEffect(() => {
       <div className="auth-card animate-in">
         <div className="brand"><h1>Axion<span>ID</span></h1></div>
         <p className="subtitle">Identidade Digital Profissional</p>
+
+        {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleLogin} className="auth-form">
           <input 
