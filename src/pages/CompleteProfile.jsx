@@ -124,45 +124,94 @@ export default function CompleteProfile() {
     </div>
   )}
 
-  {/* PASSO 2: ENDEREÇO (Sem as senhas aqui) */}
-  {step === 2 && (
-    <div className="step-content animate-in">
-      <h3>Endereço</h3>
-      <p>Onde você reside?</p>
-      
-      <div className="input-group">
-        <label>CEP</label>
-        <input name="zip_code" placeholder="00000-000" onBlur={handleZipCodeBlur} onChange={handleChange} required />
-      </div>
+{/* PASSO 2: ENDEREÇO */}
+{step === 2 && (
+  <div className="step-content animate-in">
+    <h3>Endereço</h3>
+    <p>Onde você reside?</p>
+    
+    <div className="input-group">
+      <label>CEP</label>
+      <input 
+        name="zip_code" 
+        placeholder="00000-000" 
+        value={formData.zip_code}
+        onBlur={handleZipCodeBlur} 
+        onChange={handleChange} 
+        required 
+      />
+    </div>
 
-      <div className="input-row" style={{ display: 'flex', gap: '10px' }}>
-        <div className="input-group" style={{ flex: 3 }}>
-          <label>Rua</label>
-          <input name="street" value={formData.street} readOnly className="input-readonly" />
-        </div>
-        <div className="input-group" style={{ flex: 1 }}>
-          <label>Nº</label>
-          <input name="number" placeholder="123" onChange={handleChange} required />
-        </div>
+    <div className="input-row" style={{ display: 'flex', gap: '10px' }}>
+      <div className="input-group" style={{ flex: 3 }}>
+        <label>Rua</label>
+        <input 
+          name="street" 
+          value={formData.street} 
+          onChange={handleChange}
+          required
+        />
       </div>
-
-      <div className="input-row" style={{ display: 'flex', gap: '10px' }}>
-        <div className="input-group" style={{ flex: 2 }}>
-          <label>Bairro</label>
-          <input name="neighborhood" value={formData.neighborhood} readOnly className="input-readonly" />
-        </div>
-        <div className="input-group" style={{ flex: 1 }}>
-          <label>UF</label>
-          <input name="state" value={formData.state} readOnly className="input-readonly" />
-        </div>
-      </div>
-
-      <div className="btn-group">
-        <button type="button" className="btn-secondary" onClick={() => setStep(1)}>Voltar</button>
-        <button type="button" className="btn-primary" onClick={() => setStep(3)}>Próximo: Segurança</button>
+      <div className="input-group" style={{ flex: 1 }}>
+        <label>Nº</label>
+        <input 
+          name="number" 
+          placeholder="123" 
+          value={formData.number}
+          onChange={handleChange} 
+          required 
+        />
       </div>
     </div>
-  )}
+
+    {/* NOVA LINHA: CIDADE E BAIRRO */}
+    <div className="input-row" style={{ display: 'flex', gap: '10px' }}>
+      <div className="input-group" style={{ flex: 2 }}>
+        <label>Bairro</label>
+        <input 
+          name="neighborhood" 
+          value={formData.neighborhood} 
+          onChange={handleChange}
+          required
+        />
+      </div>
+      <div className="input-group" style={{ flex: 2 }}>
+        <label>Cidade</label>
+        <input 
+          name="city" 
+          value={formData.city} 
+          onChange={handleChange}
+          required
+        />
+      </div>
+      <div className="input-group" style={{ flex: 1 }}>
+        <label>UF</label>
+        <input 
+          name="state" 
+          value={formData.state} 
+          onChange={handleChange}
+          required
+          maxLength="2"
+        />
+      </div>
+    </div>
+
+    <div className="input-group">
+      <label>Complemento (Opcional)</label>
+      <input 
+        name="complement" 
+        value={formData.complement} 
+        onChange={handleChange} 
+        placeholder="Apto, Bloco, etc."
+      />
+    </div>
+
+    <div className="btn-group">
+      <button type="button" className="btn-secondary" onClick={() => setStep(1)}>Voltar</button>
+      <button type="button" className="btn-primary" onClick={() => setStep(3)}>Próximo: Segurança</button>
+    </div>
+  </div>
+)}
 
   {/* PASSO 3: SEGURANÇA (SENHAS) */}
   {step === 3 && (
