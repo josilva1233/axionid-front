@@ -6,7 +6,7 @@ export default function CompleteProfile() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [step, setStep] = useState(1); // 1: Documento, 2: Endereço
+  const [step, setStep] = useState(1); // 1: Documento, 2: Endereço e Senha
 
   const [formData, setFormData] = useState({
     cpf_cnpj: '',
@@ -16,10 +16,12 @@ export default function CompleteProfile() {
     neighborhood: '',
     city: '',
     state: '',
-    complement: ''
+    complement: '',
+    password: '',              // Adicionado para o Backend
+    password_confirmation: '' // Necessário para a regra 'confirmed' do Laravel
   });
 
-  // Busca CEP automática
+  // Busca CEP automática via ViaCEP
   const handleZipCodeBlur = async (e) => {
     const cep = e.target.value.replace(/\D/g, '');
     if (cep.length === 8) {
@@ -35,8 +37,9 @@ export default function CompleteProfile() {
             state: data.uf,
             zip_code: cep
           }));
-          // Limpa erros de endereço se houver
           setErrors(prev => ({ ...prev, zip_code: null }));
+        } else {
+          alert("CEP não encontrado.");
         }
       } catch (err) {
         console.error("Erro ao buscar CEP");
@@ -45,25 +48,39 @@ export default function CompleteProfile() {
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (errors[e.target.name]) {
-      setErrors({ ...errors, [e.target.name]: null });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Limpa o erro específico quando o usuário digita
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: null }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setErrors({});
+
     try {
-      await api.post('/api/v1/complete-profile', formData);
+      // Envia todos os dados para a rota que você criou no AxionAuthController
+      const response = await api.post('/api/v1/complete-profile', formData);
+      
+      alert("Cadastro finalizado com sucesso!");
+      
+      // Opcional: Atualizar o role no localStorage se o backend retornar is_admin
+      if (response.data.user && response.data.user.is_admin) {
+        localStorage.setItem('@AxionID:role', 'admin');
+      }
+
       navigate('/dashboard', { replace: true });
     } catch (error) {
       if (error.response && error.response.status === 422) {
-        setErrors(error.response.data.errors);
-        const messages = Object.values(error.response.data.errors).flat().join('\n');
-        alert("Verifique os campos:\n" + messages);
+        setErrors(error.response.data.errors || error.response.data);
+        const messages = Object.values(error.response.data.errors || {}).flat().join('\n');
+        alert("Erro de validação:\n" + (messages || "Verifique os campos preenchidos."));
       } else {
-        alert("Erro ao conectar com o servidor.");
+        alert("Erro ao conectar com o servidor. Tente novamente.");
       }
     } finally {
       setLoading(false);
@@ -97,17 +114,22 @@ export default function CompleteProfile() {
                 />
                 {errors.cpf_cnpj && <span className="error-msg">{errors.cpf_cnpj[0]}</span>}
               </div>
-              <button type="button" className="btn-primary" onClick={() => setStep(2)} disabled={!formData.cpf_cnpj}>
+              <button 
+                type="button" 
+                className="btn-primary" 
+                onClick={() => setStep(2)} 
+                disabled={!formData.cpf_cnpj}
+              >
                 Próximo passo
               </button>
             </div>
           )}
 
-          {/* PASSO 2: ENDEREÇO (ZIP CODE) */}
+          {/* PASSO 2: ENDEREÇO E SEGURANÇA */}
           {step === 2 && (
             <div className="step-content animate-in">
-              <h3>Endereço</h3>
-              <p>Digite seu CEP para preenchimento automático.</p>
+              <h3>Endereço e Segurança</h3>
+              <p>Complete seus dados para finalizar o acesso.</p>
               
               <div className="input-group">
                 <label>CEP</label>
@@ -142,10 +164,36 @@ export default function CompleteProfile() {
                 </div>
               </div>
 
+              <hr style={{ margin: '20px 0', border: '0', borderTop: '1px solid #eee' }} />
+
+              {/* CAMPOS DE SENHA */}
+              <div className="input-group">
+                <label>Definir Nova Senha</label>
+                <input 
+                  type="password"
+                  name="password" 
+                  placeholder="Mínimo 6 caracteres" 
+                  onChange={handleChange}
+                  required 
+                />
+                {errors.password && <span className="error-msg">{errors.password[0]}</span>}
+              </div>
+
+              <div className="input-group">
+                <label>Confirmar Senha</label>
+                <input 
+                  type="password"
+                  name="password_confirmation" 
+                  placeholder="Repita a senha" 
+                  onChange={handleChange}
+                  required 
+                />
+              </div>
+
               <div className="btn-group">
                 <button type="button" className="btn-secondary" onClick={() => setStep(1)}>Voltar</button>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                  {loading ? 'Salvando...' : 'Concluir Cadastro'}
+                  {loading ? 'Finalizando...' : 'Concluir Cadastro'}
                 </button>
               </div>
             </div>
