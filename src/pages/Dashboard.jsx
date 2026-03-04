@@ -84,11 +84,13 @@ export default function Dashboard() {
           <div className="user-info">
             <span className="user-status">Online</span>
             <br />
+            {currentUser?.name}
+            <br />
             <span className="user-role">
               {role === 'admin' ? 'Administrador' : 'Operacional'}
             </span>
             <br />
-              {currentUser?.name}
+
           </div>
           <button onClick={handleLogout} className="btn-logout">
             Sair
