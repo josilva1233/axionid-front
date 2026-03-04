@@ -90,7 +90,19 @@ export default function Login() {
                 Esqueceu sua senha?
               </Link>
             </div>
+            <input 
+              type="password" 
+              placeholder="Sua senha" 
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required 
+            />
+
+              <Link to="/forgot-password" size="small" className="forgot-password-link">
+                Esqueceu sua senha?
+              </Link>
           </div>
+
 
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? 'Autenticando...' : 'Acessar Painel'}
@@ -111,13 +123,6 @@ export default function Login() {
         <div className="auth-footer">
           <p>Ainda não tem acesso? <Link to="/register">Criar Conta AxionID</Link></p>
         </div>
-            <input 
-              type="password" 
-              placeholder="Sua senha" 
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required 
-            />
       </div>
     </div>
   );
