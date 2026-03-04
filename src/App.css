@@ -48,6 +48,134 @@ body {
   gap: 24px;
 }
 
+/* HEADER PRINCIPAL */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 32px;
+  background: rgba(22, 27, 44, 0.6);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  margin-bottom: 30px;
+}
+
+/* BRAND / LOGO */
+.brand h1 {
+  font-size: 1.5rem; /* Um pouco menor para ser elegante */
+  margin: 0;
+}
+
+/* LADO DIREITO (NAV) */
+.user-nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* BOX DO PERFIL */
+.user-profile-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* AVATAR COM INDICADOR ONLINE */
+.user-avatar-container {
+  position: relative;
+}
+
+.nav-avatar {
+  width: 40px;
+  height: 40px;
+  background: var(--primary);
+  color: white;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+}
+
+.status-indicator {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 12px;
+  height: 12px;
+  background: var(--success);
+  border: 2px solid var(--card-bg);
+  border-radius: 50%;
+}
+
+/* TEXTOS DO USUÁRIO */
+.user-details-nav {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.nav-user-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.user-role-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+
+/* DIVISOR VERTICAL */
+.nav-divider {
+  width: 1px;
+  height: 30px;
+  background: var(--border);
+}
+
+/* BOTÃO SAIR MINIMALISTA */
+.btn-logout-minimal {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.btn-logout-minimal:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 600px) {
+  .dashboard-header {
+    padding: 12px 16px;
+    flex-direction: row; /* Mantém na mesma linha no mobile */
+  }
+  .user-details-nav {
+    display: none; /* Esconde nome no mobile para não apertar */
+  }
+  .nav-divider {
+    display: none;
+  }
+}
+
 /* =========================================
    3. CARDS E COMPONENTES COMUNS
    ========================================= */
