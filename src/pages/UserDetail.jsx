@@ -14,31 +14,42 @@ export default function UserDetail() {
   }, [id]);
 
   const fetchUserDetails = async () => {
-  try {
-    setLoading(true);
-    // Chamada direta para o ID específico
-    const res = await api.get(`/api/v1/users/${id}`); 
-    
-    // O Laravel agora retorna o objeto direto em res.data.data
-    setUser(res.data.data); 
-    
-    console.log("Endereço carregado:", res.data.data.address);
-  } catch (err) {
-    console.error(err);
-    alert("Erro ao carregar detalhes. Verifique se a rota /api/v1/users/{id} existe.");
-    navigate('/dashboard');
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      setLoading(true);
+      const res = await api.get(`/api/v1/users/${id}`); 
+      setUser(res.data.data); 
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao carregar detalhes.");
+      navigate('/dashboard');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // --- FUNÇÃO ADICIONADA AQUI ---
+  const handleRemoveAdmin = async () => {
+    if (!window.confirm("Remover privilégios administrativos deste usuário?")) return;
+
+    setActionLoading(true);
+    try {
+      const response = await api.post(`/api/v1/users/${id}/remove-admin`);
+      alert("Sucesso: " + response.data.message);
+      fetchUserDetails(); // Recarrega para atualizar a UI
+    } catch (error) {
+      alert(error.response?.data?.message || "Erro ao remover admin");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const handlePromote = async () => {
     if (!window.confirm("Promover este usuário a Administrador?")) return;
     setActionLoading(true);
     try {
       await api.post(`/api/v1/users/${id}/promote`);
-      alert("Usuário promovido com sucesso!");
-      fetchUserDetails(); // Recarrega os dados
+      alert("Usuário promovido!");
+      fetchUserDetails();
     } catch (err) {
       alert(err.response?.data?.message || "Erro ao promover.");
     } finally {
@@ -108,48 +119,36 @@ export default function UserDetail() {
             </div>
           </div>
 
-{/* CARD 2: ENDEREÇO */}
-<div className="detail-card">
-  <h3>Endereço Registrado</h3>
-  {user.address ? (
-    <div className="info-list">
-      <div className="info-item">
-        <label>CEP</label>
-        <span>{user.address.zip_code}</span>
-      </div>
-      <div className="info-item">
-        <label>Rua</label>
-        <span>{user.address.street}, {user.address.number}</span>
-      </div>
-      <div className="info-item">
-        <label>Bairro</label>
-        <span>{user.address.neighborhood}</span>
-      </div>
-      <div className="info-item">
-        <label>Cidade/UF</label>
-        <span>{user.address.city} - {user.address.state}</span>
-      </div>
-      {user.address.complement && (
-        <div className="info-item">
-          <label>Complemento</label>
-          <span>{user.address.complement}</span>
-        </div>
-      )}
-    </div>
-  ) : (
-    <div className="empty-address-box">
-      <p className="empty-msg">Nenhum endereço cadastrado por este usuário.</p>
-      {/* Botão opcional se quiser permitir que o admin adicione um endereço manual no futuro */}
-    </div>
-  )}
-</div>
+          {/* CARD 2: ENDEREÇO */}
+          <div className="detail-card">
+            <h3>Endereço Registrado</h3>
+            {user.address ? (
+              <div className="info-list">
+                <div className="info-item"><label>CEP</label><span>{user.address.zip_code}</span></div>
+                <div className="info-item"><label>Rua</label><span>{user.address.street}, {user.address.number}</span></div>
+                <div className="info-item"><label>Bairro</label><span>{user.address.neighborhood}</span></div>
+                <div className="info-item"><label>Cidade/UF</label><span>{user.address.city} - {user.address.state}</span></div>
+              </div>
+            ) : (
+              <p className="empty-msg">Nenhum endereço cadastrado.</p>
+            )}
+          </div>
 
-          {/* CARD 3: AÇÕES DE ADMIN */}
+          {/* CARD 3: AÇÕES DE ADMIN RESTRUTURADO */}
           <div className="detail-card actions-card">
             <h3>Ações Administrativas</h3>
             <div className="actions-buttons-vertical">
               
-              {!user.is_admin && (
+              {/* LÓGICA DE ALTERNAR ADMIN */}
+              {user.is_admin ? (
+                <button 
+                  onClick={handleRemoveAdmin} 
+                  disabled={actionLoading || user.id === parseInt(localStorage.getItem('@AxionID:id'))}
+                  className="btn-danger-outline-full"
+                >
+                  Remover Privilégios de Admin
+                </button>
+              ) : (
                 <button 
                   onClick={handlePromote} 
                   disabled={actionLoading}
@@ -159,6 +158,7 @@ export default function UserDetail() {
                 </button>
               )}
 
+              {/* BOTÃO DE STATUS */}
               <button 
                 onClick={handleToggleStatus} 
                 disabled={actionLoading || user.id === parseInt(localStorage.getItem('@AxionID:id'))}
@@ -168,40 +168,10 @@ export default function UserDetail() {
               </button>
 
               <small className="help-text">
-                * Usuários suspensos não conseguem realizar login no sistema.
+                * Usuários suspensos não conseguem realizar login.
               </small>
             </div>
           </div>
-
-          <div className="admin-actions">
-  <h3>Ações Administrativas</h3>
-  
-  <div className="btn-group-vertical">
-    {/* Botão de Alternar Admin */}
-    {user.is_admin ? (
-      <button 
-        className="btn-danger-outline" 
-        onClick={() => handleRemoveAdmin(user.id)}
-      >
-        Remover Administrador
-      </button>
-    ) : (
-      <button 
-        className="btn-success-outline" 
-        onClick={() => handlePromoteAdmin(user.id)}
-      >
-        Tornar Administrador
-      </button>
-    )}
-
-    {/* Botão de Suspender (Já existente no seu print) */}
-    <button className="btn-suspend" onClick={() => handleToggleStatus(user.id)}>
-      {user.is_active ? 'Suspender Conta' : 'Ativar Conta'}
-    </button>
-  </div>
-  
-  <p className="helper-text">* Usuários suspensos não conseguem realizar login.</p>
-</div>
 
         </div>
       </main>
