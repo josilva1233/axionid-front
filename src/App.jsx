@@ -10,13 +10,21 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* 1. Rotas Públicas */}
-        <Route path="/" element={<Login />} />
+        {/* ESTA É A CORREÇÃO: O Laravel redireciona para /login. 
+          Se não houver essa rota exata, o React limpa os parâmetros da URL.
+        */}
+        <Route path="/login" element={<Login />} />
+
+        {/* Rotas Públicas Adicionais */}
         <Route path="/register" element={<Register />} />
         
-        {/* 2. Rota de Completar Perfil
-            DICA: Se o usuário estiver sendo expulso para o login, 
-            remova temporariamente o <ProtectedRoute> desta rota para testar.
+        {/* Redireciona a raiz para o login. 
+          Assim, se o usuário acessar apenas 'domain.com', ele cai no login.
+        */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+
+        {/* Rota de Completar Perfil 
+          Middleware auth:sanctum no Laravel exige que o token já esteja no Header
         */}
         <Route 
           path="/complete-profile" 
@@ -27,7 +35,7 @@ function App() {
           } 
         />
 
-        {/* 3. Dashboard Protegido */}
+        {/* Dashboard Protegido */}
         <Route 
           path="/dashboard" 
           element={
@@ -37,10 +45,10 @@ function App() {
           } 
         />
 
-        {/* 4. Redirecionamento Global (Sempre por último) 
-            Ele captura qualquer URL não definida acima.
+        {/* Fallback Global: 
+          Qualquer rota digitada errada agora joga para /login sem perder o estado.
         */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   );
