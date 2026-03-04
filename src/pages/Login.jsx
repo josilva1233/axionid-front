@@ -1,107 +1,92 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
-export default function Login() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(''); // Estado para mensagem de erro
+export default function Register() {
+  const [step, setStep] = useState(1); // Controla qual parte do formulário aparece
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    cpf_cnpj: '',
+    password: '',
+    password_confirmation: ''
+  });
+  
   const navigate = useNavigate();
 
+  // ONDE CORRIGIR: Dentro do useEffect principal da página de Registro
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
-    if (token) {
+    const stepParam = params.get('step');
+    const nameParam = params.get('name');
+    const emailParam = params.get('email');
+
+    // Se o Laravel redirecionou com step=2 (Vindo do Google)
+    if (token && stepParam === '2') {
+      // 1. Salva o token para que a chamada de 'complete-profile' funcione
       localStorage.setItem('@AxionID:token', token);
-      navigate('/dashboard', { replace: true });
-    }
-  }, [navigate]);
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(''); // Limpa erros anteriores
-
-    try {
-      const response = await api.post('/api/v1/login', { username, password });
       
-      localStorage.setItem('@AxionID:token', response.data.token);
-      const isAdmin = response.data.user.is_admin === 1 || response.data.user.is_admin === true;
-      localStorage.setItem('@AxionID:role', isAdmin ? 'admin' : 'user');
-
-      navigate('/dashboard', { replace: true });
-    } catch (err) {
-      // Captura o erro 401 do Laravel
-      if (err.response && err.response.status === 401) {
-        setError('Usuário ou senha incorretos.');
-      } else {
-        setError('Erro de conexão com o servidor.');
-      }
-    } finally {
-      setLoading(false);
+      // 2. Preenche os dados que já vieram do Google e pula para o passo 2
+      setFormData(prev => ({
+        ...prev,
+        name: nameParam || '',
+        email: emailParam || ''
+      }));
+      setStep(2); 
     }
-  };
+  }, []);
 
-  const handleGoogleLogin = () => {
-    const origin = window.location.origin;
-    window.location.href = `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
+  const handleCompleteProfile = async (e) => {
+    e.preventDefault();
+    try {
+      // Chamada para a rota que criamos no Laravel
+      await api.post('/api/v1/complete-profile', {
+        cpf_cnpj: formData.cpf_cnpj,
+        password: formData.password,
+        password_confirmation: formData.password_confirmation
+      });
+      
+      navigate('/dashboard');
+    } catch (err) {
+      alert('Erro ao finalizar cadastro: ' + err.response?.data?.message);
+    }
   };
 
   return (
     <div className="auth-container">
-      <div className="auth-card animate-in">
-        <div className="brand"><h1>Axion<span>ID</span></h1></div>
-        <p className="subtitle">Identidade Digital Profissional</p>
-
-        {/* ALERTA DE ERRO ESTILIZADO */}
-        {error && (
-          <div style={{
-            backgroundColor: 'rgba(255, 0, 0, 0.1)',
-            color: '#ff4d4d',
-            padding: '12px',
-            borderRadius: '8px',
-            marginBottom: '20px',
-            fontSize: '14px',
-            textAlign: 'center',
-            border: '1px solid rgba(255, 0, 0, 0.2)',
-            fontWeight: '500'
-          }}>
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleLogin} className="auth-form">
+      {step === 1 ? (
+        <form>{/* Seu formulário normal de Passo 1 (Nome/Email) */}</form>
+      ) : (
+        <form onSubmit={handleCompleteProfile} className="auth-form">
+          <h2>Finalize seu Cadastro</h2>
+          <p>Olá {formData.name}, informe seu CPF e crie uma senha para sua AxionID.</p>
+          
           <input 
             type="text" 
             placeholder="CPF ou CNPJ" 
-            value={username} 
-            onChange={e => setUsername(e.target.value)} 
-            required 
+            value={formData.cpf_cnpj}
+            onChange={e => setFormData({...formData, cpf_cnpj: e.target.value})}
+            required
           />
           <input 
             type="password" 
-            placeholder="Senha" 
-            value={password} 
-            onChange={e => setPassword(e.target.value)} 
-            required 
+            placeholder="Nova Senha" 
+            value={formData.password}
+            onChange={e => setFormData({...formData, password: e.target.value})}
+            required
           />
-          <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? 'Autenticando...' : 'Acessar Painel'}
-          </button>
+          <input 
+            type="password" 
+            placeholder="Confirme a Senha" 
+            value={formData.password_confirmation}
+            onChange={e => setFormData({...formData, password_confirmation: e.target.value})}
+            required
+          />
           
-          <div className="divider"><span>ou continue com</span></div>
-          
-          <button type="button" className="btn-google" onClick={handleGoogleLogin}>
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google" /> 
-            Google Workspace
-          </button>
+          <button type="submit" className="btn-primary">Concluir e Acessar</button>
         </form>
-
-        <div className="auth-footer">
-          <p>Ainda não tem acesso? <Link to="/register">Criar Conta AxionID</Link></p>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
