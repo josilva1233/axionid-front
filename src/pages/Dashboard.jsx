@@ -76,27 +76,36 @@ export default function Dashboard() {
       )}
 
       <header className="dashboard-header">
-        <div className="brand">
-          <h1>Axion<span>ID</span></h1>
+  <div className="brand" onClick={() => navigate('/dashboard')} style={{cursor: 'pointer'}}>
+    <h1>Axion<span>ID</span></h1>
+  </div>
+  
+  <div className="user-nav">
+    <div className="user-profile-box">
+      <div className="user-avatar-container">
+         {/* Mostra a inicial do usuário logado */}
+         <div className="nav-avatar">{currentUser?.name?.charAt(0)}</div>
+         <span className="status-indicator"></span>
+      </div>
+      
+      <div className="user-details-nav">
+        <span className="nav-user-name">{currentUser?.name}</span>
+        <div className="nav-meta">
+          <span className="user-role-badge">
+            {role === 'admin' ? 'Administrador' : 'Operacional'}
+          </span>
         </div>
-        
-        <div className="user-nav">
-          <div className="user-info">
-            <span className="user-status">Online</span>
-            <br />
-            {currentUser?.name}
-            <br />
-            <span className="user-role">
-              {role === 'admin' ? 'Administrador' : 'Operacional'}
-            </span>
-            <br />
+      </div>
+    </div>
 
-          </div>
-          <button onClick={handleLogout} className="btn-logout">
-            Sair
-          </button>
-        </div>
-      </header>
+    <div className="nav-divider"></div>
+
+    <button onClick={handleLogout} className="btn-logout-minimal" title="Sair do sistema">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+      <span>Sair</span>
+    </button>
+  </div>
+</header>
 
       <main className="dashboard-content animate-in">
         {role === 'admin' ? (
