@@ -13,6 +13,13 @@ useEffect(() => {
   const params = new URLSearchParams(window.location.search);
   const token = params.get('token');
 
+  // Captura o erro vindo do Backend (Google Auth)
+    if (errorParam === 'account_suspended') {
+      setError('Sua conta está suspensa. Entre em contato com o suporte ou reative seu acesso.');
+      // Limpa a URL para o erro não reaparecer no refresh
+      window.history.replaceState({}, document.title, "/login");
+    }
+
   if (token) {
     localStorage.setItem('@AxionID:token', token);
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
