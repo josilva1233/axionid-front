@@ -66,7 +66,8 @@ export default function Login() {
   const handleGoogleLogin = () => {
     const origin = window.location.origin;
     // Garante que o redirecionamento aponte para o IP correto do backend
-    window.location.href = `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
+    //window.location.href = `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
+    window.location.href = `http://163.176.168.224/api/v1/auth/google`;
   };
 
   return (
