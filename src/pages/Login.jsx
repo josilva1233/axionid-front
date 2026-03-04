@@ -67,7 +67,6 @@ export default function Login() {
     <div className="auth-container">
       <div className="auth-card animate-in">
         <div className="brand"><h1>Axion<span>ID</span></h1></div>
-        <p className="subtitle">Identidade Digital Profissional</p>
 
         {error && <div className="error-message">{error}</div>}
 
