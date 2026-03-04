@@ -111,6 +111,22 @@ useEffect(() => {
           <p>Ainda não tem acesso? <Link to="/register">Criar Conta AxionID</Link></p>
         </div>
       </div>
+      {/* Campo de Senha */}
+<div className="input-group">
+  <div className="label-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <label>Senha</label>
+    <Link to="/forgot-password" size="small" className="forgot-password-link">
+      Esqueceu sua senha?
+    </Link>
+  </div>
+  <input 
+    type="password" 
+    name="password" 
+    placeholder="Sua senha" 
+    onChange={handleChange}
+    required 
+  />
+</div>
     </div>
   );
 }
