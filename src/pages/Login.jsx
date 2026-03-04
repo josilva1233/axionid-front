@@ -99,9 +99,7 @@ export default function Login() {
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? 'Autenticando...' : 'Acessar Painel'}
           </button>
-          <Link to="/forgot-password" size="small" className="forgot-password-link">
-                Esqueceu sua senha?
-          </Link>
+
           <div className="divider"><span>ou continue com</span></div>
           
           <button 
@@ -112,6 +110,10 @@ export default function Login() {
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google" /> 
             Google Workspace
           </button>
+          <Link to="/forgot-password" size="small" className="forgot-password-link">
+                Esqueceu sua senha?
+          </Link>
+
         </form>
 
         <div className="auth-footer">
