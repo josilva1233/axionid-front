@@ -173,6 +173,36 @@ export default function UserDetail() {
             </div>
           </div>
 
+          <div className="admin-actions">
+  <h3>Ações Administrativas</h3>
+  
+  <div className="btn-group-vertical">
+    {/* Botão de Alternar Admin */}
+    {user.is_admin ? (
+      <button 
+        className="btn-danger-outline" 
+        onClick={() => handleRemoveAdmin(user.id)}
+      >
+        Remover Administrador
+      </button>
+    ) : (
+      <button 
+        className="btn-success-outline" 
+        onClick={() => handlePromoteAdmin(user.id)}
+      >
+        Tornar Administrador
+      </button>
+    )}
+
+    {/* Botão de Suspender (Já existente no seu print) */}
+    <button className="btn-suspend" onClick={() => handleToggleStatus(user.id)}>
+      {user.is_active ? 'Suspender Conta' : 'Ativar Conta'}
+    </button>
+  </div>
+  
+  <p className="helper-text">* Usuários suspensos não conseguem realizar login.</p>
+</div>
+
         </div>
       </main>
     </div>
