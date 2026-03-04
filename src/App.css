@@ -532,3 +532,152 @@ input:focus {
   .detail-grid { grid-template-columns: 1fr; }
   body { padding: 20px 15px; }
 }
+
+/* =========================================
+   14. TELA DE REGISTRO (REGISTER)
+   ========================================= */
+
+/* Estilo específico para o card de registro (pode ser maior que o de login se tiver mais campos) */
+.register-card {
+    max-width: 550px;
+    margin: auto;
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    padding: clamp(1.8rem, 3vw, 2.5rem);
+    border-radius: 24px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+    animation: slideUpFade 0.5s ease-out forwards;
+}
+
+/* Header do formulário de registro */
+.register-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.register-header h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.02em;
+}
+
+.register-header p {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    margin-top: 8px;
+}
+
+/* Organização de campos em linha (Ex: Nome e Sobrenome ou Email e Senha) */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 1.25rem;
+}
+
+/* Ajuste para campos que devem ocupar a linha toda dentro de um row */
+.form-row.full-width {
+    grid-template-columns: 1fr;
+}
+
+/* Feedback de força da senha (opcional, caso você tenha essa lógica) */
+.password-strength {
+    height: 4px;
+    width: 100%;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: -8px;
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+}
+
+.password-strength-bar {
+    height: 100%;
+    width: 0%; /* Alterado via JS conforme a força */
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.strength-weak { width: 33%; background-color: var(--error); }
+.strength-medium { width: 66%; background-color: var(--warning); }
+.strength-strong { width: 100%; background-color: var(--success); }
+
+/* Rodapé do formulário (Links de alternância) */
+.register-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.register-footer p {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+}
+
+.register-footer a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.register-footer a:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}
+
+/* Checkbox de Termos e Condições */
+.terms-group {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+    cursor: pointer;
+}
+
+.terms-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-top: 3px;
+    cursor: pointer;
+    accent-color: var(--primary);
+}
+
+.terms-group label {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    line-height: 1.4;
+    cursor: pointer;
+}
+
+.terms-group label a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+/* Responsividade para o formulário de registro */
+@media (max-width: 600px) {
+    .form-row {
+        grid-template-columns: 1fr; /* Coluna única no mobile */
+        gap: 0;
+    }
+    
+    .register-card {
+        padding: 1.5rem;
+        border-radius: 0; /* Ocupa a tela toda se desejar no mobile */
+        border: none;
+    }
+}
+
+/* Mensagens de erro de validação (abaixo dos inputs) */
+.error-message {
+    color: var(--error);
+    font-size: 0.75rem;
+    margin-top: 4px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
