@@ -7,8 +7,7 @@ export default function Dashboard() {
   
   // MUDANÇA: Inicie o role direto do localStorage para evitar atrasos na primeira renderização
   const [role, setRole] = useState(localStorage.getItem('@AxionID:role'));
-  const storedRole = localStorage.getItem('@AxionID:role');
-   setRole(storedRole);
+
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
