@@ -14,26 +14,23 @@ export default function UserDetail() {
   }, [id]);
 
   const fetchUserDetails = async () => {
-    try {
-      setLoading(true);
-      // Como o seu index de usuários já traz os endereços (with('address')),
-      // buscamos da lista. Se tiver uma rota de 'show', pode trocar aqui.
-      const res = await api.get('/api/v1/users');
-      const foundUser = res.data.data.find(u => u.id === parseInt(id));
-      
-      if (!foundUser) {
-        alert("Usuário não encontrado.");
-        navigate('/dashboard');
-        return;
-      }
-      setUser(foundUser);
-    } catch (err) {
-      console.error(err);
-      alert("Erro ao carregar detalhes do usuário.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    // Chamada direta para o ID específico
+    const res = await api.get(`/api/v1/users/${id}`); 
+    
+    // O Laravel agora retorna o objeto direto em res.data.data
+    setUser(res.data.data); 
+    
+    console.log("Endereço carregado:", res.data.data.address);
+  } catch (err) {
+    console.error(err);
+    alert("Erro ao carregar detalhes. Verifique se a rota /api/v1/users/{id} existe.");
+    navigate('/dashboard');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handlePromote = async () => {
     if (!window.confirm("Promover este usuário a Administrador?")) return;
