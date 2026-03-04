@@ -86,9 +86,6 @@ export default function Login() {
           <div className="input-group">
             <div className="label-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
               <label>Senha</label>
-              <Link to="/forgot-password" size="small" className="forgot-password-link">
-                Esqueceu sua senha?
-              </Link>
             </div>
             <input 
               type="password" 
@@ -98,12 +95,12 @@ export default function Login() {
               required 
             />
 
+          </div>
+
               <Link to="/forgot-password" size="small" className="forgot-password-link">
                 Esqueceu sua senha?
               </Link>
-          </div>
-
-
+              
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? 'Autenticando...' : 'Acessar Painel'}
           </button>
