@@ -6,29 +6,14 @@ export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(''); // Estado para mensagem de erro
   const navigate = useNavigate();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
-    const needsCpf = params.get('needs_cpf');
-    const isAdmin = params.get('is_admin');
-    const fromGoogle = params.get('from_google');
-
-    // AJUSTE: Se veio do Google mas não tem token (usuário novo total)
-    if (fromGoogle === 'true' && !token) {
-      // Mandamos para o registro mas carregando os dados do Google na URL
-      navigate(`/register${window.location.search}`, { replace: true });
-      return;
-    }
-
-    // Se a API retornou um token (Usuário já existe ou acaba de ser vinculado)
     if (token) {
       localStorage.setItem('@AxionID:token', token);
-      localStorage.setItem('@AxionID:role', isAdmin === '1' ? 'admin' : 'user');
-
-      // Se needsCpf for true, o alerta lateral no Dashboard cuidará de avisar o usuário
-      // Mas o login já está garantido e o google_id gravado no banco!
       navigate('/dashboard', { replace: true });
     }
   }, [navigate]);
@@ -36,16 +21,23 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError(''); // Limpa erros anteriores
+
     try {
       const response = await api.post('/api/v1/login', { username, password });
-      localStorage.setItem('@AxionID:token', response.data.token);
       
+      localStorage.setItem('@AxionID:token', response.data.token);
       const isAdmin = response.data.user.is_admin === 1 || response.data.user.is_admin === true;
       localStorage.setItem('@AxionID:role', isAdmin ? 'admin' : 'user');
 
       navigate('/dashboard', { replace: true });
-    } catch (error) {
-      console.error("Erro no login manual");
+    } catch (err) {
+      // Captura o erro 401 do Laravel
+      if (err.response && err.response.status === 401) {
+        setError('Usuário ou senha incorretos.');
+      } else {
+        setError('Erro de conexão com o servidor.');
+      }
     } finally {
       setLoading(false);
     }
@@ -53,7 +45,6 @@ export default function Login() {
 
   const handleGoogleLogin = () => {
     const origin = window.location.origin;
-    // Usando a URL da API conforme seu Swagger
     window.location.href = `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
   };
 
@@ -62,6 +53,23 @@ export default function Login() {
       <div className="auth-card animate-in">
         <div className="brand"><h1>Axion<span>ID</span></h1></div>
         <p className="subtitle">Identidade Digital Profissional</p>
+
+        {/* ALERTA DE ERRO ESTILIZADO */}
+        {error && (
+          <div style={{
+            backgroundColor: 'rgba(255, 0, 0, 0.1)',
+            color: '#ff4d4d',
+            padding: '12px',
+            borderRadius: '8px',
+            marginBottom: '20px',
+            fontSize: '14px',
+            textAlign: 'center',
+            border: '1px solid rgba(255, 0, 0, 0.2)',
+            fontWeight: '500'
+          }}>
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleLogin} className="auth-form">
           <input 
@@ -84,11 +92,7 @@ export default function Login() {
           
           <div className="divider"><span>ou continue com</span></div>
           
-          <button 
-            type="button" 
-            className="btn-google" 
-            onClick={handleGoogleLogin}
-          >
+          <button type="button" className="btn-google" onClick={handleGoogleLogin}>
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google" /> 
             Google Workspace
           </button>
