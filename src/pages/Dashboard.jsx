@@ -114,6 +114,7 @@ export default function Dashboard() {
                       <th>E-mail</th>
                       <th>CPF/CNPJ</th>
                       <th>Status</th>
+                      <th>Situação</th>
                       <th>Ações</th>
                     </tr>
                   </thead>
@@ -132,6 +133,11 @@ export default function Dashboard() {
                         <td>
                           <span className={`status-badge ${user.profile_completed ? 'complete' : 'pending'}`}>
                             {user.profile_completed ? 'Validado' : 'Pendente'}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`status-badge ${user.is_active ? 'complete' : 'pending'}`}>
+                            {user.is_active ? 'Ativo' : 'Inativo'}
                           </span>
                         </td>
                         <td>
