@@ -83,6 +83,7 @@ export default function Dashboard() {
         <div className="user-nav">
           <div className="user-info">
             <span className="user-status">Online</span>
+            <br />
             <span className="user-role">
               {role === 'admin' ? 'Administrador' : 'Operacional'}
             </span>
