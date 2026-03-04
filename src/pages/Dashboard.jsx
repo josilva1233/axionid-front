@@ -87,6 +87,7 @@ export default function Dashboard() {
             <span className="user-role">
               {role === 'admin' ? 'Administrador' : 'Operacional'}
             </span>
+            <br />
               {currentUser?.name}
           </div>
           <button onClick={handleLogout} className="btn-logout">
@@ -123,12 +124,7 @@ export default function Dashboard() {
                     {users.map((user) => (
                       <tr key={user.id}>
                         <td>{user.id}</td>
-                        <td>
-                          <div className="user-td-name">
-                            <div className="avatar-small">{user.name}</div>
-                          
-                          </div>
-                        </td>
+                        <td>{user.name}</td>
                         <td>{user.email}</td>
                         <td>{user.is_admin ? 'Administrador' : 'Operacional'}</td>
                         <td>
