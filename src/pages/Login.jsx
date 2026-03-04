@@ -9,31 +9,29 @@ export default function Login() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get('token');
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
 
-  if (token) {
-    localStorage.setItem('@AxionID:token', token);
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    if (token) {
+      localStorage.setItem('@AxionID:token', token);
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-    // Busca o usuário logado via Google
-    api.get('/api/v1/me')
-      .then(res => {
-        const user = res.data;
-        const role = (user.is_admin === 1 || user.is_admin === true) ? 'admin' : 'user';
-        localStorage.setItem('@AxionID:role', role);
+      api.get('/api/v1/me')
+        .then(res => {
+          const user = res.data;
+          const role = (user.is_admin === 1 || user.is_admin === true) ? 'admin' : 'user';
+          localStorage.setItem('@AxionID:role', role);
 
-        // Limpa a query da URL
-        window.history.replaceState({}, document.title, "/login");
-        navigate('/dashboard', { replace: true });
-      })
-      .catch(err => {
-        console.error("Erro ao buscar perfil do Google login", err);
-        navigate('/login', { replace: true });
-      });
-  }
-}, [navigate]);
+          window.history.replaceState({}, document.title, "/login");
+          navigate('/dashboard', { replace: true });
+        })
+        .catch(err => {
+          console.error("Erro ao buscar perfil do Google login", err);
+          navigate('/login', { replace: true });
+        });
+    }
+  }, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -49,7 +47,6 @@ useEffect(() => {
       const role = (user.is_admin === 1 || user.is_admin === true) ? 'admin' : 'user';
       localStorage.setItem('@AxionID:role', role);
 
-      // Configura o token para as próximas chamadas
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
       navigate('/dashboard', { replace: true });
@@ -63,9 +60,7 @@ useEffect(() => {
 
   const handleGoogleLogin = () => {
     const origin = window.location.origin;
-    // Garante que o redirecionamento aponte para o IP correto do backend
     window.location.href = `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
-    
   };
 
   return (
@@ -77,20 +72,33 @@ useEffect(() => {
         {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleLogin} className="auth-form">
-          <input 
-            type="text" 
-            placeholder="CPF ou CNPJ" 
-            value={username} 
-            onChange={e => setUsername(e.target.value)} 
-            required 
-          />
-          <input 
-            type="password" 
-            placeholder="Senha" 
-            value={password} 
-            onChange={e => setPassword(e.target.value)} 
-            required 
-          />
+          <div className="input-group">
+            <label>Identificação</label>
+            <input 
+              type="text" 
+              placeholder="CPF ou CNPJ" 
+              value={username} 
+              onChange={e => setUsername(e.target.value)} 
+              required 
+            />
+          </div>
+
+          <div className="input-group">
+            <div className="label-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+              <label>Senha</label>
+              <Link to="/forgot-password" size="small" className="forgot-password-link">
+                Esqueceu sua senha?
+              </Link>
+            </div>
+            <input 
+              type="password" 
+              placeholder="Sua senha" 
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required 
+            />
+          </div>
+
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? 'Autenticando...' : 'Acessar Painel'}
           </button>
@@ -111,22 +119,6 @@ useEffect(() => {
           <p>Ainda não tem acesso? <Link to="/register">Criar Conta AxionID</Link></p>
         </div>
       </div>
-      {/* Campo de Senha */}
-<div className="input-group">
-  <div className="label-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-    <label>Senha</label>
-    <Link to="/forgot-password" size="small" className="forgot-password-link">
-      Esqueceu sua senha?
-    </Link>
-  </div>
-  <input 
-    type="password" 
-    name="password" 
-    placeholder="Sua senha" 
-    onChange={handleChange}
-    required 
-  />
-</div>
     </div>
   );
 }
