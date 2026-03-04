@@ -85,8 +85,9 @@ export default function Dashboard() {
             <span className="user-status">Online</span>
             <br />
             <span className="user-role">
-              {role === 'admin' ? 'Administrador' : 'Operacional'}, {currentUser?.name || 'Usuário'}
+              {role === 'admin' ? 'Administrador' : 'Operacional'}
             </span>
+              {currentUser?.name}
           </div>
           <button onClick={handleLogout} className="btn-logout">
             Sair
@@ -125,6 +126,7 @@ export default function Dashboard() {
                         <td>
                           <div className="user-td-name">
                             <div className="avatar-small">{user.name}</div>
+                          
                           </div>
                         </td>
                         <td>{user.email}</td>
