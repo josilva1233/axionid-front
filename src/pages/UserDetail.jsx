@@ -27,7 +27,27 @@ export default function UserDetail() {
     }
   };
 
-  // --- FUNÇÃO ADICIONADA AQUI ---
+  // --- NOVA FUNÇÃO DE DELETAR ---
+  const handleDelete = async () => {
+    const confirmName = window.prompt(`Para excluir permanentemente o usuário "${user.name}", digite o NOME dele abaixo:`);
+    
+    if (confirmName !== user.name) {
+      if (confirmName !== null) alert("O nome digitado não confere. Operação cancelada.");
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      await api.delete(`/api/v1/users/${id}`);
+      alert("Usuário excluído com sucesso!");
+      navigate('/dashboard', { replace: true });
+    } catch (err) {
+      alert(err.response?.data?.message || "Erro ao excluir usuário.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleRemoveAdmin = async () => {
     if (!window.confirm("Remover privilégios administrativos deste usuário?")) return;
 
@@ -35,7 +55,7 @@ export default function UserDetail() {
     try {
       const response = await api.post(`/api/v1/users/${id}/remove-admin`);
       alert("Sucesso: " + response.data.message);
-      fetchUserDetails(); // Recarrega para atualizar a UI
+      fetchUserDetails(); 
     } catch (error) {
       alert(error.response?.data?.message || "Erro ao remover admin");
     } finally {
@@ -89,7 +109,6 @@ export default function UserDetail() {
       <main className="detail-content animate-in">
         <div className="detail-grid">
           
-          {/* CARD 1: INFORMAÇÕES PESSOAIS */}
           <div className="detail-card">
             <div className="card-header">
               <div className="avatar-large">{user.name?.charAt(0)}</div>
@@ -119,7 +138,6 @@ export default function UserDetail() {
             </div>
           </div>
 
-          {/* CARD 2: ENDEREÇO */}
           <div className="detail-card">
             <h3>Endereço Registrado</h3>
             {user.address ? (
@@ -134,12 +152,10 @@ export default function UserDetail() {
             )}
           </div>
 
-          {/* CARD 3: AÇÕES DE ADMIN RESTRUTURADO */}
           <div className="detail-card actions-card">
             <h3>Ações Administrativas</h3>
             <div className="actions-buttons-vertical">
               
-              {/* LÓGICA DE ALTERNAR ADMIN */}
               {user.is_admin ? (
                 <button 
                   onClick={handleRemoveAdmin} 
@@ -158,7 +174,6 @@ export default function UserDetail() {
                 </button>
               )}
 
-              {/* BOTÃO DE STATUS */}
               <button 
                 onClick={handleToggleStatus} 
                 disabled={actionLoading || user.id === parseInt(localStorage.getItem('@AxionID:id'))}
@@ -167,8 +182,18 @@ export default function UserDetail() {
                 {user.is_active ? 'Suspender Conta' : 'Reativar Conta'}
               </button>
 
+              {/* NOVO BOTÃO DE DELETAR */}
+              <button 
+                onClick={handleDelete}
+                disabled={actionLoading || user.id === parseInt(localStorage.getItem('@AxionID:id'))}
+                className="btn-delete-full"
+                style={{ marginTop: '10px', backgroundColor: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' }}
+              >
+                {actionLoading ? 'Excluindo...' : 'Excluir Usuário Permanentemente'}
+              </button>
+
               <small className="help-text">
-                * Usuários suspensos não conseguem realizar login.
+                * Usuários suspensos não conseguem realizar login. Exclusões são irreversíveis.
               </small>
             </div>
           </div>
