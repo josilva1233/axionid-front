@@ -72,6 +72,7 @@ export default function Login() {
         {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleLogin} className="auth-form">
+          <br />
           <div className="input-group">
             <label>Identificação</label>
             <input 
@@ -100,7 +101,7 @@ export default function Login() {
               <Link to="/forgot-password" size="small" className="forgot-password-link">
                 Esqueceu sua senha?
               </Link>
-              
+
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? 'Autenticando...' : 'Acessar Painel'}
           </button>
@@ -116,7 +117,7 @@ export default function Login() {
             Google Workspace
           </button>
         </form>
-
+        <br />
         <div className="auth-footer">
           <p>Ainda não tem acesso? <Link to="/register">Criar Conta AxionID</Link></p>
         </div>
