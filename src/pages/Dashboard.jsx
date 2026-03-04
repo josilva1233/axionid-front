@@ -4,42 +4,36 @@ import api from '../services/api';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  
-  // MUDANÇA: Inicie o role direto do localStorage para evitar atrasos na primeira renderização
-  const [role, setRole] = useState(localStorage.getItem('@AxionID:role'));
+
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('@AxionID:token');
-    const storedRole = localStorage.getItem('@AxionID:role');
 
     if (!token) {
       navigate('/login', { replace: true });
       return;
     }
 
-    // Garante que o estado do componente está sincronizado com o storage
-    setRole(storedRole);
-
     const loadDashboardData = async () => {
       setLoading(true);
       try {
-        // 1. SEMPRE busca o perfil do usuário logado (Funciona para Admin e User)
-        // Rota /me que você definiu no api.php
+        // Busca perfil logado
         const profileRes = await api.get('/api/v1/me');
-        setCurrentUser(profileRes.data);
+        const user = profileRes.data;
+        setCurrentUser(user);
 
-        // 2. SÓ busca a lista completa se for de fato ADMIN
-        if (storedRole === 'admin') {
+        // Se for admin REAL (vindo do backend)
+        if (user.is_admin) {
           const usersRes = await api.get('/api/v1/users');
           const data = usersRes.data.data || usersRes.data;
           setUsers(Array.isArray(data) ? data : []);
         }
+
       } catch (error) {
-        console.error("Erro ao carregar dados do dashboard:", error);
-        // Se der 401 aqui, o seu interceptor já vai cuidar do logout
+        console.error("Erro ao carregar dados:", error);
       } finally {
         setLoading(false);
       }
@@ -59,15 +53,14 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      
-      {/* ALERTA DE PERFIL INCOMPLETO */}
+
       {currentUser && (!currentUser.profile_completed || !currentUser.cpf_cnpj) && (
         <div className="profile-sidebar-alert animate-in">
           <div className="alert-header">
             <span className="alert-icon">⚠️</span>
             <strong>Ação Requerida</strong>
           </div>
-          <p>Olá <strong>{currentUser.name}</strong>, finalize seu cadastro para validar sua identidade.</p>
+          <p>Olá <strong>{currentUser.name}</strong>, finalize seu cadastro.</p>
           <button onClick={() => navigate('/complete-profile')} className="btn-alert-link">
             Completar agora →
           </button>
@@ -78,12 +71,12 @@ export default function Dashboard() {
         <div className="brand">
           <h1>Axion<span>ID</span></h1>
         </div>
-        
+
         <div className="user-nav">
           <div className="user-info">
             <span className="user-status">Online</span>
             <span className="user-role">
-              {role === 'admin' ? 'Administrador' : 'Operacional'}
+              {currentUser?.is_admin ? 'Administrador' : 'Operacional'}
             </span>
           </div>
           <button onClick={handleLogout} className="btn-logout">
@@ -93,7 +86,7 @@ export default function Dashboard() {
       </header>
 
       <main className="dashboard-content animate-in">
-        {role === 'admin' ? (
+        {currentUser?.is_admin ? (
           <div className="content-card">
             <div className="card-header-flex">
               <h3>Gestão de Identidades</h3>
@@ -111,27 +104,16 @@ export default function Dashboard() {
                       <th>E-mail</th>
                       <th>CPF/CNPJ</th>
                       <th>Status</th>
-                      <th>Ações</th>
                     </tr>
                   </thead>
                   <tbody>
                     {users.map((user) => (
                       <tr key={user.id}>
-                        <td>
-                          <div className="user-td-name">
-                            <div className="avatar-small">{user.name?.charAt(0)}</div>
-                            {user.name}
-                          </div>
-                        </td>
+                        <td>{user.name}</td>
                         <td>{user.email}</td>
-                        <td>{user.cpf_cnpj || <small style={{color:'#666'}}>Pendente</small>}</td>
+                        <td>{user.cpf_cnpj || 'Pendente'}</td>
                         <td>
-                          <span className={`status-badge ${user.profile_completed ? 'complete' : 'pending'}`}>
-                            {user.profile_completed ? 'Validado' : 'Pendente'}
-                          </span>
-                        </td>
-                        <td>
-                          <button className="btn-action-view">Ver Detalhes</button>
+                          {user.profile_completed ? 'Validado' : 'Pendente'}
                         </td>
                       </tr>
                     ))}
@@ -142,28 +124,11 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="content-card">
-            <div className="card-header-flex">
-              <h3>Área Operacional</h3>
-            </div>
-            <div className="welcome-box">
-               <p>Bem-vindo, <strong>{currentUser?.name || 'Carregando...'}</strong>.</p>
-               <p>Seu nível de acesso é <strong>Operacional</strong>. Você pode visualizar seus protocolos e validar sua identidade digital.</p>
-               
-               {/* Exemplo de info para o usuário comum */}
-               <div className="user-stats-grid">
-                  <div className="stat-item">
-                    <span>E-mail</span>
-                    <strong>{currentUser?.email}</strong>
-                  </div>
-                  <div className="stat-item">
-                    <span>CPF/CNPJ</span>
-                    <strong>{currentUser?.cpf_cnpj || 'Não informado'}</strong>
-                  </div>
-               </div>
-            </div>
+            <h3>Área Operacional</h3>
+            <p>Bem-vindo, <strong>{currentUser?.name}</strong>.</p>
           </div>
         )}
       </main>
     </div>
   );
-}
+}c
