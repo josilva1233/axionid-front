@@ -2,22 +2,23 @@
    1. CONFIGURAÇÕES DE DESIGN SYSTEM
    ========================================= */
 :root {
-  --primary: #6366f1;           /* Indigo moderno */
+  --primary: #6366f1;
   --primary-hover: #4f46e5;
-  --bg-dark: #0b0f1a;           /* Azul marinho profundo */
-  --card-bg: #161b2c;           /* Elevação do card */
+  --bg-dark: #0b0f1a;
+  --card-bg: #161b2c;
   --text-main: #f8fafc;
-  --text-dim: #94a3b8;          /* Azul acinzentado para labels */
+  --text-dim: #94a3b8;
   --border: rgba(255, 255, 255, 0.08);
   --input-bg: rgba(0, 0, 0, 0.2);
   --error: #ef4444;
   --success: #22c55e;
   --warning: #f59e0b;
-  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.4),
+               0 8px 10px -6px rgba(0, 0, 0, 0.4);
 }
 
 /* =========================================
-   2. CENTRALIZAÇÃO E LAYOUT BASE
+   2. RESET E LAYOUT BASE
    ========================================= */
 * {
   box-sizing: border-box;
@@ -25,7 +26,6 @@
   padding: 0;
 }
 
-/* Garante que o conteúdo ocupe a tela toda e centralize */
 html, body, #root {
   height: 100%;
   min-height: 100vh;
@@ -36,14 +36,16 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color: var(--text-main);
   line-height: 1.6;
-  
-  /* Centralização Mestra */
-  display: grid;
-  place-items: center; 
-  padding: 20px;
+
+  /* Centralização mais fluida */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 40px 20px;
 }
 
-/* Container de Dashboard (caso você use uma estrutura de layout maior) */
+/* Container geral */
 .dashboard-container {
   width: 100%;
   max-width: 1100px;
@@ -53,40 +55,54 @@ body {
 }
 
 /* =========================================
-   3. CARDS (LOGIN, CADASTRO E DETALHES)
+   3. CARDS
    ========================================= */
-.auth-card, .detail-card {
+.auth-card,
+.detail-card {
   background: var(--card-bg);
   backdrop-filter: blur(12px);
-  padding: 2.5rem;
+
+  /* Padding responsivo (remove sensação de aperto) */
+  padding: clamp(1.8rem, 3vw, 2.5rem);
+
   border-radius: 24px;
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--border);
+
   width: 100%;
   position: relative;
   animation: slideUpFade 0.5s ease-out forwards;
 }
 
+/* Login card mais confortável */
 .auth-card {
-  max-width: 440px;
+  max-width: 520px;
 }
 
-/* Efeito de brilho sutil no topo do card */
-.auth-card::before, .detail-card::before {
+/* Linha de brilho superior */
+.auth-card::before,
+.detail-card::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
 }
 
 /* =========================================
-   4. TIPOGRAFIA E BRAND
+   4. TIPOGRAFIA
    ========================================= */
 .brand h1 {
   font-size: 2.5rem;
   font-weight: 800;
-  letter-spacing: -0.05em; /* Estilo tech moderno */
+  letter-spacing: -0.05em;
   margin-bottom: 0.5rem;
   text-align: center;
 }
@@ -102,7 +118,7 @@ body {
 }
 
 /* =========================================
-   5. FORMULÁRIOS E INPUTS
+   5. FORMULÁRIOS
    ========================================= */
 .input-group {
   display: flex;
@@ -130,6 +146,7 @@ input {
   border: 1.5px solid var(--border);
   border-radius: 12px;
   padding: 14px 16px;
+  min-height: 48px; /* mais confortável */
   color: white;
   font-size: 0.95rem;
   width: 100%;
@@ -145,9 +162,12 @@ input:focus {
 }
 
 /* =========================================
-   6. BOTÕES (FEEDBACK FÍSICO)
+   6. BOTÕES
    ========================================= */
-.btn-primary, .btn-secondary, .btn-danger, .btn-success {
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.btn-success {
   padding: 14px 24px;
   border-radius: 12px;
   font-weight: 600;
@@ -162,7 +182,11 @@ input:focus {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  background: linear-gradient(
+    135deg,
+    var(--primary),
+    var(--primary-hover)
+  );
   color: white;
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
@@ -183,14 +207,25 @@ input:focus {
   border: 1px solid var(--border);
 }
 
-/* Estilos de Ação (Remove Admin / Suspender) */
-.btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--error); border: 1px solid var(--error); }
-.btn-danger:hover { background: var(--error); color: white; }
+.btn-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+  border: 1px solid var(--error);
+}
 
-.btn-success { background: rgba(34, 197, 94, 0.1); color: var(--success); border: 1px solid var(--success); }
+.btn-danger:hover {
+  background: var(--error);
+  color: white;
+}
+
+.btn-success {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
 
 /* =========================================
-   7. GRID DE DETALHES (TELA DO OTÁVIO)
+   7. GRID DE DETALHES
    ========================================= */
 .detail-grid {
   display: grid;
@@ -231,8 +266,14 @@ input:focus {
    8. ANIMAÇÕES
    ========================================= */
 @keyframes slideUpFade {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .spinner {
@@ -245,11 +286,24 @@ input:focus {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-/* Responsividade */
+/* =========================================
+   9. RESPONSIVIDADE
+   ========================================= */
 @media (max-width: 768px) {
-  .detail-grid { grid-template-columns: 1fr; }
-  .input-row { flex-direction: column; }
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .input-row {
+    flex-direction: column;
+  }
+
+  body {
+    padding: 30px 16px;
+  }
 }
