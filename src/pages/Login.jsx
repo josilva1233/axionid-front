@@ -9,28 +9,31 @@ export default function Login() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    const isAdmin = params.get('is_admin');
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
 
-// Dentro do useEffect do Login.js, quando houver token:
-if (token) {
-    const roleValue = isAdmin === '1' ? 'admin' : 'user';
-    
+  if (token) {
     localStorage.setItem('@AxionID:token', token);
-    localStorage.setItem('@AxionID:role', roleValue);
-
-    // Injeta o token no Axios na hora para a próxima página já ler
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-    window.history.replaceState({}, document.title, "/login");
+    // Busca o usuário logado via Google
+    api.get('/api/v1/me')
+      .then(res => {
+        const user = res.data;
+        const role = (user.is_admin === 1 || user.is_admin === true) ? 'admin' : 'user';
+        localStorage.setItem('@AxionID:role', role);
 
-    setTimeout(() => {
+        // Limpa a query da URL
+        window.history.replaceState({}, document.title, "/login");
         navigate('/dashboard', { replace: true });
-    }, 300); 
-}
-  }, [navigate]);
+      })
+      .catch(err => {
+        console.error("Erro ao buscar perfil do Google login", err);
+        navigate('/login', { replace: true });
+      });
+  }
+}, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
