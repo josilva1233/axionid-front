@@ -63,8 +63,6 @@ export default function Login() {
     window.location.href = `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
   };
 
-  // ... (mantenha os imports e toda a lógica acima do return)
-
   return (
     <div className="auth-container">
       <div className="auth-card animate-in">
@@ -74,9 +72,8 @@ export default function Login() {
         {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleLogin} className="auth-form">
-          {/* GRUPO DE IDENTIFICAÇÃO (CPF/CNPJ) */}
           <div className="input-group">
-            <label className="input-label">Identificação</label>
+            <label>Identificação</label>
             <input 
               type="text" 
               placeholder="CPF ou CNPJ" 
@@ -86,11 +83,10 @@ export default function Login() {
             />
           </div>
 
-          {/* GRUPO DE SENHA (COM O LINK CORRIGIDO) */}
           <div className="input-group">
-            <div className="label-wrapper">
-              <label className="input-label">Senha</label>
-              <Link to="/forgot-password" className="forgot-password-link">
+            <div className="label-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+              <label>Senha</label>
+              <Link to="/forgot-password" size="small" className="forgot-password-link">
                 Esqueceu sua senha?
               </Link>
             </div>
@@ -114,7 +110,7 @@ export default function Login() {
             className="btn-google" 
             onClick={handleGoogleLogin}
           >
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google Workspace" /> 
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google" /> 
             Google Workspace
           </button>
         </form>
@@ -125,5 +121,4 @@ export default function Login() {
       </div>
     </div>
   );
-
 }
