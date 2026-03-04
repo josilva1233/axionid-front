@@ -1,229 +1,159 @@
 /* =========================================
-   1. VARIÁVEIS DE DESIGN SYSTEM (PRO)
+   PÁGINA DE DETALHES (IDENTITY DETAILS)
    ========================================= */
-:root {
-  --primary: #6366f1;           
-  --primary-hover: #4f46e5;
-  --bg-dark: #0b0f1a;           
-  --card-bg: #161b2c;           
-  --text-main: #f8fafc;
-  --text-dim: #94a3b8;          
-  --border: rgba(255, 255, 255, 0.08);
-  --input-bg: rgba(0, 0, 0, 0.2);
-  --error: #ef4444;
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
-}
 
-/* =========================================
-   2. RESET E CENTRALIZAÇÃO ABSOLUTA
-   ========================================= */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-/* O segredo da centralização está aqui */
-html, body, #root {
-  height: 100%;
-  min-height: 100vh;
-}
-
-body {
-  background-color: var(--bg-dark);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  color: var(--text-main);
-  line-height: 1.6;
-  
-  /* Centralização Total */
+.detail-grid {
   display: grid;
-  place-items: center; 
-  padding: 1.5rem;
+  grid-template-columns: 1fr 1fr; /* Divide em duas colunas no desktop */
+  gap: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
 }
 
-/* =========================================
-   3. AUTH CONTAINER & CARD (GLASSMORPHISM)
-   ========================================= */
-.auth-container {
-  width: 100%;
+/* Card Principal de Perfil (Avatar + Nome) */
+.profile-main-card {
+  grid-column: 1 / -1; /* Ocupa a largura total no topo */
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.avatar-large {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-.auth-card {
-  background: var(--card-bg);
-  backdrop-filter: blur(12px);
-  padding: 2.5rem;
-  border-radius: 24px;
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border);
-  width: 100%;
-  max-width: 440px;
-  text-align: center;
-  position: relative;
-  animation: slideUpFade 0.5s ease-out forwards;
-}
-
-/* Linha de brilho superior no card */
-.auth-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-}
-
-/* =========================================
-   4. BRAND E TIPOGRAFIA
-   ========================================= */
-.brand h1 {
-  font-size: 2.2rem;
-  margin-bottom: 0.5rem;
+  font-size: 2.5rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  color: white;
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
 }
 
-.brand span {
-  color: var(--primary);
-}
-
-h3 {
+.user-titles h3 {
+  font-size: 1.8rem;
   margin-bottom: 0.5rem;
-  font-size: 1.25rem;
 }
 
-p {
-  color: var(--text-dim);
-  font-size: 0.9rem;
+.badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.badge.admin {
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--primary);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+/* Cards de Informação e Ações */
+.detail-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-card h3 {
+  font-size: 1.1rem;
   margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-dim);
 }
 
-/* =========================================
-   5. FORMULÁRIO E INPUTS
-   ========================================= */
-.auth-form {
+/* Lista de Dados (Label + Valor) */
+.info-list {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
 }
 
-.input-group {
+.info-item {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  text-align: left;
+  gap: 4px;
 }
 
-.input-row {
-  display: flex;
-  gap: 1rem;
-}
-
-.input-group label {
-  font-size: 0.75rem;
+.info-item label {
+  font-size: 0.7rem;
   color: var(--text-dim);
-  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
-.auth-form input {
-  background: var(--input-bg);
-  border: 1.5px solid var(--border);
-  border-radius: 12px;
-  padding: 14px 16px;
-  color: white;
-  font-size: 0.95rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.auth-form input:focus {
-  outline: none;
-  border-color: var(--primary);
-  background: rgba(99, 102, 241, 0.05);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
-  transform: translateY(-1px);
-}
-
-.input-readonly {
-  opacity: 0.5;
-  cursor: not-allowed;
-  background: rgba(0, 0, 0, 0.3) !important;
-}
-
-/* =========================================
-   6. BOTÕES E COMPONENTES
-   ========================================= */
-.btn-group {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.btn-primary, .btn-secondary {
-  padding: 14px 24px;
-  border-radius: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 0.95rem;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-  color: white;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-}
-
-.btn-primary:hover:not(:disabled) {
-  filter: brightness(1.1);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
-}
-
-.btn-primary:active {
-  transform: translateY(0);
-}
-
-.btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
+.info-item span {
+  font-size: 1rem;
   color: var(--text-main);
-  border: 1px solid var(--border);
+  font-weight: 500;
 }
 
-/* =========================================
-   7. PROGRESSO E ANIMAÇÕES
-   ========================================= */
-.progress-bar {
-  height: 6px;
-  background: var(--border);
-  border-radius: 10px;
-  margin: 1.5rem 0 2.5rem;
-  overflow: hidden;
+/* Seção de Ações Administrativas */
+.actions-buttons-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.progress-fill {
-  height: 100%;
-  background: var(--primary);
-  box-shadow: 0 0 10px var(--primary);
-  transition: width 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+.btn-danger-outline-full, .btn-suspend-full {
+  width: 100%;
+  justify-content: center;
+  padding: 14px;
+  font-size: 0.9rem;
+  border-radius: 12px;
+  transition: all 0.3s ease;
 }
 
-@keyframes slideUpFade {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+.btn-danger-outline-full:hover {
+  background: var(--error);
+  color: white;
 }
 
-/* Responsividade para Celulares */
-@media (max-width: 480px) {
-  .auth-card { padding: 1.5rem; border-radius: 20px; }
-  .input-row { flex-direction: column; gap: 1.25rem; }
+.btn-suspend-full {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning);
+  border: 1px solid var(--warning);
+}
+
+.btn-suspend-full:hover {
+  background: var(--warning);
+  color: #000;
+}
+
+.help-text {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+  
+  .profile-main-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem;
+  }
 }
