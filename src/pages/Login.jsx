@@ -100,7 +100,6 @@ export default function Login() {
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? 'Autenticando...' : 'Acessar Painel'}
           </button>
-          <br />
           <Link to="/forgot-password" size="small" className="forgot-password-link">
                 Esqueceu sua senha?
           </Link>
@@ -115,7 +114,7 @@ export default function Login() {
             Google Workspace
           </button>
         </form>
-        <br />
+
         <div className="auth-footer">
           <p>Ainda não tem acesso? <Link to="/register">Criar Conta AxionID</Link></p>
         </div>
