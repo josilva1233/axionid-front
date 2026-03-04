@@ -111,23 +111,41 @@ export default function UserDetail() {
             </div>
           </div>
 
-          {/* CARD 2: ENDEREÇO */}
-          <div className="detail-card">
-            <h3>Endereço Registrado</h3>
-            {user.address ? (
-              <div className="info-list">
-                <div className="info-item"><label>CEP</label><span>{user.address.zip_code}</span></div>
-                <div className="info-item"><label>Rua</label><span>{user.address.street}, {user.address.number}</span></div>
-                <div className="info-item"><label>Bairro</label><span>{user.address.neighborhood}</span></div>
-                <div className="info-item"><label>Cidade/UF</label><span>{user.address.city} - {user.address.state}</span></div>
-                {user.address.complement && (
-                  <div className="info-item"><label>Complemento</label><span>{user.address.complement}</span></div>
-                )}
-              </div>
-            ) : (
-              <p className="empty-msg">Nenhum endereço cadastrado por este usuário.</p>
-            )}
-          </div>
+{/* CARD 2: ENDEREÇO */}
+<div className="detail-card">
+  <h3>Endereço Registrado</h3>
+  {user.address ? (
+    <div className="info-list">
+      <div className="info-item">
+        <label>CEP</label>
+        <span>{user.address.zip_code}</span>
+      </div>
+      <div className="info-item">
+        <label>Rua</label>
+        <span>{user.address.street}, {user.address.number}</span>
+      </div>
+      <div className="info-item">
+        <label>Bairro</label>
+        <span>{user.address.neighborhood}</span>
+      </div>
+      <div className="info-item">
+        <label>Cidade/UF</label>
+        <span>{user.address.city} - {user.address.state}</span>
+      </div>
+      {user.address.complement && (
+        <div className="info-item">
+          <label>Complemento</label>
+          <span>{user.address.complement}</span>
+        </div>
+      )}
+    </div>
+  ) : (
+    <div className="empty-address-box">
+      <p className="empty-msg">Nenhum endereço cadastrado por este usuário.</p>
+      {/* Botão opcional se quiser permitir que o admin adicione um endereço manual no futuro */}
+    </div>
+  )}
+</div>
 
           {/* CARD 3: AÇÕES DE ADMIN */}
           <div className="detail-card actions-card">
