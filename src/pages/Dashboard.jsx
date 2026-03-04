@@ -4,75 +4,64 @@ import api from '../services/api';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [role] = useState(localStorage.getItem('@AxionID:role'));
+  
+  // MUDANÇA: Inicie o role direto do localStorage para evitar atrasos na primeira renderização
+  const [role, setRole] = useState(localStorage.getItem('@AxionID:role'));
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  
-  // Estado para o usuário logado
   const [currentUser, setCurrentUser] = useState(null);
 
-useEffect(() => {
+  useEffect(() => {
     const token = localStorage.getItem('@AxionID:token');
     const storedRole = localStorage.getItem('@AxionID:role');
 
-    // Se não tem token ou role ainda, não faz nada e espera
-    if (!token || !storedRole) return;
+    if (!token) {
+      navigate('/login', { replace: true });
+      return;
+    }
 
-    const loadData = async () => {
-        try {
-            // SÓ CHAMA SE FOR ADMIN
-            if (storedRole === 'admin') {
-                const response = await api.get('/api/v1/users');
-                if (response.data && response.data.data) {
-                    setUsers(response.data.data);
-                    // Define o usuário logado como o primeiro da lista para o Alerta
-                    setCurrentUser(response.data.data[0]); 
-                }
-            } else {
-                // Se não for admin, você precisa de uma rota que o USER possa acessar
-                // Se não tiver essa rota, remova a chamada abaixo para evitar o 401/403
-                // const response = await api.get('/api/v1/me'); 
-                // setCurrentUser(response.data);
-            }
-        } catch (error) {
-            console.error("Erro ao carregar dados. Provavelmente falta de permissão.");
+    // Garante que o estado do componente está sincronizado com o storage
+    setRole(storedRole);
+
+    const loadDashboardData = async () => {
+      setLoading(true);
+      try {
+        // 1. SEMPRE busca o perfil do usuário logado (Funciona para Admin e User)
+        // Rota /me que você definiu no api.php
+        const profileRes = await api.get('/api/v1/me');
+        setCurrentUser(profileRes.data);
+
+        // 2. SÓ busca a lista completa se for de fato ADMIN
+        if (storedRole === 'admin') {
+          const usersRes = await api.get('/api/v1/users');
+          const data = usersRes.data.data || usersRes.data;
+          setUsers(Array.isArray(data) ? data : []);
         }
+      } catch (error) {
+        console.error("Erro ao carregar dados do dashboard:", error);
+        // Se der 401 aqui, o seu interceptor já vai cuidar do logout
+      } finally {
+        setLoading(false);
+      }
     };
 
-    loadData();
-}, [navigate]); // Remova o 'role' da dependência para evitar loops se o estado demorar
-
-  const fetchUsers = async () => {
-    setLoading(true);
-    try {
-      const response = await api.get('/api/v1/users');
-      // O seu Swagger indica que o Laravel retorna um objeto com "data"
-      if (response.data && response.data.data) {
-        setUsers(response.data.data);
-      } else if (Array.isArray(response.data)) {
-        setUsers(response.data);
-      }
-    } catch (error) {
-      console.error("Erro ao buscar lista de usuários");
-    } finally {
-      setLoading(false);
-    }
-  };
+    loadDashboardData();
+  }, [navigate]);
 
   const handleLogout = async () => {
     try {
       await api.post('/api/v1/logout');
     } finally {
       localStorage.clear();
-      navigate('/', { replace: true });
+      navigate('/login', { replace: true });
     }
   };
 
   return (
     <div className="dashboard-container">
       
-      {/* ALERTA DE PERFIL INCOMPLETO (Aparece no canto) */}
-      {currentUser && (currentUser.profile_completed === false || !currentUser.cpf_cnpj) && (
+      {/* ALERTA DE PERFIL INCOMPLETO */}
+      {currentUser && (!currentUser.profile_completed || !currentUser.cpf_cnpj) && (
         <div className="profile-sidebar-alert animate-in">
           <div className="alert-header">
             <span className="alert-icon">⚠️</span>
@@ -112,7 +101,7 @@ useEffect(() => {
             </div>
 
             {loading ? (
-              <div className="loading-spinner">Carregando dados...</div>
+              <div className="loading-spinner">Carregando identidades...</div>
             ) : (
               <div className="table-container">
                 <table className="users-table">
@@ -130,12 +119,12 @@ useEffect(() => {
                       <tr key={user.id}>
                         <td>
                           <div className="user-td-name">
-                            <div className="avatar-small">{user.name.charAt(0)}</div>
+                            <div className="avatar-small">{user.name?.charAt(0)}</div>
                             {user.name}
                           </div>
                         </td>
                         <td>{user.email}</td>
-                        <td>{user.cpf_cnpj || <small style={{color:'#666'}}>Não vinculado</small>}</td>
+                        <td>{user.cpf_cnpj || <small style={{color:'#666'}}>Pendente</small>}</td>
                         <td>
                           <span className={`status-badge ${user.profile_completed ? 'complete' : 'pending'}`}>
                             {user.profile_completed ? 'Validado' : 'Pendente'}
@@ -153,10 +142,24 @@ useEffect(() => {
           </div>
         ) : (
           <div className="content-card">
-            <h3>Área Operacional</h3>
+            <div className="card-header-flex">
+              <h3>Área Operacional</h3>
+            </div>
             <div className="welcome-box">
-               <p>Bem-vindo, <strong>{currentUser?.name || 'Usuário'}</strong>.</p>
-               <p>Seu nível de acesso permite a visualização de seus dados e protocolos.</p>
+               <p>Bem-vindo, <strong>{currentUser?.name || 'Carregando...'}</strong>.</p>
+               <p>Seu nível de acesso é <strong>Operacional</strong>. Você pode visualizar seus protocolos e validar sua identidade digital.</p>
+               
+               {/* Exemplo de info para o usuário comum */}
+               <div className="user-stats-grid">
+                  <div className="stat-item">
+                    <span>E-mail</span>
+                    <strong>{currentUser?.email}</strong>
+                  </div>
+                  <div className="stat-item">
+                    <span>CPF/CNPJ</span>
+                    <strong>{currentUser?.cpf_cnpj || 'Não informado'}</strong>
+                  </div>
+               </div>
             </div>
           </div>
         )}
