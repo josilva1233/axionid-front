@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import UserDetail from './pages/UserDetail';
 import { ProtectedRoute } from './components/ProtectedRoute'; 
 import CompleteProfile from './pages/CompleteProfile';
 import './App.css';
@@ -44,7 +45,15 @@ function App() {
             </ProtectedRoute>
           } 
         />
-
+{/* NOVA ROTA DE DETALHES */}
+        <Route 
+          path="/dashboard/user/:id" 
+          element={
+            <ProtectedRoute>
+              <UserDetail />
+            </ProtectedRoute>
+          } 
+        />
         {/* Fallback Global: 
           Qualquer rota digitada errada agora joga para /login sem perder o estado.
         */}

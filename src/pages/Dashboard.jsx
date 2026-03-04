@@ -132,7 +132,7 @@ export default function Dashboard() {
                           </span>
                         </td>
                         <td>
-                          <button className="btn-action-view">Ver Detalhes</button>
+                          <button className="btn-action-view" onClick={() => navigate(`/dashboard/user/${user.id}`)}>Ver Detalhes</button>
                         </td>
                       </tr>
                     ))}
