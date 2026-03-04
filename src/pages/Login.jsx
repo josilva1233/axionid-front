@@ -8,30 +8,24 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    const needsCpf = params.get('needs_cpf');
-    const isAdmin = params.get('is_admin');
-    const fromGoogle = params.get('from_google');
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  const isAdmin = params.get('is_admin');
 
-    // AJUSTE: Se veio do Google mas não tem token (usuário novo total)
-    if (fromGoogle === 'true' && !token) {
-      // Mandamos para o registro mas carregando os dados do Google na URL
-      navigate(`/register${window.location.search}`, { replace: true });
-      return;
-    }
+  if (token) {
+    // 1. Salva as credenciais
+    localStorage.setItem('@AxionID:token', token);
+    localStorage.setItem('@AxionID:role', isAdmin === '1' ? 'admin' : 'user');
 
-    // Se a API retornou um token (Usuário já existe ou acaba de ser vinculado)
-    if (token) {
-      localStorage.setItem('@AxionID:token', token);
-      localStorage.setItem('@AxionID:role', isAdmin === '1' ? 'admin' : 'user');
+    // 2. Limpa a URL (remove o token da barra de endereços por segurança)
+    window.history.replaceState({}, document.title, "/login");
 
-      // Se needsCpf for true, o alerta lateral no Dashboard cuidará de avisar o usuário
-      // Mas o login já está garantido e o google_id gravado no banco!
-      navigate('/dashboard', { replace: true });
-    }
-  }, [navigate]);
+    // 3. Agora sim, vai para o dashboard
+    console.log("Autenticado via Google, redirecionando...");
+    navigate('/dashboard', { replace: true });
+  }
+}, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
