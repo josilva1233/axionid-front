@@ -93,7 +93,7 @@ export default function Dashboard() {
       </header>
 
       <main className="dashboard-content animate-in">
-        {currentUser?.is_admin ? (
+        {role === 'admin' ? (
           <div className="content-card">
             <div className="card-header-flex">
               <h3>Gestão de Identidades</h3>
