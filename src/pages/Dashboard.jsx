@@ -32,12 +32,11 @@ export default function Dashboard() {
         setCurrentUser(profileRes.data);
 
         // 2. SÓ busca a lista completa se for de fato ADMIN
-// 2. SÓ busca a lista completa se for de fato ADMIN
-if (user.is_admin) {
-  const usersRes = await api.get('/api/v1/users');
-  const data = usersRes.data.data || usersRes.data;
-  setUsers(Array.isArray(data) ? data : []);
-}
+        if (storedRole === 'admin') {
+          const usersRes = await api.get('/api/v1/users');
+          const data = usersRes.data.data || usersRes.data;
+          setUsers(Array.isArray(data) ? data : []);
+        }
       } catch (error) {
         console.error("Erro ao carregar dados do dashboard:", error);
         // Se der 401 aqui, o seu interceptor já vai cuidar do logout
