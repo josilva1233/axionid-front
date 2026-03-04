@@ -1,75 +1,159 @@
 /* =========================================
-   CENTRALIZAÇÃO DA TELA DE DETALHES
+   PÁGINA DE DETALHES (IDENTITY DETAILS)
    ========================================= */
 
-/* O container principal deve ocupar a tela toda */
-.dashboard-container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--bg-dark);
-}
-
-/* Centraliza o conteúdo principal (Main) */
-.detail-content {
-  flex: 1;
-  display: flex;
-  justify-content: center; /* Centraliza horizontalmente */
-  align-items: flex-start;  /* Começa do topo com padding, ou 'center' para o meio real */
-  padding: 40px 20px;
-  width: 100%;
-}
-
-/* Grid de informações com largura controlada */
 .detail-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  width: 100%;
-  max-width: 1100px; /* Impede que o conteúdo estique demais em monitores grandes */
-  margin: 0 auto;    /* Margem automática para reforçar a centralização */
+  grid-template-columns: 1fr 1fr; /* Divide em duas colunas no desktop */
+  gap: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
 }
 
-/* Card de Perfil (Topo) ocupando as duas colunas */
+/* Card Principal de Perfil (Avatar + Nome) */
 .profile-main-card {
-  grid-column: 1 / -1;
+  grid-column: 1 / -1; /* Ocupa a largura total no topo */
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 24px;
-  padding: 32px;
+  padding: 2.5rem;
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 2rem;
   box-shadow: var(--shadow-lg);
-  margin-bottom: 8px; /* Espaço extra para os cards de baixo */
 }
 
-/* =========================================
-   REFINAMENTO DOS CARDS
-   ========================================= */
+.avatar-large {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: white;
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+}
 
+.user-titles h3 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.badge.admin {
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--primary);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+/* Cards de Informação e Ações */
 .detail-card {
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 20px;
-  padding: 24px;
+  padding: 1.5rem;
   box-shadow: var(--shadow-lg);
-  transition: transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
 }
 
-.detail-card:hover {
-  border-color: rgba(99, 102, 241, 0.3); /* Leve brilho ao passar o mouse */
+.detail-card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-dim);
 }
 
-/* Ajuste para dispositivos móveis */
-@media (max-width: 850px) {
+/* Lista de Dados (Label + Valor) */
+.info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-item label {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.info-item span {
+  font-size: 1rem;
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+/* Seção de Ações Administrativas */
+.actions-buttons-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.btn-danger-outline-full, .btn-suspend-full {
+  width: 100%;
+  justify-content: center;
+  padding: 14px;
+  font-size: 0.9rem;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.btn-danger-outline-full:hover {
+  background: var(--error);
+  color: white;
+}
+
+.btn-suspend-full {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning);
+  border: 1px solid var(--warning);
+}
+
+.btn-suspend-full:hover {
+  background: var(--warning);
+  color: #000;
+}
+
+.help-text {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
   .detail-grid {
-    grid-template-columns: 1fr; /* Uma coluna só no celular */
-    max-width: 500px;
+    grid-template-columns: 1fr;
+    padding: 1rem;
   }
   
   .profile-main-card {
     flex-direction: column;
     text-align: center;
+    padding: 1.5rem;
   }
 }
