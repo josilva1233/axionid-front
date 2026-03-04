@@ -97,15 +97,13 @@ export default function Login() {
             />
 
           </div>
-
-              <Link to="/forgot-password" size="small" className="forgot-password-link">
-                Esqueceu sua senha?
-              </Link>
-
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? 'Autenticando...' : 'Acessar Painel'}
           </button>
-          
+          <br />
+          <Link to="/forgot-password" size="small" className="forgot-password-link">
+                Esqueceu sua senha?
+          </Link>
           <div className="divider"><span>ou continue com</span></div>
           
           <button 
