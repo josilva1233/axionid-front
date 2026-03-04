@@ -109,6 +109,7 @@ export default function Dashboard() {
                 <table className="users-table">
                   <thead>
                     <tr>
+                      <th>Id</th>
                       <th>Nome</th>
                       <th>E-mail</th>
                       <th>CPF/CNPJ</th>
@@ -119,6 +120,7 @@ export default function Dashboard() {
                   <tbody>
                     {users.map((user) => (
                       <tr key={user.id}>
+                        <td>{user.id}</td>
                         <td>
                           <div className="user-td-name">
                             <div className="avatar-small">{user.name?.charAt(0)}</div>
