@@ -90,13 +90,6 @@ export default function Login() {
                 Esqueceu sua senha?
               </Link>
             </div>
-            <input 
-              type="password" 
-              placeholder="Sua senha" 
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required 
-            />
           </div>
 
           <button type="submit" className="btn-primary" disabled={loading}>
@@ -118,6 +111,13 @@ export default function Login() {
         <div className="auth-footer">
           <p>Ainda não tem acesso? <Link to="/register">Criar Conta AxionID</Link></p>
         </div>
+            <input 
+              type="password" 
+              placeholder="Sua senha" 
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required 
+            />
       </div>
     </div>
   );
