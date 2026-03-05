@@ -18,7 +18,7 @@
 }
 
 /* =========================================
-   2. RESET E LAYOUT BASE
+   2. RESET E ESTILOS GERAIS
    ========================================= */
 * {
   box-sizing: border-box;
@@ -31,18 +31,82 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color: var(--text-main);
   line-height: 1.6;
-  overflow-x: hidden;
 }
 
-/* Estrutura Principal do Dashboard */
+/* Animação Global */
+.animate-in {
+  animation: slideUpFade 0.5s ease-out forwards;
+}
+
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================
+   3. LAYOUT DE LOGIN / CADASTRO (Auth)
+   ========================================= */
+/* Aplique esta classe na div pai da tela de Login */
+.auth-page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.auth-card {
+  background: var(--card-bg);
+  padding: 40px;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  width: 100%;
+  max-width: 450px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+}
+
+.auth-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+}
+
+.auth-header { text-align: center; margin-bottom: 32px; }
+.auth-header h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 8px; }
+.auth-header p { color: var(--text-dim); font-size: 0.9rem; }
+
+.auth-form { display: flex; flex-direction: column; gap: 20px; }
+
+/* Inputs */
+.input-group { display: flex; flex-direction: column; gap: 8px; }
+.input-group label { font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; }
+
+input {
+  background: var(--input-bg);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  color: white;
+  font-size: 1rem;
+  transition: 0.3s;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+/* =========================================
+   4. ESTRUTURA DASHBOARD (Sidebar + Main)
+   ========================================= */
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
 }
 
-/* =========================================
-   3. SIDEBAR (MENU LATERAL)
-   ========================================= */
 .sidebar {
   width: 280px;
   background: var(--sidebar-bg);
@@ -52,144 +116,37 @@ body {
   padding: 24px;
   position: fixed;
   height: 100vh;
-  z-index: 100;
 }
 
-.sidebar-brand h1 {
-  font-size: 1.5rem;
-  font-weight: 800;
-  letter-spacing: -0.05em;
-  margin-bottom: 40px;
-}
-
-.sidebar-brand span { color: var(--primary); }
-
-.sidebar-nav {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.nav-section-title {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  font-weight: 800;
-  margin: 20px 0 10px 12px;
-  letter-spacing: 0.1em;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: transparent;
-  border: none;
-  border-radius: 12px;
-  color: var(--text-dim);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: left;
-  width: 100%;
-}
-
-.nav-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-main);
-}
-
-.nav-item.active {
-  background: var(--primary);
-  color: white;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-}
-
-.sidebar-footer {
-  margin-top: auto;
-  padding-top: 20px;
-  border-top: 1px solid var(--border);
-}
-
-.btn-logout-sidebar {
-  width: 100%;
-  padding: 12px;
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--error);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn-logout-sidebar:hover {
-  background: var(--error);
-  color: white;
-}
-
-/* =========================================
-   4. CONTEÚDO PRINCIPAL (WRAPPER)
-   ========================================= */
 .main-wrapper {
   flex: 1;
-  margin-left: 280px; /* Mesma largura da sidebar */
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+  margin-left: 280px; /* Alinhado com a largura da sidebar */
+  min-width: 0;
 }
 
 .main-header {
-  height: 80px;
+  height: 70px;
   padding: 0 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(11, 15, 26, 0.8);
-  backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border);
+  background: rgba(11, 15, 26, 0.8);
+  backdrop-filter: blur(10px);
   position: sticky;
   top: 0;
-  z-index: 90;
+  z-index: 10;
 }
 
-.header-user {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.user-info-min strong { display: block; font-size: 0.9rem; }
-.user-info-min span { font-size: 0.75rem; color: var(--text-dim); }
-
-.nav-avatar {
-  width: 40px;
-  height: 40px;
-  background: var(--primary);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  color: white;
-}
-
-.content-area {
-  padding: 40px;
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
-}
+.content-area { padding: 40px; }
 
 /* =========================================
-   5. TABELAS E CARDS DE DADOS
+   5. TABELAS E COMPONENTES
    ========================================= */
 .table-card {
   background: var(--card-bg);
-  border-radius: 20px;
+  border-radius: 16px;
   border: 1px solid var(--border);
-  box-shadow: var(--shadow-lg);
   overflow: hidden;
 }
 
@@ -199,127 +156,55 @@ body {
 }
 
 .axion-table th {
-  background: rgba(0, 0, 0, 0.1);
-  padding: 16px 24px;
   text-align: left;
-  font-size: 0.75rem;
+  padding: 16px 24px;
+  font-size: 0.7rem;
   text-transform: uppercase;
   color: var(--text-dim);
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .axion-table td {
   padding: 16px 24px;
   border-bottom: 1px solid var(--border);
-  font-size: 0.9rem;
-  vertical-align: middle;
 }
 
-.axion-table tr:hover td {
-  background: rgba(99, 102, 241, 0.02);
-}
-
-.mono-text {
-  font-family: 'Fira Code', monospace;
-  font-size: 0.8rem;
-  color: var(--text-dim);
-}
-
-/* Badges de Status */
 .badge {
-  padding: 4px 10px;
+  padding: 4px 12px;
   border-radius: 6px;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  text-transform: uppercase;
 }
 
 .badge.success { background: rgba(34, 197, 94, 0.1); color: var(--success); }
 .badge.danger { background: rgba(239, 68, 68, 0.1); color: var(--error); }
 
-/* Métodos API (Audit) */
-.method-badge {
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.7rem;
-  font-weight: 800;
-}
-.method-badge.GET { background: #3b82f6; color: white; }
-.method-badge.POST { background: #22c55e; color: white; }
-.method-badge.PUT { background: #f59e0b; color: white; }
-.method-badge.DELETE { background: #ef4444; color: white; }
-
-.url-cell {
-  max-width: 200px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: var(--text-dim);
-}
-
-/* =========================================
-   6. COMPONENTES DE UI E ALERTAS
-   ========================================= */
-.profile-sidebar-alert {
-  background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), transparent);
-  border-left: 4px solid var(--warning);
-  padding: 16px 24px;
+/* Botões */
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  padding: 14px;
   border-radius: 12px;
-  margin-bottom: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.btn-small {
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 0.8rem;
+  border: none;
   font-weight: 600;
   cursor: pointer;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-main);
   transition: 0.2s;
 }
 
-.btn-small:hover {
-  background: var(--primary);
-  border-color: var(--primary);
-}
-
-.loading-state {
-  text-align: center;
-  padding: 60px;
-  color: var(--text-dim);
-  font-style: italic;
-}
+.btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
 
 /* =========================================
-   7. ANIMAÇÕES E RESPONSIVIDADE
+   6. RESPONSIVIDADE
    ========================================= */
-.animate-in {
-  animation: slideUpFade 0.5s ease-out forwards;
-}
-
-@keyframes slideUpFade {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@media (max-width: 1024px) {
-  .sidebar { width: 80px; padding: 20px 10px; }
-  .sidebar-brand h1, .nav-item span:not(.nav-icon), .nav-section-title, .sidebar-footer button {
-    display: none;
-  }
-  .main-wrapper { margin-left: 80px; }
-  .nav-icon { font-size: 1.5rem; }
+@media (max-width: 992px) {
+  .sidebar { width: 70px; padding: 20px 10px; }
+  .sidebar span:not(.nav-icon), .nav-section-title { display: none; }
+  .main-wrapper { margin-left: 70px; }
 }
 
 @media (max-width: 768px) {
-  .main-header { padding: 0 20px; }
+  .dashboard-layout { flex-direction: column; }
+  .sidebar { position: relative; width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+  .main-wrapper { margin-left: 0; }
   .content-area { padding: 20px; }
-  .axion-table th:nth-child(4), 
-  .axion-table td:nth-child(4) { display: none; } /* Esconde coluna acesso no mobile */
 }
