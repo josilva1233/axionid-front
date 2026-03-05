@@ -87,12 +87,6 @@ export default function Dashboard() {
             <>
               <p className="nav-section-title">Segurança</p>
               <button 
-                className={`nav-item ${activeTab === 'logins' ? 'active' : ''}`}
-                onClick={() => setActiveTab('logins')}
-              >
-                <span className="nav-icon">🔑</span> <span>Logins Ativos</span>
-              </button>
-              <button 
                 className={`nav-item ${activeTab === 'audit' ? 'active' : ''}`}
                 onClick={() => setActiveTab('audit')}
               >
@@ -113,8 +107,7 @@ export default function Dashboard() {
         <header className="main-header">
           <div className="header-info">
             <h2>
-              {activeTab === 'users' ? 'Gestão de Usuários' : 
-               activeTab === 'audit' ? 'Histórico de Auditoria' : 'Logins'}
+              {activeTab === 'users' ? 'Gestão de Usuários' : 'Histórico de Auditoria'}
             </h2>
           </div>
           <div className="header-user">
@@ -131,7 +124,7 @@ export default function Dashboard() {
           {currentUser && (!currentUser.profile_completed || !currentUser.cpf_cnpj) && (
             <div className="profile-sidebar-alert animate-in">
               <strong>⚠️ Ação Requerida:</strong> Olá {currentUser.name}, finalize seu cadastro para validar sua identidade digital.
-              <button onClick={() => navigate('/complete-profile')} className="btn-small" style={{marginLeft: '15px', background: 'var(--warning)', color: '#000'}}>
+              <button onClick={() => navigate('/complete-profile')} className="btn-small" style={{marginLeft: '15px', background: 'var(--primary)', color: '#fff'}}>
                 Completar agora →
               </button>
             </div>
@@ -141,7 +134,7 @@ export default function Dashboard() {
             <div className="loading-state">Processando requisição...</div>
           ) : (
             <div className="animate-in">
-              {/* TELA: GESTÃO DE USUÁRIOS (Admin ou Operacional Vê seu próprio card) */}
+              {/* TELA: GESTÃO DE USUÁRIOS */}
               {activeTab === 'users' && (
                 role === 'admin' ? (
                   <div className="table-card">
