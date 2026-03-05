@@ -339,3 +339,97 @@ input:focus {
   .user-info-min { display: none; }
   .content-area { padding: 1rem; }
 }
+
+/* =========================================
+   AJUSTE DA SIDEBAR (CORREÇÃO)
+   ========================================= */
+
+.sidebar {
+  width: 260px;
+  background: var(--sidebar-bg); /* Use o #1e293b que definimos */
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem; /* Mais espaçamento interno */
+  position: fixed;
+  height: 100vh;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Logo AxionID */
+.sidebar-brand h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 2.5rem; /* Espaço generoso abaixo do logo */
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sidebar-brand span {
+  color: var(--primary); /* O azul elétrico no ID */
+}
+
+/* Títulos das Seções (Principal, Segurança) */
+.nav-section-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin: 1.5rem 0 0.75rem 0.5rem; /* Alinhado com os itens */
+}
+
+/* Itens de Menu (Os botões pretos da sua imagem) */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 4px;
+  background: transparent; /* Removendo o fundo preto fixo */
+  border: none;
+  border-radius: 10px;
+  color: var(--text-dim);
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Item Ativo (Onde o usuário está agora) */
+.nav-item.active {
+  background: rgba(99, 102, 241, 0.15); /* Fundo sutil */
+  color: white;
+  font-weight: 600;
+  border-left: 3px solid var(--primary); /* Detalhe lateral */
+}
+
+/* Hover (Passar o mouse) */
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  transform: translateX(4px); /* Micro-movimento lateral */
+}
+
+/* Botão Sair do Sistema */
+.btn-logout-sidebar {
+  margin-top: auto; /* Empurra para o final da barra */
+  color: var(--error);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: rgba(244, 63, 94, 0.05);
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.btn-logout-sidebar:hover {
+  background: var(--error);
+  color: white;
+}
