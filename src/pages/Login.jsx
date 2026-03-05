@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Container, Card, Form, Button, Alert, Spinner } from 'react-bootstrap'; // Importações do Bootstrap
 import api from '../services/api';
 
 export default function Login() {
@@ -9,6 +10,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // Manteve a lógica de Token do Google intacta
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
@@ -22,7 +24,6 @@ export default function Login() {
           const user = res.data;
           const role = (user.is_admin === 1 || user.is_admin === true) ? 'admin' : 'user';
           localStorage.setItem('@AxionID:role', role);
-
           window.history.replaceState({}, document.title, "/login");
           navigate('/dashboard', { replace: true });
         })
@@ -33,6 +34,7 @@ export default function Login() {
     }
   }, [navigate]);
 
+  // Manteve a lógica de Login Manual intacta
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -40,15 +42,13 @@ export default function Login() {
 
     try {
       const response = await api.post('/api/v1/login', { username, password });
-      
       const { token, user } = response.data;
-      localStorage.setItem('@AxionID:token', token);
       
+      localStorage.setItem('@AxionID:token', token);
       const role = (user.is_admin === 1 || user.is_admin === true) ? 'admin' : 'user';
       localStorage.setItem('@AxionID:role', role);
 
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
       navigate('/dashboard', { replace: true });
     } catch (err) {
       setError('Usuário ou senha incorretos.');
@@ -64,62 +64,90 @@ export default function Login() {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card animate-in">
-        <div className="brand"><h1>Axion<span>ID</span></h1></div>
-
-        {error && <div className="error-message">{error}</div>}
-
-        <form onSubmit={handleLogin} className="auth-form">
-          <br />
-          <div className="input-group">
-            <label>Identificação</label>
-            <input 
-              type="text" 
-              placeholder="CPF ou CNPJ" 
-              value={username} 
-              onChange={e => setUsername(e.target.value)} 
-              required 
-            />
+    <Container className="d-flex align-items-center justify-content-center" style={{ minHeight: '100vh' }}>
+      <Card className="auth-card p-4 shadow-lg border-0" style={{ maxWidth: '420px', width: '100%', borderRadius: '15px' }}>
+        <Card.Body>
+          <div className="text-center mb-4">
+            <h1 className="fw-bold" style={{ letterSpacing: '-1px' }}>
+              Axion<span className="text-primary">ID</span>
+            </h1>
           </div>
 
-          <div className="input-group">
-            <div className="label-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-              <label>Senha</label>
+          {error && <Alert variant="danger" className="py-2 small text-center">{error}</Alert>}
+
+          <Form onSubmit={handleLogin}>
+            <Form.Group className="mb-3" controlId="formUsername">
+              <Form.Label className="small fw-bold text-secondary text-uppercase">Identificação</Form.Label>
+              <Form.Control 
+                type="text" 
+                placeholder="CPF ou CNPJ" 
+                value={username} 
+                onChange={e => setUsername(e.target.value)} 
+                required 
+                className="py-2"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3" controlId="formPassword">
+              <div className="d-flex justify-content-between align-items-center mb-1">
+                <Form.Label className="small fw-bold text-secondary text-uppercase mb-0">Senha</Form.Label>
+              </div>
+              <Form.Control 
+                type="password" 
+                placeholder="Sua senha" 
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required 
+                className="py-2"
+              />
+            </Form.Group>
+
+            <Button 
+              variant="primary" 
+              type="submit" 
+              className="w-100 py-2 fw-bold mb-3" 
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+                  Autenticando...
+                </>
+              ) : 'Acessar Painel'}
+            </Button>
+
+            <div className="d-flex align-items-center my-3 text-muted small">
+              <hr className="flex-grow-1" />
+              <span className="mx-2">ou continue com</span>
+              <hr className="flex-grow-1" />
             </div>
-            <input 
-              type="password" 
-              placeholder="Sua senha" 
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required 
-            />
+            
+            <Button 
+              variant="outline-dark" 
+              className="w-100 py-2 d-flex align-items-center justify-content-center gap-2 mb-3" 
+              onClick={handleGoogleLogin}
+              style={{ borderColor: '#dee2e6' }}
+            >
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google" /> 
+              Google Workspace
+            </Button>
 
-          </div>
-          <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? 'Autenticando...' : 'Acessar Painel'}
-          </button>
-
-          <div className="divider"><span>ou continue com</span></div>
-          
-          <button 
-            type="button" 
-            className="btn-google" 
-            onClick={handleGoogleLogin}
-          >
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google" /> 
-            Google Workspace
-          </button>
-          <Link to="/forgot-password" size="small" className="forgot-password-link">
+            <div className="text-center">
+              <Link to="/forgot-password" size="small" className="text-decoration-none small">
                 Esqueceu sua senha?
-          </Link>
+              </Link>
+            </div>
+          </Form>
 
-        </form>
+          <hr className="mt-4 mb-3 text-muted" />
 
-        <div className="auth-footer">
-          <p>Ainda não tem acesso? <Link to="/register">Criar Conta AxionID</Link></p>
-        </div>
-      </div>
-    </div>
+          <div className="text-center small">
+            <p className="mb-0 text-secondary">
+              Ainda não tem acesso? <Link to="/register" className="fw-bold text-primary text-decoration-none">Criar Conta AxionID</Link>
+            </p>
+          </div>
+        </Card.Body>
+      </Card>
+    </Container>
   );
 }
