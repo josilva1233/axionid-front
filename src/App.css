@@ -1,534 +1,326 @@
-/* =========================================
-   1. CONFIGURAÇÕES E DESIGN SYSTEM
-   ========================================= */
+/* AXION ID - Professional Identity System
+  Design System: Modern SaaS / Enterprise
+*/
+
 :root {
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
-  --bg-dark: #0b0f1a;
-  --card-bg: #161b2c;
-  --text-main: #f8fafc;
-  --text-dim: #94a3b8;
-  --border: rgba(255, 255, 255, 0.08);
-  --input-bg: rgba(0, 0, 0, 0.2);
-  --error: #ef4444;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --bg-main: #f8fafc;
+  --bg-card: #ffffff;
+  --text-main: #1e293b;
+  --text-dim: #64748b;
+  --border: #e2e8f0;
   --success: #22c55e;
   --warning: #f59e0b;
-  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.4),
-               0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  --danger: #ef4444;
+  --radius: 8px;
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
-/* =========================================
-   2. RESET E LAYOUT BASE
-   ========================================= */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-}
-
-html, body, #root {
-  min-height: 100vh;
+  font-family: 'Inter', -apple-system, sans-serif;
 }
 
 body {
-  background-color: var(--bg-dark);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-main);
   color: var(--text-main);
-  line-height: 1.6;
+  line-height: 1.5;
+}
+
+/* --- AUTH LAYOUT (Login, Register, Forgot, Onboarding) --- */
+.auth-container {
+  min-height: 100vh;
   display: flex;
+  align-items: center;
   justify-content: center;
-  padding: 40px 20px;
+  padding: 20px;
+  background: radial-gradient(circle at top left, #f1f5f9 0%, #e2e8f0 100%);
 }
 
-.dashboard-container {
+.auth-card {
+  background: var(--bg-card);
   width: 100%;
-  max-width: 1100px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-/* HEADER PRINCIPAL */
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 32px;
-  background: rgba(22, 27, 44, 0.6);
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  margin-bottom: 30px;
-}
-
-/* BRAND / LOGO */
-.brand h1 {
-  font-size: 1.5rem; /* Um pouco menor para ser elegante */
-  margin: 0;
-}
-
-/* LADO DIREITO (NAV) */
-.user-nav {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-/* BOX DO PERFIL */
-.user-profile-box {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-/* AVATAR COM INDICADOR ONLINE */
-.user-avatar-container {
-  position: relative;
-}
-
-.nav-avatar {
-  width: 40px;
-  height: 40px;
-  background: var(--primary);
-  color: white;
+  max-width: 420px;
+  padding: 2.5rem;
   border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1rem;
-  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+  box-shadow: var(--shadow);
 }
 
-.status-indicator {
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 12px;
-  height: 12px;
-  background: var(--success);
-  border: 2px solid var(--card-bg);
-  border-radius: 50%;
+.onboarding-card {
+  max-width: 500px; /* Um pouco maior para formulários de endereço */
 }
 
-/* TEXTOS DO USUÁRIO */
-.user-details-nav {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.nav-user-name {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-main);
-  line-height: 1;
-  margin-bottom: 4px;
-}
-
-.user-role-badge {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  letter-spacing: 0.05em;
-}
-
-/* DIVISOR VERTICAL */
-.nav-divider {
-  width: 1px;
-  height: 30px;
-  background: var(--border);
-}
-
-/* BOTÃO SAIR MINIMALISTA */
-.btn-logout-minimal {
-  background: transparent;
-  border: none;
-  color: var(--text-dim);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 10px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: all 0.2s;
-}
-
-.btn-logout-minimal:hover {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--error);
-}
-
-/* RESPONSIVIDADE */
-@media (max-width: 600px) {
-  .dashboard-header {
-    padding: 12px 16px;
-    flex-direction: row; /* Mantém na mesma linha no mobile */
-  }
-  .user-details-nav {
-    display: none; /* Esconde nome no mobile para não apertar */
-  }
-  .nav-divider {
-    display: none;
-  }
-}
-
-/* =========================================
-   3. CARDS E COMPONENTES COMUNS
-   ========================================= */
-.auth-card, .detail-card, .content-card {
-  background: var(--card-bg);
-  backdrop-filter: blur(12px);
-  padding: clamp(1.5rem, 3vw, 2.5rem);
-  border-radius: 24px;
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border);
-  width: 100%;
-  position: relative;
-  animation: slideUpFade 0.5s ease-out forwards;
-}
-
-.auth-card { max-width: 480px; margin: auto; }
-
-/* Linha de brilho superior nos cards */
-.auth-card::before, .detail-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-}
-
-/* =========================================
-   4. CABEÇALHO (DASHBOARD HEADER)
-   ========================================= */
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 10px;
+.brand {
+  text-align: center;
+  margin-bottom: 2rem;
 }
 
 .brand h1 {
   font-size: 1.8rem;
   font-weight: 800;
-  letter-spacing: -0.05em;
+  letter-spacing: -1px;
 }
 
-.brand span { color: var(--primary); }
-
-.user-nav {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.user-info { text-align: right; line-height: 1.2; }
-
-.user-status {
-  color: var(--success);
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.user-role {
-  background: rgba(99, 102, 241, 0.1);
+.brand span {
   color: var(--primary);
-  padding: 4px 12px;
-  border-radius: 8px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  border: 1px solid rgba(99, 102, 241, 0.2);
 }
 
-/* =========================================
-   5. FORMULÁRIOS E INPUTS
-   ========================================= */
-.auth-form { display: flex; flex-direction: column; gap: 16px; }
+/* --- DASHBOARD LAYOUT --- */
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+}
 
-.input-group {
+/* Sidebar Responsiva */
+.sidebar {
+  width: 260px;
+  background: #0f172a;
+  color: white;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  transition: all 0.3s ease;
+}
+
+.sidebar-brand { padding: 2rem; }
+.sidebar-brand h1 { font-size: 1.4rem; color: white; }
+
+.sidebar-nav {
+  flex: 1;
+  padding: 0 1rem;
+}
+
+.nav-section-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #475569;
+  margin: 1.5rem 0 0.5rem 0.75rem;
+  font-weight: 700;
+}
+
+.nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  border-radius: var(--radius);
+  cursor: pointer;
+  margin-bottom: 4px;
+  transition: 0.2s;
   text-align: left;
 }
 
+.nav-item.active, .nav-item:hover {
+  background: #1e293b;
+  color: white;
+}
+
+.nav-icon { margin-right: 12px; font-size: 1.2rem; }
+
+/* Main Area */
+.main-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-main);
+}
+
+.main-header {
+  height: 70px;
+  background: white;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+}
+
+.content-area {
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+/* --- FORMS & UI COMPONENTS --- */
+.input-group {
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+}
+
 .input-group label {
-  font-size: 0.75rem;
-  color: var(--text-dim);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-main);
 }
 
 input {
-  background: var(--input-bg);
-  border: 1.5px solid var(--border);
-  border-radius: 12px;
-  padding: 14px 16px;
-  color: white;
-  font-size: 0.95rem;
-  width: 100%;
-  transition: all 0.3s ease;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 1rem;
+  transition: border 0.2s;
 }
 
 input:focus {
   outline: none;
   border-color: var(--primary);
-  background: rgba(99, 102, 241, 0.05);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
-}
-
-/* Link Esqueceu Senha */
-.label-wrapper {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.forgot-password-link {
-  font-size: 0.8rem;
-  color: var(--text-dim);
-  text-decoration: none;
-}
-
-.forgot-password-link:hover { color: var(--primary); text-decoration: underline; }
-
-/* =========================================
-   6. BOTÕES
-   ========================================= */
-.btn-primary, .btn-logout, .btn-action-view, .btn-back {
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  transition: all 0.2s ease;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
+  ring: 2px solid var(--primary);
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-  color: white;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-}
-
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  filter: brightness(1.1);
-}
-
-.btn-logout {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--error);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-}
-
-.btn-logout:hover { background: var(--error); color: white; }
-
-.btn-back {
-  background: transparent;
-  color: var(--text-dim);
-  border: 1px solid var(--border);
-  padding: 8px 16px;
-  margin-right: 15px;
-}
-
-.btn-back:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-main); }
-
-/* =========================================
-   7. TABELA DE USUÁRIOS (ADMIN)
-   ========================================= */
-.table-container {
   width: 100%;
-  overflow-x: auto;
-  border-radius: 16px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--border);
-  margin-top: 15px;
-}
-
-.users-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-
-.users-table th {
-  padding: 16px;
-  color: var(--text-dim);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  font-weight: 700;
-  border-bottom: 1px solid var(--border);
-}
-
-.users-table td {
-  padding: 16px;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-main);
-  font-size: 0.9rem;
-}
-
-.users-table tr:hover td { background: rgba(99, 102, 241, 0.03); }
-
-.user-td-name { display: flex; align-items: center; gap: 12px; }
-
-.avatar-small {
-  width: 32px; height: 32px;
+  padding: 0.75rem;
   background: var(--primary);
-  border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: 0.8rem;
-}
-
-.status-badge {
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.status-badge.complete { background: rgba(34, 197, 94, 0.1); color: var(--success); }
-.status-badge.pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
-
-/* =========================================
-   8. PÁGINA DE DETALHES (UserDetail)
-   ========================================= */
-.detail-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 24px;
-}
-
-.avatar-large {
-  width: 64px; height: 64px;
-  background: linear-gradient(135deg, var(--primary), #818cf8);
-  border-radius: 18px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.8rem; font-weight: 800; color: white;
-  box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
-}
-
-.info-list { display: flex; flex-direction: column; gap: 12px; }
-
-.info-item {
-  background: rgba(0, 0, 0, 0.2);
-  padding: 14px 18px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-}
-
-.info-item label {
-  font-size: 0.65rem;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  font-weight: 800;
-  display: block;
-}
-
-/* Ações Verticais na Detail */
-.actions-buttons-vertical { display: flex; flex-direction: column; gap: 12px; }
-
-.btn-promote-full, .btn-suspend-full, .btn-activate-full, .btn-danger-outline-full, .btn-delete-full {
-  width: 100%; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; border: 1px solid transparent;
-}
-
-.btn-promote-full { background: rgba(99, 102, 241, 0.1); color: var(--primary); border-color: rgba(99, 102, 241, 0.2); }
-.btn-promote-full:hover { background: var(--primary); color: white; }
-
-.btn-suspend-full { background: rgba(245, 158, 11, 0.1); color: var(--warning); border-color: rgba(245, 158, 11, 0.2); }
-.btn-suspend-full:hover { background: var(--warning); color: white; }
-
-.btn-delete-full { background: rgba(239, 68, 68, 0.05); color: var(--error); border-color: rgba(239, 68, 68, 0.1); margin-top: 8px; }
-.btn-delete-full:hover { background: var(--error); color: white; }
-
-/* =========================================
-   9. ÁREA OPERACIONAL (USER VIEW)
-   ========================================= */
-.welcome-box {
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 20px;
-  padding: 25px;
-  border: 1px dashed var(--border);
-  margin-top: 15px;
-}
-
-.user-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-  margin-top: 25px;
-}
-
-.stat-item {
-  background: rgba(255, 255, 255, 0.03);
-  padding: 24px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  transition: transform 0.3s ease, border-color 0.3s ease;
-}
-
-.stat-item:hover {
-  transform: translateY(-5px);
-  border-color: var(--primary);
-}
-
-.stat-item span {
-  font-size: 0.7rem;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  font-weight: 800;
-}
-
-.stat-item strong {
-  display: block;
-  font-size: 1.1rem;
-  margin-top: 5px;
-  word-break: break-all;
-}
-
-/* Alerta de Perfil Incompleto */
-.profile-sidebar-alert {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(245, 158, 11, 0.05));
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  padding: 20px;
-  border-radius: 16px;
-  margin-bottom: 10px;
-}
-
-.btn-alert-link {
-  background: var(--warning);
-  color: #000;
+  color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 700;
-  margin-top: 12px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
+.btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+
+.btn-secondary {
+  background: white;
+  border: 1px solid var(--border);
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius);
   cursor: pointer;
 }
 
-/* =========================================
-   10. ANIMAÇÕES E RESPONSIVIDADE
-   ========================================= */
-@keyframes slideUpFade {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+.btn-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 1.5rem;
 }
 
+.btn-group button { flex: 1; }
+
+/* Progress Bar */
+.progress-bar {
+  height: 4px;
+  background: var(--border);
+  margin-bottom: 2rem;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary);
+  transition: width 0.3s ease;
+}
+
+/* Tables */
+.table-card {
+  background: white;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.axion-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.axion-table th {
+  background: #f8fafc;
+  text-align: left;
+  padding: 1rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.axion-table td {
+  padding: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.875rem;
+}
+
+/* Badges */
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.badge.success { background: #dcfce7; color: #166534; }
+.badge.danger { background: #fee2e2; color: #991b1b; }
+.badge.admin { background: #ede9fe; color: #5b21b6; }
+
+/* --- RESPONSIVIDADE (MOBILE) --- */
 @media (max-width: 768px) {
-  .dashboard-header { flex-direction: column; gap: 15px; text-align: center; }
-  .user-nav { flex-direction: column; gap: 10px; }
-  .user-info { text-align: center; }
-  .detail-grid { grid-template-columns: 1fr; }
-  body { padding: 20px 15px; }
+  .dashboard-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+  }
+
+  .sidebar-nav {
+    display: flex;
+    overflow-x: auto;
+    padding: 0.5rem;
+    gap: 8px;
+  }
+
+  .nav-section-title { display: none; }
+
+  .nav-item {
+    white-space: nowrap;
+    padding: 0.5rem 1rem;
+  }
+
+  .main-header {
+    padding: 0 1rem;
+  }
+
+  .user-info-min { display: none; }
+
+  .content-area {
+    padding: 1rem;
+  }
+
+  .input-row {
+    flex-direction: column;
+    gap: 0 !important;
+  }
+
+  /* Faz a tabela ser scrollável no celular */
+  .table-card {
+    overflow-x: auto;
+  }
+
+  .axion-table {
+    min-width: 600px;
+  }
+
+  .auth-card {
+    padding: 1.5rem;
+  }
+}
+
+/* Animações */
+.animate-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
