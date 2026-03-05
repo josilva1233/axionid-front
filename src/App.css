@@ -1,4 +1,128 @@
 /* =========================================
+   1. AUTH LAYOUT (LOGIN / REGISTER)
+   ========================================= */
+.auth-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100vw;
+  background-color: var(--bg-dark);
+  padding: 20px;
+  position: fixed; /* Garante que ocupe a tela toda sem scroll desnecessário */
+  top: 0;
+  left: 0;
+  z-index: 999;
+}
+
+.auth-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  width: 100%;
+  max-width: 420px; /* Largura ideal para formulários de login */
+  box-shadow: var(--shadow-xl);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Espaço uniforme entre os campos */
+}
+
+/* Ajuste específico para os grupos de input no Login */
+.auth-form .input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.auth-form label {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+/* Corrigindo o botão Google e links na mesma linha */
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  margin: 10px 0;
+}
+
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border);
+}
+
+.divider span {
+  padding: 0 10px;
+}
+
+.btn-google {
+  background: #1e293b;
+  border: 1px solid var(--border);
+  color: white;
+  padding: 12px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+  font-weight: 500;
+}
+
+.auth-footer {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.auth-footer a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* =========================================
+   2. DASHBOARD LAYOUT (NÃO AFETA O LOGIN)
+   ========================================= */
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* O wrapper do conteúdo só deve ter margem se a sidebar existir */
+.main-wrapper {
+  flex: 1;
+  margin-left: 280px; 
+  padding: 2rem 3rem;
+}
+
+/* Responsividade para esconder a sidebar ou ajustar login em telas pequenas */
+@media (max-width: 768px) {
+  .main-wrapper { margin-left: 0; padding: 1rem; }
+  .auth-card { padding: 30px 20px; }
+}
+
+
+
+
+
+/* =========================================
    1. DESIGN SYSTEM & VARIAVEIS (REFATORADO)
    ========================================= */
 :root {
