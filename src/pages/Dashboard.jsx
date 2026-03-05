@@ -4,184 +4,197 @@ import api from '../services/api';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  
-  // MUDANÇA: Inicie o role direto do localStorage para evitar atrasos na primeira renderização
   const [role, setRole] = useState(localStorage.getItem('@AxionID:role'));
-
+  const [activeTab, setActiveTab] = useState('users'); // users, audit
   const [users, setUsers] = useState([]);
+  const [auditLogs, setAuditLogs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('@AxionID:token');
-    const storedRole = localStorage.getItem('@AxionID:role');
-
     if (!token) {
       navigate('/login', { replace: true });
       return;
     }
 
-    // Garante que o estado do componente está sincronizado com o storage
-    setRole(storedRole);
-
-    const loadDashboardData = async () => {
+    const loadInitialData = async () => {
       setLoading(true);
       try {
-        // 1. SEMPRE busca o perfil do usuário logado (Funciona para Admin e User)
-        // Rota /me que você definiu no api.php
         const profileRes = await api.get('/api/v1/me');
         setCurrentUser(profileRes.data);
-
-        // 2. SÓ busca a lista completa se for de fato ADMIN
-        if (storedRole === 'admin') {
-          const usersRes = await api.get('/api/v1/users');
-          const data = usersRes.data.data || usersRes.data;
-          setUsers(Array.isArray(data) ? data : []);
+        
+        if (role === 'admin') {
+          loadUsers();
         }
       } catch (error) {
-        console.error("Erro ao carregar dados do dashboard:", error);
-        // Se der 401 aqui, o seu interceptor já vai cuidar do logout
+        console.error("Erro ao carregar dashboard:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadDashboardData();
+    loadInitialData();
   }, [navigate]);
 
-  const handleLogout = async () => {
+  const loadUsers = async () => {
+    setLoading(true);
     try {
-      await api.post('/api/v1/logout');
-    } finally {
+      const res = await api.get('/api/v1/users');
+      setUsers(res.data.data || res.data);
+    } finally { setLoading(false); }
+  };
+
+  const loadAuditLogs = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/api/v1/audit-logs');
+      setAuditLogs(res.data.data || res.data);
+    } finally { setLoading(false); }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'audit' && role === 'admin') loadAuditLogs();
+    if (activeTab === 'users' && role === 'admin') loadUsers();
+  }, [activeTab]);
+
+  const handleLogout = async () => {
+    try { await api.post('/api/v1/logout'); } 
+    finally {
       localStorage.clear();
       navigate('/login', { replace: true });
     }
   };
 
   return (
-    <div className="dashboard-container">
-      
-      {/* ALERTA DE PERFIL INCOMPLETO */}
-      {currentUser && (!currentUser.profile_completed || !currentUser.cpf_cnpj) && (
-        <div className="profile-sidebar-alert animate-in">
-          <div className="alert-header">
-            <span className="alert-icon">⚠️</span>
-            <strong>Ação Requerida</strong>
-          </div>
-          <p>Olá <strong>{currentUser.name}</strong>, finalize seu cadastro para validar sua identidade.</p>
-          <button onClick={() => navigate('/complete-profile')} className="btn-alert-link">
-            Completar agora →
+    <div className="dashboard-layout">
+      {/* SIDEBAR */}
+      <aside className="sidebar">
+        <div className="sidebar-brand">
+          <h1>Axion<span>ID</span></h1>
+        </div>
+        
+        <nav className="sidebar-nav">
+          <p className="nav-section-title">Principal</p>
+          <button 
+            className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
+            onClick={() => setActiveTab('users')}
+          >
+            <span className="nav-icon">👥</span> Gestão Usuários
           </button>
+
+          {role === 'admin' && (
+            <>
+              <p className="nav-section-title">Segurança</p>
+              <button 
+                className={`nav-item ${activeTab === 'logins' ? 'active' : ''}`}
+                onClick={() => setActiveTab('logins')}
+              >
+                <span className="nav-icon">🔑</span> Logins Ativos
+              </button>
+              <button 
+                className={`nav-item ${activeTab === 'audit' ? 'active' : ''}`}
+                onClick={() => setActiveTab('audit')}
+              >
+                <span className="nav-icon">📜</span> Histórico Logins
+              </button>
+            </>
+          )}
+        </nav>
+
+        <div className="sidebar-footer">
+           <button onClick={handleLogout} className="btn-logout-sidebar">
+             Sair do Sistema
+           </button>
         </div>
-      )}
+      </aside>
 
-      <header className="dashboard-header">
-  <div className="brand" onClick={() => navigate('/dashboard')} style={{cursor: 'pointer'}}>
-    <h1>Axion<span>ID</span></h1>
-  </div>
-  
-  <div className="user-nav">
-    <div className="user-profile-box">
-      <div className="user-avatar-container">
-         {/* Mostra a inicial do usuário logado */}
-         <div className="nav-avatar">{currentUser?.name?.charAt(0)}</div>
-         <span className="status-indicator"></span>
-      </div>
-      
-      <div className="user-details-nav">
-        <span className="nav-user-name">{currentUser?.name}</span>
-        <div className="nav-meta">
-          <span className="user-role-badge">
-            {role === 'admin' ? 'Administrador' : 'Operacional'}
-          </span>
-        </div>
-      </div>
-    </div>
+      <div className="main-wrapper">
+        <header className="main-header">
+          <div className="header-info">
+            <h2>{activeTab === 'users' ? 'Gestão de Usuários' : activeTab === 'audit' ? 'Histórico de Auditoria' : 'Logins'}</h2>
+          </div>
+          <div className="header-user">
+            <span className="user-name">{currentUser?.name}</span>
+            <div className="nav-avatar">{currentUser?.name?.charAt(0)}</div>
+          </div>
+        </header>
 
-    <div className="nav-divider"></div>
-
-    <button onClick={handleLogout} className="btn-logout-minimal" title="Sair do sistema">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-      <span>Sair</span>
-    </button>
-  </div>
-</header>
-
-      <main className="dashboard-content animate-in">
-        {role === 'admin' ? (
-          <div className="content-card">
-            <div className="card-header-flex">
-              <h3>Gestão de Identidades</h3>
-              <span className="count-badge">{users.length} usuários</span>
-            </div>
-
-            {loading ? (
-              <div className="loading-spinner">Carregando identidades...</div>
-            ) : (
-              <div className="table-container">
-                <table className="users-table">
-                  <thead>
-                    <tr>
-                      <th>Id</th>
-                      <th>Nome</th>
-                      <th>E-mail</th>
-                      <th>Grupo</th>
-                      <th>Status</th>
-                      <th>Situação</th>
-                      <th>Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users.map((user) => (
-                      <tr key={user.id}>
-                        <td>{user.id}</td>
-                        <td>{user.name}</td>
-                        <td>{user.email}</td>
-                        <td>{user.is_admin ? 'Administrador' : 'Operacional'}</td>
-                        <td>
-                          <span className={`status-badge ${user.profile_completed ? 'complete' : 'pending'}`}>
-                            {user.profile_completed ? 'Validado' : 'Pendente'}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`status-badge ${user.is_active ? 'complete' : 'pending'}`}>
-                            {user.is_active ? 'Ativo' : 'Inativo'}
-                          </span>
-                        </td>
-                        <td>
-                          <button className="btn-action-view" onClick={() => navigate(`/dashboard/user/${user.id}`)}>Ver Detalhes</button>
-                        </td>
+        <main className="content-area">
+          {loading ? (
+            <div className="loading-state">Processando requisição...</div>
+          ) : (
+            <>
+              {/* TELA: GESTÃO DE USUÁRIOS */}
+              {activeTab === 'users' && (
+                <div className="table-card animate-in">
+                  <table className="axion-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>E-mail</th>
+                        <th>Acesso</th>
+                        <th>Status</th>
+                        <th>Ações</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="content-card">
-            <div className="card-header-flex">
-              <h3>Área Operacional</h3>
-            </div>
-            <div className="welcome-box">
-               <p>Bem-vindo, <strong>{currentUser?.name || 'Carregando...'}</strong>.</p>
-               <p>Seu nível de acesso é <strong>Operacional</strong>. Você pode visualizar seus protocolos e validar sua identidade digital.</p>
-               
-               {/* Exemplo de info para o usuário comum */}
-               <div className="user-stats-grid">
-                  <div className="stat-item">
-                    <span>E-mail</span>
-                    <strong>{currentUser?.email}</strong>
-                  </div>
-                  <div className="stat-item">
-                    <span>CPF/CNPJ</span>
-                    <strong>{currentUser?.cpf_cnpj || 'Não informado'}</strong>
-                  </div>
-               </div>
-            </div>
-          </div>
-        )}
-      </main>
+                    </thead>
+                    <tbody>
+                      {users.map(u => (
+                        <tr key={u.id}>
+                          <td>#{u.id}</td>
+                          <td>{u.name}</td>
+                          <td>{u.email}</td>
+                          <td>{u.is_admin ? 'Admin' : 'User'}</td>
+                          <td>
+                             <span className={`badge ${u.is_active ? 'success' : 'danger'}`}>
+                               {u.is_active ? 'Ativo' : 'Bloqueado'}
+                             </span>
+                          </td>
+                          <td><button className="btn-small">Editar</button></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* TELA: HISTÓRICO DE LOGINS (AUDIT LOGS) */}
+              {activeTab === 'audit' && (
+                <div className="table-card animate-in">
+                  <table className="axion-table">
+                    <thead>
+                      <tr>
+                        <th>Data/Hora</th>
+                        <th>Usuário</th>
+                        <th>Método</th>
+                        <th>URL</th>
+                        <th>Endereço IP</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {auditLogs.map(log => (
+                        <tr key={log.log_id}>
+                          <td className="mono-text">{new Date(log.executed_at).toLocaleString()}</td>
+                          <td>
+                            <div className="user-info-min">
+                              <strong>{log.user_name || 'Sistema'}</strong>
+                              <span>{log.user_email}</span>
+                            </div>
+                          </td>
+                          <td><span className={`method-badge ${log.method}`}>{log.method}</span></td>
+                          <td className="url-cell">{log.url}</td>
+                          <td className="mono-text">{log.ip_address}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
+        </main>
+      </div>
     </div>
   );
 }
