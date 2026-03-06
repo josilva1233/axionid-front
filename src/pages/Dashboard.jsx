@@ -67,11 +67,11 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="dashboard-layout">
+    <div className="dashboard-layout animate-in">
       {/* SIDEBAR */}
       <aside className="sidebar">
         <div className="sidebar-brand" onClick={() => navigate('/dashboard')} style={{cursor: 'pointer'}}>
-          <h1>Axion<span>ID</span></h1>
+          <div className="brand"><h1>Axion<span>ID</span></h1></div>
         </div>
         
         <nav className="sidebar-nav">
@@ -122,7 +122,7 @@ export default function Dashboard() {
         <main className="content-area">
           {/* ALERTA DE PERFIL INCOMPLETO */}
           {currentUser && (!currentUser.profile_completed || !currentUser.cpf_cnpj) && (
-            <div className="profile-sidebar-alert animate-in">
+            <div className="profile-sidebar-alert">
               <strong>⚠️ Ação Requerida:</strong> Olá {currentUser.name}, finalize seu cadastro para validar sua identidade digital.
               <button onClick={() => navigate('/complete-profile')} className="btn-small" style={{marginLeft: '15px', background: 'var(--primary)', color: '#fff'}}>
                 Completar agora →
@@ -133,7 +133,7 @@ export default function Dashboard() {
           {loading ? (
             <div className="loading-state">Processando requisição...</div>
           ) : (
-            <div className="animate-in">
+            <div className="tab-content">
               {/* TELA: GESTÃO DE USUÁRIOS */}
               {activeTab === 'users' && (
                 role === 'admin' ? (

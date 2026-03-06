@@ -224,7 +224,14 @@ input:focus {
 /* =========================================
    7. TABELA DE USUÁRIOS (ADMIN)
    ========================================= */
-
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  margin-top: 15px;
+}
 
 .users-table {
   width: 100%;

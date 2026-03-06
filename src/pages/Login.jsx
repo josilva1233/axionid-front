@@ -71,7 +71,6 @@ export default function Login() {
         {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleLogin} className="auth-form">
-          <br />
           <div className="input-group">
             <label>Identificação</label>
             <input 
@@ -84,8 +83,11 @@ export default function Login() {
           </div>
 
           <div className="input-group">
-            <div className="label-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+            <div className="label-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <label>Senha</label>
+              <Link to="/forgot-password" style={{ fontSize: '0.8rem', color: 'var(--primary)', textDecoration: 'none' }}>
+                Esqueceu a senha?
+              </Link>
             </div>
             <input 
               type="password" 
@@ -94,8 +96,8 @@ export default function Login() {
               onChange={e => setPassword(e.target.value)}
               required 
             />
-
           </div>
+
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? 'Autenticando...' : 'Acessar Painel'}
           </button>
@@ -107,13 +109,9 @@ export default function Login() {
             className="btn-google" 
             onClick={handleGoogleLogin}
           >
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google" /> 
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google" /> 
             Google Workspace
           </button>
-          <Link to="/forgot-password" size="small" className="forgot-password-link">
-                Esqueceu sua senha?
-          </Link>
-
         </form>
 
         <div className="auth-footer">
