@@ -187,17 +187,3 @@ export default function UserDetail() {
 );
 }
 
-// Estilos auxiliares para manter a limpeza do JzzzSX
-const infoItemStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  marginBottom: '12px'
-};
-
-const labelStyle = {
-  fontSize: '0.75rem',
-  textTransform: 'uppercase',
-  color: 'var(--text-dim)',
-  fontWeight: 'bold',
-  letterSpacing: '0.5px'
-};
