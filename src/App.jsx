@@ -6,6 +6,7 @@ import UserDetail from './pages/UserDetail';
 import ForgotPassword from './pages/ForgotPassword'; 
 import { ProtectedRoute } from './components/ProtectedRoute'; 
 import CompleteProfile from './pages/CompleteProfile';
+import MyProfile from './pages/MyProfile';
 import './App.css';
 
 function App() {
