@@ -4,49 +4,17 @@ import { Form, Row, Col } from 'react-bootstrap';
 import api from '../services/api';
 
 // Importações de componentes externos
+import Sidebar from '../components/dashboard/Sidebar'; 
 import UserTable from '../components/dashboard/UserTable';
 import AuditTable from '../components/dashboard/AuditTable';
 
-// --- Sub-componente: Welcome ---
+// --- Sub-componente: Welcome para Operadores ---
 const WelcomeOperacional = ({ user }) => (
   <div className="text-center py-5 animate-in">
     <div className="mb-4"><span style={{ fontSize: '3rem' }}>👋</span></div>
     <h2 className="text-white mb-2">Bem-vindo, {user?.name || 'Usuário'}!</h2>
     <p className="text-dim">Você está no painel operacional da <strong>AxionID</strong>.</p>
   </div>
-);
-
-// --- Sub-componente: Sidebar ---
-const Sidebar = ({ activeTab, setActiveTab, role, onLogout }) => (
-  <aside className="sidebar">
-    <div className="sidebar-brand">
-      <div className="brand"><h1>Axion<span>ID</span></h1></div>
-    </div>
-    <nav className="sidebar-nav">
-      <p className="nav-section-title">Principal</p>
-      <button 
-        className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
-        onClick={() => setActiveTab('users')}
-      >
-        <span className="nav-icon">👥</span> <span>Gestão Usuários</span>
-      </button>
-
-      {role === 'admin' && (
-        <>
-          <p className="nav-section-title">Segurança</p>
-          <button 
-            className={`nav-item ${activeTab === 'audit' ? 'active' : ''}`}
-            onClick={() => setActiveTab('audit')}
-          >
-            <span className="nav-icon">📜</span> <span>Histórico Auditoria</span>
-          </button>
-        </>
-      )}
-    </nav>
-    <div className="sidebar-footer">
-      <button onClick={onLogout} className="btn-logout-sidebar">Sair do Sistema</button>
-    </div>
-  </aside>
 );
 
 // --- Componente Principal ---
@@ -92,6 +60,7 @@ export default function Dashboard() {
         last: resultData.last_page || 1,
         total: resultData.total || 0
       });
+      setCurrentPage(page);
     } catch (err) {
       console.error("Erro ao carregar dados:", err);
     } finally {
@@ -99,7 +68,7 @@ export default function Dashboard() {
     }
   }, [activeTab, filters.method, filters.date, role]);
 
-  // 2. Carregar Perfil ao montar
+  // 2. Carregar Perfil do Usuário
   useEffect(() => {
     const loadProfile = async () => {
       try {
@@ -112,14 +81,12 @@ export default function Dashboard() {
     loadProfile();
   }, [navigate]);
 
-  // 3. Resetar página e recarregar quando trocar de Aba
+  // 3. Monitorar troca de Aba
   useEffect(() => {
-    setCurrentPage(1);
     loadData(1);
   }, [activeTab, loadData]);
 
   const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
     loadData(newPage);
   };
 
@@ -148,13 +115,13 @@ export default function Dashboard() {
           </h2>
           <div className="user-menu-wrapper">
             <div className="nav-avatar-circle">
-              {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
+              {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
             </div>
           </div>
         </header>
 
         <main className="content-area p-4">
-          {/* Filtros de Auditoria */}
+          {/* Filtros de Auditoria (Apenas Admin) */}
           {activeTab === 'audit' && role === 'admin' && (
             <div className="filter-card mb-4 p-3 bg-dark rounded border border-secondary">
               <Row className="align-items-end g-3">
@@ -163,7 +130,7 @@ export default function Dashboard() {
                   <Form.Select 
                     value={filters.method} 
                     onChange={(e) => setFilters(prev => ({ ...prev, method: e.target.value }))}
-                    className="bg-dark text-white border-secondary"
+                    className="bg-dark text-white border-secondary shadow-none"
                   >
                     <option value="">Todos</option>
                     <option value="GET">GET</option>
@@ -182,7 +149,12 @@ export default function Dashboard() {
           )}
 
           <div className={`tab-wrapper ${loading ? 'is-loading' : ''}`} style={{ position: 'relative' }}>
-            {loading && <div className="loading-overlay">Sincronizando...</div>}
+            {loading && (
+              <div className="loading-overlay d-flex justify-content-center align-items-center">
+                 <div className="spinner-border text-primary" role="status"></div>
+                 <span className="ms-2 text-white">Sincronizando...</span>
+              </div>
+            )}
             
             <div className="content-card">
               {activeTab === 'users' ? (
@@ -192,19 +164,21 @@ export default function Dashboard() {
               )}
             </div>
 
-            {/* Paginação Centralizada */}
+            {/* Paginação Dinâmica */}
             {role === 'admin' && paginationData?.last > 1 && (
               <div className="pagination-wrapper mt-4 d-flex justify-content-between align-items-center">
                 <button 
-                  className="btn-outline-light"
+                  className="btn btn-outline-light btn-sm"
                   disabled={currentPage === 1 || loading} 
                   onClick={() => handlePageChange(currentPage - 1)}
                 >
                   Anterior
                 </button>
-                <span className="text-white">Página {currentPage} de {paginationData.last}</span>
+                <span className="text-white small">
+                  Página <strong>{currentPage}</strong> de {paginationData.last}
+                </span>
                 <button 
-                  className="btn-outline-light"
+                  className="btn btn-outline-light btn-sm"
                   disabled={currentPage === paginationData.last || loading} 
                   onClick={() => handlePageChange(currentPage + 1)}
                 >
