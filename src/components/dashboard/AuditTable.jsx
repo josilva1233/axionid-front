@@ -70,7 +70,7 @@ export default function AuditTable({ logs }) {
                 </code>
               </td>
 
-              {/* Endereço IP */}
+              {/* Endereço DIP */}
               <td className="mono-text">
                 {log.ip_address || '0.0.0.0'}
               </td>
