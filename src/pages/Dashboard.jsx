@@ -29,10 +29,33 @@ export default function Dashboard() {
     loadInitialData();
   }, [role, navigate]);
 
-  // Handlers de Carga de Dados
-  const loadUsers = async () => { /* sua lógica original de api.get */ };
-  const loadAuditLogs = async () => { /* sua lógica original de api.get */ };
+// ETAPA: Carregar Usuários (Apenas para Admins)
+  const loadUsers = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/api/v1/users');
+      // Tratamos se a resposta vem direto ou dentro de um objeto 'data' (comum em paginação Laravel)
+      setUsers(res.data.data || res.data);
+    } catch (err) {
+      console.error("Erro ao carregar usuários:", err);
+      // Opcional: setErrors("Falha ao carregar lista de usuários");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // ETAPA: Carregar Histórico de Auditoria
+  const loadAuditLogs = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/api/v1/audit-logs');
+      setAuditLogs(res.data.data || res.data);
+    } catch (err) {
+      console.error("Erro ao carregar logs:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
     if (role !== 'admin') return;
     activeTab === 'users' ? loadUsers() : loadAuditLogs();
