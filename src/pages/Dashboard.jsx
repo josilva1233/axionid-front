@@ -20,7 +20,6 @@ export default function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationData, setPaginationData] = useState(null);
 
-  // --- NOVOS ESTADOS PARA FILTROS ---
   const [filters, setFilters] = useState({
     method: '',
     date: ''
@@ -40,11 +39,9 @@ export default function Dashboard() {
     } catch (err) { console.error(err); } finally { setLoading(false); }
   }, []);
 
-  // --- ATUALIZADO: Carregar Logs com filtros ---
   const loadAuditLogs = useCallback(async (page = 1) => {
     setLoading(true);
     try {
-      // Constrói os parâmetros dinamicamente
       const params = new URLSearchParams({ page });
       if (filters.method) params.append('method', filters.method);
       if (filters.date) params.append('date', filters.date);
@@ -67,9 +64,8 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }, [filters]); // Recria a função se os filtros mudarem
+  }, [filters]);
 
-  // CARGA INICIAL (Perfil)
   useEffect(() => {
     const loadProfile = async () => {
       try {
@@ -80,7 +76,6 @@ export default function Dashboard() {
     loadProfile();
   }, [navigate]);
 
-  // Efeito para troca de aba ou filtros
   useEffect(() => {
     if (role !== 'admin') return;
     setCurrentPage(1);
@@ -93,7 +88,6 @@ export default function Dashboard() {
     activeTab === 'users' ? loadUsers(newPage) : loadAuditLogs(newPage);
   };
 
-  // HANDLER PARA FILTROS
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
@@ -132,69 +126,54 @@ export default function Dashboard() {
       <Sidebar activeTab={activeTab} setActiveTab={(tab) => { setActiveTab(tab); setCurrentPage(1); }} role={role} onLogout={handleLogout} />
 
       <div className="main-wrapper">
-<header className="main-header d-flex justify-content-between align-items-center p-3">
-  <h2>{activeTab === 'users' ? 'Gestão de Usuários' : 'Auditoria'}</h2>
+        <header className="main-header">
+          <h2 className="brand">
+            {activeTab === 'users' ? 'Gestão de Usuários' : 'Auditoria'}
+          </h2>
 
-  {currentUser && (
-    <div className="user-menu-container">
-      <div className="dropdown">
-        <button 
-          className="btn d-flex align-items-center justify-content-center p-0"
-          type="button"
-          id="userMenuButton"
-          data-bs-toggle="dropdown" 
-          aria-expanded="false"
-          style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            backgroundColor: '#4A90E2', // Cor de fundo do círculo
-            color: 'white',
-            fontSize: '1.2rem',
-            fontWeight: 'bold',
-            border: 'none',
-            transition: 'transform 0.2s'
-          }}
-          onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-          onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-        >
-          {/* Pega a primeira letra do nome */}
-          {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
-        </button>
+          {currentUser && (
+            <div className="user-menu-container">
+              <div className="dropdown">
+                <button 
+                  className="nav-avatar btn" 
+                  type="button" 
+                  id="userMenuButton" 
+                  data-bs-toggle="dropdown" 
+                  aria-expanded="false"
+                >
+                  {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+                </button>
 
-        <ul className="dropdown-menu dropdown-menu-end shadow border-secondary bg-dark" aria-labelledby="userMenuButton">
-          <li className="px-3 py-2 border-bottom border-secondary mb-2">
-            <div className="small text-secondary">Logado como:</div>
-            <div className="text-white fw-bold">{currentUser.name}</div>
-            <div className="small text-muted" style={{ fontSize: '0.75rem' }}>{currentUser.email}</div>
-          </li>
-          <li>
-            <button className="dropdown-item text-white py-2" onClick={() => navigate('/perfil')}>
-              <i className="bi bi-person me-2"></i> Meus Detalhes
-            </button>
-          </li>
-          <li>
-            <hr className="dropdown-divider border-secondary" />
-          </li>
-          <li>
-            <button className="dropdown-item text-danger py-2" onClick={handleLogout}>
-              <i className="bi bi-box-arrow-right me-2"></i> Sair
-            </button>
-          </li>
-        </ul>
-      </div>
-    </div>
-  )}
-</header>
+                <ul className="dropdown-menu dropdown-menu-end shadow border-secondary bg-dark" aria-labelledby="userMenuButton">
+                  <li className="px-3 py-2 border-bottom border-secondary mb-2">
+                    <div className="small text-secondary">Logado como:</div>
+                    <div className="text-white fw-bold">{currentUser.name}</div>
+                    <div className="small text-muted" style={{ fontSize: '0.75rem' }}>{currentUser.email}</div>
+                  </li>
+                  <li>
+                    <button className="dropdown-item text-white py-2" onClick={() => navigate('/perfil')}>
+                      <i className="bi bi-person me-2"></i> Meus Detalhes
+                    </button>
+                  </li>
+                  <li><hr className="dropdown-divider border-secondary" /></li>
+                  <li>
+                    <button className="dropdown-item text-danger py-2" onClick={handleLogout}>
+                      <i className="bi bi-box-arrow-right me-2"></i> Sair
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          )}
+        </header>
 
-        <main className="content-area">
-          {/* BARRA DE FILTROS (Apenas para Auditoria) */}
+        <main className="content-area p-4">
           {activeTab === 'audit' && role === 'admin' && (
-            <div className="filter-card bg-dark bg-opacity-25 p-3 rounded-3 mb-4 border border-secondary border-opacity-10">
-              <Row className="align-items-end g-2">
+            <div className="filter-card">
+              <Row className="align-items-end g-3">
                 <Col md={4}>
-                  <Form.Group>
-                    <Form.Label className="small text-secondary">Método HTTP</Form.Label>
+                  <Form.Group className="input-group">
+                    <Form.Label>Método HTTP</Form.Label>
                     <Form.Select 
                       name="method" 
                       value={filters.method} 
@@ -210,8 +189,8 @@ export default function Dashboard() {
                   </Form.Group>
                 </Col>
                 <Col md={4}>
-                  <Form.Group>
-                    <Form.Label className="small text-secondary">Data do Log</Form.Label>
+                  <Form.Group className="input-group">
+                    <Form.Label>Data do Log</Form.Label>
                     <Form.Control 
                       type="date" 
                       name="date" 
@@ -222,25 +201,26 @@ export default function Dashboard() {
                   </Form.Group>
                 </Col>
                 <Col md={4} className="d-flex gap-2">
-                  <Button variant="primary" className="w-100" onClick={() => loadAuditLogs(1)}>
+                  <button className="btn-primary w-100" onClick={() => loadAuditLogs(1)}>
                     Filtrar
-                  </Button>
-                  <Button variant="outline-secondary" onClick={clearFilters}>
+                  </button>
+                  <button className="btn-back" onClick={clearFilters}>
                     Limpar
-                  </Button>
+                  </button>
                 </Col>
               </Row>
             </div>
           )}
 
-          <div className="tab-wrapper position-relative" style={{ minHeight: '500px' }}>
+          <div className={`tab-wrapper ${loading ? 'is-loading' : ''}`}>
             {loading && (
-              <div className="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-dark bg-opacity-10" style={{ zIndex: 5 }}>
-                <Spinner animation="border" variant="primary" />
+              <div className="loading-overlay">
+                <div className="spinner"></div>
+                <span className="text-primary fw-bold">Carregando dados...</span>
               </div>
             )}
 
-            <div className={loading ? 'opacity-25' : 'opacity-100'} style={{ transition: 'opacity 0.2s' }}>
+            <div className="content-card">
               {activeTab === 'users' && (
                 role === 'admin' ? <UserTable users={users} /> : <WelcomeOperacional user={currentUser} />
               )}
@@ -250,13 +230,12 @@ export default function Dashboard() {
               )}
             </div>
             
-            {/* Paginação ... */}
             {role === 'admin' && paginationData && paginationData.last > 1 && (
-              <div className="d-flex flex-wrap justify-content-between align-items-center mt-4 bg-dark bg-opacity-25 p-3 rounded-3 border border-secondary border-opacity-10">
-                <span className="small text-secondary">
+              <div className="d-flex flex-wrap justify-content-between align-items-center mt-4 p-3 rounded-3 bg-dark bg-opacity-25 border border-secondary border-opacity-10">
+                <span className="small text-dim">
                   Página <strong>{currentPage}</strong> de {paginationData.last} ({paginationData.total} registros)
                 </span>
-                <Pagination className="mb-0 shadow-sm">
+                <Pagination className="mb-0">
                   <Pagination.First disabled={currentPage === 1} onClick={() => handlePageChange(1)} />
                   <Pagination.Prev disabled={currentPage === 1} onClick={() => handlePageChange(currentPage - 1)} />
                   {renderPaginationItems()}
