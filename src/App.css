@@ -108,6 +108,58 @@ body {
     width: 100%;
 }
 
+/* =========================================
+   CORREÇÃO DEFINITIVA DO DROPDOWN
+   ========================================= */
+
+/* Garante que o menu comece oculto e não ocupe espaço */
+.dropdown-menu.custom-dropdown {
+    display: none; /* Oculto por padrão */
+    position: absolute !important;
+    right: 0 !important;
+    left: auto !important;
+    margin: 0;
+    list-style: none !important; /* Remove as bolinhas brancas das fotos */
+    padding: 0 !important;
+    z-index: 1050;
+}
+
+/* Classe que o Bootstrap adiciona automaticamente ao clicar */
+.dropdown-menu.custom-dropdown.show {
+    display: block !important;
+    animation: fadeInDropdown 0.2s ease-out;
+}
+
+/* Remove os bullets de qualquer li interna */
+.custom-dropdown li, 
+.custom-dropdown li::before {
+    list-style: none !important;
+    list-style-type: none !important;
+    content: none !important;
+    display: block;
+}
+
+/* Estilo do Avatar (O que fica visível no front) */
+.nav-avatar-circle {
+    width: 42px;
+    height: 42px;
+    border-radius: 50% !important;
+    background: #6366f1; /* Cor primary */
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    padding: 0;
+}
+
+@keyframes fadeInDropdown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* Container do Avatar no canto */
 .user-menu-wrapper {
     position: relative;

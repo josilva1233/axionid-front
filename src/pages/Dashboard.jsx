@@ -6,6 +6,7 @@ import api from '../services/api';
 import Sidebar from '../components/dashboard/Sidebar';
 import UserTable from '../components/dashboard/UserTable';
 import AuditTable from '../components/dashboard/AuditTable';
+import UserDropdown from '../components/dashboard/UserDropdown';
 
 // Componente Interno para Usuário Comum (Caso não tenha o arquivo separado)
 const WelcomeOperacional = ({ user }) => (
@@ -144,43 +145,19 @@ export default function Dashboard() {
       <Sidebar activeTab={activeTab} setActiveTab={(tab) => { setActiveTab(tab); setCurrentPage(1); }} role={role} onLogout={handleLogout} />
 
       <div className="main-wrapper">
-        <header className="main-header">
-          <h2 className="brand">
-            {activeTab === 'users' ? 'Gestão de Usuários' : 'Auditoria'}
-          </h2>
+        // Dentro do seu return do Dashboard:
+<header className="main-header">
+  <h2 className="brand">
+    {activeTab === 'users' ? 'Gestão de Usuários' : 'Auditoria'}
+  </h2>
 
-          <div className="user-menu-wrapper">
-            <div className="dropdown">
-              <button 
-                className="nav-avatar-circle" 
-                type="button" 
-                data-bs-toggle="dropdown" 
-                aria-expanded="false"
-              >
-                {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
-              </button>
-
-              <ul className="dropdown-menu dropdown-menu-end custom-dropdown shadow">
-                <li className="user-info-header">
-                   <div className="small text-secondary">Logado como:</div>
-                   <div className="text-white fw-bold">{currentUser?.name || 'Carregando...'}</div>
-                   <div className="small text-muted" style={{ fontSize: '0.75rem' }}>{currentUser?.email}</div>
-                </li>
-                <li>
-                  <button className="dropdown-item" onClick={() => navigate('/perfil')}>
-                    <i className="bi bi-person me-2"></i> Meus Detalhes
-                  </button>
-                </li>
-                <li><hr className="dropdown-divider" /></li>
-                <li>
-                  <button className="dropdown-item text-danger" onClick={handleLogout}>
-                    <i className="bi bi-box-arrow-right me-2"></i> Sair
-                  </button>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </header>
+  {currentUser && (
+    <UserDropdown 
+      user={currentUser} 
+      onLogout={handleLogout} 
+    />
+  )}
+</header>
 
         <main className="content-area p-4">
           {/* Filtros: Só aparecem para Admin na aba de auditoria */}
