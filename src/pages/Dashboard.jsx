@@ -190,10 +190,11 @@ export default function Dashboard() {
 
             {/* Overlay de Loading Centralizado */}
             {loading && (
-              <div className="position-absolute top-50 start-50 translate-middle text-center" style={{ zIndex: 10 }}>
-                <Spinner animation="border" variant="primary" />
-                <div className="mt-2 small text-primary fw-bold text-uppercase">Sincronizando...</div>
-              </div>
+<ul className="pagination">
+  <li className="page-item"><button className="page-link">Previous</button></li>
+  <li className="page-item active"><button className="page-link">1</button></li>
+  {/* ... */}
+</ul>
             )}
           </div>
         </main>
