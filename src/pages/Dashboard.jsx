@@ -7,7 +7,7 @@ import api from '../services/api';
 import Sidebar from '../components/dashboard/Sidebar';
 import UserTable from '../components/dashboard/UserTable';
 import AuditTable from '../components/dashboard/AuditTable';
-import './Dashboard.css';
+
 
 export default function Dashboard() {
   const navigate = useNavigate();

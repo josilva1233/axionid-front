@@ -325,6 +325,54 @@ input:focus {
   display: block;
 }
 
+/* Remove as bolinhas e alinha os itens horizontalmente */
+.pagination {
+  display: flex !important;
+  list-style: none !important;
+  padding-left: 0 !important;
+  margin-top: 20px;
+  gap: 5px; /* Espaçamento entre os números */
+  flex-wrap: wrap; /* Para não quebrar em telas pequenas */
+}
+
+/* Estilização dos itens da lista */
+.page-item {
+  display: inline-block;
+}
+
+/* Estilização dos botões/links */
+.page-link {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  padding: 8px 14px;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+/* Efeito ao passar o mouse */
+.page-link:hover {
+  background-color: #6366f1;
+  color: white;
+}
+
+/* Estilo para a página atual (Active) */
+.page-item.active .page-link {
+  background-color: #6366f1 !important;
+  border-color: #6366f1 !important;
+  color: white !important;
+}
+
+/* Estilo para botões desabilitados */
+.page-item.disabled .page-link {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+
+
 /* Ações Verticais na Detail */
 .actions-buttons-vertical { display: flex; flex-direction: column; gap: 12px; }
 
