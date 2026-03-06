@@ -7,6 +7,20 @@ import Sidebar from '../components/dashboard/Sidebar';
 import UserTable from '../components/dashboard/UserTable';
 import AuditTable from '../components/dashboard/AuditTable';
 
+// Componente Interno para Usuário Comum (Caso não tenha o arquivo separado)
+const WelcomeOperacional = ({ user }) => (
+  <div className="text-center py-5 animate-in">
+    <div className="mb-4">
+      <div className="display-4 text-primary">👋</div>
+    </div>
+    <h2 className="text-white mb-2">Bem-vindo, {user?.name}!</h2>
+    <p className="text-dim">
+      Você está logado no painel operacional da <strong>AxionID</strong>.<br />
+      Utilize o menu lateral para navegar ou o avatar no topo para ver seu perfil.
+    </p>
+  </div>
+);
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const [role] = useState(localStorage.getItem('@AxionID:role'));
@@ -26,6 +40,7 @@ export default function Dashboard() {
   });
 
   const loadUsers = useCallback(async (page = 1) => {
+    if (role !== 'admin') return; // Segurança extra
     setLoading(true);
     try {
       const res = await api.get(`/api/v1/users?page=${page}`);
@@ -37,9 +52,10 @@ export default function Dashboard() {
         setPaginationData(null);
       }
     } catch (err) { console.error(err); } finally { setLoading(false); }
-  }, []);
+  }, [role]);
 
   const loadAuditLogs = useCallback(async (page = 1) => {
+    if (role !== 'admin') return;
     setLoading(true);
     try {
       const params = new URLSearchParams({ page });
@@ -64,7 +80,7 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters, role]);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -77,13 +93,15 @@ export default function Dashboard() {
   }, [navigate]);
 
   useEffect(() => {
-    if (role !== 'admin') return;
-    setCurrentPage(1);
-    activeTab === 'users' ? loadUsers(1) : loadAuditLogs(1);
+    // Só carrega tabelas se for Admin. Se for comum, não faz nada (mantém a tela de boas-vindas)
+    if (role === 'admin') {
+      setCurrentPage(1);
+      activeTab === 'users' ? loadUsers(1) : loadAuditLogs(1);
+    }
   }, [activeTab, role, loadUsers, loadAuditLogs]);
 
   const handlePageChange = (newPage) => {
-    if (newPage < 1 || newPage > paginationData?.last || newPage === currentPage) return;
+    if (!paginationData || newPage < 1 || newPage > paginationData?.last || newPage === currentPage) return;
     setCurrentPage(newPage);
     activeTab === 'users' ? loadUsers(newPage) : loadAuditLogs(newPage);
   };
@@ -126,35 +144,50 @@ export default function Dashboard() {
       <Sidebar activeTab={activeTab} setActiveTab={(tab) => { setActiveTab(tab); setCurrentPage(1); }} role={role} onLogout={handleLogout} />
 
       <div className="main-wrapper">
-         <header className="main-header">
-  <h2 className="brand">
-    {activeTab === 'users' ? 'Gestão de Usuários' : 'Auditoria'}
-  </h2>
+        <header className="main-header">
+          <h2 className="brand">
+            {activeTab === 'users' ? 'Gestão de Usuários' : 'Auditoria'}
+          </h2>
 
-  <div className="user-menu-wrapper">
-    <div className="dropdown">
-      <button 
-        className="nav-avatar-circle" 
-        type="button" 
-        data-bs-toggle="dropdown" 
-      >
-        {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
-      </button>
+          <div className="user-menu-wrapper">
+            <div className="dropdown">
+              <button 
+                className="nav-avatar-circle" 
+                type="button" 
+                data-bs-toggle="dropdown" 
+                aria-expanded="false"
+              >
+                {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
+              </button>
 
-      <ul className="dropdown-menu dropdown-menu-end custom-dropdown">
-        <li className="user-info-header">
-           {/* Conteúdo do Usuário */}
-        </li>
-        {/* Itens do Menu */}
-      </ul>
-    </div>
-  </div>
-</header>
+              <ul className="dropdown-menu dropdown-menu-end custom-dropdown shadow">
+                <li className="user-info-header">
+                   <div className="small text-secondary">Logado como:</div>
+                   <div className="text-white fw-bold">{currentUser?.name || 'Carregando...'}</div>
+                   <div className="small text-muted" style={{ fontSize: '0.75rem' }}>{currentUser?.email}</div>
+                </li>
+                <li>
+                  <button className="dropdown-item" onClick={() => navigate('/perfil')}>
+                    <i className="bi bi-person me-2"></i> Meus Detalhes
+                  </button>
+                </li>
+                <li><hr className="dropdown-divider" /></li>
+                <li>
+                  <button className="dropdown-item text-danger" onClick={handleLogout}>
+                    <i className="bi bi-box-arrow-right me-2"></i> Sair
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </header>
 
         <main className="content-area p-4">
+          {/* Filtros: Só aparecem para Admin na aba de auditoria */}
           {activeTab === 'audit' && role === 'admin' && (
             <div className="filter-card">
-              <Row className="align-items-end g-3">
+               {/* ... (Seu código de filtros aqui) ... */}
+               <Row className="align-items-end g-3">
                 <Col md={4}>
                   <Form.Group className="input-group">
                     <Form.Label>Método HTTP</Form.Label>
@@ -205,15 +238,15 @@ export default function Dashboard() {
             )}
 
             <div className="content-card">
-              {activeTab === 'users' && (
+              {/* LÓGICA DE EXIBIÇÃO: Se for Admin mostra tabela, senão mostra Boas-vindas */}
+              {activeTab === 'users' ? (
                 role === 'admin' ? <UserTable users={users} /> : <WelcomeOperacional user={currentUser} />
-              )}
-              
-              {activeTab === 'audit' && role === 'admin' && (
-                <AuditTable logs={auditLogs} />
+              ) : (
+                role === 'admin' && <AuditTable logs={auditLogs} />
               )}
             </div>
             
+            {/* Paginação: Só para Admin */}
             {role === 'admin' && paginationData && paginationData.last > 1 && (
               <div className="d-flex flex-wrap justify-content-between align-items-center mt-4 p-3 rounded-3 bg-dark bg-opacity-25 border border-secondary border-opacity-10">
                 <span className="small text-dim">
