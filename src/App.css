@@ -222,7 +222,7 @@ input:focus {
 .btn-back:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-main); }
 
 /* =========================================
-   7. TABELA DE USUÁRIOS (ADMIN)
+   7. TABELA E CONTAINER ESTABILIZADO
    ========================================= */
 .table-container {
   width: 100%;
@@ -231,33 +231,46 @@ input:focus {
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid var(--border);
   margin-top: 15px;
+  
+  /* ESTABILIZAÇÃO: Impede a tela de encolher ao trocar de aba */
+  min-height: 500px; 
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 
-.users-table {
+.users-table, .axion-table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
+  /* Garante que a tabela ocupe o espaço mesmo vazia */
+  table-layout: fixed; 
 }
 
-.users-table th {
+/* Define larguras fixas básicas para evitar que colunas "pulem" */
+.users-table th:nth-child(1) { width: 40%; }
+.users-table th:nth-child(2) { width: 30%; }
+.users-table th:nth-child(3) { width: 30%; }
+
+.users-table th, .axion-table th {
   padding: 16px;
   color: var(--text-dim);
   font-size: 0.75rem;
   text-transform: uppercase;
   font-weight: 700;
   border-bottom: 1px solid var(--border);
+  background: rgba(22, 27, 44, 0.5); /* Fundo fixo no header */
 }
 
-.users-table td {
+.users-table td, .axion-table td {
   padding: 16px;
   border-bottom: 1px solid var(--border);
   color: var(--text-main);
   font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-
-.users-table tr:hover td { background: rgba(99, 102, 241, 0.03); }
-
-.user-td-name { display: flex; align-items: center; gap: 12px; }
 
 .avatar-small {
   width: 32px; height: 32px;
