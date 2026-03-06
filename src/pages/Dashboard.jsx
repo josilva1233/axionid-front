@@ -8,7 +8,7 @@ import UserTable from "../components/dashboard/UserTable";
 import AuditTable from "../components/dashboard/AuditTable";
 import UserDropdown from "../components/dashboard/UserDropdown";
 
-// --- COMPONENTES INTERNOS (Para evitar múltiplos arquivos) ----
+// --- COMPONENTES INTERNOS (Para evitar múltiplos arquivos)_ ----
 
 const WelcomeOperacional = ({ user }) => (
   <div className="text-center py-5 animate-in">
