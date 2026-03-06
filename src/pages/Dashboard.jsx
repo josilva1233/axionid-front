@@ -17,7 +17,7 @@ export default function Dashboard() {
       const res = await api.get(endpoint);
       setData(res.data.data);
       
-      // Se for a aba de usuários, atualizamos os mini-cards de stats
+      // Se for a aba de usuários, atualizamssos os mini-cards de stats
       if (activeTab === "users") {
         const users = res.data.data;
         setStats({
