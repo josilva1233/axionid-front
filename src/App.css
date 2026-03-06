@@ -1,6 +1,4 @@
-/* =========================================
-   1. CONFIGURAÇÕES E DESIGN SYSTEM
-   ========================================= */
+/* Variáveis e Reset permanecem iguais */
 :root {
   --primary: #6366f1;
   --primary-hover: #4f46e5;
@@ -12,10 +10,85 @@
   --input-bg: rgba(0, 0, 0, 0.2);
   --error: #ef4444;
   --success: #22c55e;
-  --warning: #f59e0b;
-  --shadow-lg:
-    0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
 }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* HEADER - Ajustado para não apertar */
+.main-header {
+  height: 80px;
+  padding: 0 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(11, 15, 26, 0.8);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* DROPDOWN - Correção das bolinhas e largura */
+.user-dropdown-container {
+  position: relative;
+}
+
+.avatar-trigger, .nav-avatar-circle {
+  width: 42px;
+  height: 42px;
+  border-radius: 50% !important;
+  background: var(--primary);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dropdown-floating-menu, .custom-dropdown {
+  position: absolute !important;
+  top: 55px;
+  right: 0;
+  background: #161b2c !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  min-width: 260px; /* Largura para não ficar apertado */
+  padding: 0 !important;
+  margin: 0 !important;
+  list-style: none !important; /* Remove as bolinhas */
+  z-index: 1100;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.dropdown-floating-menu li {
+  list-style: none !important;
+  margin: 0 !important;
+}
+
+.menu-item {
+  width: 100%;
+  padding: 12px 20px;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+/* Mantém seus estilos de Tabela e Auditoria abaixo... */
 
 /* =========================================
    2. RESET E LAYOUT BASE
