@@ -26,84 +26,73 @@
   padding: 0;
 }
 
-body {
-  background-color: var(--bg-dark);
-  font-family: 'Inter', system-ui, sans-serif;
-  color: var(--text-main);
-  line-height: 1.6;
-  overflow-x: hidden;
-}
+/* =========================================
+   AJUSTE DE LOGIN (CORREÇÃO DA IMAGEM)
+   ========================================= */
 
-/* Estrutura Principal Flex */
-.dashboard-layout {
-  display: flex;
+/* 1. Resetar o Body para não forçar flex em tudo */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-dark);
+  font-family: 'Inter', sans-serif;
+  color: var(--text-main);
   min-height: 100vh;
 }
 
-/* =========================================
-   3. SIDEBAR (MENU LATERAL)
-   ========================================= */
-.sidebar {
-  width: 280px;
-  background: var(--sidebar-bg);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  padding: 24px;
-  position: fixed;
-  height: 100vh;
-  z-index: 100;
-}
-
-.sidebar-brand h1 {
-  font-size: 1.5rem;
-  font-weight: 800;
-  letter-spacing: -0.05em;
-  margin-bottom: 40px;
-  cursor: pointer;
-}
-
-.sidebar-brand span { color: var(--primary); }
-
-.sidebar-nav {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.nav-section-title {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  font-weight: 800;
-  margin: 20px 0 10px 12px;
-  letter-spacing: 0.1em;
-}
-
-.nav-item {
+/* 2. Criar um container específico para centralizar o Login */
+.auth-wrapper {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: 12px;
-  color: var(--text-dim);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-  background: transparent;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent);
+}
+
+.auth-card {
+  background: var(--card-bg);
+  padding: 40px;
+  border-radius: 24px;
+  border: 1px solid var(--border);
   width: 100%;
+  max-width: 400px; /* Largura fixa para não esticar */
+  box-shadow: var(--shadow-lg);
+  animation: slideUpFade 0.5s ease;
 }
 
-.nav-item:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-main); }
-.nav-item.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
-
-.sidebar-footer {
-  padding-top: 20px;
-  border-top: 1px solid var(--border);
+/* Ajuste dos inputs de login para ficarem um abaixo do outro */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 30px;
 }
 
+.auth-card h1 {
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+.auth-card h1 span { color: var(--primary); }
+
+/* Estilo para o botão do Google */
+.google-btn {
+  background: #1a1f2e;
+  border: 1px solid var(--border);
+  color: white;
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: 0.2s;
+}
+
+.google-btn:hover { background: #252b3d; }
 /* =========================================
    4. CONTEÚDO PRINCIPAL (WRAPPERS)
    ========================================= */
