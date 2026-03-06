@@ -132,10 +132,60 @@ export default function Dashboard() {
       <Sidebar activeTab={activeTab} setActiveTab={(tab) => { setActiveTab(tab); setCurrentPage(1); }} role={role} onLogout={handleLogout} />
 
       <div className="main-wrapper">
-        <header className="main-header">
-           <h2>{activeTab === 'users' ? 'Gestão de Usuários' : 'Auditoria'}</h2>
-           {/* ... Header User Info ... */}
-        </header>
+<header className="main-header d-flex justify-content-between align-items-center p-3">
+  <h2>{activeTab === 'users' ? 'Gestão de Usuários' : 'Auditoria'}</h2>
+
+  {currentUser && (
+    <div className="user-menu-container">
+      <div className="dropdown">
+        <button 
+          className="btn d-flex align-items-center justify-content-center p-0"
+          type="button"
+          id="userMenuButton"
+          data-bs-toggle="dropdown" 
+          aria-expanded="false"
+          style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
+            backgroundColor: '#4A90E2', // Cor de fundo do círculo
+            color: 'white',
+            fontSize: '1.2rem',
+            fontWeight: 'bold',
+            border: 'none',
+            transition: 'transform 0.2s'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+          onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          {/* Pega a primeira letra do nome */}
+          {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+        </button>
+
+        <ul className="dropdown-menu dropdown-menu-end shadow border-secondary bg-dark" aria-labelledby="userMenuButton">
+          <li className="px-3 py-2 border-bottom border-secondary mb-2">
+            <div className="small text-secondary">Logado como:</div>
+            <div className="text-white fw-bold">{currentUser.name}</div>
+            <div className="small text-muted" style={{ fontSize: '0.75rem' }}>{currentUser.email}</div>
+          </li>
+          <li>
+            <button className="dropdown-item text-white py-2" onClick={() => navigate('/perfil')}>
+              <i className="bi bi-person me-2"></i> Meus Detalhes
+            </button>
+          </li>
+          <li>
+            <hr className="dropdown-divider border-secondary" />
+          </li>
+          <li>
+            <button className="dropdown-item text-danger py-2" onClick={handleLogout}>
+              <i className="bi bi-box-arrow-right me-2"></i> Sair
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  )}
+</header>
 
         <main className="content-area">
           {/* BARRA DE FILTROS (Apenas para Auditoria) */}
