@@ -1,6 +1,135 @@
 
 
+/* =========================================
+   ESTILIZAÇÃO DOS FILTROS (DASHBOARD)
+   ========================================= */
 
+.filter-card {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border) !important;
+    padding: 24px !important;
+    border-radius: 20px !important;
+    margin-bottom: 24px !important;
+    box-shadow: var(--shadow-lg);
+}
+
+/* Alinhamento dos itens do formulário nos filtros */
+.filter-card .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filter-card .form-label {
+    font-size: 0.7rem !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    color: var(--text-dim) !important;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+
+/* Customização dos Inputs e Selects do Bootstrap para o Tema */
+.filter-card .form-control, 
+.filter-card .form-select {
+    background-color: var(--input-bg) !important;
+    border: 1.5px solid var(--border) !important;
+    color: var(--text-main) !important;
+    border-radius: 12px !important;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+}
+
+.filter-card .form-control:focus, 
+.filter-card .form-select:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15) !important;
+    outline: none;
+}
+
+/* Ícone do calendário no input date */
+.filter-card input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+/* =========================================
+   ESTABILIZAÇÃO E FEEDBACK DE CARREGAMENTO
+   ========================================= */
+
+.tab-wrapper {
+    position: relative;
+    min-height: 500px; /* Evita que o footer suba ao trocar de aba */
+    width: 100%;
+}
+
+.tab-wrapper.is-loading .content-card {
+    opacity: 0.4;
+    filter: blur(2px);
+    pointer-events: none;
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    background: rgba(11, 15, 26, 0.6);
+    padding: 30px;
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+}
+
+.spinner {
+    width: 45px;
+    height: 45px;
+    border: 4px solid rgba(99, 102, 241, 0.1);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* =========================================
+   PAGINAÇÃO CUSTOMIZADA
+   ========================================= */
+
+.pagination .page-item .page-link {
+    background-color: var(--input-bg);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    margin: 0 3px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+    color: white !important;
+    box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+}
+
+.pagination .page-item.disabled .page-link {
+    background-color: transparent;
+    opacity: 0.3;
+}
+
+.pagination .page-link:hover:not(.active) {
+    background-color: rgba(99, 102, 241, 0.1);
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
 /* =========================================
    1. CONFIGURAÇÕES E DESIGN SYSTEM
    ========================================= */
