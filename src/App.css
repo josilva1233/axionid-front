@@ -551,3 +551,107 @@ input:focus {
   color: white;
 }
 
+
+/* =========================================
+   ESTILOS ESPECÍFICOS PARA AUDITORIA
+   ========================================= */
+
+/* Estilização da Tabela Axion */
+.axion-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 10px;
+}
+
+.axion-table th {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 16px;
+  color: var(--text-dim);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 800;
+  border-bottom: 2px solid var(--border);
+  text-align: left;
+}
+
+.axion-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  font-size: 0.85rem;
+  color: var(--text-main);
+  transition: background 0.2s;
+}
+
+.axion-table tr:hover td {
+  background: rgba(99, 102, 241, 0.05); /* Brilho sutil da cor primária */
+}
+
+/* Fontes Mono para Dados Técnicos (Data e IP) */
+.mono-text {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.8rem !important;
+  color: var(--text-dim);
+}
+
+/* Badges Dinâmicas para Métodos HTTP */
+.method-badge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  display: inline-block;
+  min-width: 60px;
+  text-align: center;
+  border: 1px solid transparent;
+}
+
+.method-badge.GET    { background: rgba(52, 211, 153, 0.1); color: #34d399; border-color: rgba(52, 211, 153, 0.2); }
+.method-badge.POST   { background: rgba(96, 165, 250, 0.1); color: #60a5fa; border-color: rgba(96, 165, 250, 0.2); }
+.method-badge.PUT    { background: rgba(251, 191, 36, 0.1); color: #fbbf24; border-color: rgba(251, 191, 36, 0.2); }
+.method-badge.DELETE { background: rgba(248, 113, 113, 0.1); color: #f87171; border-color: rgba(248, 113, 113, 0.2); }
+
+/* Célula de URL com truncamento inteligente */
+.url-cell {
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--primary);
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+.url-cell:hover {
+  white-space: normal;
+  word-break: break-all;
+  position: relative;
+  z-index: 10;
+}
+
+/* Estilo para Info de Usuário na Tabela */
+.user-info-min {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.user-info-min strong {
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+
+.user-info-min span {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+/* Container de scroll para evitar quebra em telas menores */
+.table-card {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) transparent;
+}
