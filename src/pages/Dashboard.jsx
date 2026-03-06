@@ -86,3 +86,5 @@ export default function Dashboard() {
     </div>
   );
 }
+
+// v1.0.1-recuperada
