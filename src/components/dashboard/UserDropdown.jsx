@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 const UserDropdown = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,18 +13,18 @@ const UserDropdown = ({ user, onLogout }) => {
         setIsOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
     <div className="user-dropdown-container" ref={dropdownRef}>
-      <button 
-        className="avatar-trigger" 
+      <button
+        className="avatar-trigger"
         onClick={() => setIsOpen(!isOpen)}
         type="button"
       >
-        {user?.name?.charAt(0).toUpperCase() || 'U'}
+        {user?.name?.charAt(0).toUpperCase() || "U"}
       </button>
 
       {isOpen && (
@@ -36,7 +36,7 @@ const UserDropdown = ({ user, onLogout }) => {
           </li>
           <li className="menu-divider"></li>
           <li>
-            <button className="menu-item" onClick={() => navigate('/perfil')}>
+            <button className="menu-item" onClick={() => navigate("/perfil")}>
               <i className="bi bi-person"></i> Meus Detalhes
             </button>
           </li>

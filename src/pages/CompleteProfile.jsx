@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
 export default function CompleteProfile() {
   const navigate = useNavigate();
@@ -9,35 +9,35 @@ export default function CompleteProfile() {
   const [step, setStep] = useState(1); // 1: Documento, 2: Endereço, 3: Senha
 
   const [formData, setFormData] = useState({
-    cpf_cnpj: '',
-    zip_code: '',
-    street: '',
-    number: '',
-    neighborhood: '',
-    city: '',
-    state: '',
-    complement: '',
-    password: '',
-    password_confirmation: ''
+    cpf_cnpj: "",
+    zip_code: "",
+    street: "",
+    number: "",
+    neighborhood: "",
+    city: "",
+    state: "",
+    complement: "",
+    password: "",
+    password_confirmation: "",
   });
 
   // Busca CEP automática via ViaCEP
   const handleZipCodeBlur = async (e) => {
-    const cep = e.target.value.replace(/\D/g, '');
+    const cep = e.target.value.replace(/\D/g, "");
     if (cep.length === 8) {
       try {
         const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
         const data = await res.json();
         if (!data.erro) {
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
             street: data.logradouro,
             neighborhood: data.bairro,
             city: data.localidade,
             state: data.uf,
-            zip_code: cep
+            zip_code: cep,
           }));
-          setErrors(prev => ({ ...prev, zip_code: null }));
+          setErrors((prev) => ({ ...prev, zip_code: null }));
         } else {
           alert("CEP não encontrado.");
         }
@@ -49,8 +49,8 @@ export default function CompleteProfile() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: null }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
   };
 
   const handleSubmit = async (e) => {
@@ -63,14 +63,14 @@ export default function CompleteProfile() {
     setErrors({});
 
     try {
-      const response = await api.post('/api/v1/complete-profile', formData);
+      const response = await api.post("/api/v1/complete-profile", formData);
       alert("Cadastro finalizado com sucesso!");
-      
+
       if (response.data.user?.is_admin) {
-        localStorage.setItem('@AxionID:role', 'admin');
+        localStorage.setItem("@AxionID:role", "admin");
       }
 
-      navigate('/dashboard', { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (error) {
       if (error.response && error.response.status === 422) {
         setErrors(error.response.data.errors || error.response.data);
@@ -85,48 +85,73 @@ export default function CompleteProfile() {
   return (
     <div className="auth-container">
       <div className="auth-card animate-in">
-        <div className="brand"><h1>Axion<span>ID</span></h1></div>
-        
+        <div className="brand">
+          <h1>
+            Axion<span>ID</span>
+          </h1>
+        </div>
+
         {/* STEPPER PADRONIZADO */}
-        <div className="stepper-container" style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '24px' }}>
-          {[1, 2, 3].map(i => (
-            <div key={i} style={{ 
-              width: '33%', 
-              height: '4px', 
-              borderRadius: '2px',
-              background: step >= i ? 'var(--primary)' : 'var(--border-color)',
-              transition: '0.3s'
-            }} />
+        <div
+          className="stepper-container"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "8px",
+            marginBottom: "24px",
+          }}
+        >
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              style={{
+                width: "33%",
+                height: "4px",
+                borderRadius: "2px",
+                background:
+                  step >= i ? "var(--primary)" : "var(--border-color)",
+                transition: "0.3s",
+              }}
+            />
           ))}
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
-          
           {/* PASSO 1: IDENTIFICAÇÃO */}
           {step === 1 && (
             <div className="step-content animate-in">
-              <div className="auth-header" style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <div
+                className="auth-header"
+                style={{ textAlign: "center", marginBottom: "20px" }}
+              >
                 <h2>Identificação</h2>
                 <p>Precisamos validar seu documento para ativar sua ID.</p>
               </div>
 
               <div className="input-group">
                 <label>CPF ou CNPJ</label>
-                <input 
-                  name="cpf_cnpj" 
-                  placeholder="Apenas números" 
+                <input
+                  name="cpf_cnpj"
+                  placeholder="Apenas números"
                   value={formData.cpf_cnpj}
-                  onChange={handleChange} 
-                  required 
+                  onChange={handleChange}
+                  required
                   autoFocus
                 />
-                {errors.cpf_cnpj && <span className="error-message" style={{position:'static'}}>{errors.cpf_cnpj[0]}</span>}
+                {errors.cpf_cnpj && (
+                  <span
+                    className="error-message"
+                    style={{ position: "static" }}
+                  >
+                    {errors.cpf_cnpj[0]}
+                  </span>
+                )}
               </div>
 
-              <button 
-                type="button" 
-                className="btn-primary" 
-                onClick={() => setStep(2)} 
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => setStep(2)}
                 disabled={!formData.cpf_cnpj}
               >
                 Próximo: Endereço
@@ -137,53 +162,100 @@ export default function CompleteProfile() {
           {/* PASSO 2: ENDEREÇO */}
           {step === 2 && (
             <div className="step-content animate-in">
-              <div className="auth-header" style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <div
+                className="auth-header"
+                style={{ textAlign: "center", marginBottom: "20px" }}
+              >
                 <h2>Onde você reside?</h2>
                 <p>Esses dados são usados para faturamento e segurança.</p>
               </div>
-              
+
               <div className="input-group">
                 <label>CEP</label>
-                <input 
-                  name="zip_code" 
-                  placeholder="00000-000" 
+                <input
+                  name="zip_code"
+                  placeholder="00000-000"
                   value={formData.zip_code}
-                  onBlur={handleZipCodeBlur} 
-                  onChange={handleChange} 
-                  required 
+                  onBlur={handleZipCodeBlur}
+                  onChange={handleChange}
+                  required
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '10px' }}>
+              <div style={{ display: "flex", gap: "10px" }}>
                 <div className="input-group" style={{ flex: 3 }}>
                   <label>Rua</label>
-                  <input name="street" value={formData.street} onChange={handleChange} required />
+                  <input
+                    name="street"
+                    value={formData.street}
+                    onChange={handleChange}
+                    required
+                  />
                 </div>
                 <div className="input-group" style={{ flex: 1 }}>
                   <label>Nº</label>
-                  <input name="number" placeholder="123" value={formData.number} onChange={handleChange} required />
+                  <input
+                    name="number"
+                    placeholder="123"
+                    value={formData.number}
+                    onChange={handleChange}
+                    required
+                  />
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '10px' }}>
+              <div style={{ display: "flex", gap: "10px" }}>
                 <div className="input-group" style={{ flex: 2 }}>
                   <label>Bairro</label>
-                  <input name="neighborhood" value={formData.neighborhood} onChange={handleChange} required />
+                  <input
+                    name="neighborhood"
+                    value={formData.neighborhood}
+                    onChange={handleChange}
+                    required
+                  />
                 </div>
                 <div className="input-group" style={{ flex: 1 }}>
                   <label>UF</label>
-                  <input name="state" value={formData.state} onChange={handleChange} required maxLength="2" />
+                  <input
+                    name="state"
+                    value={formData.state}
+                    onChange={handleChange}
+                    required
+                    maxLength="2"
+                  />
                 </div>
               </div>
 
               <div className="input-group">
                 <label>Cidade</label>
-                <input name="city" value={formData.city} onChange={handleChange} required />
+                <input
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  required
+                />
               </div>
 
-              <div className="btn-group" style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                <button type="button" className="btn-secondary" style={{ flex: 1 }} onClick={() => setStep(1)}>Voltar</button>
-                <button type="button" className="btn-primary" style={{ flex: 2 }} onClick={() => setStep(3)}>Próximo: Segurança</button>
+              <div
+                className="btn-group"
+                style={{ display: "flex", gap: "10px", marginTop: "10px" }}
+              >
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{ flex: 1 }}
+                  onClick={() => setStep(1)}
+                >
+                  Voltar
+                </button>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  style={{ flex: 2 }}
+                  onClick={() => setStep(3)}
+                >
+                  Próximo: Segurança
+                </button>
               </div>
             </div>
           )}
@@ -191,34 +263,63 @@ export default function CompleteProfile() {
           {/* PASSO 3: SEGURANÇA */}
           {step === 3 && (
             <div className="step-content animate-in">
-              <div className="auth-header" style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <div
+                className="auth-header"
+                style={{ textAlign: "center", marginBottom: "20px" }}
+              >
                 <h2>Segurança</h2>
                 <p>Finalize criando sua senha de acesso.</p>
               </div>
 
               <div className="input-group">
                 <label>Nova Senha</label>
-                <input 
-                  type="password" name="password" 
-                  placeholder="Mínimo 6 caracteres" 
-                  onChange={handleChange} required 
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Mínimo 6 caracteres"
+                  onChange={handleChange}
+                  required
                 />
-                {errors.password && <span className="error-message" style={{position:'static'}}>{errors.password[0]}</span>}
+                {errors.password && (
+                  <span
+                    className="error-message"
+                    style={{ position: "static" }}
+                  >
+                    {errors.password[0]}
+                  </span>
+                )}
               </div>
 
               <div className="input-group">
                 <label>Confirmar Senha</label>
-                <input 
-                  type="password" name="password_confirmation" 
-                  placeholder="Repita a senha" 
-                  onChange={handleChange} required 
+                <input
+                  type="password"
+                  name="password_confirmation"
+                  placeholder="Repita a senha"
+                  onChange={handleChange}
+                  required
                 />
               </div>
 
-              <div className="btn-group" style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                <button type="button" className="btn-secondary" style={{ flex: 1 }} onClick={() => setStep(2)}>Voltar</button>
-                <button type="submit" className="btn-primary" style={{ flex: 2 }} disabled={loading}>
-                  {loading ? 'Finalizando...' : 'Concluir Cadastro'}
+              <div
+                className="btn-group"
+                style={{ display: "flex", gap: "10px", marginTop: "10px" }}
+              >
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{ flex: 1 }}
+                  onClick={() => setStep(2)}
+                >
+                  Voltar
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  style={{ flex: 2 }}
+                  disabled={loading}
+                >
+                  {loading ? "Finalizando..." : "Concluir Cadastro"}
                 </button>
               </div>
             </div>
