@@ -905,3 +905,99 @@ input:focus {
   cursor: not-allowed;
   filter: grayscale(1);
 }
+
+
+/* =========================================
+   11. ESTILIZAÇÃO DOS FILTROS DE AUDITORIA
+   ========================================= */
+
+/* Container do Card de Filtros */
+.filter-card {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border) !important;
+    padding: 20px !important;
+    border-radius: 16px !important;
+    margin-bottom: 24px !important;
+}
+
+/* Ajuste da Grid de Filtros */
+.filter-card .row {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+}
+
+/* Labels dos Filtros */
+.filter-card .form-label {
+    font-size: 0.7rem !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    color: var(--text-dim) !important;
+    margin-bottom: 8px !important;
+    letter-spacing: 0.05em;
+}
+
+/* Customização de Inputs (Select e Date) */
+.filter-card .form-control,
+.filter-card .form-select {
+    background-color: var(--input-bg) !important;
+    border: 1.5px solid var(--border) !important;
+    color: white !important;
+    border-radius: 10px !important;
+    padding: 10px 14px !important;
+    font-size: 0.9rem !important;
+    transition: all 0.3s ease;
+}
+
+.filter-card .form-control:focus,
+.filter-card .form-select:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15) !important;
+    outline: none !important;
+}
+
+/* Ícone do calendário e seta do select brancos */
+.filter-card input::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+/* Ajuste dos Botões de Filtro */
+.filter-card .btn-primary {
+    height: 45px;
+    background: var(--primary) !important;
+    border: none !important;
+    border-radius: 10px !important;
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: transform 0.2s;
+}
+
+.filter-card .btn-outline-secondary {
+    height: 45px;
+    border: 1px solid var(--border) !important;
+    color: var(--text-dim) !important;
+    background: transparent !important;
+    border-radius: 10px !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+}
+
+.filter-card .btn-outline-secondary:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: var(--text-main) !important;
+}
+
+/* Responsividade para Mobile */
+@media (max-width: 768px) {
+    .filter-card .row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-card .col-md-4 {
+        width: 100% !important;
+    }
+}
