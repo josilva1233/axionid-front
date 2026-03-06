@@ -6,7 +6,7 @@ import api from "../services/api";
 import Sidebar from "../components/dashboard/Sidebar";
 import UserTable from "../components/dashboard/UserTable";
 import AuditTable from "../components/dashboard/AuditTable";
-import UserDropdown from "../components/dashboard/UserDropdown";
+import UserDropdown from "../components/dashboard/UserProfile";
 
 // --- COMPONENTES INTERNOS (Para evitar múltiplos arquivos)_ ----
 

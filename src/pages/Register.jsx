@@ -1,275 +1,157 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
 
-export default function Register() {
-  const navigate = useNavigate();
+// Constantes para evitar erros de digitação e facilitar manutenção
+const STORAGE_TOKEN = "@AxionID:token";
+const STORAGE_ROLE = "@AxionID:role";
 
-  // 1️⃣ Extração dos parâmetros da URL
-  const params = new URLSearchParams(window.location.search);
-  const nameFromUrl = params.get("name") || "";
-  const emailFromUrl = params.get("email") || "";
-  const tokenFromUrl = params.get("token") || "";
-  const isSocial = !!tokenFromUrl;
-
-  // 2️⃣ Estados
-  const [step, setStep] = useState(isSocial ? 2 : 1);
+export default function Login() {
+  const [formData, setFormData] = useState({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [formData, setFormData] = useState({
-    name: nameFromUrl,
-    email: emailFromUrl,
-    cpf_cnpj: "",
-    password: "",
-    password_confirmation: "",
-  });
+  const navigate = useNavigate();
 
-  // 3️⃣ Configuração inicial (Social Login)
+  // Função utilitária para configurar a sessão (reutilizável)
+  const setupSession = useCallback((token, user) => {
+    const role = (user.is_admin === 1 || user.is_admin === true) ? "admin" : "user";
+    
+    localStorage.setItem(STORAGE_TOKEN, token);
+    localStorage.setItem(STORAGE_ROLE, role);
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  }, []);
+
+  // Efeito para tratar o retorno do Google OAuth
   useEffect(() => {
-    if (isSocial) {
-      localStorage.setItem("@AxionID:token", tokenFromUrl);
-      api.defaults.headers.common["Authorization"] = `Bearer ${tokenFromUrl}`;
-    }
-  }, [isSocial, tokenFromUrl]);
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
 
-  // 4️⃣ Handlers
+    if (token) {
+      setLoading(true);
+      // Busca perfil após login social para garantir dados do usuário e role
+      api.get("/api/v1/me")
+        .then((res) => {
+          setupSession(token, res.data);
+          window.history.replaceState({}, document.title, "/login");
+          navigate("/dashboard", { replace: true });
+        })
+        .catch((err) => {
+          console.error("Erro na autenticação social:", err);
+          setError("Falha ao validar conta Google. Tente novamente.");
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [navigate, setupSession]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleRegister = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (formData.password !== formData.password_confirmation) {
-      return setError("As senhas não conferem.");
-    }
-
     setLoading(true);
     setError("");
 
     try {
-      if (isSocial) {
-        await api.post("/api/v1/complete-profile", {
-          cpf_cnpj: formData.cpf_cnpj,
-          password: formData.password,
-          password_confirmation: formData.password_confirmation,
-        });
-      } else {
-        const response = await api.post("/api/v1/register", formData);
-        localStorage.setItem("@AxionID:token", response.data.token);
-      }
+      const response = await api.post("/api/v1/login", {
+        username: formData.username,
+        password: formData.password 
+      });
+
+      const { token, user } = response.data;
+      setupSession(token, user);
+
       navigate("/dashboard", { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || "Erro ao finalizar cadastro.");
+      setError("Credenciais inválidas. Verifique usuário e senha.");
+      console.error("Login Error:", err);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleGoogleLogin = () => {
+    const origin = window.location.origin;
+    // Rota original preservada
+    window.location.href = `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
+  };
+
   return (
     <div className="auth-container">
-      <div className="auth-card animate-in">
-        {/* LOGO PADRONIZADA */}
-        <div className="brand">
-          <h1>
-            Axion<span>ID</span>
-          </h1>
-        </div>
+      <main className="auth-card animate-in">
+        <header className="brand">
+          <h1>Axion<span>ID</span></h1>
+          <p className="subtitle">Gestão de Identidade e Acesso</p>
+        </header>
 
-        {/* INDICADOR DE ETAPAS (STEPPER) */}
-        <div
-          className="stepper-container"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "8px",
-            marginBottom: "24px",
-          }}
-        >
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              style={{
-                width: "33%",
-                height: "4px",
-                borderRadius: "2px",
-                background:
-                  step >= i ? "var(--primary)" : "var(--border-color)",
-                transition: "0.3s",
-              }}
+        {error && (
+          <div className="error-badge" role="alert">
+            <span>{error}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleLogin} className="auth-form">
+          <div className="input-group">
+            <label htmlFor="username">Identificação</label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              placeholder="CPF ou CNPJ"
+              value={formData.username}
+              onChange={handleChange}
+              required
+              autoFocus
             />
-          ))}
-        </div>
+          </div>
 
-        {error && <div className="error-message">{error}</div>}
-
-        <form onSubmit={handleRegister} className="auth-form">
-          {/* STEP 1: DADOS BÁSICOS */}
-          {step === 1 && !isSocial && (
-            <div className="step-content animate-in">
-              <div
-                className="auth-header"
-                style={{ textAlign: "center", marginBottom: "20px" }}
-              >
-                <h2>Crie sua conta</h2>
-                <p>Comece informando seus dados básicos.</p>
-              </div>
-
-              <div className="input-group">
-                <label>Nome Completo</label>
-                <input
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Seu nome"
-                  required
-                />
-              </div>
-
-              <div className="input-group">
-                <label>E-mail Corporativo</label>
-                <input
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="seu@email.com"
-                  required
-                />
-              </div>
-
-              <button
-                type="button"
-                className="btn-primary"
-                onClick={() => setStep(2)}
-              >
-                Próximo Passo →
-              </button>
+          <div className="input-group">
+            <div className="label-row">
+              <label htmlFor="password">Senha</label>
+              <Link to="/forgot-password" title="Recuperar senha">
+                Esqueceu a senha?
+              </Link>
             </div>
-          )}
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-          {/* STEP 2: DOCUMENTAÇÃO */}
-          {step === 2 && (
-            <div className="step-content animate-in">
-              <div
-                className="auth-header"
-                style={{ textAlign: "center", marginBottom: "20px" }}
-              >
-                <h2>
-                  Olá,{" "}
-                  {formData.name ? formData.name.split(" ")[0] : "Bem-vindo"}!
-                </h2>
-                <p>Para sua segurança, informe seu CPF ou CNPJ.</p>
-              </div>
+          <button type="submit" className="btn-primary" disabled={loading}>
+            {loading ? "Processando..." : "Acessar Painel"}
+          </button>
 
-              <div className="input-group">
-                <label>Documento (CPF ou CNPJ)</label>
-                <input
-                  name="cpf_cnpj"
-                  placeholder="Apenas números"
-                  value={formData.cpf_cnpj}
-                  onChange={handleChange}
-                  autoFocus
-                  required
-                />
-              </div>
+          <div className="divider">
+            <span>ou continue com</span>
+          </div>
 
-              <div
-                className="btn-group"
-                style={{ display: "flex", gap: "10px" }}
-              >
-                {!isSocial && (
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    style={{ flex: 1 }}
-                    onClick={() => setStep(1)}
-                  >
-                    Voltar
-                  </button>
-                )}
-                <button
-                  type="button"
-                  className="btn-primary"
-                  style={{ flex: 2 }}
-                  onClick={() => setStep(3)}
-                  disabled={!formData.cpf_cnpj}
-                >
-                  Continuar
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 3: SENHA */}
-          {step === 3 && (
-            <div className="step-content animate-in">
-              <div
-                className="auth-header"
-                style={{ textAlign: "center", marginBottom: "20px" }}
-              >
-                <h2>Segurança</h2>
-                <p>Crie uma senha forte para sua proteção.</p>
-              </div>
-
-              <div className="input-group">
-                <label>Senha</label>
-                <input
-                  name="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
-
-              <div className="input-group">
-                <label>Confirmar Senha</label>
-                <input
-                  name="password_confirmation"
-                  type="password"
-                  value={formData.password_confirmation}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
-
-              <div
-                className="btn-group"
-                style={{ display: "flex", gap: "10px" }}
-              >
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  style={{ flex: 1 }}
-                  onClick={() => setStep(2)}
-                >
-                  Voltar
-                </button>
-                <button
-                  type="submit"
-                  className="btn-primary"
-                  style={{ flex: 2 }}
-                  disabled={loading}
-                >
-                  {loading ? "Finalizando..." : "Concluir Registro"}
-                </button>
-              </div>
-            </div>
-          )}
+          <button
+            type="button"
+            className="btn-google"
+            onClick={handleGoogleLogin}
+            disabled={loading}
+          >
+            <img
+              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+              alt="Google"
+            />
+            Google Workspace
+          </button>
         </form>
 
-        <div
-          className="auth-footer"
-          style={{ marginTop: "25px", textAlign: "center" }}
-        >
+        <footer className="auth-footer">
           <p>
-            Já possui uma conta? <Link to="/login">Fazer Login</Link>
+            Ainda não tem acesso? <Link to="/register">Criar Conta AxionID</Link>
           </p>
-        </div>
-      </div>
+        </footer>
+      </main>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import api from "../services/api";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
-  const [step, setStep] = useState(1); // 1: Email, 2: Código, 3: Nova Senha
+  const [step, setStep] = useState(1); // 1: Email, 2: Token, 3: Reset
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
@@ -18,195 +18,117 @@ export default function ForgotPassword() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // ETAPA 1: Solicitar Código
-  const handleRequestCode = async (e) => {
+  // Centralizador de chamadas de API para as etapas
+  const handleStepSubmit = async (e, endpoint, nextStep, successMsg = null) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    
     try {
-      await api.post("/api/v1/forgot-password", { email: formData.email });
-      setStep(2);
-    } catch (err) {
-      setError(
-        err.response?.data?.message || "E-mail não encontrado em nossa base.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+      // Ajuste os dados conforme o endpoint
+      const payload = step === 1 ? { email: formData.email } :
+                      step === 2 ? { email: formData.email, token: formData.token } : 
+                      formData;
 
-  // ETAPA 2: Validar Código
-  const handleVerifyCode = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    try {
-      await api.post("/api/v1/verify-code", {
-        email: formData.email,
-        token: formData.token,
-      });
-      setStep(3);
+      await api.post(endpoint, payload);
+      
+      if (successMsg) alert(successMsg);
+      if (nextStep === "FINISH") navigate("/login");
+      else setStep(nextStep);
+      
     } catch (err) {
-      setError(err.response?.data?.message || "Código inválido ou expirado.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ETAPA 3: Resetar Senha
-  const handleResetPassword = async (e) => {
-    e.preventDefault();
-    if (formData.password !== formData.password_confirmation) {
-      return setError("As senhas não conferem.");
-    }
-
-    setLoading(true);
-    setError("");
-    try {
-      await api.post("/api/v1/reset-password", formData);
-      alert("Senha redefinida com sucesso!");
-      navigate("/login");
-    } catch (err) {
-      setError(err.response?.data?.message || "Erro ao redefinir senha.");
+      setError(err.response?.data?.message || "Ocorreu um erro. Verifique os dados.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card animate-in">
-        {/* LOGO PADRONIZADA */}
-        <div className="brand">
-          <h1>
-            Axion<span>ID</span>
-          </h1>
-        </div>
+    <div className="auth-container animate-in">
+      <div className="auth-card">
+        <header className="brand" onClick={() => navigate("/login")} style={{cursor: 'pointer'}}>
+          <h1>Axion<span>ID</span></h1>
+        </header>
 
-        {/* INDICADOR DE ETAPAS (STEPPER) */}
-        <div
-          className="stepper-container"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "8px",
-            marginBottom: "24px",
-          }}
-        >
+        {/* STEPPER VISUAL */}
+        <div className="stepper-bar">
           {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              style={{
-                width: "33%",
-                height: "4px",
-                borderRadius: "2px",
-                background:
-                  step >= i ? "var(--primary)" : "var(--border-color)",
-                transition: "0.3s",
-              }}
+            <div 
+              key={i} 
+              className={`step-indicator ${step >= i ? "active" : ""}`} 
             />
           ))}
         </div>
 
-        {error && <div className="error-message">{error}</div>}
+        {error && <div className="error-badge">{error}</div>}
 
-        <div className="step-content animate-in">
+        <main className="step-container">
+          {/* ETAPA 1: SOLICITAR CÓDIGO */}
           {step === 1 && (
-            <form onSubmit={handleRequestCode} className="auth-form">
-              <div
-                className="auth-header"
-                style={{ textAlign: "center", marginBottom: "20px" }}
-              >
-                <h2>Recuperar Senha</h2>
-                <p>Informe seu e-mail para receber um código de validação.</p>
+            <form onSubmit={(e) => handleStepSubmit(e, "/api/v1/forgot-password", 2)} className="auth-form">
+              <div className="auth-header-text">
+                <h2>Recuperar Acesso</h2>
+                <p>Enviaremos um código de segurança para o seu e-mail.</p>
               </div>
 
               <div className="input-group">
-                <label>E-mail Cadastrado</label>
+                <label>E-mail Institucional</label>
                 <input
                   type="email"
                   name="email"
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="seu@email.com"
+                  placeholder="exemplo@empresa.com"
+                  autoComplete="email"
                 />
               </div>
 
-              <button type="submit" className="btn-primary" disabled={loading}>
-                {loading ? "Enviando..." : "Enviar Código de Verificação"}
+              <button type="submit" className="btn-primary w-full" disabled={loading}>
+                {loading ? "Processando..." : "Enviar Código de Resgate"}
               </button>
-
-              <div style={{ textAlign: "center", marginTop: "15px" }}>
-                <Link
-                  to="/login"
-                  style={{
-                    color: "var(--text-dim)",
-                    fontSize: "0.9rem",
-                    textDecoration: "none",
-                  }}
-                >
-                  ← Voltar para o Login
-                </Link>
-              </div>
+              
+              <Link to="/login" className="link-back">← Voltar para o Login</Link>
             </form>
           )}
 
+          {/* ETAPA 2: VALIDAR TOKEN */}
           {step === 2 && (
-            <form onSubmit={handleVerifyCode} className="auth-form">
-              <div
-                className="auth-header"
-                style={{ textAlign: "center", marginBottom: "20px" }}
-              >
-                <h2>Verificar Código</h2>
-                <p>
-                  Enviamos um código para <strong>{formData.email}</strong>
-                </p>
+            <form onSubmit={(e) => handleStepSubmit(e, "/api/v1/verify-code", 3)} className="auth-form">
+              <div className="auth-header-text">
+                <h2>Verificação</h2>
+                <p>Insira o código de 6 dígitos enviado para seu e-mail.</p>
               </div>
 
               <div className="input-group">
-                <label>Código de 6 dígitos</label>
                 <input
                   type="text"
                   name="token"
+                  className="input-token"
                   required
                   value={formData.token}
                   onChange={handleChange}
-                  placeholder="------"
+                  placeholder="000000"
                   maxLength="6"
-                  style={{
-                    textTransform: "uppercase",
-                    textAlign: "center",
-                    fontSize: "1.5rem",
-                    letterSpacing: "5px",
-                    fontWeight: "bold",
-                  }}
                 />
               </div>
 
-              <button type="submit" className="btn-primary" disabled={loading}>
-                {loading ? "Validando..." : "Confirmar Código"}
+              <button type="submit" className="btn-primary w-full" disabled={loading}>
+                {loading ? "Validando..." : "Confirmar Identidade"}
               </button>
-
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                className="btn-secondary"
-                style={{ marginTop: "10px", width: "100%" }}
-              >
+              
+              <button type="button" onClick={() => setStep(1)} className="btn-ghost">
                 Mudar E-mail
               </button>
             </form>
           )}
 
+          {/* ETAPA 3: NOVA SENHA */}
           {step === 3 && (
-            <form onSubmit={handleResetPassword} className="auth-form">
-              <div
-                className="auth-header"
-                style={{ textAlign: "center", marginBottom: "20px" }}
-              >
+            <form onSubmit={(e) => handleStepSubmit(e, "/api/v1/reset-password", "FINISH", "Senha atualizada com sucesso!")} className="auth-form">
+              <div className="auth-header-text">
                 <h2>Nova Senha</h2>
-                <p>Crie uma combinação segura para o seu novo acesso.</p>
+                <p>Crie uma senha forte para proteger sua conta.</p>
               </div>
 
               <div className="input-group">
@@ -222,37 +144,26 @@ export default function ForgotPassword() {
               </div>
 
               <div className="input-group">
-                <label>Confirmar Nova Senha</label>
+                <label>Confirmar Senha</label>
                 <input
                   type="password"
                   name="password_confirmation"
                   required
                   value={formData.password_confirmation}
                   onChange={handleChange}
-                  placeholder="Repita a nova senha"
                 />
               </div>
 
-              <button type="submit" className="btn-primary" disabled={loading}>
-                {loading ? "Redefinindo..." : "Atualizar e Acessar"}
+              <button type="submit" className="btn-primary w-full" disabled={loading}>
+                {loading ? "Atualizando..." : "Finalizar e Acessar"}
               </button>
             </form>
           )}
-        </div>
+        </main>
 
-        <div
-          className="auth-footer"
-          style={{
-            marginTop: "25px",
-            textAlign: "center",
-            borderTop: "1px solid var(--border-color)",
-            paddingTop: "20px",
-          }}
-        >
-          <p style={{ fontSize: "0.85rem", color: "var(--text-dim)" }}>
-            Não recebeu o e-mail? Verifique sua caixa de spam.
-          </p>
-        </div>
+        <footer className="auth-footer-note">
+          <p>Dificuldades no acesso? <Link to="/support">Contate o Suporte</Link></p>
+        </footer>
       </div>
     </div>
   );
