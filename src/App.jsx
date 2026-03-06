@@ -3,7 +3,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import UserDetail from './pages/UserDetail';
-import MyProfile from './pages/UserDropdown'; // <-- ADICIONADO
+import MyProfile from './dashboard/UserDropdown'; // <-- ADICIONADO
 import ForgotPassword from './pages/ForgotPassword'; 
 import { ProtectedRoute } from './components/ProtectedRoute'; 
 import CompleteProfile from './pages/CompleteProfile';
