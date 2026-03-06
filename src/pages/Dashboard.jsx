@@ -1,8 +1,9 @@
+import React, { useState, useEffect, useCallback } from 'react'; // Importe o React explicitamente
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
 import { Form, Row, Col } from 'react-bootstrap';
 import api from '../services/api';
 
+// ... restante dos imports
 // Importações de componentes externos
 import Sidebar from '../components/dashboard/Sidebar'; 
 import UserTable from '../components/dashboard/UserTable';
