@@ -655,3 +655,57 @@ input:focus {
   scrollbar-width: thin;
   scrollbar-color: var(--primary) transparent;
 }
+
+
+/* Container que segura as tabelas */
+.tab-wrapper {
+  position: relative;
+  min-height: 400px; /* Evita que o footer suba quando a tabela esvazia */
+  transition: opacity 0.3s ease;
+}
+
+/* Efeito de desfoque sutil nos dados antigos enquanto carrega os novos */
+.tab-wrapper.is-loading {
+  opacity: 0.6;
+  pointer-events: none; /* Evita cliques duplos durante o load */
+}
+
+/* Overlay de carregamento que não quebra o layout */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(11, 15, 26, 0.4); /* Fundo escuro sutil */
+  backdrop-filter: blur(2px);
+  z-index: 5;
+  border-radius: 16px;
+}
+
+/* Spinner animado moderno */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(99, 102, 241, 0.1);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Manter o header da tabela sempre alinhado */
+.table-card {
+  min-height: inherit;
+  background: var(--card-bg);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+}
