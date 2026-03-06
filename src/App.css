@@ -50,71 +50,126 @@ body {
   gap: 24px;
 }
 
+
+
 /* =========================================
-   HEADER & AVATAR CIRCULAR
+   HEADER & LAYOUT DE TOPO
    ========================================= */
 .main-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; /* Empurra o título para a esquerda e avatar para a direita */
     align-items: center;
-    padding: 1rem 2rem;
+    padding: 1.25rem 2rem;
     background: #0b0f1a;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    width: 100%;
 }
 
+/* Container do Avatar no canto */
+.user-menu-wrapper {
+    position: relative;
+    z-index: 1000;
+}
+
+/* O Botão Circular (Apenas a Letra) */
 .nav-avatar-circle {
-    width: 42px;
-    height: 42px;
-    border-radius: 50% !important; /* Força o círculo */
-    background: #6366f1; /* Cor primária */
+    width: 40px;
+    height: 40px;
+    border-radius: 50% !important;
+    background: var(--primary, #6366f1);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 1.1rem;
-    border: none;
+    font-size: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.1);
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 0;
 }
 
 .nav-avatar-circle:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 /* =========================================
-   DROPDOWN SEM BOLINHAS (CUSTOM)
+   HEADER & LAYOUT DE TOPO
    ========================================= */
+.main-header {
+    display: flex;
+    justify-content: space-between; /* Empurra o título para a esquerda e avatar para a direita */
+    align-items: center;
+    padding: 1.25rem 2rem;
+    background: #0b0f1a;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    width: 100%;
+}
 
-/* Container principal do menu */
+/* Container do Avatar no canto */
+.user-menu-wrapper {
+    position: relative;
+    z-index: 1000;
+}
+
+/* O Botão Circular (Apenas a Letra) */
+.nav-avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50% !important;
+    background: var(--primary, #6366f1);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 0;
+}
+
+.nav-avatar-circle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* =========================================
+   DROPDOWN CUSTOMIZADO (SEM BOLINHAS)
+   ========================================= */
 .custom-dropdown {
-    background-color: #161b2c !important; /* Cor dos seus cards */
+    background-color: #161b2c !important; 
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     border-radius: 12px !important;
     padding: 0 !important;
-    min-width: 220px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    margin-top: 10px !important;
-    list-style: none !important; /* REMOVE AS BOLINHAS */
+    min-width: 240px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    margin-top: 12px !important;
+    list-style: none !important; /* Remove bolinhas da UL */
+    overflow: hidden;
 }
 
-/* Garante que nenhum item da lista tenha o bullet */
+/* Remove bolinhas de qualquer LI interna */
 .custom-dropdown li {
     list-style: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
+    list-style-type: none !important;
+    padding: 0;
+    margin: 0;
 }
 
 .user-info-header {
-    padding: 12px 16px;
+    padding: 15px 20px;
     background: rgba(0, 0, 0, 0.2);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .custom-dropdown .dropdown-item {
     color: #94a3b8 !important;
-    padding: 10px 16px !important;
+    padding: 12px 20px !important;
     font-size: 0.85rem;
     background: transparent;
     border: none;
@@ -122,6 +177,7 @@ body {
     text-align: left;
     display: flex;
     align-items: center;
+    gap: 10px;
     transition: all 0.2s;
 }
 
@@ -139,8 +195,6 @@ body {
     border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
     margin: 0 !important;
 }
-
-
 
 
 /* =========================================
