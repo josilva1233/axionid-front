@@ -1,31 +1,4 @@
-import { useEffect, useState } from "react";
-
-
-export default function MyProfile() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Aqui buscamos os dados do usuário LOGADO
-    const fetchMyDetails = async () => {
-      try {
-        setLoading(true);
-        // Geralmente o backend tem um endpoint /me ou /profile para o token atual
-        const res = await api.get("/api/v1/auth/me"); 
-        setUser(res.data.data);
-      } catch (err) {
-        console.error("Erro ao carregar perfil", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchMyDetails();
-  }, []);
-
-  if (loading) return <div className="loading-state">Carregando seu perfil...</div>;
-  if (!user) return <div>Usuário não encontrado.</div>;
-
-  return (
+return (
     <div className="dashboard-layout animate-in">
       {/* Reutilizando a estrutura que você me enviou */}
       <div className="main-wrapper" style={{ marginLeft: 0 }}> {/* Ajuste se não houver sidebar */}
@@ -81,4 +54,3 @@ export default function MyProfile() {
       </div>
     </div>
   );
-}
