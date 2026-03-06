@@ -84,25 +84,30 @@ export default function Dashboard() {
            </div>
         </header>
 
-        <main className="content-area">
-          {/* Banner de Perfil (Opcional: transformar em componente ProfileAlert) */}
-          {currentUser && !currentUser.profile_completed && (
-            <div className="profile-sidebar-alert">
-              ⚠️ Finalize seu cadastro: <button onClick={() => navigate('/complete-profile')}>Completar</button>
-            </div>
-          )}
+<main className="content-area">
+  {/* Banner de Perfil permanece igual */}
+  {currentUser && !currentUser.profile_completed && (
+    <div className="profile-sidebar-alert">
+      ⚠️ Finalize seu cadastro: <button onClick={() => navigate('/complete-profile')}>Completar</button>
+    </div>
+  )}
 
-          {loading ? (
-            <div className="loading-state">Carregando...</div>
-          ) : (
-            <>
-              {activeTab === 'users' && (
-                role === 'admin' ? <UserTable users={users} /> : <WelcomeOperacional user={currentUser} />
-              )}
-              {activeTab === 'audit' && <AuditTable logs={auditLogs} />}
-            </>
-          )}
-        </main>
+  {/* Container com altura mínima para evitar o "pulo" */}
+  <div className={`tab-wrapper ${loading ? 'is-loading' : ''}`}>
+    {activeTab === 'users' && (
+      role === 'admin' ? <UserTable users={users} /> : <WelcomeOperacional user={currentUser} />
+    )}
+    {activeTab === 'audit' && <AuditTable logs={auditLogs} />}
+    
+    {/* Overlay de carregamento sutil em vez de trocar a tela toda */}
+    {loading && (
+      <div className="loading-overlay">
+        <div className="spinner"></div>
+        <span>Atualizando dados...</span>
+      </div>
+    )}
+  </div>
+</main>
       </div>
     </div>
   );
