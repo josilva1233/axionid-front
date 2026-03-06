@@ -237,7 +237,6 @@ export default function Dashboard() {
                 role === "admin" && <AuditTable logs={auditLogs} />
               )}
             </div>
-
             {/* Paginação */}
             {activeTab !== "profile" && role === "admin" && paginationData && paginationData.last > 1 && (
               <div className="mt-4 d-flex justify-content-between align-items-center">
