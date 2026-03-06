@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import api from "../services/api";
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
 export default function UserDetail() {
   const { id } = useParams();
@@ -9,209 +9,195 @@ export default function UserDetail() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Memoizando a busca para evitar renderizações desnecessárias
-  const fetchUserDetails = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await api.get(`/api/v1/users/${id}`);
-      setUser(res.data.data);
-    } catch (err) {
-      console.error("Erro ao buscar detalhes:", err);
-      alert("Usuário não encontrado ou erro na conexão.");
-      navigate("/dashboard");
-    } finally {
-      setLoading(false);
-    }
-  }, [id, navigate]);
-
   useEffect(() => {
     fetchUserDetails();
-  }, [fetchUserDetails]);
+  }, [id]);
 
-  // Função genérica para requisições de ação (promover, suspender, etc)
-  const handleAction = async (method, url, confirmMsg, successMsg) => {
-    if (confirmMsg && !window.confirm(confirmMsg)) return;
-
-    setActionLoading(true);
+  const fetchUserDetails = async () => {
     try {
-      const response = await api[method](url);
-      alert(successMsg || response.data?.message || "Operação realizada!");
-      fetchUserDetails();
+      setLoading(true);
+      const res = await api.get(`/api/v1/users/${id}`); 
+      setUser(res.data.data); 
     } catch (err) {
-      alert(err.response?.data?.message || "Ocorreu um erro na operação.");
+      console.error(err);
+      alert("Erro ao carregar detalhes.");
+      navigate('/dashboard');
     } finally {
-      setActionLoading(false);
+      setLoading(false);
     }
   };
 
   const handleDelete = async () => {
-    const confirmName = window.prompt(
-      `ATENÇÃO: Para excluir permanentemente "${user.name}", digite o NOME completo abaixo:`
-    );
-
+    const confirmName = window.prompt(`Para excluir permanentemente o usuário "${user.name}", digite o NOME dele abaixo:`);
+    
     if (confirmName !== user.name) {
-      if (confirmName !== null) alert("O nome não confere. Operação cancelada.");
+      if (confirmName !== null) alert("O nome digitado não confere. Operação cancelada.");
       return;
     }
 
     setActionLoading(true);
     try {
       await api.delete(`/api/v1/users/${id}`);
-      alert("Identidade excluída com sucesso.");
-      navigate("/dashboard", { replace: true });
+      alert("Usuário excluído com sucesso!");
+      navigate('/dashboard', { replace: true });
     } catch (err) {
-      alert(err.response?.data?.message || "Erro ao excluir.");
+      alert(err.response?.data?.message || "Erro ao excluir usuário.");
     } finally {
       setActionLoading(false);
     }
   };
 
-  if (loading) return (
-    <div className="loading-container">
-      <div className="loader"></div>
-      <p>Sincronizando dados da identidade...</p>
-    </div>
-  );
+  const handleRemoveAdmin = async () => {
+    if (!window.confirm("Remover privilégios administrativos deste usuário?")) return;
+    setActionLoading(true);
+    try {
+      const response = await api.post(`/api/v1/users/${id}/remove-admin`);
+      alert("Sucesso: " + response.data.message);
+      fetchUserDetails(); 
+    } catch (error) {
+      alert(error.response?.data?.message || "Erro ao remover admin");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handlePromote = async () => {
+    if (!window.confirm("Promover este usuário a Administrador?")) return;
+    setActionLoading(true);
+    try {
+      await api.post(`/api/v1/users/${id}/promote`);
+      alert("Usuário promovido!");
+      fetchUserDetails();
+    } catch (err) {
+      alert(err.response?.data?.message || "Erro ao promover.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleToggleStatus = async () => {
+    const acao = user.is_active ? "suspender" : "ativar";
+    if (!window.confirm(`Deseja realmente ${acao} este usuário?`)) return;
+    
+    setActionLoading(true);
+    try {
+      await api.patch(`/api/v1/users/${id}/toggle-status`);
+      alert("Status atualizado!");
+      fetchUserDetails();
+    } catch (err) {
+      alert(err.response?.data?.message || "Erro ao mudar status.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  if (loading) return <div className="loading-state">Carregando detalhes...</div>;
 
   return (
-    <div className="dashboard-layout animate-in">
-      <aside className="sidebar">
-        <header className="sidebar-brand" onClick={() => navigate("/dashboard")}>
-          <div className="brand">
-            <h1>Axion<span>ID</span></h1>
-          </div>
-        </header>
-        <nav className="sidebar-nav">
-          <button className="nav-item" onClick={() => navigate("/dashboard")}>
-            <span className="nav-icon">←</span> <span>Voltar ao Painel</span>
-          </button>
-        </nav>
-      </aside>
-
-      <div className="main-wrapper">
-        <header className="main-header">
-          <div className="header-info">
-            <h2>Gestão de Identidade</h2>
-            <p className="breadcrumb">Usuários / {user.name}</p>
-          </div>
-          <div className="header-user">
-            <div className="nav-avatar">{user.name?.charAt(0)}</div>
-          </div>
-        </header>
-
-        <main className="content-area">
-          <div className="detail-grid">
-            
-            {/* CARD: PERFIL PRINCIPAL */}
-            <section className="info-card profile-main">
-              <div className="profile-header">
-                <div className="avatar-large">{user.name?.charAt(0)}</div>
-                <div className="profile-titles">
-                  <h3>{user.name}</h3>
-                  <div className="badges-row">
-                    <span className={`badge ${user.is_admin ? "admin" : "user"}`}>
-                      {user.is_admin ? "Administrador" : "Operacional"}
-                    </span>
-                    <span className={`badge ${user.is_active ? "active" : "inactive"}`}>
-                      {user.is_active ? "Ativo" : "Suspenso"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="info-list">
-                <div className="info-group">
-                  <label>E-mail Corporativo</label>
-                  <p>{user.email}</p>
-                </div>
-                <div className="info-group">
-                  <label>Documento Identificador (CPF/CNPJ)</label>
-                  <p>{user.cpf_cnpj || "Não vinculado"}</p>
-                </div>
-                <div className="info-group">
-                  <label>Status de Validação</label>
-                  <p className={user.profile_completed ? "status-ok" : "status-pending"}>
-                    {user.profile_completed ? "✓ Perfil Verificado" : "⚠ Cadastro Incompleto"}
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            {/* CARD: ENDEREÇO */}
-            <section className="info-card">
-              <h4 className="card-title">Endereço de Registro</h4>
-              {user.address ? (
-                <div className="info-list">
-                  <div className="info-group">
-                    <label>CEP</label>
-                    <p>{user.address.zip_code}</p>
-                  </div>
-                  <div className="info-group">
-                    <label>Logradouro</label>
-                    <p>{user.address.street}, {user.address.number}</p>
-                  </div>
-                  <div className="info-group">
-                    <label>Bairro</label>
-                    <p>{user.address.neighborhood}</p>
-                  </div>
-                  <div className="info-group">
-                    <label>Localidade</label>
-                    <p>{user.address.city} — {user.address.state}</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="empty-state">
-                  <p>Nenhum endereço vinculado a esta conta.</p>
-                </div>
-              )}
-            </section>
-
-            {/* SEÇÃO DE AÇÕES (ZONA DE GERENCIAMENTO) */}
-            <section className="info-card danger-zone">
-              <h4 className="card-title">Gerenciamento Crítico</h4>
-              <p className="card-subtitle">Ações que impactam o acesso direto do usuário ao sistema.</p>
-              
-              <div className="actions-stack">
-                {user.is_admin ? (
-                  <button
-                    onClick={() => handleAction('post', `/api/v1/users/${id}/remove-admin`, "Revogar privilégios de administrador?", "Privilégios removidos.")}
-                    disabled={actionLoading}
-                    className="btn-action btn-outline"
-                  >
-                    Revogar Acesso Admin
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handleAction('post', `/api/v1/users/${id}/promote`, "Promover usuário a administrador?", "Usuário promovido com sucesso.")}
-                    disabled={actionLoading}
-                    className="btn-action btn-promote"
-                  >
-                    Promover a Administrador
-                  </button>
-                )}
-
-                <button
-                  onClick={() => handleAction('patch', `/api/v1/users/${id}/toggle-status`, `Deseja ${user.is_active ? 'suspender' : 'reativar'} este acesso?`, "Status atualizado.")}
-                  disabled={actionLoading}
-                  className={`btn-action ${user.is_active ? "btn-suspend" : "btn-activate"}`}
-                >
-                  {user.is_active ? "Suspender Acesso" : "Reativar Identidade"}
-                </button>
-
-                <div className="divider"></div>
-
-                <button
-                  onClick={handleDelete}
-                  disabled={actionLoading}
-                  className="btn-action btn-danger"
-                >
-                  {actionLoading ? "Excluindo..." : "Excluir Identidade Permanentemente"}
-                </button>
-              </div>
-            </section>
-          </div>
-        </main>
+  <div className="dashboard-layout animate-in">
+    <aside className="sidebar">
+      <div className="sidebar-brand" onClick={() => navigate('/dashboard')}>
+        <div className="brand"><h1>Axion<span>ID</span></h1></div>
       </div>
+      <nav className="sidebar-nav">
+        <button className="nav-item active" onClick={() => navigate('/dashboard')}>
+          <span className="nav-icon">←</span> <span>Voltar ao Painel</span>
+        </button>
+      </nav>
+    </aside>
+
+    <div className="main-wrapper">
+      <header className="main-header">
+        <h2>Gestão de Identidade</h2>
+        <div className="header-user">
+          <div className="nav-avatar">{user.name?.charAt(0)}</div>
+        </div>
+      </header>
+
+      <main className="content-area">
+        <div className="detail-grid">
+          
+          {/* CARD: PERFIL */}
+          <section className="info-card">
+            <div className="profile-header">
+              <div className="avatar-large">{user.name?.charAt(0)}</div>
+              <div>
+                <h3>{user.name}</h3>
+                <span className={`badge ${user.is_admin ? 'success' : 'operacional'}`}>
+                  {user.is_admin ? 'Administrador' : 'Operacional'}
+                </span>
+              </div>
+            </div>
+
+            <div className="info-list">
+              <div className="info-item"><label>E-mail Corporativo</label><span>{user.email}</span></div>
+              <div className="info-item"><label>Documento Identificador</label><span>{user.cpf_cnpj || 'Não informado'}</span></div>
+              <div className="info-item">
+                <label>Status de Validação</label>
+                <span className={user.profile_completed ? 'text-success' : 'text-warning'}>
+                  {user.profile_completed ? '✓ Perfil Completo' : '⚠ Cadastro Pendente'}
+                </span>
+              </div>
+            </div>
+          </section>
+
+          {/* CARD: ENDEREÇO */}
+          <section className="info-card">
+            <h4 className="section-title">Endereço de Registro</h4>
+            {user.address ? (
+              <div className="info-list" style={{marginTop: '20px'}}>
+                <div className="info-item"><label>CEP</label><span>{user.address.zip_code}</span></div>
+                <div className="info-item"><label>Logradouro</label><span>{user.address.street}, {user.address.number}</span></div>
+                <div className="info-item"><label>Bairro</label><span>{user.address.neighborhood}</span></div>
+                <div className="info-item"><label>Localidade</label><span>{user.address.city} - {user.address.state}</span></div>
+              </div>
+            ) : (
+              <div className="empty-state">Nenhum endereço vinculado.</div>
+            )}
+          </section>
+
+          {/* SEÇÃO DE AÇÕES (ZONA DE PERIGO) */}
+          <section className="actions-section">
+            <h4>Gerenciamento Crítico</h4>
+            <div className="actions-group">
+              {user.is_admin ? (
+                <button onClick={handleRemoveAdmin} disabled={actionLoading} className="btn-action btn-suspend">
+                  Revogar Admin
+                </button>
+              ) : (
+                <button onClick={handlePromote} disabled={actionLoading} className="btn-action btn-promote">
+                  Promover a Administrador
+                </button>
+              )}
+
+              <button onClick={handleToggleStatus} disabled={actionLoading} className="btn-action btn-suspend">
+                {user.is_active ? 'Suspender Acesso' : 'Reativar Acesso'}
+              </button>
+
+              <button onClick={handleDelete} disabled={actionLoading} className="btn-action btn-delete-ghost">
+                {actionLoading ? 'Processando...' : 'Excluir Identidade'}
+              </button>
+            </div>
+          </section>
+
+        </div>
+      </main>
     </div>
-  );
+  </div>
+);
 }
+
+// Estilos auxiliares para manter a limpeza do JSX
+const infoItemStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  marginBottom: '12px'
+};
+
+const labelStyle = {
+  fontSize: '0.75rem',
+  textTransform: 'uppercase',
+  color: 'var(--text-dim)',
+  fontWeight: 'bold',
+  letterSpacing: '0.5px'
+};

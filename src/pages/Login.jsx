@@ -1,67 +1,58 @@
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import api from "../services/api";
-
-// Constantes para evitar erros de digitação (Magic Strings)
-const TOKEN_KEY = "@AxionID:token";
-const ROLE_KEY = "@AxionID:role";
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import api from '../services/api';
 
 export default function Login() {
-  const [formData, setFormData] = useState({ username: "", password: "" });
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // Função para padronizar o salvamento de sessão
-  const saveSession = useCallback((token, user) => {
-    const role = user.is_admin === 1 || user.is_admin === true ? "admin" : "user";
-    localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(ROLE_KEY, role);
-    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-  }, []);
-
-  // Efeito para capturar login via Google (URL params)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
+    const token = params.get('token');
 
     if (token) {
-      setLoading(true);
-      api.get("/api/v1/me")
-        .then((res) => {
-          saveSession(token, res.data);
-          window.history.replaceState({}, document.title, "/login");
-          navigate("/dashboard", { replace: true });
-        })
-        .catch((err) => {
-          console.error("Erro na validação do Google Login:", err);
-          setError("Falha na autenticação via Google.");
-        })
-        .finally(() => setLoading(false));
-    }
-  }, [navigate, saveSession]);
+      localStorage.setItem('@AxionID:token', token);
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+      api.get('/api/v1/me')
+        .then(res => {
+          const user = res.data;
+          const role = (user.is_admin === 1 || user.is_admin === true) ? 'admin' : 'user';
+          localStorage.setItem('@AxionID:role', role);
+
+          window.history.replaceState({}, document.title, "/login");
+          navigate('/dashboard', { replace: true });
+        })
+        .catch(err => {
+          console.error("Erro ao buscar perfil do Google login", err);
+          navigate('/login', { replace: true });
+        });
+    }
+  }, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
+    setError('');
 
     try {
-      const { data } = await api.post("/api/v1/login", {
-        username: formData.username,
-        password: formData.password,
-      });
+      const response = await api.post('/api/v1/login', { username, password });
+      
+      const { token, user } = response.data;
+      localStorage.setItem('@AxionID:token', token);
+      
+      const role = (user.is_admin === 1 || user.is_admin === true) ? 'admin' : 'user';
+      localStorage.setItem('@AxionID:role', role);
 
-      saveSession(data.token, data.user);
-      navigate("/dashboard", { replace: true });
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+      navigate('/dashboard', { replace: true });
     } catch (err) {
-      setError("Credenciais inválidas. Verifique seu usuário e senha.");
-      console.error("Login Error:", err);
+      setError('Usuário ou senha incorretos.');
+      console.error("Erro no login manual", err);
     } finally {
       setLoading(false);
     }
@@ -69,86 +60,64 @@ export default function Login() {
 
   const handleGoogleLogin = () => {
     const origin = window.location.origin;
-    // Mantida a sua rota original conforme solicitado
     window.location.href = `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
   };
 
   return (
     <div className="auth-container">
-      <main className="auth-card animate-in">
-        <header className="brand">
-          <h1>Axion<span>ID</span></h1>
-          <p className="subtitle">Gestão de Identidade e Acesso</p>
-        </header>
+      <div className="auth-card animate-in">
+        <div className="brand"><h1>Axion<span>ID</span></h1></div>
 
-        {error && (
-          <div className="error-badge">
-            <i className="error-icon">!</i>
-            <span>{error}</span>
-          </div>
-        )}
+        {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleLogin} className="auth-form">
           <div className="input-group">
-            <label htmlFor="username">Identificação</label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              placeholder="CPF ou CNPJ"
-              value={formData.username}
-              onChange={handleInputChange}
-              required
-              autoFocus
+            <label>Identificação</label>
+            <input 
+              type="text" 
+              placeholder="CPF ou CNPJ" 
+              value={username} 
+              onChange={e => setUsername(e.target.value)} 
+              required 
             />
           </div>
 
           <div className="input-group">
-            <div className="label-row">
-              <label htmlFor="password">Senha</label>
-              <Link to="/forgot-password" title="Recuperar acesso">
+            <div className="label-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label>Senha</label>
+              <Link to="/forgot-password" style={{ fontSize: '0.8rem', color: 'var(--primary)', textDecoration: 'none' }}>
                 Esqueceu a senha?
               </Link>
             </div>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="••••••••"
-              value={formData.password}
-              onChange={handleInputChange}
-              required
+            <input 
+              type="password" 
+              placeholder="Sua senha" 
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required 
             />
           </div>
 
           <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? <span className="loader"></span> : "Acessar Painel"}
+            {loading ? 'Autenticando...' : 'Acessar Painel'}
           </button>
 
-          <div className="divider">
-            <span>ou continue com</span>
-          </div>
-
-          <button
-            type="button"
-            className="btn-google"
+          <div className="divider"><span>ou continue com</span></div>
+          
+          <button 
+            type="button" 
+            className="btn-google" 
             onClick={handleGoogleLogin}
-            disabled={loading}
           >
-            <img
-              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-              alt="Google Logo"
-            />
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google" /> 
             Google Workspace
           </button>
         </form>
 
-        <footer className="auth-footer">
-          <p>
-            Ainda não tem acesso? <Link to="/register">Criar Conta AxionID</Link>
-          </p>
-        </footer>
-      </main>
+        <div className="auth-footer">
+          <p>Ainda não tem acesso? <Link to="/register">Criar Conta AxionID</Link></p>
+        </div>
+      </div>
     </div>
   );
 }

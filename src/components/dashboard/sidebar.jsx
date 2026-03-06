@@ -1,55 +1,35 @@
-import { memo } from "react";
-
-const roles = {
-  user: 1,
-  admin: 2
-};
-
-const Sidebar = memo(({ activeTab, setActiveTab, role = "user", onLogout }) => {
-
-  const navItems = [
-    { id: "users", label: "Gestão Usuários", icon: "👥", minRole: "user" },
-    { id: "audit", label: "Histórico Auditoria", icon: "📜", minRole: "admin" },
-  ];
-
+export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
-        <h1>Axion<span>ID</span></h1>
+        <div className="brand"><h1>Axion<span>ID</span></h1></div>
       </div>
-
+      
       <nav className="sidebar-nav">
-        <ul className="nav-list">
-          {navItems.map((item) => {
+        <p className="nav-section-title">Principal</p>
+        <button 
+          className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
+          onClick={() => setActiveTab('users')}
+        >
+          <span className="nav-icon">👥</span> <span>Gestão Usuários</span>
+        </button>
 
-            if (roles[role] < roles[item.minRole]) return null;
-
-            return (
-              <li key={item.id}>
-                <button
-                  className={`nav-item ${activeTab === item.id ? "active" : ""}`}
-                  onClick={() => setActiveTab(item.id)}
-                >
-                  <span className="nav-icon">{item.icon}</span>
-                  <span className="nav-label">{item.label}</span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+        {role === 'admin' && (
+          <>
+            <p className="nav-section-title">Segurança</p>
+            <button 
+              className={`nav-item ${activeTab === 'audit' ? 'active' : ''}`}
+              onClick={() => setActiveTab('audit')}
+            >
+              <span className="nav-icon">📜</span> <span>Histórico Auditoria</span>
+            </button>
+          </>
+        )}
       </nav>
 
-      <footer className="sidebar-footer">
-        <div className="user-role-badge">
-          Conectado como: <strong>{role}</strong>
-        </div>
-
-        <button onClick={() => onLogout?.()} className="btn-logout-sidebar">
-          ⏻ Sair
-        </button>
-      </footer>
+      <div className="sidebar-footer">
+        <button onClick={onLogout} className="btn-logout-sidebar">Sair do Sistema</button>
+      </div>
     </aside>
   );
-});
-
-export default Sidebar;
+}
