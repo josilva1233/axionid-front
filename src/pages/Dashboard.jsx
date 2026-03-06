@@ -126,46 +126,48 @@ export default function Dashboard() {
       <Sidebar activeTab={activeTab} setActiveTab={(tab) => { setActiveTab(tab); setCurrentPage(1); }} role={role} onLogout={handleLogout} />
 
       <div className="main-wrapper">
-        <header className="main-header">
-          <h2 className="brand">
-            {activeTab === 'users' ? 'Gestão de Usuários' : 'Auditoria'}
-          </h2>
+<header className="main-header">
+  <h2 className="brand">
+    {activeTab === 'users' ? 'Gestão de Usuários' : 'Auditoria'}
+  </h2>
 
-          {currentUser && (
-            <div className="user-menu-container">
-              <div className="dropdown">
-                <button 
-                  className="nav-avatar btn" 
-                  type="button" 
-                  id="userMenuButton" 
-                  data-bs-toggle="dropdown" 
-                  aria-expanded="false"
-                >
-                  {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
-                </button>
+  {currentUser && (
+    <div className="user-menu-wrapper">
+      <div className="dropdown">
+        {/* Botão que aparece no front (Apenas a Letra em Círculo) */}
+        <button 
+          className="nav-avatar-circle" 
+          type="button" 
+          id="userMenuButton" 
+          data-bs-toggle="dropdown" 
+          aria-expanded="false"
+        >
+          {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+        </button>
 
-                <ul className="dropdown-menu dropdown-menu-end shadow border-secondary bg-dark" aria-labelledby="userMenuButton">
-                  <li className="px-3 py-2 border-bottom border-secondary mb-2">
-                    <div className="small text-secondary">Logado como:</div>
-                    <div className="text-white fw-bold">{currentUser.name}</div>
-                    <div className="small text-muted" style={{ fontSize: '0.75rem' }}>{currentUser.email}</div>
-                  </li>
-                  <li>
-                    <button className="dropdown-item text-white py-2" onClick={() => navigate('/perfil')}>
-                      <i className="bi bi-person me-2"></i> Meus Detalhes
-                    </button>
-                  </li>
-                  <li><hr className="dropdown-divider border-secondary" /></li>
-                  <li>
-                    <button className="dropdown-item text-danger py-2" onClick={handleLogout}>
-                      <i className="bi bi-box-arrow-right me-2"></i> Sair
-                    </button>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          )}
-        </header>
+        {/* Menu que fica OCULTO e só aparece ao clicar */}
+        <ul className="dropdown-menu dropdown-menu-end custom-dropdown" aria-labelledby="userMenuButton">
+          <li className="user-info-header">
+            <div className="small text-secondary">Logado como:</div>
+            <div className="text-white fw-bold">{currentUser.name}</div>
+            <div className="small text-muted" style={{ fontSize: '0.75rem' }}>{currentUser.email}</div>
+          </li>
+          <li>
+            <button className="dropdown-item" onClick={() => navigate('/perfil')}>
+              <i className="bi bi-person me-2"></i> Meus Detalhes
+            </button>
+          </li>
+          <li><hr className="dropdown-divider" /></li>
+          <li>
+            <button className="dropdown-item text-danger" onClick={handleLogout}>
+              <i className="bi bi-box-arrow-right me-2"></i> Sair
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  )}
+</header>
 
         <main className="content-area p-4">
           {activeTab === 'audit' && role === 'admin' && (

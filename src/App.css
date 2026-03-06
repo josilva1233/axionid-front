@@ -50,67 +50,96 @@ body {
   gap: 24px;
 }
 
+/* =========================================
+   HEADER & AVATAR CIRCULAR
+   ========================================= */
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: #0b0f1a;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nav-avatar-circle {
+    width: 42px;
+    height: 42px;
+    border-radius: 50% !important; /* Força o círculo */
+    background: #6366f1; /* Cor primária */
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.nav-avatar-circle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+}
 
 /* =========================================
-   AJUSTE DO DROPDOWN (MENU DE USUÁRIO)
+   DROPDOWN SEM BOLINHAS (CUSTOM)
    ========================================= */
 
-/* Remove as bolinhas da lista e ajusta o container */
-.dropdown-menu {
-    padding: 0.5rem 0 !important;
-    min-width: 220px !important;
-    border-radius: 16px !important;
-    background-color: #161b2c !important; /* var(--card-bg) */
-    border: 1px solid rgba(255, 255, 255, 0.08) !important; /* var(--border) */
-    overflow: hidden;
-    list-style: none !important; /* Remove os bullets */
+/* Container principal do menu */
+.custom-dropdown {
+    background-color: #161b2c !important; /* Cor dos seus cards */
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    padding: 0 !important;
+    min-width: 220px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     margin-top: 10px !important;
+    list-style: none !important; /* REMOVE AS BOLINHAS */
 }
 
-/* Remove os bullets de qualquer li dentro do dropdown */
-.dropdown-menu li {
+/* Garante que nenhum item da lista tenha o bullet */
+.custom-dropdown li {
     list-style: none !important;
-    list-style-type: none !important;
-    padding: 0;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
-/* Estilização dos itens e botões dentro do menu */
-.dropdown-item {
-    padding: 12px 20px !important;
-    font-size: 0.85rem !important;
-    font-weight: 500 !important;
-    transition: all 0.2s ease !important;
-    background: transparent !important;
-    display: flex !important;
-    align-items: center;
+.user-info-header {
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.custom-dropdown .dropdown-item {
+    color: #94a3b8 !important;
+    padding: 10px 16px !important;
+    font-size: 0.85rem;
+    background: transparent;
+    border: none;
     width: 100%;
-    border: none !important;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
 }
 
-.dropdown-item:hover {
-    background-color: rgba(99, 102, 241, 0.1) !important; /* Cor primária suave */
-    color: #6366f1 !important; /* var(--primary) */
+.custom-dropdown .dropdown-item:hover {
+    background: rgba(99, 102, 241, 0.1) !important;
+    color: #fff !important;
 }
 
-/* Item de Sair (Hover Vermelho) */
-.dropdown-item.text-danger:hover {
-    background-color: rgba(239, 68, 68, 0.1) !important;
-    color: #ef4444 !important; /* var(--error) */
+.custom-dropdown .dropdown-item.text-danger:hover {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: #ef4444 !important;
 }
 
-/* Ajuste do cabeçalho "Logado como" */
-.dropdown-menu li.px-3.py-2 {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-    margin-bottom: 5px !important;
-    background: rgba(0, 0, 0, 0.1);
+.dropdown-divider {
+    border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+    margin: 0 !important;
 }
 
-/* Corrigir o botão do avatar para não ter bordas estranhas */
-.nav-avatar.btn {
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-}
 
 
 
