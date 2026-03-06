@@ -187,7 +187,7 @@ export default function UserDetail() {
 );
 }
 
-// Estilos auxiliares para manter a limpeza do JSX
+// Estilos auxiliares para manter a limpeza do JzzzSX
 const infoItemStyle = {
   display: 'flex',
   flexDirection: 'column',
