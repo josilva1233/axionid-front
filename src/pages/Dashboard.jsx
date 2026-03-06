@@ -6,7 +6,6 @@ import api from "../services/api";
 import Sidebar from "../components/dashboard/Sidebar";
 import UserTable from "../components/dashboard/UserTable";
 import AuditTable from "../components/dashboard/AuditTable";
-import UserDropdown from "../components/dashboard/UserDropdown";
 
 // Componente Interno para Usuário Comum (Caso não tenha o arquivo separado)
 const WelcomeOperacional = ({ user }) => (
