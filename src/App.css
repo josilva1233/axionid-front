@@ -248,6 +248,94 @@ body {
     margin: 0 !important;
 }
 
+.user-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+/* O círculo com a letra */
+.avatar-trigger {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #6366f1;
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.avatar-trigger:hover {
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+  transform: scale(1.05);
+}
+
+/* O menu flutuante */
+.dropdown-floating-menu {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background: #161b2c;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  min-width: 220px;
+  padding: 0;
+  margin: 0;
+  list-style: none !important; /* Remove bolinhas brancas */
+  z-index: 1000;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  overflow: hidden;
+}
+
+/* Itens da lista */
+.dropdown-floating-menu li {
+  list-style: none !important;
+  padding: 0;
+  margin: 0;
+}
+
+.menu-header {
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.info-label { display: block; font-size: 0.7rem; color: #94a3b8; }
+.info-name { display: block; font-weight: bold; color: white; font-size: 0.9rem; }
+.info-email { display: block; font-size: 0.75rem; color: #64748b; }
+
+.menu-item {
+  width: 100%;
+  padding: 12px 15px;
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  text-align: left;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: 0.2s;
+}
+
+.menu-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.logout-action:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.menu-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
 
 /* =========================================
    3. CARDS E COMPONENTES COMUNS
