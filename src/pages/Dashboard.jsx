@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-//import Sidebar from "../components/Sidebar";
-import Sidebar from "../components/sidebar";
+// DEIXE APENAS UMA DESSAS ABAIXO (Verifique qual existe na sua pasta components)
+import Sidebar from "../components/Sidebar"; 
 import UserTable from "../components/UserTable";
 import AuditTable from "../components/AuditTable";
 import api from "../services/api";
