@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-// DEIXE APENAS UMA DESSAS ABAIXO (Verifique qual existe na sua pasta components)
+// DEIXE APENAS UMA DESSAS ABAIXO (Verifique qual existe na suaa pasta components)
 import Sidebar from "../components/Sidebar"; 
 import UserTable from "../components/UserTable";
 import AuditTable from "../components/AuditTable";
