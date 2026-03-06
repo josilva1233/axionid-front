@@ -1,15 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react'; // Importe o React explicitamente
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import * as Router from 'react-router-dom'; // Técnica para evitar erros de referência no build
 import { Form, Row, Col } from 'react-bootstrap';
 import api from '../services/api';
 
-// ... restante dos imports
-// Importações de componentes externos
 import Sidebar from '../components/dashboard/Sidebar'; 
 import UserTable from '../components/dashboard/UserTable';
 import AuditTable from '../components/dashboard/AuditTable';
 
-// --- Sub-componente: Welcome para Operadores ---
 const WelcomeOperacional = ({ user }) => (
   <div className="text-center py-5 animate-in">
     <div className="mb-4"><span style={{ fontSize: '3rem' }}>👋</span></div>
@@ -18,9 +15,10 @@ const WelcomeOperacional = ({ user }) => (
   </div>
 );
 
-// --- Componente Principal ---
 export default function Dashboard() {
-  const navigate = useNavigate();
+  // Chamada robusta do hook
+  const navigate = Router.useNavigate(); 
+  
   const [role] = useState(localStorage.getItem('@AxionID:role'));
   const [activeTab, setActiveTab] = useState('users');
   
@@ -33,7 +31,7 @@ export default function Dashboard() {
   const [paginationData, setPaginationData] = useState(null);
   const [filters, setFilters] = useState({ method: '', date: '' });
 
-  // 1. Carregamento de Dados (Memoizado)
+  // 1. Carregamento de Dados
   const loadData = useCallback(async (page = 1) => {
     if (role !== 'admin') return;
     
@@ -122,7 +120,7 @@ export default function Dashboard() {
         </header>
 
         <main className="content-area p-4">
-          {/* Filtros de Auditoria (Apenas Admin) */}
+          {/* Restante do conteúdo permanece igual... */}
           {activeTab === 'audit' && role === 'admin' && (
             <div className="filter-card mb-4 p-3 bg-dark rounded border border-secondary">
               <Row className="align-items-end g-3">
@@ -165,7 +163,6 @@ export default function Dashboard() {
               )}
             </div>
 
-            {/* Paginação Dinâmica */}
             {role === 'admin' && paginationData?.last > 1 && (
               <div className="pagination-wrapper mt-4 d-flex justify-content-between align-items-center">
                 <button 
