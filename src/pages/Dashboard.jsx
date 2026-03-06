@@ -187,15 +187,6 @@ export default function Dashboard() {
                 </Pagination>
               </div>
             )}
-
-            {/* Overlay de Loading Centralizado */}
-            {loading && (
-<ul className="pagination">
-  <li className="page-item"><button className="page-link">Previous</button></li>
-  <li className="page-item active"><button className="page-link">1</button></li>
-  {/* ... */}
-</ul>
-            )}
           </div>
         </main>
       </div>
