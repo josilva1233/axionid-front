@@ -1,17 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Modal, Button, Row, Col } from 'react-bootstrap';
 
 const UserDropdown = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  const [showDetails, setShowDetails] = useState(false); // Estado para o "Modal" customizado
   const dropdownRef = useRef(null);
-  const navigate = useNavigate();
+  const detailsRef = useRef(null);
 
+  // Fecha ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
+      }
+      // Opcional: fechar detalhes ao clicar fora também
+      if (detailsRef.current && !detailsRef.current.contains(event.target) && !event.target.closest('.menu-item')) {
+        setShowDetails(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -19,7 +22,8 @@ const UserDropdown = ({ user, onLogout }) => {
   }, []);
 
   return (
-    <div className="user-dropdown-container" ref={dropdownRef}>
+    <div className="user-dropdown-container" ref={dropdownRef} style={{ position: 'relative' }}>
+      {/* Gatilho do Avatar */}
       <button 
         className="avatar-trigger" 
         onClick={() => setIsOpen(!isOpen)}
@@ -28,6 +32,7 @@ const UserDropdown = ({ user, onLogout }) => {
         {user?.name?.charAt(0).toUpperCase() || 'U'}
       </button>
 
+      {/* 1. DROPDOWN DE OPÇÕES (O que você já tinha) */}
       {isOpen && (
         <ul className="dropdown-floating-menu">
           <li className="menu-header">
@@ -37,7 +42,7 @@ const UserDropdown = ({ user, onLogout }) => {
           </li>
           <li className="menu-divider"></li>
           <li>
-            <button className="menu-item" onClick={() => { setShowModal(true); setIsOpen(false); }}>
+            <button className="menu-item" onClick={() => { setShowDetails(true); setIsOpen(false); }}>
               <i className="bi bi-person"></i> Meus Detalhes
             </button>
           </li>
@@ -49,81 +54,74 @@ const UserDropdown = ({ user, onLogout }) => {
         </ul>
       )}
 
-      {/* MODAL CORRIGIDO PARA SOBREPOSIÇÃO */}
-      <Modal 
-        show={showModal} 
-        onHide={() => setShowModal(false)} 
-        centered
-        dialogClassName="modal-centered-custom"
-        contentClassName="custom-modal-content"
-        backdropClassName="custom-modal-backdrop"
-      >
-        <div className="modal-header-custom">
-          <h4 className="m-0 text-white fw-bold">Minha Identidade AxionID</h4>
-          <button type="button" className="btn-close btn-close-white" onClick={() => setShowModal(false)}></button>
-        </div>
+      {/* 2. "MODAL" DE DETALHES COM O MESMO ESTILO DO DROPDOWN */}
+      {showDetails && (
+        <div 
+          className="dropdown-floating-menu details-panel" 
+          ref={detailsRef}
+          style={{ 
+            width: '300px', 
+            right: 0, 
+            top: '100%', 
+            padding: '20px',
+            marginTop: '10px' 
+          }}
+        >
+          <div className="menu-header mb-3">
+            <h5 className="m-0 text-white fw-bold" style={{ fontSize: '1.1rem' }}>Minha Identidade</h5>
+            <small className="text-muted">AxionID</small>
+          </div>
 
-        <div className="modal-data-body">
-          <Row className="g-4">
-            <Col xs={12}>
-              <h6 className="text-primary-custom mb-3">DADOS PESSOAIS</h6>
-              <div className="data-field">
-                <label>NOME COMPLETO</label>
-                <span>{user?.name}</span>
-              </div>
-              <div className="data-field">
-                <label>E-MAIL CORPORATIVO</label>
-                <span>{user?.email}</span>
-              </div>
-              <div className="data-field">
-                <label>CPF/CNPJ</label>
-                <span>{user?.cpf_cnpj || 'Não informado'}</span>
-              </div>
-            </Col>
+          <div className="details-content">
+            <h6 className="text-primary-custom mb-2" style={{ fontSize: '0.75rem', letterSpacing: '1px' }}>DADOS PESSOAIS</h6>
+            
+            <div className="data-field mb-2">
+              <label className="d-block text-muted small">NOME COMPLETO</label>
+              <span className="text-white d-block">{user?.name}</span>
+            </div>
 
-            <Col xs={12}>
-              <div className="modal-divider"></div>
-              <h6 className="text-primary-custom mb-3">ENDEREÇO DE REGISTRO</h6>
-              {user?.address ? (
-                <Row className="g-3">
-                  <Col xs={12}>
-                    <div className="data-field">
-                      <label>LOGRADOURO</label>
-                      <span>{user.address.street}, {user.address.number}</span>
-                    </div>
-                  </Col>
-                  <Col xs={6}>
-                    <div className="data-field">
-                      <label>BAIRRO</label>
-                      <span>{user.address.neighborhood}</span>
-                    </div>
-                  </Col>
-                  <Col xs={6}>
-                    <div className="data-field">
-                      <label>CIDADE/UF</label>
-                      <span>{user.address.city} - {user.address.state}</span>
-                    </div>
-                  </Col>
-                  <Col xs={12}>
-                    <div className="data-field">
-                      <label>CEP</label>
-                      <span>{user.address.zip_code}</span>
-                    </div>
-                  </Col>
-                </Row>
-              ) : (
-                <p className="text-muted small">Endereço não vinculado.</p>
-              )}
-            </Col>
-          </Row>
-        </div>
+            <div className="data-field mb-2">
+              <label className="d-block text-muted small">E-MAIL CORPORATIVO</label>
+              <span className="text-white d-block">{user?.email}</span>
+            </div>
 
-        <div className="modal-footer-custom mt-4">
-          <Button variant="dark" className="btn-modal-close w-100" onClick={() => setShowModal(false)}>
+            <div className="data-field mb-3">
+              <label className="d-block text-muted small">CPF/CNPJ</label>
+              <span className="text-white d-block">{user?.cpf_cnpj || '12328361765'}</span>
+            </div>
+
+            <div className="menu-divider mb-3"></div>
+
+            <h6 className="text-primary-custom mb-2" style={{ fontSize: '0.75rem', letterSpacing: '1px' }}>ENDEREÇO DE REGISTRO</h6>
+            {user?.address ? (
+              <div className="address-info" style={{ fontSize: '0.9rem' }}>
+                <div className="mb-2">
+                  <label className="d-block text-muted small">LOGRADOURO</label>
+                  <span className="text-white">{user.address.street}, {user.address.number}</span>
+                </div>
+                <div className="mb-2">
+                  <label className="d-block text-muted small">BAIRRO</label>
+                  <span className="text-white">{user.address.neighborhood}</span>
+                </div>
+                <div className="mb-2">
+                  <label className="d-block text-muted small">CIDADE/UF</label>
+                  <span className="text-white">{user.address.city} - {user.address.state}</span>
+                </div>
+              </div>
+            ) : (
+              <p className="text-muted small">Dados de endereço não disponíveis.</p>
+            )}
+          </div>
+
+          <button 
+            className="menu-item mt-3 text-center w-100" 
+            style={{ justifyContent: 'center', background: 'rgba(255,255,255,0.05)' }}
+            onClick={() => setShowDetails(false)}
+          >
             Fechar
-          </Button>
+          </button>
         </div>
-      </Modal>
+      )}
     </div>
   );
 };
