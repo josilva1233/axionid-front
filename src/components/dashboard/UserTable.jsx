@@ -1,4 +1,6 @@
 // UserTable.js
+// No topo do UserTable.js adicione:
+import { useNavigate } from 'react-router-dom';
 export default function UserTable({ users }) {
   const navigate = useNavigate();
   if (!users || users.length === 0) return <p className="p-4 text-center">Nenhum usuário encontrado.</p>;
