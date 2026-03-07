@@ -2,23 +2,45 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Sidebar = ({ activeTab, setActiveTab, role, onLogout }) => {
+  const navigate = useNavigate();
+
   return (
     <aside className="sidebar">
-      <div className="brand"><h1>Axion<span>ID</span></h1></div>
+      <div className="sidebar-brand">
+        <div className="brand">
+          <h1>Axion<span>ID</span></h1>
+        </div>
+      </div>
+      
       <nav className="sidebar-nav">
-        <button className={`nav-item ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}>
-          👥 Gestão Usuários
+        <p className="nav-section-title">Principal</p>
+        <button 
+          className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
+          onClick={() => setActiveTab('users')}
+        >
+          <span className="nav-icon">👥</span> <span>Gestão Usuários</span>
         </button>
+
         {role === 'admin' && (
-          <button className={`nav-item ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')}>
-            📜 Auditoria
-          </button>
+          <>
+            <p className="nav-section-title">Segurança</p>
+            <button 
+              className={`nav-item ${activeTab === 'audit' ? 'active' : ''}`}
+              onClick={() => setActiveTab('audit')}
+            >
+              <span className="nav-icon">📜</span> <span>Histórico Auditoria</span>
+            </button>
+          </>
         )}
       </nav>
+
       <div className="sidebar-footer">
-        <button onClick={onLogout} className="btn-primary" style={{background: 'var(--error)'}}>Sair</button>
+        <button onClick={onLogout} className="btn-logout-sidebar">
+          Sair do Sistema
+        </button>
       </div>
     </aside>
   );
 };
+
 export default Sidebar;

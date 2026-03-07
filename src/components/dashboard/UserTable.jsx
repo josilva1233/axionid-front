@@ -1,6 +1,4 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-
+// UserTable.js
 export default function UserTable({ users }) {
   const navigate = useNavigate();
   if (!users || users.length === 0) return <p className="p-4 text-center">Nenhum usuário encontrado.</p>;
@@ -14,11 +12,11 @@ export default function UserTable({ users }) {
         <tbody>
           {users.map(u => (
             <tr key={u.id}>
-              <td>#{u.id}</td>
+              <td className="mono-text">#{u.id}</td>
               <td>{u.name}</td>
               <td>{u.is_admin ? 'Admin' : 'User'}</td>
               <td><span className={`badge ${u.is_active ? 'success' : 'danger'}`}>{u.is_active ? 'Ativo' : 'Bloqueado'}</span></td>
-              <td><button className="btn-primary" onClick={() => navigate(`/dashboard/user/${u.id}`)}>Detalhes</button></td>
+              <td><button onClick={() => navigate(`/dashboard/user/${u.id}`)}>Detalhes</button></td>
             </tr>
           ))}
         </tbody>
