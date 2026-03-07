@@ -1,55 +1,20 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
-import { Form, Row, Col } from 'react-bootstrap';
+import { Pagination, Form, Row, Col } from 'react-bootstrap';
 import api from '../services/api';
 
-// Importações de componentes externos
+import Sidebar from '../components/dashboard/Sidebar';
 import UserTable from '../components/dashboard/UserTable';
 import AuditTable from '../components/dashboard/AuditTable';
 
-// --- Sub-componente: Welcome ---
 const WelcomeOperacional = ({ user }) => (
   <div className="text-center py-5 animate-in">
-    <div className="mb-4"><span style={{ fontSize: '3rem' }}>👋</span></div>
+    <div className="mb-4"><span style={{fontSize: '3rem'}}>👋</span></div>
     <h2 className="text-white mb-2">Bem-vindo, {user?.name || 'Usuário'}!</h2>
     <p className="text-dim">Você está no painel operacional da <strong>AxionID</strong>.</p>
   </div>
 );
 
-// --- Sub-componente: Sidebar ---
-const Sidebar = ({ activeTab, setActiveTab, role, onLogout }) => (
-  <aside className="sidebar">
-    <div className="sidebar-brand">
-      <div className="brand"><h1>Axion<span>ID</span></h1></div>
-    </div>
-    <nav className="sidebar-nav">
-      <p className="nav-section-title">Principal</p>
-      <button 
-        className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
-        onClick={() => setActiveTab('users')}
-      >
-        <span className="nav-icon">👥</span> <span>Gestão Usuários</span>
-      </button>
-
-      {role === 'admin' && (
-        <>
-          <p className="nav-section-title">Segurança</p>
-          <button 
-            className={`nav-item ${activeTab === 'audit' ? 'active' : ''}`}
-            onClick={() => setActiveTab('audit')}
-          >
-            <span className="nav-icon">📜</span> <span>Histórico Auditoria</span>
-          </button>
-        </>
-      )}
-    </nav>
-    <div className="sidebar-footer">
-      <button onClick={onLogout} className="btn-logout-sidebar">Sair do Sistema</button>
-    </div>
-  </aside>
-);
-
-// --- Componente Principal ---
 export default function Dashboard() {
   const navigate = useNavigate();
   const [role] = useState(localStorage.getItem('@AxionID:role'));
@@ -62,60 +27,54 @@ export default function Dashboard() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationData, setPaginationData] = useState(null);
+
   const [filters, setFilters] = useState({ method: '', date: '' });
 
-  // 1. Carregamento de Dados (Memoizado)
   const loadData = useCallback(async (page = 1) => {
     if (role !== 'admin') return;
-    
     setLoading(true);
     try {
       const endpoint = activeTab === 'users' ? '/api/v1/users' : '/api/v1/audit-logs';
-      const params = new URLSearchParams({ page: page.toString() });
-      
+      const params = new URLSearchParams({ page });
       if (activeTab === 'audit') {
         if (filters.method) params.append('method', filters.method);
         if (filters.date) params.append('date', filters.date);
       }
 
       const res = await api.get(`${endpoint}?${params.toString()}`);
-      const { data: resultData } = res;
+      const data = res.data;
 
       if (activeTab === 'users') {
-        setUsers(resultData.data || []);
+        setUsers(data.data || []);
       } else {
-        setAuditLogs(resultData.data || []);
+        setAuditLogs(data.data || []);
       }
 
       setPaginationData({
-        current: resultData.current_page || 1,
-        last: resultData.last_page || 1,
-        total: resultData.total || 0
+        current: data.current_page || 1,
+        last: data.last_page || 1,
+        total: data.total || 0
       });
     } catch (err) {
       console.error("Erro ao carregar dados:", err);
     } finally {
       setLoading(false);
     }
-  }, [activeTab, filters.method, filters.date, role]);
+  }, [activeTab, filters, role]);
 
-  // 2. Carregar Perfil ao montar
   useEffect(() => {
     const loadProfile = async () => {
       try {
         const profileRes = await api.get('/api/v1/me');
         setCurrentUser(profileRes.data);
-      } catch (err) { 
-        navigate('/login'); 
-      }
+      } catch (err) { navigate('/login'); }
     };
     loadProfile();
   }, [navigate]);
 
-  // 3. Resetar página e recarregar quando trocar de Aba
   useEffect(() => {
-    setCurrentPage(1);
     loadData(1);
+    setCurrentPage(1);
   }, [activeTab, loadData]);
 
   const handlePageChange = (newPage) => {
@@ -124,37 +83,24 @@ export default function Dashboard() {
   };
 
   const handleLogout = async () => {
-    try { 
-      await api.post('/api/v1/logout'); 
-    } finally { 
-      localStorage.clear(); 
-      navigate('/login'); 
-    }
+    try { await api.post('/api/v1/logout'); } 
+    finally { localStorage.clear(); navigate('/login'); }
   };
 
   return (
     <div className="dashboard-layout animate-in">
-      <Sidebar 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        role={role} 
-        onLogout={handleLogout} 
-      />
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} role={role} onLogout={handleLogout} />
 
       <div className="main-wrapper">
         <header className="main-header">
-          <h2 className="brand">
-            {activeTab === 'users' ? 'Gestão de Usuários' : 'Auditoria'}
-          </h2>
+          <h2 className="brand">{activeTab === 'users' ? 'Gestão de Usuários' : 'Auditoria'}</h2>
           <div className="user-menu-wrapper">
-            <div className="nav-avatar-circle">
-              {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
-            </div>
+             <div className="nav-avatar-circle">{currentUser?.name?.charAt(0).toUpperCase()}</div>
+             {/* Dropdown simplificado para brevidade */}
           </div>
         </header>
 
         <main className="content-area p-4">
-          {/* Filtros de Auditoria */}
           {activeTab === 'audit' && role === 'admin' && (
             <div className="filter-card mb-4 p-3 bg-dark rounded border border-secondary">
               <Row className="align-items-end g-3">
@@ -162,27 +108,22 @@ export default function Dashboard() {
                   <Form.Label className="text-white">Método HTTP</Form.Label>
                   <Form.Select 
                     value={filters.method} 
-                    onChange={(e) => setFilters(prev => ({ ...prev, method: e.target.value }))}
+                    onChange={(e) => setFilters({...filters, method: e.target.value})}
                     className="bg-dark text-white border-secondary"
                   >
                     <option value="">Todos</option>
-                    <option value="GET">GET</option>
-                    <option value="POST">POST</option>
-                    <option value="PUT">PUT</option>
-                    <option value="DELETE">DELETE</option>
+                    <option value="GET">GET</option><option value="POST">POST</option>
                   </Form.Select>
                 </Col>
                 <Col md={4}>
-                  <button className="btn-primary w-100" onClick={() => loadData(1)}>
-                    Filtrar Resultados
-                  </button>
+                   <button className="btn-primary w-100" onClick={() => loadData(1)}>Filtrar</button>
                 </Col>
               </Row>
             </div>
           )}
 
-          <div className={`tab-wrapper ${loading ? 'is-loading' : ''}`} style={{ position: 'relative' }}>
-            {loading && <div className="loading-overlay">Sincronizando...</div>}
+          <div className={`tab-wrapper ${loading ? 'is-loading' : ''}`} style={{position: 'relative'}}>
+            {loading && <div className="loading-overlay">Carregando...</div>}
             
             <div className="content-card">
               {activeTab === 'users' ? (
@@ -192,24 +133,11 @@ export default function Dashboard() {
               )}
             </div>
 
-            {/* Paginação Centralizada */}
             {role === 'admin' && paginationData?.last > 1 && (
-              <div className="pagination-wrapper mt-4 d-flex justify-content-between align-items-center">
-                <button 
-                  className="btn-outline-light"
-                  disabled={currentPage === 1 || loading} 
-                  onClick={() => handlePageChange(currentPage - 1)}
-                >
-                  Anterior
-                </button>
+              <div className="pagination-wrapper mt-4 d-flex justify-content-between">
+                <button disabled={currentPage === 1} onClick={() => handlePageChange(currentPage - 1)}>Anterior</button>
                 <span className="text-white">Página {currentPage} de {paginationData.last}</span>
-                <button 
-                  className="btn-outline-light"
-                  disabled={currentPage === paginationData.last || loading} 
-                  onClick={() => handlePageChange(currentPage + 1)}
-                >
-                  Próxima
-                </button>
+                <button disabled={currentPage === paginationData.last} onClick={() => handlePageChange(currentPage + 1)}>Próxima</button>
               </div>
             )}
           </div>
