@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Modal, Button, Row, Col } from 'react-bootstrap'; // Importações necessárias
+import { useNavigate } from 'react-router-dom';
+import { Modal, Button, Row, Col } from 'react-bootstrap';
 
 const UserDropdown = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showModal, setShowModal] = useState(false); // Estado do Modal
+  const [showModal, setShowModal] = useState(false);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
 
+  // Fecha o menu ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -47,71 +50,73 @@ const UserDropdown = ({ user, onLogout }) => {
         </ul>
       )}
 
-      {/* MODAL DE DETALHES DO USUÁRIO */}
-<Modal 
-  show={showModal} 
-  onHide={() => setShowModal(false)} 
-  centered 
-  dialogClassName="custom-modal-dark" // Adicione esta linha
-  contentClassName="dark-modal-content" // E esta
->
-  <Modal.Header closeButton className="border-0 pb-0">
-    <Modal.Title className="modal-title-custom">Minha Identidade AxionID</Modal.Title>
-  </Modal.Header>
-  
-  <Modal.Body>
-    <div className="info-section">
-      <h6 className="section-label">DADOS PESSOAIS</h6>
-      
-      <div className="info-group">
-        <label>NOME COMPLETO</label>
-        <div className="info-value">{user?.name?.toUpperCase()}</div>
-      </div>
+      {/* MODAL SOBREPOSTO (PORTAL) */}
+      <Modal 
+        show={showModal} 
+        onHide={() => setShowModal(false)} 
+        centered
+        contentClassName="custom-modal-content"
+        backdropClassName="modal-backdrop-custom"
+      >
+        <div className="modal-header-custom d-flex justify-content-between align-items-center mb-4">
+          <h4 className="m-0 text-white fw-bold">Minha Identidade AxionID</h4>
+          <button type="button" className="btn-close btn-close-white" onClick={() => setShowModal(false)}></button>
+        </div>
 
-      <div className="info-group">
-        <label>E-MAIL CORPORATIVO</label>
-        <div className="info-value email-value">{user?.email}</div>
-      </div>
+        <div className="modal-data-body">
+          <Row>
+            {/* Dados Pessoais */}
+            <Col col={12} className="mb-4">
+              <h6 className="text-primary mb-3 small fw-bold">DADOS PESSOAIS</h6>
+              <div className="mb-3">
+                <label className="data-label">NOME COMPLETO</label>
+                <div className="data-value">{user?.name}</div>
+              </div>
+              <div className="mb-3">
+                <label className="data-label">E-MAIL CORPORATIVO</label>
+                <div className="data-value">{user?.email}</div>
+              </div>
+              <div className="mb-3">
+                <label className="data-label">CPF/CNPJ</label>
+                <div className="data-value">{user?.cpf_cnpj || 'Não informado'}</div>
+              </div>
+            </Col>
 
-      <div className="info-group">
-        <label>CPF/CNPJ</label>
-        <div className="info-value">{user?.cpf_cnpj || '12328361765'}</div>
-      </div>
-    </div>
+            <hr className="border-secondary opacity-25 mb-4" />
 
-    <hr className="modal-divider" />
+            {/* Endereço */}
+            <Col col={12}>
+              <h6 className="text-primary mb-3 small fw-bold">ENDEREÇO DE REGISTRO</h6>
+              {user?.address ? (
+                <Row className="g-3">
+                  <Col md={12}>
+                    <label className="data-label">LOGRADOURO</label>
+                    <div className="data-value">{user.address.street}, {user.address.number}</div>
+                  </Col>
+                  <Col md={6}>
+                    <label className="data-label">BAIRRO</label>
+                    <div className="data-value">{user.address.neighborhood}</div>
+                  </Col>
+                  <Col md={6}>
+                    <label className="data-label">CIDADE/UF</label>
+                    <div className="data-value">{user.address.city} - {user.address.state}</div>
+                  </Col>
+                  <Col md={12}>
+                    <label className="data-label">CEP</label>
+                    <div className="data-value">{user.address.zip_code}</div>
+                  </Col>
+                </Row>
+              ) : (
+                <div className="text-dim small italic">Nenhum endereço vinculado ao perfil.</div>
+              )}
+            </Col>
+          </Row>
+        </div>
 
-    <div className="info-section">
-      <h6 className="section-label">ENDEREÇO DE REGISTRO</h6>
-      
-      <div className="info-group">
-        <label>LOGRADOURO</label>
-        <div className="info-value">{user?.address?.street}, {user?.address?.number}</div>
-      </div>
-
-      <div className="info-group">
-        <label>BAIRRO</label>
-        <div className="info-value">{user?.address?.neighborhood || 'Pilar'}</div>
-      </div>
-
-      <div className="info-group">
-        <label>CIDADE/UF</label>
-        <div className="info-value">{user?.address?.city} - {user?.address?.state}</div>
-      </div>
-
-      <div className="info-group">
-        <label>CEP</label>
-        <div className="info-value">{user?.address?.zip_code}</div>
-      </div>
-    </div>
-  </Modal.Body>
-
-  <Modal.Footer className="border-0 pt-0">
-    <button className="btn-modal-close" onClick={() => setShowModal(false)}>
-      Fechar
-    </button>
-  </Modal.Footer>
-</Modal>
+        <Button variant="dark" className="w-100 mt-4 py-2 fw-bold" onClick={() => setShowModal(false)}>
+          Fechar
+        </Button>
+      </Modal>
     </div>
   );
 };

@@ -109,51 +109,54 @@
   }
 }
 
-/* Garante que o fundo do modal escureça o dashboard */
-.modal-backdrop {
-  background-color: #000 !important;
-  opacity: 0.7 !important;
+/* Fundo escuro atrás do modal */
+.modal-backdrop-custom {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85) !important;
+  z-index: 1050 !important;
 }
 
-/* Container do Modal - O "Cartão" que flutua */
+/* O corpo do Modal flutuando */
 .custom-modal-content {
-  background-color: #161b22 !important; /* Cor sólida para não vazar o fundo */
-  border: 1px solid #30363d !important;
-  border-radius: 12px !important;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8) !important;
-  color: #e6edf3 !important;
-  z-index: 1060 !important; /* Acima de qualquer tabela */
+  background-color: #1a1d23 !important; /* Cor sólida para não ser transparente */
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 16px !important;
+  padding: 25px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+  color: white !important;
+  z-index: 1060 !important;
 }
 
-/* Ajuste de espaçamento interno para não ficar grudado */
-.modal-body-custom {
-  padding: 2rem !important;
-}
-
-.modal-header-custom {
-  border-bottom: 1px solid #30363d !important;
-  padding: 1rem 1.5rem !important;
-}
-
-.modal-footer-custom {
-  border-top: 1px solid #30363d !important;
-  padding: 1rem !important;
-}
-
-/* Labels de dados */
+/* Estilização dos rótulos e valores */
 .data-label {
-  color: #8b949e;
+  display: block;
+  color: #64748b;
   font-size: 0.7rem;
-  text-transform: uppercase;
-  font-weight: 600;
-  margin-bottom: 2px;
+  font-weight: 700;
+  letter-spacing: 0.05rem;
+  margin-bottom: 4px;
 }
 
 .data-value {
-  color: #ffffff;
-  font-size: 0.95rem;
-  margin-bottom: 15px;
-  display: block;
+  color: #f8fafc;
+  font-size: 1rem;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.text-dim {
+  color: #94a3b8;
+}
+
+/* Garante que o X de fechar seja branco */
+.btn-close-white {
+  filter: invert(1) grayscale(100%) brightness(200%);
 }
 
 
