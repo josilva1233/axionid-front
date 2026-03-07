@@ -27,6 +27,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  justify-content: center;
 }
 
 
@@ -41,9 +42,6 @@ body {
   overflow-x: hidden;
 }
 
-.auth-wrapper {
-  justify-content: center !important; /* Centraliza o conteúdo de autenticação */
-}
 
 
 .dashboard-container {
