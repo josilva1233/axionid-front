@@ -759,6 +759,10 @@ input:focus {
 }
 
 
+/* Estrutura Principal do Dashboard */
+.dashboard-layout {
+  display: flex;
+}
 
 /* =========================================
    3. SIDEBAR (MENU LATERAL)
