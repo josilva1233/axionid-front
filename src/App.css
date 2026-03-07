@@ -109,25 +109,43 @@
   }
 }
 
-/* Estilo para o Modal seguir o tema */
-.modal-content.glass-card {
-  background: rgba(17, 24, 39, 0.95) !important;
-  backdrop-filter: blur(10px);
+/* Customização do Modal para Tema Escuro */
+.glass-card {
+  background-color: #1a1d23 !important; /* Fundo sólido para garantir leitura */
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 20px;
+  border-radius: 16px !important;
+  color: #ffffff !important;
 }
 
-.modal-header .btn-close {
-  filter: invert(1); /* Deixa o X de fechar branco */
+.modal-backdrop.show {
+  opacity: 0.7 !important; /* Escurece o fundo do dashboard ao abrir */
 }
 
-.text-dim {
-  color: #94a3b8 !important;
+.info-grid-modal {
+  display: grid;
+  gap: 20px;
+  padding: 10px;
 }
 
-.fw-medium {
-  font-weight: 500;
+.modal-info-group label {
+  display: block;
+  color: #94a3b8; /* Cor cinza para o rótulo */
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.modal-info-group span {
+  display: block;
   color: #f8fafc;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* Botão de fechar do modal */
+.btn-close-white {
+  filter: invert(1) grayscale(100%) brightness(200%);
 }
 
 
