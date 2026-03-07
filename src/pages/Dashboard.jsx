@@ -155,37 +155,65 @@ export default function Dashboard() {
     </button>
   </div>
 )}
+{/* Filtros para Auditoria */}
+{activeTab === 'audit' && role === 'admin' && (
+  <div className="filter-card mb-4 p-3" style={{ background: 'rgba(255, 255, 255, 0.03)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+    <Row className="align-items-end g-3">
+      {/* Método HTTP */}
+      <Col md={3}>
+        <Form.Group>
+          <Form.Label className="text-uppercase fw-bold mb-2" style={{ color: '#6c757d', fontSize: '0.7rem', letterSpacing: '1px' }}>
+            Método HTTP
+          </Form.Label>
+          <Form.Select 
+            name="method" 
+            value={filters.method} 
+            onChange={handleFilterChange} 
+            className="custom-input-dark"
+          >
+            <option value="">Todos</option>
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="DELETE">DELETE</option>
+          </Form.Select>
+        </Form.Group>
+      </Col>
 
-          {/* Filtros para Auditoria */}
-          {activeTab === 'audit' && role === 'admin' && (
-            <div className="filter-card mb-4">
-              <Row className="align-items-end g-3">
-                <Col md={4}>
-                  <Form.Group>
-                    <Form.Label className="text-dim small">Método HTTP</Form.Label>
-                    <Form.Select name="method" value={filters.method} onChange={handleFilterChange} className="bg-dark text-white border-secondary">
-                      <option value="">Todos</option>
-                      <option value="GET">GET</option>
-                      <option value="POST">POST</option>
-                      <option value="PUT">PUT</option>
-                      <option value="DELETE">DELETE</option>
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
-                <Col md={4}>
-                  <Form.Group>
-                    <Form.Label className="text-dim small">Data</Form.Label>
-                    <Form.Control type="date" name="date" value={filters.date} onChange={handleFilterChange} className="bg-dark text-white border-secondary" />
-                  </Form.Group>
-                </Col>
-                <Col md={4} className="d-flex gap-2">
-                  <button className="btn-primary w-100" onClick={() => loadAuditLogs(1)}>Filtrar</button>
-                  <button className="btn-back px-3" onClick={clearFilters}>Limpar</button>
-                </Col>
-              </Row>
-            </div>
-          )}
+      {/* Data */}
+      <Col md={3}>
+        <Form.Group>
+          <Form.Label className="text-uppercase fw-bold mb-2" style={{ color: '#6c757d', fontSize: '0.7rem', letterSpacing: '1px' }}>
+            Data
+          </Form.Label>
+          <Form.Control 
+            type="date" 
+            name="date" 
+            value={filters.date} 
+            onChange={handleFilterChange} 
+            className="custom-input-dark"
+          />
+        </Form.Group>
+      </Col>
 
+      {/* Botões de Ação */}
+      <Col md={6} className="d-flex gap-2">
+        <button 
+          className="btn-action-primary flex-grow-1" 
+          onClick={() => loadAuditLogs(1)}
+        >
+          <i className="bi bi-funnel me-2"></i> FILTRAR
+        </button>
+        <button 
+          className="btn-action-outline px-4" 
+          onClick={clearFilters}
+        >
+          Limpar
+        </button>
+      </Col>
+    </Row>
+  </div>
+)}
           <div className={`tab-wrapper position-relative ${loading ? 'is-loading' : ''}`}>
             {loading && (
               <div className="loading-overlay">
