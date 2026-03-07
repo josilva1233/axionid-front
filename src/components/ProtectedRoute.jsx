@@ -1,4 +1,4 @@
-import React from 'react'; // Adicione esta linha
+import React from 'react'; // Adicione esta linhad
 import { Navigate } from "react-router-dom";
 
 export const ProtectedRoute = ({ children }) => {
