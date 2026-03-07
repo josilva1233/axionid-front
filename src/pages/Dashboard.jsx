@@ -199,12 +199,6 @@ export default function Dashboard() {
       {/* Botões de Ação */}
       <Col md={6} className="d-flex gap-2">
         <button 
-          className="btn-action-primary flex-grow-1" 
-          onClick={() => loadAuditLogs(1)}
-        >
-          <i className="bi bi-funnel me-2"></i> FILTRAR
-        </button>
-        <button 
           className="btn-action-outline px-4" 
           onClick={clearFilters}
         >
