@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Pagination, Form, Row, Col } from 'react-bootstrap';
 import api from '../services/api';
 
-//import Sidebar from '../components/dashboard/Sidebar';
+import Sidebar from '../components/dashboard/Sidebar';
 import UserTable from '../components/dashboard/UserTable';
 import AuditTable from '../components/dashboard/AuditTable';
 
