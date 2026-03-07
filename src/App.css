@@ -30,7 +30,83 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  
+  justify-content: center;
+}
+
+/* =========================================
+   ALERTA DE PERFIL PREMIUM (AXION ID)
+   ========================================= */
+.alert-complete-profile {
+  background: linear-gradient(90deg, #ffc107 0%, #ffdb7d 100%) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 16px 24px !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 15px rgba(255, 193, 7, 0.2);
+  margin-bottom: 25px;
+}
+
+.alert-complete-profile .alert-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.alert-complete-profile .alert-icon {
+  font-size: 24px;
+  background: rgba(0, 0, 0, 0.1);
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+.alert-complete-profile h6 {
+  color: #000 !important;
+  font-weight: 700 !important;
+  margin: 0 !important;
+  font-size: 1rem;
+}
+
+.alert-complete-profile p {
+  color: rgba(0, 0, 0, 0.7) !important;
+  margin: 0 !important;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.alert-complete-profile .btn-complete {
+  background: #000 !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 10px 20px !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.alert-complete-profile .btn-complete:hover {
+  background: #222 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsividade para celular */
+@media (max-width: 768px) {
+  .alert-complete-profile {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+  .alert-complete-profile .alert-content {
+    flex-direction: column;
+  }
 }
 
 body {
@@ -44,33 +120,6 @@ body {
   justify-content: center;
 }
 
-.alert-complete-profile {
-  border-radius: 12px;
-  overflow: hidden;
-  position: relative;
-}
-
-.alert-complete-profile::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: var(--warning, #ffc107);
-}
-
-.alert-complete-profile .btn-primary {
-  background: #ffc107;
-  color: #000;
-  border: none;
-  font-weight: 700;
-}
-
-.alert-complete-profile .btn-primary:hover {
-  background: #e0a800;
-  transform: translateY(-1px);
-}
 
 
 .dashboard-container {

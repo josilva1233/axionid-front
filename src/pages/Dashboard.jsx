@@ -141,21 +141,20 @@ export default function Dashboard() {
 
         <main className="content-area p-4">
           {/* ALERTA DE PERFIL INCOMPLETO */}
-          {currentUser && !currentUser.profile_completed && (
-            <div className="alert-complete-profile animate-in mb-4">
-              <div className="d-flex align-items-center gap-3 p-3 rounded-3 shadow-sm border border-warning border-opacity-25" 
-                   style={{ background: 'rgba(255, 193, 7, 0.05)' }}>
-                <div className="alert-icon fs-4">⚠️</div>
-                <div className="flex-grow-1">
-                  <h6 className="text-warning mb-1 fw-bold">Seu cadastro está incompleto!</h6>
-                  <p className="text-dim small mb-0">Finalize as etapas restantes para garantir sua segurança.</p>
-                </div>
-                <button className="btn-primary py-2 px-4 shadow-none" style={{ fontSize: '0.85rem' }} onClick={() => navigate('/complete-profile')}>
-                  Finalizar Agora
-                </button>
-              </div>
-            </div>
-          )}
+{currentUser && !currentUser.profile_completed && (
+  <div className="alert-complete-profile animate-in">
+    <div className="alert-content">
+      <div className="alert-icon">⚠️</div>
+      <div>
+        <h6>Seu cadastro está incompleto!</h6>
+        <p>Finalize as etapas restantes para garantir a segurança da sua conta.</p>
+      </div>
+    </div>
+    <button className="btn-complete" onClick={() => navigate('/complete-profile')}>
+      Finalizar Agora
+    </button>
+  </div>
+)}
 
           {/* Filtros para Auditoria */}
           {activeTab === 'audit' && role === 'admin' && (
