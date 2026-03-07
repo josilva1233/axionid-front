@@ -1,46 +1,21 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 
-const Sidebar = ({ activeTab, setActiveTab, role, onLogout }) => {
-  const navigate = useNavigate();
-
+export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
   return (
     <aside className="sidebar">
-      <div className="sidebar-brand">
-        <div className="brand">
-          <h1>Axion<span>ID</span></h1>
-        </div>
-      </div>
-      
-      <nav className="sidebar-nav">
-        <p className="nav-section-title">Principal</p>
-        <button 
-          className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
-          onClick={() => setActiveTab('users')}
-        >
-          <span className="nav-icon">👥</span> <span>Gestão Usuários</span>
-        </button>
-
+      <div className="brand" style={{marginBottom: '40px'}}><h1>Axion<span>ID</span></h1></div>
+      <nav style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+        <button className={`btn-primary ${activeTab === 'users' ? '' : 'btn-outline'}`} 
+                style={{background: activeTab === 'users' ? 'var(--primary)' : 'transparent'}}
+                onClick={() => setActiveTab('users')}>👥 Usuários</button>
+        
         {role === 'admin' && (
-          <>
-            <p className="nav-section-title">Segurança</p>
-            <button 
-              className={`nav-item ${activeTab === 'audit' ? 'active' : ''}`}
-              onClick={() => setActiveTab('audit')}
-            >
-              <span className="nav-icon">📜</span> <span>Histórico Auditoria</span>
-            </button>
-          </>
+          <button className={`btn-primary ${activeTab === 'audit' ? '' : 'btn-outline'}`}
+                  style={{background: activeTab === 'audit' ? 'var(--primary)' : 'transparent'}}
+                  onClick={() => setActiveTab('audit')}>📜 Auditoria</button>
         )}
       </nav>
-
-      <div className="sidebar-footer">
-        <button onClick={onLogout} className="btn-logout-sidebar">
-          Sair do Sistema
-        </button>
-      </div>
+      <button className="btn-primary" style={{marginTop: 'auto', background: 'var(--error)'}} onClick={onLogout}>Sair</button>
     </aside>
   );
-};
-
-export default Sidebar;
+}
