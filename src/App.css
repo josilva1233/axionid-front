@@ -1,274 +1,68 @@
-/* =========================================
-   1. VARIÁVEIS, RESET E TIPOGRAFIA
-   ========================================= */
 :root {
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
-  --bg-dark: #0b0f1a;
-  --card-bg: #161b2c;
-  --sidebar-bg: #111827;
-  --text-main: #f8fafc;
-  --text-dim: #94a3b8;
-  --border: rgba(255, 255, 255, 0.08);
-  --input-bg: rgba(0, 0, 0, 0.2);
-  --error: #ef4444;
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
-  --radius-lg: 16px;
-  --radius-md: 10px;
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
 }
 
 body {
-  background-color: var(--bg-dark);
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
-  color: var(--text-main);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* =========================================
-   2. ESTRUTURA DASHBOARD (LAYOUT PRINCIPAL)
-   ========================================= */
-.dashboard-layout {
+  margin: 0;
   display: flex;
+  place-items: center;
+  min-width: 320px;
   min-height: 100vh;
 }
 
-.sidebar {
-  width: 280px;
-  background: var(--sidebar-bg);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  padding: 24px;
-  position: fixed;
-  height: 100vh;
-  z-index: 100;
-  transition: all 0.3s ease;
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
 }
 
-.main-wrapper {
-  flex: 1;
-  margin-left: 280px;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  transition: margin 0.3s ease;
-}
-
-.main-header {
-  height: 80px;
-  padding: 0 40px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(11, 15, 26, 0.85);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 999;
-}
-
-.content-area {
-  padding: 32px 40px;
-  max-width: 1400px;
-  width: 100%;
-  margin: 0 auto;
-}
-
-/* =========================================
-   3. COMPONENTES DE UI (CARDS E BOTÕES)
-   ========================================= */
-.info-card, .table-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 24px;
-  box-shadow: var(--shadow-lg);
-  margin-bottom: 24px;
-}
-
-.btn-primary {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: var(--radius-md);
-  font-weight: 600;
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
   cursor: pointer;
-  transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
 }
 
-.btn-primary:hover:not(:disabled) {
-  background: var(--primary-hover);
-  transform: translateY(-1px);
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
 }
-
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Badges e Tags */
-.badge, .status-pill, .role-tag {
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.badge.admin, .badge.success, .status-pill.active {
-  background: rgba(34, 197, 94, 0.15);
-  color: #4ade80;
-}
-
-.badge.user, .status-pill.blocked, .badge.danger {
-  background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
-}
-
-/* =========================================
-   4. TABELAS (DESIGN AXION)
-   ========================================= */
-.table-responsive {
-  width: 100%;
-  overflow-x: auto;
-  border-radius: var(--radius-lg);
-}
-
-.axion-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  text-align: left;
-}
-
-.axion-table th {
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--text-dim);
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  border-bottom: 2px solid var(--border);
-}
-
-.axion-table td {
-  padding: 16px;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.875rem;
-}
-
-.axion-table tr:hover {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-/* =========================================
-   5. ANIMAÇÕES E LOADERS
-   ========================================= */
-.animate-in {
-  animation: fadeIn 0.4s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.loader {
-  width: 48px;
-  height: 48px;
-  border: 4px solid var(--border);
-  border-bottom-color: var(--primary);
-  border-radius: 50%;
-  display: inline-block;
-  animation: rotation 1s linear infinite;
-}
-
-@keyframes rotation {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* =========================================
-   6. RESPONSIVIDADE
-   ========================================= */
-@media (max-width: 1024px) {
-  .sidebar { width: 80px; padding: 16px 8px; }
-  .sidebar span:not(.nav-icon), .nav-section-title { display: none; }
-  .main-wrapper { margin-left: 80px; }
-  .content-area { padding: 20px; }
-}
-
-@media (max-width: 640px) {
-  .main-header { padding: 0 16px; }
-  .detail-grid { grid-template-columns: 1fr !important; }
-}
-
-
-/* Estilos específicos para o Forgot Password */
-.stepper-bar {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 30px;
-}
-
-.step-indicator {
-  flex: 1;
-  height: 4px;
-  background: var(--border);
-  border-radius: 10px;
-  transition: all 0.4s ease;
-}
-
-.step-indicator.active {
-  background: var(--primary);
-  box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
-}
-
-.input-token {
-  text-align: center;
-  font-size: 2rem !important;
-  letter-spacing: 12px;
-  font-weight: 800;
-  color: var(--primary) !important;
-  background: var(--input-bg);
-}
-
-.auth-header-text {
-  text-align: center;
-  margin-bottom: 25px;
-}
-
-.auth-header-text h2 {
-  font-size: 1.5rem;
-  margin-bottom: 8px;
-}
-
-.auth-header-text p {
-  color: var(--text-dim);
-  font-size: 0.9rem;
-}
-
-.link-back {
-  display: block;
-  text-align: center;
-  margin-top: 20px;
-  color: var(--text-dim);
-  text-decoration: none;
-  font-size: 0.85rem;
-  transition: 0.2s;
-}
-
-.link-back:hover { color: var(--text-main); }
