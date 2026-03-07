@@ -109,81 +109,51 @@
   }
 }
 
-/* Estilo Principal do Modal */
-.dark-modal-content {
-  background-color: #1a1d26 !important; /* Cor de fundo da imagem */
-  color: #ffffff !important;
-  border-radius: 15px !important;
-  border: 1px solid #2d313e !important;
-  padding: 10px;
+/* Garante que o fundo do modal escureça o dashboard */
+.modal-backdrop {
+  background-color: #000 !important;
+  opacity: 0.7 !important;
 }
 
-/* Título */
-.modal-title-custom {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: #ffffff;
+/* Container do Modal - O "Cartão" que flutua */
+.custom-modal-content {
+  background-color: #161b22 !important; /* Cor sólida para não vazar o fundo */
+  border: 1px solid #30363d !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8) !important;
+  color: #e6edf3 !important;
+  z-index: 1060 !important; /* Acima de qualquer tabela */
 }
 
-/* Botão de fechar (X) do Bootstrap no Dark Mode */
-.custom-modal-dark .btn-close {
-  filter: invert(1) grayscale(100%) brightness(200%);
+/* Ajuste de espaçamento interno para não ficar grudado */
+.modal-body-custom {
+  padding: 2rem !important;
 }
 
-/* Labels das Seções (DADOS PESSOAIS) */
-.section-label {
-  color: #ffffff;
-  font-size: 0.75rem;
-  font-weight: 700;
-  margin-top: 15px;
-  margin-bottom: 10px;
-  letter-spacing: 0.5px;
+.modal-header-custom {
+  border-bottom: 1px solid #30363d !important;
+  padding: 1rem 1.5rem !important;
 }
 
-/* Labels dos Campos (NOME COMPLETO, etc) */
-.info-group label {
-  color: #6c727f; /* Cinza claro da imagem */
+.modal-footer-custom {
+  border-top: 1px solid #30363d !important;
+  padding: 1rem !important;
+}
+
+/* Labels de dados */
+.data-label {
+  color: #8b949e;
   font-size: 0.7rem;
-  display: block;
+  text-transform: uppercase;
+  font-weight: 600;
   margin-bottom: 2px;
-  font-weight: 500;
 }
 
-/* Valores dos Campos */
-.info-value {
+.data-value {
   color: #ffffff;
-  font-size: 1.05rem;
-  font-weight: 600;
-  margin-bottom: 18px;
-}
-
-/* Email com destaque */
-.email-value {
-  font-weight: 500;
-}
-
-/* Divisor horizontal */
-.modal-divider {
-  border-color: #ffffff !important;
-  opacity: 0.8;
-  margin: 20px 0;
-}
-
-/* Botão Fechar Customizado */
-.btn-modal-close {
-  background-color: #12141a;
-  color: white;
-  border: none;
-  padding: 12px;
-  width: 100%;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 1rem;
-  transition: background 0.2s;
-}
-
-.btn-modal-close:hover {
-  background-color: #000000;
+  font-size: 0.95rem;
+  margin-bottom: 15px;
+  display: block;
 }
 
 
