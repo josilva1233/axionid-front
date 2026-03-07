@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
-import { Spinner, Pagination, Form, Row, Col, Button } from 'react-bootstrap';
+import { Spinner, Pagination, Form, Row, Col } from 'react-bootstrap';
 import api from '../services/api';
 
 import Sidebar from '../components/dashboard/Sidebar';
@@ -8,7 +8,6 @@ import UserTable from '../components/dashboard/UserTable';
 import AuditTable from '../components/dashboard/AuditTable';
 import UserDropdown from '../components/dashboard/UserDropdown';
 
-// Componente Interno para Usuário Comum (Caso não tenha o arquivo separado)
 const WelcomeOperacional = ({ user }) => (
   <div className="text-center py-5 animate-in">
     <div className="mb-4">
@@ -41,7 +40,7 @@ export default function Dashboard() {
   });
 
   const loadUsers = useCallback(async (page = 1) => {
-    if (role !== 'admin') return; // Segurança extra
+    if (role !== 'admin') return;
     setLoading(true);
     try {
       const res = await api.get(`/api/v1/users?page=${page}`);
@@ -64,23 +63,14 @@ export default function Dashboard() {
       if (filters.date) params.append('date', filters.date);
 
       const res = await api.get(`/api/v1/audit-logs?${params.toString()}`);
-      
       if (res.data.current_page) {
         setAuditLogs(res.data.data);
-        setPaginationData({
-          current: res.data.current_page,
-          last: res.data.last_page,
-          total: res.data.total
-        });
+        setPaginationData({ current: res.data.current_page, last: res.data.last_page, total: res.data.total });
       } else {
         setAuditLogs(res.data.data || res.data);
         setPaginationData(null);
       }
-    } catch (err) {
-      console.error("Erro ao carregar logs:", err);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { console.error(err); } finally { setLoading(false); }
   }, [filters, role]);
 
   useEffect(() => {
@@ -94,7 +84,6 @@ export default function Dashboard() {
   }, [navigate]);
 
   useEffect(() => {
-    // Só carrega tabelas se for Admin. Se for comum, não faz nada (mantém a tela de boas-vindas)
     if (role === 'admin') {
       setCurrentPage(1);
       activeTab === 'users' ? loadUsers(1) : loadAuditLogs(1);
@@ -145,58 +134,38 @@ export default function Dashboard() {
       <Sidebar activeTab={activeTab} setActiveTab={(tab) => { setActiveTab(tab); setCurrentPage(1); }} role={role} onLogout={handleLogout} />
 
       <div className="main-wrapper">
-<header className="main-header">
-  <h2 className="brand">
-    {activeTab === 'users' ? 'Gestão de Usuários' : 'Auditoria'}
-  </h2>
+        <header className="main-header">
+          <h2 className="brand">{activeTab === 'users' ? 'Gestão de Usuários' : 'Auditoria'}</h2>
+          {currentUser && <UserDropdown user={currentUser} onLogout={handleLogout} />}
+        </header>
 
-  {currentUser && (
-    <UserDropdown 
-      user={currentUser} 
-      onLogout={handleLogout} 
-    />
-  )}
-</header>
-
-
-<main className="content-area p-4">
-  {/* ALERTA DE PERFIL INCOMPLETO - INÍCIO */}
-  {currentUser && !currentUser.profile_completed && (
-    <div className="alert-complete-profile animate-in mb-4">
-      <div className="d-flex align-items-center gap-3 p-3 rounded-3 shadow-sm border border-warning border-opacity-25" 
-           style={{ background: 'rgba(255, 193, 7, 0.05)' }}>
-        <div className="alert-icon fs-4">⚠️</div>
-        <div className="flex-grow-1">
-          <h6 className="text-warning mb-1 fw-bold">Seu cadastro está incompleto!</h6>
-          <p className="text-dim small mb-0">Para garantir a segurança total da sua conta e evitar restrições, finalize as etapas restantes.</p>
-        </div>
-        <button 
-          className="btn-primary py-2 px-4 shadow-none" 
-          style={{ fontSize: '0.85rem' }}
-          onClick={() => navigate('/complete-profile')}
-        >
-          Finalizar Agora
-        </button>
-      </div>
-    </div>
-  )}
-  {/* ALERTA DE PERFIL INCOMPLETO - FIM */}
         <main className="content-area p-4">
-          {/* Filtros: Só aparecem para Admin na aba de auditoria */}
+          {/* ALERTA DE PERFIL INCOMPLETO */}
+          {currentUser && !currentUser.profile_completed && (
+            <div className="alert-complete-profile animate-in mb-4">
+              <div className="d-flex align-items-center gap-3 p-3 rounded-3 shadow-sm border border-warning border-opacity-25" 
+                   style={{ background: 'rgba(255, 193, 7, 0.05)' }}>
+                <div className="alert-icon fs-4">⚠️</div>
+                <div className="flex-grow-1">
+                  <h6 className="text-warning mb-1 fw-bold">Seu cadastro está incompleto!</h6>
+                  <p className="text-dim small mb-0">Finalize as etapas restantes para garantir sua segurança.</p>
+                </div>
+                <button className="btn-primary py-2 px-4 shadow-none" style={{ fontSize: '0.85rem' }} onClick={() => navigate('/complete-profile')}>
+                  Finalizar Agora
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Filtros para Auditoria */}
           {activeTab === 'audit' && role === 'admin' && (
-            <div className="filter-card">
-               {/* ... (Seu código de filtros aqui) ... */}
-               <Row className="align-items-end g-3">
+            <div className="filter-card mb-4">
+              <Row className="align-items-end g-3">
                 <Col md={4}>
-                  <Form.Group className="input-group">
-                    <Form.Label>Método HTTP</Form.Label>
-                    <Form.Select 
-                      name="method" 
-                      value={filters.method} 
-                      onChange={handleFilterChange}
-                      className="bg-dark text-white border-secondary"
-                    >
-                      <option value="">Todos os métodos</option>
+                  <Form.Group>
+                    <Form.Label className="text-dim small">Método HTTP</Form.Label>
+                    <Form.Select name="method" value={filters.method} onChange={handleFilterChange} className="bg-dark text-white border-secondary">
+                      <option value="">Todos</option>
                       <option value="GET">GET</option>
                       <option value="POST">POST</option>
                       <option value="PUT">PUT</option>
@@ -205,39 +174,28 @@ export default function Dashboard() {
                   </Form.Group>
                 </Col>
                 <Col md={4}>
-                  <Form.Group className="input-group">
-                    <Form.Label>Data do Log</Form.Label>
-                    <Form.Control 
-                      type="date" 
-                      name="date" 
-                      value={filters.date} 
-                      onChange={handleFilterChange}
-                      className="bg-dark text-white border-secondary"
-                    />
+                  <Form.Group>
+                    <Form.Label className="text-dim small">Data</Form.Label>
+                    <Form.Control type="date" name="date" value={filters.date} onChange={handleFilterChange} className="bg-dark text-white border-secondary" />
                   </Form.Group>
                 </Col>
                 <Col md={4} className="d-flex gap-2">
-                  <button className="btn-primary w-100" onClick={() => loadAuditLogs(1)}>
-                    Filtrar
-                  </button>
-                  <button className="btn-back" onClick={clearFilters}>
-                    Limpar
-                  </button>
+                  <button className="btn-primary w-100" onClick={() => loadAuditLogs(1)}>Filtrar</button>
+                  <button className="btn-back px-3" onClick={clearFilters}>Limpar</button>
                 </Col>
               </Row>
             </div>
           )}
 
-          <div className={`tab-wrapper ${loading ? 'is-loading' : ''}`}>
+          <div className={`tab-wrapper position-relative ${loading ? 'is-loading' : ''}`}>
             {loading && (
               <div className="loading-overlay">
-                <div className="spinner"></div>
-                <span className="text-primary fw-bold">Carregando dados...</span>
+                <Spinner animation="border" variant="primary" />
+                <span className="ms-3 text-primary fw-bold">Carregando...</span>
               </div>
             )}
 
             <div className="content-card">
-              {/* LÓGICA DE EXIBIÇÃO: Se for Admin mostra tabela, senão mostra Boas-vindas */}
               {activeTab === 'users' ? (
                 role === 'admin' ? <UserTable users={users} /> : <WelcomeOperacional user={currentUser} />
               ) : (
@@ -245,11 +203,10 @@ export default function Dashboard() {
               )}
             </div>
             
-            {/* Paginação: Só para Admin */}
             {role === 'admin' && paginationData && paginationData.last > 1 && (
               <div className="d-flex flex-wrap justify-content-between align-items-center mt-4 p-3 rounded-3 bg-dark bg-opacity-25 border border-secondary border-opacity-10">
                 <span className="small text-dim">
-                  Página <strong>{currentPage}</strong> de {paginationData.last} ({paginationData.total} registros)
+                  Página <strong>{currentPage}</strong> de {paginationData.last}
                 </span>
                 <Pagination className="mb-0">
                   <Pagination.First disabled={currentPage === 1} onClick={() => handlePageChange(1)} />
