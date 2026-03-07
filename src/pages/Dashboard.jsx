@@ -145,7 +145,6 @@ export default function Dashboard() {
       <Sidebar activeTab={activeTab} setActiveTab={(tab) => { setActiveTab(tab); setCurrentPage(1); }} role={role} onLogout={handleLogout} />
 
       <div className="main-wrapper">
-        // Dentro do seu return do Dashboard:
 <header className="main-header">
   <h2 className="brand">
     {activeTab === 'users' ? 'Gestão de Usuários' : 'Auditoria'}
