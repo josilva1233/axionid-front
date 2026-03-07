@@ -158,6 +158,29 @@ export default function Dashboard() {
   )}
 </header>
 
+
+<main className="content-area p-4">
+  {/* ALERTA DE PERFIL INCOMPLETO - INÍCIO */}
+  {currentUser && !currentUser.profile_completed && (
+    <div className="alert-complete-profile animate-in mb-4">
+      <div className="d-flex align-items-center gap-3 p-3 rounded-3 shadow-sm border border-warning border-opacity-25" 
+           style={{ background: 'rgba(255, 193, 7, 0.05)' }}>
+        <div className="alert-icon fs-4">⚠️</div>
+        <div className="flex-grow-1">
+          <h6 className="text-warning mb-1 fw-bold">Seu cadastro está incompleto!</h6>
+          <p className="text-dim small mb-0">Para garantir a segurança total da sua conta e evitar restrições, finalize as etapas restantes.</p>
+        </div>
+        <button 
+          className="btn-primary py-2 px-4 shadow-none" 
+          style={{ fontSize: '0.85rem' }}
+          onClick={() => navigate('/complete-profile')}
+        >
+          Finalizar Agora
+        </button>
+      </div>
+    </div>
+  )}
+  {/* ALERTA DE PERFIL INCOMPLETO - FIM */}
         <main className="content-area p-4">
           {/* Filtros: Só aparecem para Admin na aba de auditoria */}
           {activeTab === 'audit' && role === 'admin' && (
