@@ -48,70 +48,68 @@ const UserDropdown = ({ user, onLogout }) => {
       )}
 
       {/* MODAL DE DETALHES DO USUÁRIO */}
- <Modal 
+<Modal 
   show={showModal} 
   onHide={() => setShowModal(false)} 
   centered 
-  contentClassName="glass-card"
+  dialogClassName="custom-modal-dark" // Adicione esta linha
+  contentClassName="dark-modal-content" // E esta
 >
-  <Modal.Header closeButton className="border-0">
-    <Modal.Title className="fs-5 fw-bold">Minha Identidade AxionID</Modal.Title>
+  <Modal.Header closeButton className="border-0 pb-0">
+    <Modal.Title className="modal-title-custom">Minha Identidade AxionID</Modal.Title>
   </Modal.Header>
   
-  <Modal.Body className="pt-0">
-    <div className="info-grid-modal">
-      {/* Dados Pessoais */}
-      <div>
-        <h6 className="text-primary mb-3 small fw-bold">DADOS PESSOAIS</h6>
-        <div className="modal-info-group mb-3">
-          <label>Nome Completo</label>
-          <span>{user?.name}</span>
-        </div>
-        <div className="modal-info-group mb-3">
-          <label>E-mail Corporativo</label>
-          <span>{user?.email}</span>
-        </div>
-        <div className="modal-info-group">
-          <label>CPF/CNPJ</label>
-          <span>{user?.cpf_cnpj || 'Não informado'}</span>
-        </div>
+  <Modal.Body>
+    <div className="info-section">
+      <h6 className="section-label">DADOS PESSOAIS</h6>
+      
+      <div className="info-group">
+        <label>NOME COMPLETO</label>
+        <div className="info-value">{user?.name?.toUpperCase()}</div>
       </div>
 
-      <hr className="border-secondary opacity-25" />
+      <div className="info-group">
+        <label>E-MAIL CORPORATIVO</label>
+        <div className="info-value email-value">{user?.email}</div>
+      </div>
 
-      {/* Endereço */}
-      <div>
-        <h6 className="text-primary mb-3 small fw-bold">ENDEREÇO DE REGISTRO</h6>
-        {user?.address ? (
-          <div className="row g-3">
-            <div className="col-12 modal-info-group">
-              <label>Logradouro</label>
-              <span>{user.address.street}, {user.address.number}</span>
-            </div>
-            <div className="col-6 modal-info-group">
-              <label>Bairro</label>
-              <span>{user.address.neighborhood}</span>
-            </div>
-            <div className="col-6 modal-info-group">
-              <label>Cidade/UF</label>
-              <span>{user.address.city} - {user.address.state}</span>
-            </div>
-            <div className="col-12 modal-info-group">
-              <label>CEP</label>
-              <span>{user.address.zip_code}</span>
-            </div>
-          </div>
-        ) : (
-          <span className="text-dim small italic">Nenhum endereço vinculado.</span>
-        )}
+      <div className="info-group">
+        <label>CPF/CNPJ</label>
+        <div className="info-value">{user?.cpf_cnpj || '12328361765'}</div>
+      </div>
+    </div>
+
+    <hr className="modal-divider" />
+
+    <div className="info-section">
+      <h6 className="section-label">ENDEREÇO DE REGISTRO</h6>
+      
+      <div className="info-group">
+        <label>LOGRADOURO</label>
+        <div className="info-value">{user?.address?.street}, {user?.address?.number}</div>
+      </div>
+
+      <div className="info-group">
+        <label>BAIRRO</label>
+        <div className="info-value">{user?.address?.neighborhood || 'Pilar'}</div>
+      </div>
+
+      <div className="info-group">
+        <label>CIDADE/UF</label>
+        <div className="info-value">{user?.address?.city} - {user?.address?.state}</div>
+      </div>
+
+      <div className="info-group">
+        <label>CEP</label>
+        <div className="info-value">{user?.address?.zip_code}</div>
       </div>
     </div>
   </Modal.Body>
 
-  <Modal.Footer className="border-0">
-    <Button variant="secondary" className="w-100" onClick={() => setShowModal(false)}>
+  <Modal.Footer className="border-0 pt-0">
+    <button className="btn-modal-close" onClick={() => setShowModal(false)}>
       Fechar
-    </Button>
+    </button>
   </Modal.Footer>
 </Modal>
     </div>
