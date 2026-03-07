@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
+import Sidebar from '../components/dashboard/Sidebar';
+
 export default function UserDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
