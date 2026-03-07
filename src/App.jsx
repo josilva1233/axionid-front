@@ -1,25 +1,33 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import './App.css';
-
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import UserDetail from './pages/UserDetail';
-import ForgotPassword from './pages/ForgotPassword';
-import CompleteProfile from './pages/CompleteProfile';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import './App.css';
 
-export default function App() {
+function App() {
   return (
-    <Router>
+    <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/dashboard/user/:id" element={<UserDetail />} />
-        <Route path="/complete-profile" element={<CompleteProfile />} />
+        
+        <Route 
+          path="/dashboard" 
+          element={<ProtectedRoute><Dashboard /></ProtectedRoute>} 
+        />
+
+        <Route 
+          path="/dashboard/user/:id" 
+          element={<ProtectedRoute><UserDetail /></ProtectedRoute>} 
+        />
+
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 }
+
+export default App;
