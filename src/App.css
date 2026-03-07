@@ -657,6 +657,19 @@ input:focus {
 }
 
 
+/* No seu componente de Navbar/Header */
+.navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Empurra o logo para um lado e o user para o outro */
+  padding: 1rem 2rem; /* Ajuste o respiro lateral conforme desejar */
+  width: 100%;
+}
+
+/* Se o botão "L" estiver dentro de uma div de perfil */
+.user-profile-nav {
+  margin-left: auto; /* Garante que ele fique na extrema direita */
+}
 
 
 /* =========================================
