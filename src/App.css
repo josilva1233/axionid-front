@@ -21,7 +21,7 @@
 }
 
 /* =========================================
-   2. RESET E LAYOUT BASE
+   2. RESET E LAYOUT BASEzxcc
 
    ========================================= */
 
@@ -31,7 +31,7 @@
   margin: 0;
   padding: 0;
   justify-content: center;
-   }
+}
 
 body {
   padding: 20px 15px;
@@ -762,6 +762,7 @@ input:focus {
 /* Estrutura Principal do Dashboard */
 .dashboard-layout {
   display: flex;
+  min-height: 100vh;
 }
 
 /* =========================================
