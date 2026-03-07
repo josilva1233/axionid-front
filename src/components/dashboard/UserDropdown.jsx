@@ -6,7 +6,7 @@ const UserDropdown = ({ user, onLogout }) => {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
-  // Fecha o menu ao clicar fora dele
+  // Fecha o menu ao clicar fora delete
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
