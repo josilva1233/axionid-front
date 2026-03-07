@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Modal, Button, Row, Col } from 'react-bootstrap'; // Importações necessárias
 
 const UserDropdown = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showModal, setShowModal] = useState(false); // Estado do Modal
   const dropdownRef = useRef(null);
-  const navigate = useNavigate();
 
-  // Fecha o menu ao clicar fora delete
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -36,7 +35,7 @@ const UserDropdown = ({ user, onLogout }) => {
           </li>
           <li className="menu-divider"></li>
           <li>
-            <button className="menu-item" onClick={() => navigate('/perfil')}>
+            <button className="menu-item" onClick={() => { setShowModal(true); setIsOpen(false); }}>
               <i className="bi bi-person"></i> Meus Detalhes
             </button>
           </li>
@@ -47,6 +46,67 @@ const UserDropdown = ({ user, onLogout }) => {
           </li>
         </ul>
       )}
+
+      {/* MODAL DE DETALHES DO USUÁRIO */}
+      <Modal 
+        show={showModal} 
+        onHide={() => setShowModal(false)} 
+        centered 
+        size="lg"
+        contentClassName="glass-card border-0 text-white"
+      >
+        <Modal.Header closeButton closeVariant="white" className="border-secondary border-opacity-25">
+          <Modal.Title className="fw-bold">Minha Identidade AxionID</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="py-4">
+          <Row className="g-4">
+            {/* Informações Pessoais */}
+            <Col md={6}>
+              <h6 className="text-primary mb-3 text-uppercase small fw-bold">Dados Pessoais</h6>
+              <div className="mb-2">
+                <label className="text-dim small d-block">Nome Completo</label>
+                <span className="fw-medium">{user?.name}</span>
+              </div>
+              <div className="mb-2">
+                <label className="text-dim small d-block">E-mail</label>
+                <span className="fw-medium">{user?.email}</span>
+              </div>
+              <div className="mb-2">
+                <label className="text-dim small d-block">CPF/CNPJ</label>
+                <span className="fw-medium">{user?.cpf_cnpj || 'Não informado'}</span>
+              </div>
+            </Col>
+
+            {/* Endereço */}
+            <Col md={6}>
+              <h6 className="text-primary mb-3 text-uppercase small fw-bold">Endereço de Registro</h6>
+              {user?.address ? (
+                <>
+                  <div className="mb-2">
+                    <label className="text-dim small d-block">Logradouro</label>
+                    <span className="fw-medium">{user.address.street}, {user.address.number}</span>
+                  </div>
+                  <div className="mb-2">
+                    <label className="text-dim small d-block">Bairro/Cidade</label>
+                    <span className="fw-medium">{user.address.neighborhood}, {user.address.city} - {user.address.state}</span>
+                  </div>
+                  <div className="mb-2">
+                    <label className="text-dim small d-block">CEP</label>
+                    <span className="fw-medium">{user.address.zip_code}</span>
+                  </div>
+                </>
+              ) : (
+                <p className="text-warning small italic">Endereço não preenchido.</p>
+              )}
+            </Col>
+          </Row>
+        </Modal.Body>
+        <Modal.Footer className="border-secondary border-opacity-25">
+          <Button variant="outline-secondary" onClick={() => setShowModal(false)}>
+            Fechar
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
