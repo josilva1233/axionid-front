@@ -42,8 +42,7 @@ body {
 }
 
 .auth-wrapper {
-  display: flex;
-  justify-content: center !important;
+  justify-content: center !important; /* Centraliza o conteúdo de autenticação */
 }
 
 
