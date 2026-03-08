@@ -2,8 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
-import UserDetail from './pages/UserDetail';
-import ForgotPassword from './pages/ForgotPassword'; // <-- 1. IMPORTAR O NOVO COMPONENTE
+// REMOVIDO: import UserDetail from './pages/UserDetail'; 
+import ForgotPassword from './pages/ForgotPassword'; 
 import { ProtectedRoute } from './components/ProtectedRoute'; 
 import CompleteProfile from './pages/CompleteProfile';
 import './App.css';
@@ -15,8 +15,6 @@ function App() {
         {/* Rotas Públicas */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        
-        {/* 2. ADICIONAR ROTA DE RECUPERAÇÃO DE SENHA */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
         <Route path="/" element={<Navigate to="/login" replace />} />
@@ -31,7 +29,7 @@ function App() {
           } 
         />
 
-        {/* Dashboard Protegido */}
+        {/* Dashboard Protegido (Agora o UserDetail vive aqui dentro) */}
         <Route 
           path="/dashboard" 
           element={
@@ -41,15 +39,7 @@ function App() {
           } 
         />
 
-        {/* Detalhes do Usuário */}
-        <Route 
-          path="/dashboard/user/:id" 
-          element={
-            <ProtectedRoute>
-              <UserDetail />
-            </ProtectedRoute>
-          } 
-        />
+        {/* ROTA REMOVIDA: /dashboard/user/:id não é mais necessária */}
 
         {/* Fallback Global */}
         <Route path="*" element={<Navigate to="/login" replace />} />
