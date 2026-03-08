@@ -238,7 +238,7 @@ const handleUserAction = async (type) => {
                         <Form.Control
                           type="text"
                           name="name"
-                          placeholder="Nome ou e-mail..."
+                          placeholder="Nome completo ou parte do nome."
                           value={filters.name}
                           onChange={handleFilterChange}
                           className="custom-input-dark"
