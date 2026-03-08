@@ -1,171 +1,139 @@
 /* ============================================================
-   AXION ID - GLOBAL DESIGN SYSTEM & STYLES
-============================================================
-*/
+   AXION ID - SISTEMA DE DESIGN CONSOLIDADO (V2 - FIX)
+   ============================================================ */
 
 :root {
-  /* Cores Principais */
+  /* Paleta de Cores de Alta Segurança */
   --primary: #6366f1;
   --primary-hover: #4f46e5;
   --bg-dark: #0f172a;
   --card-bg: #1e293b;
   --input-bg: rgba(15, 23, 42, 0.6);
-  
-  /* Cores de Texto */
-  --text-main: #f8fafc;
-  --text-dim: #94a3b8;
-  
-  /* Cores Semânticas */
-  --success: #10b981;
-  --danger: #ef4444;
-  --warning: #f59e0b;
   --border: rgba(255, 255, 255, 0.1);
   
-  /* Estrutura */
+  /* Tipografia e Dimensões */
+  --text-main: #f8fafc;
+  --text-dim: #94a3b8;
   --sidebar-width: 280px;
   --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* --- RESET & BASE --- */
+/* --- RESET CORE --- */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
 body {
   background-color: var(--bg-dark);
   color: var(--text-main);
-  line-height: 1.6;
   overflow-x: hidden;
 }
 
-/* --- LAYOUTS --- */
-.auth-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* --- ESTRUTURA DO DASHBOARD (O CORAÇÃO DO FIX) --- */
+.dashboard-layout {
+  display: flex; /* Alinha Sidebar e Conteúdo lado a lado */
   min-height: 100vh;
-  background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.1), var(--bg-dark));
-  padding: 20px;
+  width: 100%;
 }
 
-.dashboard-layout {
+.sidebar {
+  width: var(--sidebar-width);
+  height: 100vh;
+  position: fixed; /* Trava a barra na esquerda */
+  left: 0;
+  top: 0;
+  background: var(--card-bg);
+  border-right: 1px solid var(--border);
+  padding: 24px 16px;
   display: flex;
-  min-height: 100vh;
+  flex-direction: column;
+  z-index: 100;
 }
 
 .main-content {
   flex: 1;
-  margin-left: var(--sidebar-width);
+  margin-left: var(--sidebar-width); /* EMPURRA o conteúdo para não ficar sob a sidebar */
   padding: 40px;
-  background: var(--bg-dark);
-}
-
-/* --- COMPONENTES ATÔMICOS --- */
-
-/* Brand/Logo */
-.brand h1 {
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: #fff;
-}
-.brand h1 span { color: var(--primary); }
-
-/* Cards */
-.auth-card, .info-card, .table-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-}
-
-.auth-card {
-  width: 100%;
-  max-width: 440px;
-  padding: 40px;
-}
-
-/* Forms & Inputs */
-.input-group { margin-bottom: 20px; }
-.input-group label {
-  display: block;
-  font-size: 0.85rem;
-  color: var(--text-dim);
-  margin-bottom: 8px;
-  font-weight: 500;
-}
-
-input {
-  width: 100%;
-  padding: 14px 16px;
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  color: #fff;
-  transition: var(--transition);
-}
-
-input:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
-}
-
-/* Botões */
-.btn-primary {
-  width: 100%;
-  padding: 14px;
-  background: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: var(--primary-hover);
-  transform: translateY(-2px);
-}
-
-.btn-secondary {
-  padding: 12px 20px;
-  background: rgba(255,255,255,0.05);
-  color: var(--text-main);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  cursor: pointer;
-}
-
-/* --- SIDEBAR --- */
-.sidebar {
-  width: var(--sidebar-width);
-  height: 100vh;
-  position: fixed;
-  background: var(--card-bg);
-  border-right: 1px solid var(--border);
-  padding: 32px 20px;
   display: flex;
   flex-direction: column;
+  gap: 24px; /* Espaçamento entre seções */
+  min-width: 0; /* Impede quebras de layout por tabelas largas */
 }
 
+/* --- BARRA DE BUSCA E FILTROS (ORGANIZAÇÃO) --- */
+.search-container {
+  display: flex;
+  gap: 12px;
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  align-items: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.search-container input, 
+.search-container select {
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  color: white;
+  padding: 10px 14px;
+  border-radius: 8px;
+  outline: none;
+}
+
+/* --- TABELAS E CARDS --- */
+.table-card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  overflow: hidden; /* Mantém as bordas arredondadas */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.axion-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.axion-table th {
+  background: rgba(255,255,255,0.02);
+  padding: 16px 20px;
+  text-align: left;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 2px solid var(--border);
+}
+
+.axion-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
+.axion-table tr:hover {
+  background: rgba(99, 102, 241, 0.05);
+}
+
+/* --- NAVEGAÇÃO (SIDEBAR ITEMS) --- */
 .nav-item {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  border-radius: 12px;
   color: var(--text-dim);
-  text-decoration: none;
-  margin-bottom: 4px;
   background: transparent;
   border: none;
+  border-radius: 12px;
   cursor: pointer;
   width: 100%;
-  text-align: left;
+  transition: var(--transition);
+  font-weight: 500;
 }
 
 .nav-item.active {
@@ -174,79 +142,44 @@ input:focus {
   box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
 }
 
-/* --- TABELAS --- */
-.axion-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.axion-table th {
-  text-align: left;
-  padding: 16px 20px;
-  color: var(--text-dim);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  border-bottom: 1px solid var(--border);
-}
-
-.axion-table td {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-}
-
-.mono-text {
-  font-family: 'Fira Code', monospace;
-  font-size: 0.85rem;
+/* --- BOTÕES E BADGES --- */
+.btn-small {
+  background: rgba(99, 102, 241, 0.1);
   color: var(--primary);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-/* --- BADGES --- */
+.btn-small:hover {
+  background: var(--primary);
+  color: white;
+}
+
 .badge {
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.7rem;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
   font-weight: 700;
 }
-.badge.success { background: rgba(16, 185, 129, 0.15); color: #10b981; }
-.badge.danger { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.badge.success { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.badge.danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 
-/* --- COMPONENTES ESPECÍFICOS --- */
+/* --- UTILITÁRIOS --- */
+.mono-text { font-family: 'Fira Code', monospace; color: var(--primary); }
+.animate-in { animation: fadeIn 0.4s ease-out; }
 
-/* Token/Código 6 dígitos */
-input[name="token"] {
-  text-align: center;
-  font-size: 1.8rem;
-  letter-spacing: 8px;
-  font-weight: 800;
-  color: var(--primary) !important;
-}
-
-/* User Dropdown */
-.dropdown-floating-menu {
-  position: absolute;
-  top: 60px;
-  right: 0;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  z-index: 1000;
-}
-
-/* --- ANIMAÇÕES --- */
-.animate-in {
-  animation: slideUp 0.4s ease-out forwards;
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 /* --- RESPONSIVIDADE --- */
-@media (max-width: 992px) {
-  .sidebar { transform: translateX(-100%); }
+@media (max-width: 1024px) {
+  .sidebar { transform: translateX(-100%); transition: 0.3s; }
   .main-content { margin-left: 0; padding: 20px; }
+  .sidebar.mobile-open { transform: translateX(0); }
 }
