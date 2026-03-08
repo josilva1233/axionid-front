@@ -2,8 +2,8 @@ export default function UserDetail({ user, onBack, onAction, actionLoading }) {
   if (!user) return null;
 
   return (
-    <div className="animate-in">
-      {/* CABEÇALHO DE NAVEGAÇÃO */}
+    <div className="animate-in w-100"> {/* Adicionado w-100 para garantir largura total */}
+      {/* CABEÇALHO */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <button className="btn-action-outline" onClick={onBack}>
           ← Voltar para a lista
@@ -14,7 +14,7 @@ export default function UserDetail({ user, onBack, onAction, actionLoading }) {
       </div>
 
       <div className="detail-grid">
-        {/* CARD: PERFIL (Coluna 1) */}
+        {/* CARD: PERFIL */}
         <section className="info-card">
           <div className="profile-header d-flex align-items-center gap-4 mb-4">
             <div className="avatar-large">{user.name?.charAt(0)}</div>
@@ -41,7 +41,7 @@ export default function UserDetail({ user, onBack, onAction, actionLoading }) {
           </div>
         </section>
 
-        {/* CARD: ENDEREÇO (Coluna 2) */}
+        {/* CARD: ENDEREÇO */}
         <section className="info-card">
           <h4 className="section-title text-white mb-4">Endereço de Registro</h4>
           {user.address ? (
@@ -58,7 +58,7 @@ export default function UserDetail({ user, onBack, onAction, actionLoading }) {
           )}
         </section>
 
-        {/* SEÇÃO DE AÇÕES CRÍTICAS (Ocupa as duas colunas em telas largas) */}
+        {/* SEÇÃO DE AÇÕES */}
         <section className="actions-section">
           <h4 className="text-danger small fw-bold text-uppercase mb-3">Gerenciamento Crítico</h4>
           <div className="d-flex flex-wrap gap-2">
