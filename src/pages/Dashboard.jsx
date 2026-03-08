@@ -16,91 +16,81 @@ const WelcomeOperacional = ({ user }) => (
     <h2 className="text-white mb-2">Bem-vindo, {user?.name}!</h2>
     <p className="text-dim">
       Você está logado no painel operacional da <strong>AxionID</strong>.<br />
-      Utilize o menu lateral para navegar ou o avatar no topo para ver seu
-      perfil.
+      Utilize o menu lateral para navegar ou o avatar no topo para ver seu perfil.
     </p>
   </div>
 );
-
-const [filters, setFilters] = useState({
-  name: "", // Novo
-  method: "",
-  date: "",
-});
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [role] = useState(localStorage.getItem("@AxionID:role"));
   const [activeTab, setActiveTab] = useState("users");
-
   const [users, setUsers] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationData, setPaginationData] = useState(null);
 
+  // Filtros centralizados
   const [filters, setFilters] = useState({
+    name: "",
     method: "",
     date: "",
   });
 
-  const loadUsers = useCallback(
-    async (page = 1) => {
-      if (role !== "admin") return;
-      setLoading(true);
-      try {
-        const res = await api.get(`/api/v1/users?page=${page}`);
-        if (res.data.current_page) {
-          setUsers(res.data.data);
-          setPaginationData({
-            current: res.data.current_page,
-            last: res.data.last_page,
-            total: res.data.total,
-          });
-        } else {
-          setUsers(res.data.data || res.data);
-          setPaginationData(null);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [role, filters.name],
-  );
+  const loadUsers = useCallback(async (page = 1) => {
+    if (role !== "admin") return;
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({ page });
+      if (filters.name) params.append("name", filters.name);
 
-  const loadAuditLogs = useCallback(
-    async (page = 1) => {
-      if (role !== "admin") return;
-      setLoading(true);
-      try {
-        const params = new URLSearchParams({ page });
-        if (filters.method) params.append("method", filters.method);
-        if (filters.date) params.append("date", filters.date);
-
-        const res = await api.get(`/api/v1/audit-logs?${params.toString()}`);
-        if (res.data.current_page) {
-          setAuditLogs(res.data.data);
-          setPaginationData({
-            current: res.data.current_page,
-            last: res.data.last_page,
-            total: res.data.total,
-          });
-        } else {
-          setAuditLogs(res.data.data || res.data);
-          setPaginationData(null);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+      const res = await api.get(`/api/v1/users?${params.toString()}`);
+      if (res.data.current_page) {
+        setUsers(res.data.data);
+        setPaginationData({
+          current: res.data.current_page,
+          last: res.data.last_page,
+          total: res.data.total,
+        });
+      } else {
+        setUsers(res.data.data || res.data);
+        setPaginationData(null);
       }
-    },
-    [filters, role],
-  );
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [role, filters.name]);
+
+  const loadAuditLogs = useCallback(async (page = 1) => {
+    if (role !== "admin") return;
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({ page });
+      if (filters.method) params.append("method", filters.method);
+      if (filters.date) params.append("date", filters.date);
+
+      const res = await api.get(`/api/v1/audit-logs?${params.toString()}`);
+      if (res.data.current_page) {
+        setAuditLogs(res.data.data);
+        setPaginationData({
+          current: res.data.current_page,
+          last: res.data.last_page,
+          total: res.data.total,
+        });
+      } else {
+        setAuditLogs(res.data.data || res.data);
+        setPaginationData(null);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [filters.method, filters.date, role]);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -122,13 +112,7 @@ export default function Dashboard() {
   }, [activeTab, role, loadUsers, loadAuditLogs]);
 
   const handlePageChange = (newPage) => {
-    if (
-      !paginationData ||
-      newPage < 1 ||
-      newPage > paginationData?.last ||
-      newPage === currentPage
-    )
-      return;
+    if (!paginationData || newPage < 1 || newPage > paginationData?.last || newPage === currentPage) return;
     setCurrentPage(newPage);
     activeTab === "users" ? loadUsers(newPage) : loadAuditLogs(newPage);
   };
@@ -141,12 +125,11 @@ export default function Dashboard() {
   const clearFilters = () => {
     setFilters({ name: "", method: "", date: "" });
     setCurrentPage(1);
+    activeTab === "users" ? loadUsers(1) : loadAuditLogs(1);
   };
 
   const handleLogout = async () => {
-    try {
-      await api.post("/api/v1/logout");
-    } finally {
+    try { await api.post("/api/v1/logout"); } finally {
       localStorage.clear();
       navigate("/login");
     }
@@ -162,13 +145,9 @@ export default function Dashboard() {
 
     for (let i = start; i <= end; i++) {
       items.push(
-        <Pagination.Item
-          key={i}
-          active={i === currentPage}
-          onClick={() => handlePageChange(i)}
-        >
+        <Pagination.Item key={i} active={i === currentPage} onClick={() => handlePageChange(i)}>
           {i}
-        </Pagination.Item>,
+        </Pagination.Item>
       );
     }
     return items;
@@ -178,10 +157,7 @@ export default function Dashboard() {
     <div className="dashboard-layout animate-in">
       <Sidebar
         activeTab={activeTab}
-        setActiveTab={(tab) => {
-          setActiveTab(tab);
-          setCurrentPage(1);
-        }}
+        setActiveTab={(tab) => { setActiveTab(tab); setCurrentPage(1); }}
         role={role}
         onLogout={handleLogout}
       />
@@ -191,133 +167,59 @@ export default function Dashboard() {
           <h2 className="brand">
             {activeTab === "users" ? "Gestão de Usuários" : "Auditoria"}
           </h2>
-          {currentUser && (
-            <UserDropdown user={currentUser} onLogout={handleLogout} />
-          )}
+          {currentUser && <UserDropdown user={currentUser} onLogout={handleLogout} />}
         </header>
 
         <main className="content-area p-4">
-          {/* ALERTA DE PERFIL INCOMPLETO */}
+          {/* ALERTA DE PERFIL */}
           {currentUser && !currentUser.profile_completed && (
-            <div className="alert-complete-profile animate-in">
+            <div className="alert-complete-profile animate-in mb-4">
               <div className="alert-content">
                 <div className="alert-icon">⚠️</div>
                 <div>
                   <h6>Seu cadastro está incompleto!</h6>
-                  <p>
-                    Finalize as etapas restantes para garantir a segurança da
-                    sua conta.
-                  </p>
+                  <p>Finalize as etapas restantes para garantir a segurança da conta.</p>
                 </div>
               </div>
-              <button
-                className="btn-complete"
-                onClick={() => navigate("/complete-profile")}
-              >
+              <button className="btn-complete" onClick={() => navigate("/complete-profile")}>
                 Finalizar Agora
               </button>
             </div>
           )}
-          {/* ... dentro do return do Dashboard.jsx ... */}
-          <main className="content-area p-4">
-            {/* Filtros para Usuários (Cole aqui) */}
-            {activeTab === "users" && role === "admin" && (
-              <div
-                className="filter-card mb-4 p-3"
-                style={{
-                  background: "rgba(255, 255, 255, 0.03)",
-                  borderRadius: "12px",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
-                }}
-              >
-                <Row className="align-items-end g-3">
-                  <Col md={8}>
-                    <Form.Group>
-                      <Form.Label
-                        className="text-uppercase fw-bold mb-2"
-                        style={{
-                          color: "#6c757d",
-                          fontSize: "0.7rem",
-                          letterSpacing: "1px",
-                        }}
-                      >
-                        Buscar por Nome ou E-mail
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="name"
-                        placeholder="Digite o nome do usuário..."
-                        value={filters.name}
-                        onChange={handleFilterChange}
-                        className="custom-input-dark"
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col md={4} className="d-flex gap-2">
-                    <button
-                      className="btn-primary w-100"
-                      onClick={() => loadUsers(1)}
-                    >
-                      Buscar
-                    </button>
-                    <button
-                      className="btn-action-outline px-4"
-                      onClick={() => {
-                        setFilters({ ...filters, name: "" });
-                        loadUsers(1);
-                      }}
-                    >
-                      Limpar
-                    </button>
-                  </Col>
-                </Row>
-              </div>
-            )}
 
-            {/* Tabela de Usuários */}
-            <div className="content-card">
-              {activeTab === "users" ? (
-                role === "admin" ? (
-                  <UserTable users={users} />
-                ) : (
-                  <WelcomeOperacional user={currentUser} />
-                )
-              ) : (
-                role === "admin" && <AuditTable logs={auditLogs} />
-              )}
-            </div>
-          </main>
-
-          {/* Filtros para Auditoria */}
-          {activeTab === "audit" && role === "admin" && (
-            <div
-              className="filter-card mb-4 p-3"
-              style={{
-                background: "rgba(255, 255, 255, 0.03)",
-                borderRadius: "12px",
-                border: "1px solid rgba(255, 255, 255, 0.1)",
-              }}
-            >
+          {/* FILTROS DE USUÁRIO */}
+          {activeTab === "users" && role === "admin" && (
+            <div className="filter-card mb-4 p-3 border-secondary">
               <Row className="align-items-end g-3">
-                {/* Método HTTP */}
-                <Col md={3}>
+                <Col md={8}>
                   <Form.Group>
-                    <Form.Label
-                      className="text-uppercase fw-bold mb-2"
-                      style={{
-                        color: "#6c757d",
-                        fontSize: "0.7rem",
-                        letterSpacing: "1px",
-                      }}
-                    >
-                      Método HTTP
-                    </Form.Label>
-                    <Form.Select
-                      name="method"
-                      value={filters.method}
+                    <Form.Label className="text-dim small fw-bold text-uppercase">Buscar Usuário</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="name"
+                      placeholder="Nome ou e-mail..."
+                      value={filters.name}
                       onChange={handleFilterChange}
                       className="custom-input-dark"
-                    >
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={4} className="d-flex gap-2">
+                  <button className="btn-primary w-100" onClick={() => loadUsers(1)}>Buscar</button>
+                  <button className="btn-action-outline px-4" onClick={clearFilters}>Limpar</button>
+                </Col>
+              </Row>
+            </div>
+          )}
+
+          {/* FILTROS DE AUDITORIA */}
+          {activeTab === "audit" && role === "admin" && (
+            <div className="filter-card mb-4 p-3 border-secondary">
+              <Row className="align-items-end g-3">
+                <Col md={3}>
+                  <Form.Group>
+                    <Form.Label className="text-dim small fw-bold text-uppercase">Método</Form.Label>
+                    <Form.Select name="method" value={filters.method} onChange={handleFilterChange} className="custom-input-dark">
                       <option value="">Todos</option>
                       <option value="GET">GET</option>
                       <option value="POST">POST</option>
@@ -326,45 +228,20 @@ export default function Dashboard() {
                     </Form.Select>
                   </Form.Group>
                 </Col>
-
-                {/* Data */}
                 <Col md={3}>
                   <Form.Group>
-                    <Form.Label
-                      className="text-uppercase fw-bold mb-2"
-                      style={{
-                        color: "#6c757d",
-                        fontSize: "0.7rem",
-                        letterSpacing: "1px",
-                      }}
-                    >
-                      Data
-                    </Form.Label>
-                    <Form.Control
-                      type="date"
-                      name="date"
-                      value={filters.date}
-                      onChange={handleFilterChange}
-                      className="custom-input-dark"
-                    />
+                    <Form.Label className="text-dim small fw-bold text-uppercase">Data</Form.Label>
+                    <Form.Control type="date" name="date" value={filters.date} onChange={handleFilterChange} className="custom-input-dark" />
                   </Form.Group>
                 </Col>
-
-                {/* Botões de Ação */}
                 <Col md={6} className="d-flex gap-2">
-                  <button
-                    className="btn-action-outline px-4"
-                    onClick={clearFilters}
-                  >
-                    Limpar
-                  </button>
+                  <button className="btn-action-outline px-4" onClick={clearFilters}>Limpar</button>
                 </Col>
               </Row>
             </div>
           )}
-          <div
-            className={`tab-wrapper position-relative ${loading ? "is-loading" : ""}`}
-          >
+
+          <div className={`tab-wrapper position-relative ${loading ? "is-loading" : ""}`}>
             {loading && (
               <div className="loading-overlay">
                 <Spinner animation="border" variant="primary" />
@@ -374,11 +251,7 @@ export default function Dashboard() {
 
             <div className="content-card">
               {activeTab === "users" ? (
-                role === "admin" ? (
-                  <UserTable users={users} />
-                ) : (
-                  <WelcomeOperacional user={currentUser} />
-                )
+                role === "admin" ? <UserTable users={users} /> : <WelcomeOperacional user={currentUser} />
               ) : (
                 role === "admin" && <AuditTable logs={auditLogs} />
               )}
@@ -390,23 +263,11 @@ export default function Dashboard() {
                   Página <strong>{currentPage}</strong> de {paginationData.last}
                 </span>
                 <Pagination className="mb-0">
-                  <Pagination.First
-                    disabled={currentPage === 1}
-                    onClick={() => handlePageChange(1)}
-                  />
-                  <Pagination.Prev
-                    disabled={currentPage === 1}
-                    onClick={() => handlePageChange(currentPage - 1)}
-                  />
+                  <Pagination.First disabled={currentPage === 1} onClick={() => handlePageChange(1)} />
+                  <Pagination.Prev disabled={currentPage === 1} onClick={() => handlePageChange(currentPage - 1)} />
                   {renderPaginationItems()}
-                  <Pagination.Next
-                    disabled={currentPage === paginationData.last}
-                    onClick={() => handlePageChange(currentPage + 1)}
-                  />
-                  <Pagination.Last
-                    disabled={currentPage === paginationData.last}
-                    onClick={() => handlePageChange(paginationData.last)}
-                  />
+                  <Pagination.Next disabled={currentPage === paginationData.last} onClick={() => handlePageChange(currentPage + 1)} />
+                  <Pagination.Last disabled={currentPage === paginationData.last} onClick={() => handlePageChange(paginationData.last)} />
                 </Pagination>
               </div>
             )}
