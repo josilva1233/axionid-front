@@ -16,7 +16,8 @@ const WelcomeOperacional = ({ user }) => (
     <h2 className="text-white mb-2">Bem-vindo, {user?.name}!</h2>
     <p className="text-dim">
       Você está logado no painel operacional da <strong>AxionID</strong>.<br />
-      Utilize o menu lateral para navegar ou o avatar no topo para ver seu perfil.
+      Utilize o menu lateral para navegar ou o avatar no topo para ver seu
+      perfil.
     </p>
   </div>
 );
@@ -32,65 +33,81 @@ export default function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationData, setPaginationData] = useState(null);
 
-  // Filtros centralizados
+  // 1. Atualize o estado inicial dos filtros
   const [filters, setFilters] = useState({
     name: "",
+    completed: "", // Novo filtro da API
     method: "",
     date: "",
   });
 
-  const loadUsers = useCallback(async (page = 1) => {
-    if (role !== "admin") return;
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({ page });
-      if (filters.name) params.append("name", filters.name);
+  // 2. Atualize a função de carregamento para incluir o parâmetro 'completed'
+  const loadUsers = useCallback(
+    async (page = 1) => {
+      if (role !== "admin") return;
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({ page });
 
-      const res = await api.get(`/api/v1/users?${params.toString()}`);
-      if (res.data.current_page) {
-        setUsers(res.data.data);
-        setPaginationData({
-          current: res.data.current_page,
-          last: res.data.last_page,
-          total: res.data.total,
-        });
-      } else {
-        setUsers(res.data.data || res.data);
-        setPaginationData(null);
+        // Filtro por Nome ou E-mail
+        if (filters.name) params.append("name", filters.name);
+
+        // Filtro por Perfil Completo (0 ou 1 conforme o Swagger)
+        if (filters.completed !== "") {
+          params.append("completed", filters.completed);
+        }
+
+        const res = await api.get(`/api/v1/users?${params.toString()}`);
+
+        if (res.data.current_page) {
+          setUsers(res.data.data);
+          setPaginationData({
+            current: res.data.current_page,
+            last: res.data.last_page,
+            total: res.data.total,
+          });
+        } else {
+          setUsers(res.data.data || res.data);
+          setPaginationData(null);
+        }
+      } catch (err) {
+        console.error("Erro ao carregar usuários:", err);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }, [role, filters.name]);
+    },
+    [role, filters.name, filters.completed],
+  );
 
-  const loadAuditLogs = useCallback(async (page = 1) => {
-    if (role !== "admin") return;
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({ page });
-      if (filters.method) params.append("method", filters.method);
-      if (filters.date) params.append("date", filters.date);
+  const loadAuditLogs = useCallback(
+    async (page = 1) => {
+      if (role !== "admin") return;
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({ page });
+        if (filters.method) params.append("method", filters.method);
+        if (filters.date) params.append("date", filters.date);
 
-      const res = await api.get(`/api/v1/audit-logs?${params.toString()}`);
-      if (res.data.current_page) {
-        setAuditLogs(res.data.data);
-        setPaginationData({
-          current: res.data.current_page,
-          last: res.data.last_page,
-          total: res.data.total,
-        });
-      } else {
-        setAuditLogs(res.data.data || res.data);
-        setPaginationData(null);
+        const res = await api.get(`/api/v1/audit-logs?${params.toString()}`);
+        if (res.data.current_page) {
+          setAuditLogs(res.data.data);
+          setPaginationData({
+            current: res.data.current_page,
+            last: res.data.last_page,
+            total: res.data.total,
+          });
+        } else {
+          setAuditLogs(res.data.data || res.data);
+          setPaginationData(null);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }, [filters.method, filters.date, role]);
+    },
+    [filters.method, filters.date, role],
+  );
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -112,7 +129,13 @@ export default function Dashboard() {
   }, [activeTab, role, loadUsers, loadAuditLogs]);
 
   const handlePageChange = (newPage) => {
-    if (!paginationData || newPage < 1 || newPage > paginationData?.last || newPage === currentPage) return;
+    if (
+      !paginationData ||
+      newPage < 1 ||
+      newPage > paginationData?.last ||
+      newPage === currentPage
+    )
+      return;
     setCurrentPage(newPage);
     activeTab === "users" ? loadUsers(newPage) : loadAuditLogs(newPage);
   };
@@ -129,7 +152,9 @@ export default function Dashboard() {
   };
 
   const handleLogout = async () => {
-    try { await api.post("/api/v1/logout"); } finally {
+    try {
+      await api.post("/api/v1/logout");
+    } finally {
       localStorage.clear();
       navigate("/login");
     }
@@ -145,9 +170,13 @@ export default function Dashboard() {
 
     for (let i = start; i <= end; i++) {
       items.push(
-        <Pagination.Item key={i} active={i === currentPage} onClick={() => handlePageChange(i)}>
+        <Pagination.Item
+          key={i}
+          active={i === currentPage}
+          onClick={() => handlePageChange(i)}
+        >
           {i}
-        </Pagination.Item>
+        </Pagination.Item>,
       );
     }
     return items;
@@ -157,7 +186,10 @@ export default function Dashboard() {
     <div className="dashboard-layout animate-in">
       <Sidebar
         activeTab={activeTab}
-        setActiveTab={(tab) => { setActiveTab(tab); setCurrentPage(1); }}
+        setActiveTab={(tab) => {
+          setActiveTab(tab);
+          setCurrentPage(1);
+        }}
         role={role}
         onLogout={handleLogout}
       />
@@ -167,7 +199,9 @@ export default function Dashboard() {
           <h2 className="brand">
             {activeTab === "users" ? "Gestão de Usuários" : "Auditoria"}
           </h2>
-          {currentUser && <UserDropdown user={currentUser} onLogout={handleLogout} />}
+          {currentUser && (
+            <UserDropdown user={currentUser} onLogout={handleLogout} />
+          )}
         </header>
 
         <main className="content-area p-4">
@@ -178,22 +212,30 @@ export default function Dashboard() {
                 <div className="alert-icon">⚠️</div>
                 <div>
                   <h6>Seu cadastro está incompleto!</h6>
-                  <p>Finalize as etapas restantes para garantir a segurança da conta.</p>
+                  <p>
+                    Finalize as etapas restantes para garantir a segurança da
+                    conta.
+                  </p>
                 </div>
               </div>
-              <button className="btn-complete" onClick={() => navigate("/complete-profile")}>
+              <button
+                className="btn-complete"
+                onClick={() => navigate("/complete-profile")}
+              >
                 Finalizar Agora
               </button>
             </div>
           )}
-
-          {/* FILTROS DE USUÁRIO */}
+          // 3. No HTML (JSX), atualize o bloco de Filtros para Usuários
           {activeTab === "users" && role === "admin" && (
             <div className="filter-card mb-4 p-3 border-secondary">
               <Row className="align-items-end g-3">
-                <Col md={8}>
+                {/* Busca por Texto */}
+                <Col md={6}>
                   <Form.Group>
-                    <Form.Label className="text-dim small fw-bold text-uppercase">Buscar Usuário</Form.Label>
+                    <Form.Label className="text-dim small fw-bold text-uppercase">
+                      Buscar Usuário
+                    </Form.Label>
                     <Form.Control
                       type="text"
                       name="name"
@@ -204,22 +246,59 @@ export default function Dashboard() {
                     />
                   </Form.Group>
                 </Col>
-                <Col md={4} className="d-flex gap-2">
-                  <button className="btn-primary w-100" onClick={() => loadUsers(1)}>Buscar</button>
-                  <button className="btn-action-outline px-4" onClick={clearFilters}>Limpar</button>
+
+                {/* Filtro de Cadastro Completo (conforme OpenAPI) */}
+                <Col md={3}>
+                  <Form.Group>
+                    <Form.Label className="text-dim small fw-bold text-uppercase">
+                      Cadastro
+                    </Form.Label>
+                    <Form.Select
+                      name="completed"
+                      value={filters.completed}
+                      onChange={handleFilterChange}
+                      className="custom-input-dark"
+                    >
+                      <option value="">Todos</option>
+                      <option value="1">Completo</option>
+                      <option value="0">Incompleto</option>
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+
+                {/* Botões */}
+                <Col md={3} className="d-flex gap-2">
+                  <button
+                    className="btn-primary w-100"
+                    onClick={() => loadUsers(1)}
+                  >
+                    Filtrar
+                  </button>
+                  <button
+                    className="btn-action-outline px-3"
+                    onClick={clearFilters}
+                  >
+                    Limpar
+                  </button>
                 </Col>
               </Row>
             </div>
           )}
-
           {/* FILTROS DE AUDITORIA */}
           {activeTab === "audit" && role === "admin" && (
             <div className="filter-card mb-4 p-3 border-secondary">
               <Row className="align-items-end g-3">
                 <Col md={3}>
                   <Form.Group>
-                    <Form.Label className="text-dim small fw-bold text-uppercase">Método</Form.Label>
-                    <Form.Select name="method" value={filters.method} onChange={handleFilterChange} className="custom-input-dark">
+                    <Form.Label className="text-dim small fw-bold text-uppercase">
+                      Método
+                    </Form.Label>
+                    <Form.Select
+                      name="method"
+                      value={filters.method}
+                      onChange={handleFilterChange}
+                      className="custom-input-dark"
+                    >
                       <option value="">Todos</option>
                       <option value="GET">GET</option>
                       <option value="POST">POST</option>
@@ -230,18 +309,32 @@ export default function Dashboard() {
                 </Col>
                 <Col md={3}>
                   <Form.Group>
-                    <Form.Label className="text-dim small fw-bold text-uppercase">Data</Form.Label>
-                    <Form.Control type="date" name="date" value={filters.date} onChange={handleFilterChange} className="custom-input-dark" />
+                    <Form.Label className="text-dim small fw-bold text-uppercase">
+                      Data
+                    </Form.Label>
+                    <Form.Control
+                      type="date"
+                      name="date"
+                      value={filters.date}
+                      onChange={handleFilterChange}
+                      className="custom-input-dark"
+                    />
                   </Form.Group>
                 </Col>
                 <Col md={6} className="d-flex gap-2">
-                  <button className="btn-action-outline px-4" onClick={clearFilters}>Limpar</button>
+                  <button
+                    className="btn-action-outline px-4"
+                    onClick={clearFilters}
+                  >
+                    Limpar
+                  </button>
                 </Col>
               </Row>
             </div>
           )}
-
-          <div className={`tab-wrapper position-relative ${loading ? "is-loading" : ""}`}>
+          <div
+            className={`tab-wrapper position-relative ${loading ? "is-loading" : ""}`}
+          >
             {loading && (
               <div className="loading-overlay">
                 <Spinner animation="border" variant="primary" />
@@ -251,7 +344,11 @@ export default function Dashboard() {
 
             <div className="content-card">
               {activeTab === "users" ? (
-                role === "admin" ? <UserTable users={users} /> : <WelcomeOperacional user={currentUser} />
+                role === "admin" ? (
+                  <UserTable users={users} />
+                ) : (
+                  <WelcomeOperacional user={currentUser} />
+                )
               ) : (
                 role === "admin" && <AuditTable logs={auditLogs} />
               )}
@@ -263,11 +360,23 @@ export default function Dashboard() {
                   Página <strong>{currentPage}</strong> de {paginationData.last}
                 </span>
                 <Pagination className="mb-0">
-                  <Pagination.First disabled={currentPage === 1} onClick={() => handlePageChange(1)} />
-                  <Pagination.Prev disabled={currentPage === 1} onClick={() => handlePageChange(currentPage - 1)} />
+                  <Pagination.First
+                    disabled={currentPage === 1}
+                    onClick={() => handlePageChange(1)}
+                  />
+                  <Pagination.Prev
+                    disabled={currentPage === 1}
+                    onClick={() => handlePageChange(currentPage - 1)}
+                  />
                   {renderPaginationItems()}
-                  <Pagination.Next disabled={currentPage === paginationData.last} onClick={() => handlePageChange(currentPage + 1)} />
-                  <Pagination.Last disabled={currentPage === paginationData.last} onClick={() => handlePageChange(paginationData.last)} />
+                  <Pagination.Next
+                    disabled={currentPage === paginationData.last}
+                    onClick={() => handlePageChange(currentPage + 1)}
+                  />
+                  <Pagination.Last
+                    disabled={currentPage === paginationData.last}
+                    onClick={() => handlePageChange(paginationData.last)}
+                  />
                 </Pagination>
               </div>
             )}
