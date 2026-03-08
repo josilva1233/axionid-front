@@ -1,7 +1,5 @@
-import { useNavigate } from 'react-router-dom';
-
-export default function UserTable({ users }) {
-  const navigate = useNavigate();
+// Remova o import do useNavigate, você não precisará mais dele aqui
+export default function UserTable({ users, onViewDetail }) { // <-- Receba onViewDetail aqui
   return (
     <div className="table-card">
       <table className="axion-table">
@@ -24,7 +22,13 @@ export default function UserTable({ users }) {
                   </span>
                 </td>
                 <td>
-                  <button className="btn-small" onClick={() => navigate(`/dashboard/user/${u.id}`)}>Detalhes</button>
+                  {/* ALTERAÇÃO AQUI: Troque o navigate pela prop onViewDetail */}
+                  <button 
+                    className="btn-small" 
+                    onClick={() => onViewDetail(u.id)}
+                  >
+                    Detalhes
+                  </button>
                 </td>
               </tr>
             ))
