@@ -2,7 +2,7 @@ export default function UserDetail({ user, onBack, onAction, actionLoading }) {
   if (!user) return null;
 
   return (
-    <div className="animate-in w-100"> {/* Adicionado w-100 para garantir largura total */}
+    <div className="animate-in w-100"> {/* Adicionado w-100 para garantir largurda total */}
       {/* CABEÇALHO */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <button className="btn-action-outline" onClick={onBack}>
