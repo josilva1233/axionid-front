@@ -1,24 +1,29 @@
+import React from 'react';
+
 export default function UserDetail({ user, onBack, onAction, actionLoading }) {
   if (!user) return null;
 
   return (
     <div className="animate-in">
+      {/* CABEÇALHO DE NAVEGAÇÃO INTERNA */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <button className="btn-action-outline" onClick={onBack}>
           ← Voltar para a lista
         </button>
-        <div className="text-dim small">ID da Identidade: <span className="mono-text">{user.id}</span></div>
+        <div className="text-dim small">
+          ID da Identidade: <span className="mono-text">{user.id}</span>
+        </div>
       </div>
 
       <div className="detail-grid">
-        {/* CARD: PERFIL PRINCIPAL */}
+        {/* CARD: PERFIL */}
         <section className="info-card mb-4">
           <div className="profile-header d-flex align-items-center gap-4">
             <div className="avatar-large">{user.name?.charAt(0)}</div>
             <div>
               <h3 className="text-white mb-1">{user.name}</h3>
               <div className="d-flex gap-2 align-items-center">
-                 <span className={`badge ${user.is_admin ? 'success' : 'operacional'}`}>
+                <span className={`badge ${user.is_admin ? 'success' : 'operacional'}`}>
                   {user.is_admin ? 'Administrador' : 'Operacional'}
                 </span>
                 {!user.is_active && <span className="badge danger">Suspenso</span>}
@@ -28,7 +33,7 @@ export default function UserDetail({ user, onBack, onAction, actionLoading }) {
 
           <div className="info-list mt-4">
             <div className="info-item"><label>E-mail Corporativo</label><span>{user.email}</span></div>
-            <div className="info-item"><label>Documento (CPF/CNPJ)</label><span>{user.cpf_cnpj || 'Não informado'}</span></div>
+            <div className="info-item"><label>Documento Identificador</label><span>{user.cpf_cnpj || 'Não informado'}</span></div>
             <div className="info-item">
               <label>Status de Validação</label>
               <span className={user.profile_completed ? 'text-success' : 'text-warning'}>
@@ -50,21 +55,33 @@ export default function UserDetail({ user, onBack, onAction, actionLoading }) {
             </div>
           ) : (
             <div className="empty-state py-4 text-center text-dim border border-secondary border-dashed rounded">
-              Nenhum endereço vinculado a esta conta.
+              Nenhum endereço vinculado.
             </div>
           )}
         </section>
 
-        {/* SEÇÃO DE AÇÕES (ZONA CRÍTICA) */}
+        {/* SEÇÃO DE AÇÕES CRÍTICAS */}
         <section className="actions-section p-4 rounded bg-danger bg-opacity-10 border border-danger border-opacity-20">
-          <h4 className="text-danger small fw-bold text-uppercase mb-3">Gerenciamento de Conta</h4>
+          <h4 className="text-danger small fw-bold text-uppercase mb-3">Gerenciamento Crítico</h4>
           <div className="d-flex flex-wrap gap-2">
-            {!user.is_admin && (
+            
+            {/* Botão Dinâmico de Admin */}
+            {user.is_admin ? (
+              <button 
+                onClick={() => onAction('remove-admin')} 
+                disabled={actionLoading} 
+                className="btn-action btn-suspend"
+              >
+                Revogar Admin
+              </button>
+            ) : (
               <button 
                 onClick={() => onAction('promote')} 
                 disabled={actionLoading} 
                 className="btn-action btn-promote"
-              >Promover Admin</button>
+              >
+                Promover Admin
+              </button>
             )}
 
             <button 
