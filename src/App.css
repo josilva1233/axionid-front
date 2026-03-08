@@ -1,5 +1,5 @@
 /* =========================================
-   1. DESIGN SYSTEM & VARIÁVEIS
+   1. DESIGN SYSTEM & VARIÁVEIS (Identidade)
    ========================================= */
 :root {
   --primary: #6366f1;
@@ -18,7 +18,7 @@
 }
 
 /* =========================================
-   2. RESET & LAYOUT BASE
+   2. RESET E REGRAS GLOBAIS
    ========================================= */
 * {
   box-sizing: border-box;
@@ -35,11 +35,17 @@ body {
   overflow-x: hidden;
 }
 
+/* Scrollbar Customizada */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
 /* =========================================
-   3. ARQUITETURA DE TELAS (A CORREÇÃO)
+   3. ARQUITETURA DE LAYOUT (CORREÇÃO)
    ========================================= */
 
-/* Para telas de Login, Registro, etc (CENTRALIZADO) */
+/* WRAPPER PARA LOGIN/AUTH (Centralização Total) */
 .auth-page-wrapper {
   display: flex;
   align-items: center;
@@ -47,10 +53,10 @@ body {
   min-height: 100vh;
   width: 100vw;
   padding: 20px;
-  background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent);
+  background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.07), transparent);
 }
 
-/* Para o Dashboard (SIDEBAR + CONTEÚDO) */
+/* WRAPPER PARA DASHBOARD (Sidebar + Main) */
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
@@ -75,12 +81,13 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  width: calc(100% - 280px);
 }
 
 /* =========================================
-   4. COMPONENTES: CARDS & MODAIS
+   4. COMPONENTES: CARDS E MODAIS
    ========================================= */
-.auth-card, .content-card {
+.auth-card, .content-card, .detail-card {
   background: var(--card-bg);
   backdrop-filter: blur(12px);
   padding: 2rem;
@@ -88,8 +95,16 @@ body {
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--border);
   width: 100%;
-  max-width: 480px;
   animation: slideUpFade 0.5s ease-out forwards;
+}
+
+.auth-card { max-width: 480px; }
+
+/* Modais (Bootstrap Overrides) */
+.modal-centered-custom {
+  display: flex !important;
+  align-items: center !important;
+  min-height: calc(100% - 3.5rem) !important;
 }
 
 .custom-modal-content {
@@ -100,41 +115,7 @@ body {
 }
 
 /* =========================================
-   5. COMPONENTES: TABELAS ESTABILIZADAS
-   ========================================= */
-.table-container {
-  width: 100%;
-  overflow-x: auto;
-  border-radius: 16px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--border);
-  min-height: 450px;
-}
-
-.axion-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.axion-table th {
-  padding: 16px;
-  color: var(--text-dim);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  font-weight: 700;
-  border-bottom: 2px solid var(--border);
-  text-align: left;
-}
-
-.axion-table td {
-  padding: 16px;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-main);
-  font-size: 0.9rem;
-}
-
-/* =========================================
-   6. HEADER & DROPDOWN (AVATAR)
+   5. HEADER E MENU DE USUÁRIO (DROPDOWN)
    ========================================= */
 .main-header {
   height: 80px;
@@ -162,8 +143,12 @@ body {
   font-weight: bold;
   cursor: pointer;
   border: 2px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.2s;
 }
 
+.nav-avatar-circle:hover { transform: scale(1.05); }
+
+/* DROPDOWN LIMPO (Sem bolinhas/bullets) */
 .dropdown-floating-menu {
   position: absolute;
   top: 55px;
@@ -173,29 +158,78 @@ body {
   border-radius: 12px;
   min-width: 220px;
   list-style: none !important;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   overflow: hidden;
+  z-index: 1000;
 }
 
-.dropdown-floating-menu li { list-style: none !important; }
+.dropdown-floating-menu li {
+  list-style: none !important;
+  padding: 0;
+  margin: 0;
+}
 
 .menu-item {
   width: 100%;
-  padding: 12px 15px;
+  padding: 12px 18px;
   background: transparent;
   border: none;
-  color: #cbd5e1;
-  text-align: left;
+  color: var(--text-dim);
   display: flex;
   align-items: center;
   gap: 10px;
   cursor: pointer;
+  transition: 0.2s;
+  text-align: left;
 }
 
-.menu-item:hover { background: rgba(255, 255, 255, 0.05); }
+.menu-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
 
 /* =========================================
-   7. BOTÕES & INPUTS
+   6. TABELAS E ESTILO DE DADOS
+   ========================================= */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  min-height: 450px; /* Estabilização de layout */
+}
+
+.axion-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.axion-table th {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 800;
+  border-bottom: 2px solid var(--border);
+}
+
+.axion-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-main);
+  font-size: 0.9rem;
+}
+
+.axion-table tr:hover td {
+  background: rgba(99, 102, 241, 0.03);
+}
+
+/* =========================================
+   7. BOTÕES E INPUTS (UI Refinada)
    ========================================= */
 .btn-primary {
   background: linear-gradient(135deg, var(--primary), var(--primary-hover));
@@ -205,36 +239,68 @@ body {
   border: none;
   font-weight: 600;
   cursor: pointer;
-  transition: 0.2s;
+  transition: 0.3s;
 }
 
-.btn-primary:hover { transform: translateY(-2px); filter: brightness(1.1); }
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+}
 
-input {
+input, select {
   background: var(--input-bg);
   border: 1.5px solid var(--border);
   border-radius: 12px;
   padding: 14px 16px;
   color: white;
   width: 100%;
+  transition: 0.2s;
 }
 
 input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+  background: rgba(99, 102, 241, 0.05);
 }
 
 /* =========================================
-   8. ANIMAÇÕES & RESPONSIVIDADE
+   8. PAGINAÇÃO E ANIMAÇÕES
    ========================================= */
+.pagination {
+  display: flex;
+  justify-content: center;
+  list-style: none !important;
+  gap: 8px;
+  margin-top: 25px;
+}
+
+.page-link {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 8px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: 0.2s;
+}
+
+.page-item.active .page-link {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
 @keyframes slideUpFade {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* =========================================
+   9. RESPONSIVIDADE (Mobile)
+   ========================================= */
 @media (max-width: 992px) {
-  .sidebar { transform: translateX(-100%); width: 0; padding: 0; border: none; }
-  .main-wrapper { margin-left: 0; }
+  .sidebar { transform: translateX(-100%); width: 0; padding: 0; }
+  .main-wrapper { margin-left: 0; width: 100%; }
   .main-header { padding: 0 20px; }
+  .detail-grid { grid-template-columns: 1fr; }
 }
