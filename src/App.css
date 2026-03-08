@@ -182,6 +182,36 @@
   filter: invert(1) grayscale(100%) brightness(200%);
 }
 
+/* 1. Força o container do conteúdo a expandir */
+.main-wrapper {
+  flex: 1;            /* Ocupa todo o espaço restante ao lado da sidebar */
+  display: flex;
+  flex-direction: column;
+  min-width: 0;       /* Evita que conteúdos largos (como tabelas ou grid) quebrem o flex */
+  width: 100%;
+}
+
+/* 2. Garante que a área de conteúdo interno use a largura total */
+.content-area {
+  flex: 1;
+  width: 100%;
+  max-width: 1400px;  /* Opcional: define um limite para não esticar demais em monitores UltraWide */
+  margin: 0 auto;     /* Centraliza se chegar no max-width */
+}
+
+/* 3. Ajuste no Grid de Detalhes para não "comprimir" */
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); 
+  gap: 24px;
+  width: 100%;        /* Força o uso da largura total do content-area */
+}
+
+/* 4. Ajuste na Seção de Ações para garantir que ela quebre a linha corretamente */
+.actions-section {
+  grid-column: 1 / -1;
+  width: 100%;
+}
 
 
 body {
