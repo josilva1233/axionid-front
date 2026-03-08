@@ -64,7 +64,6 @@ export default function Login() {
   };
 
   return (
-    <div className="auth-container">
       <div className="auth-card animate-in">
         <div className="brand"><h1>Axion<span>ID</span></h1></div>
 
@@ -118,6 +117,6 @@ export default function Login() {
           <p>Ainda não tem acesso? <Link to="/register">Criar Conta AxionID</Link></p>
         </div>
       </div>
-    </div>
+  
   );
 }
