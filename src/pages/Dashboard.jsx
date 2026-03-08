@@ -7,6 +7,49 @@ import Sidebar from "../components/dashboard/Sidebar";
 import UserTable from "../components/dashboard/UserTable";
 import AuditTable from "../components/dashboard/AuditTable";
 import UserDropdown from "../components/dashboard/UserDropdown";
+import UserDropdown from "../components/dashboard/UserDetail";
+
+// 1. Adicione os estados no seu Dashboard principal
+const [selectedUser, setSelectedUser] = useState(null);
+const [actionLoading, setActionLoading] = useState(false);
+
+// 2. Função para buscar detalhes (disparada pela UserTable)
+const handleViewDetail = async (id) => {
+  setLoading(true);
+  try {
+    const res = await api.get(`/api/v1/users/${id}`);
+    setSelectedUser(res.data.data);
+  } catch (err) {
+    alert("Erro ao buscar detalhes");
+  } finally {
+    setLoading(false);
+  }
+};
+
+// 3. Função para gerenciar as ações (Promover, Suspender, Deletar)
+const handleUserAction = async (type) => {
+  setActionLoading(true);
+  try {
+    if (type === 'promote') {
+      await api.post(`/api/v1/users/${selectedUser.id}/promote`);
+    } else if (type === 'toggle-status') {
+      await api.patch(`/api/v1/users/${selectedUser.id}/toggle-status`);
+    } else if (type === 'delete') {
+      if(window.confirm("Confirmar exclusão?")) {
+        await api.delete(`/api/v1/users/${selectedUser.id}`);
+        setSelectedUser(null);
+        loadUsers();
+        return;
+      }
+    }
+    // Recarrega os dados do usuário após a ação para atualizar o componente
+    handleViewDetail(selectedUser.id);
+  } catch (err) {
+    alert("Erro na operação");
+  } finally {
+    setActionLoading(false);
+  }
+};
 
 const WelcomeOperacional = ({ user }) => (
   <div className="text-center py-5 animate-in">
@@ -203,8 +246,26 @@ export default function Dashboard() {
             <UserDropdown user={currentUser} onLogout={handleLogout} />
           )}
         </header>
+        
 
         <main className="content-area p-4">
+
+          {selectedUser ? (
+    <UserDetail 
+      user={selectedUser} 
+      onBack={() => setSelectedUser(null)}
+      onAction={handleUserAction}
+      actionLoading={actionLoading}
+    />
+  ) : (
+    <>
+      {/* Aqui fica a sua lógica de abas (Users ou Audit) e a UserTable */}
+      {activeTab === "users" && (
+        <UserTable users={users} onViewDetail={handleViewDetail} />
+      )}
+      {activeTab === "audit" && <AuditTable logs={auditLogs} />}
+    </>
+  )}
           {/* ALERTA DE PERFIL */}
           {currentUser && !currentUser.profile_completed && (
             <div className="alert-complete-profile animate-in mb-4">
