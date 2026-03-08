@@ -1,97 +1,116 @@
 /* ============================================================
-   AXION ID - SISTEMA DE DESIGN CONSOLIDADO (V2 - FIX)
-   ============================================================ */
+   AXION ID - SISTEMA DE DESIGN CONSOLIDADO (FIX TOTAL)
+============================================================ */
 
 :root {
-  /* Paleta de Cores de Alta Segurança */
   --primary: #6366f1;
   --primary-hover: #4f46e5;
   --bg-dark: #0f172a;
   --card-bg: #1e293b;
-  --input-bg: rgba(15, 23, 42, 0.6);
+  --input-bg: rgba(15, 23, 42, 0.8);
   --border: rgba(255, 255, 255, 0.1);
-  
-  /* Tipografia e Dimensões */
   --text-main: #f8fafc;
   --text-dim: #94a3b8;
-  --sidebar-width: 280px;
-  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --sidebar-width: 260px;
 }
 
-/* --- RESET CORE --- */
+/* 1. RESET E BASE */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 body {
   background-color: var(--bg-dark);
   color: var(--text-main);
-  overflow-x: hidden;
+  min-height: 100vh;
 }
 
-/* --- ESTRUTURA DO DASHBOARD (O CORAÇÃO DO FIX) --- */
-.dashboard-layout {
-  display: flex; /* Alinha Sidebar e Conteúdo lado a lado */
+/* 2. LAYOUT DE AUTENTICAÇÃO (LOGIN/REGISTRO) */
+.auth-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-height: 100vh;
+  padding: 20px;
+  background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.1), var(--bg-dark));
+}
+
+.auth-card {
+  background: var(--card-bg);
+  padding: 40px;
+  border-radius: 24px;
   width: 100%;
+  max-width: 420px;
+  border: 1px solid var(--border);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.brand { margin-bottom: 32px; text-align: center; }
+.brand h1 { font-size: 2rem; font-weight: 800; color: #fff; }
+.brand h1 span { color: var(--primary); }
+
+/* 3. ESTRUTURA DO DASHBOARD (O QUE ESTAVA QUEBRADO) */
+.dashboard-layout {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
 }
 
 .sidebar {
   width: var(--sidebar-width);
   height: 100vh;
-  position: fixed; /* Trava a barra na esquerda */
+  position: fixed; /* Mantém a barra fixa à esquerda */
   left: 0;
   top: 0;
   background: var(--card-bg);
   border-right: 1px solid var(--border);
-  padding: 24px 16px;
+  padding: 30px 20px;
+  z-index: 1000;
   display: flex;
   flex-direction: column;
-  z-index: 100;
 }
 
 .main-content {
   flex: 1;
-  margin-left: var(--sidebar-width); /* EMPURRA o conteúdo para não ficar sob a sidebar */
+  margin-left: var(--sidebar-width); /* EMPURRA o conteúdo para a direita */
   padding: 40px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px; /* Espaçamento entre seções */
-  min-width: 0; /* Impede quebras de layout por tabelas largas */
+  width: calc(100% - var(--sidebar-width));
 }
 
-/* --- BARRA DE BUSCA E FILTROS (ORGANIZAÇÃO) --- */
+/* 4. COMPONENTES DE BUSCA E FILTRO */
 .search-container {
-  display: flex;
-  gap: 12px;
   background: var(--card-bg);
-  padding: 20px;
+  padding: 24px;
   border-radius: 16px;
   border: 1px solid var(--border);
+  margin-bottom: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
   align-items: center;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
 
 .search-container input, 
 .search-container select {
+  flex: 1;
+  min-width: 200px;
+  padding: 12px 16px;
   background: var(--input-bg);
   border: 1px solid var(--border);
+  border-radius: 10px;
   color: white;
-  padding: 10px 14px;
-  border-radius: 8px;
   outline: none;
 }
 
-/* --- TABELAS E CARDS --- */
+/* 5. TABELAS */
 .table-card {
   background: var(--card-bg);
   border-radius: 16px;
   border: 1px solid var(--border);
-  overflow: hidden; /* Mantém as bordas arredondadas */
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  overflow: hidden;
 }
 
 .axion-table {
@@ -100,86 +119,46 @@ body {
 }
 
 .axion-table th {
-  background: rgba(255,255,255,0.02);
+  background: rgba(255,255,255,0.03);
   padding: 16px 20px;
   text-align: left;
   color: var(--text-dim);
   font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  border-bottom: 2px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 .axion-table td {
-  padding: 16px 20px;
+  padding: 18px 20px;
   border-bottom: 1px solid var(--border);
-  font-size: 0.9rem;
 }
 
-.axion-table tr:hover {
-  background: rgba(99, 102, 241, 0.05);
-}
-
-/* --- NAVEGAÇÃO (SIDEBAR ITEMS) --- */
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  color: var(--text-dim);
-  background: transparent;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  width: 100%;
-  transition: var(--transition);
-  font-weight: 500;
-}
-
-.nav-item.active {
+/* 6. BOTÕES E INPUTS */
+.btn-primary, .btn-action {
   background: var(--primary);
   color: white;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-}
-
-/* --- BOTÕES E BADGES --- */
-.btn-small {
-  background: rgba(99, 102, 241, 0.1);
-  color: var(--primary);
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  padding: 6px 16px;
-  border-radius: 8px;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
   transition: 0.2s;
 }
 
-.btn-small:hover {
-  background: var(--primary);
-  color: white;
-}
+.btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
 
+/* 7. BADGES */
 .badge {
   padding: 4px 10px;
   border-radius: 6px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
 }
 .badge.success { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-.badge.danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 
-/* --- UTILITÁRIOS --- */
-.mono-text { font-family: 'Fira Code', monospace; color: var(--primary); }
-.animate-in { animation: fadeIn 0.4s ease-out; }
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* --- RESPONSIVIDADE --- */
+/* 8. RESPONSIVIDADE */
 @media (max-width: 1024px) {
-  .sidebar { transform: translateX(-100%); transition: 0.3s; }
-  .main-content { margin-left: 0; padding: 20px; }
-  .sidebar.mobile-open { transform: translateX(0); }
+  .sidebar { width: 80px; padding: 20px 10px; }
+  .sidebar span, .sidebar .nav-section-title { display: none; } /* Esconde texto no tablet */
+  .main-content { margin-left: 80px; width: calc(100% - 80px); }
 }
