@@ -226,7 +226,6 @@ export default function Dashboard() {
               </button>
             </div>
           )}
-          // 3. No HTML (JSX), atualize o bloco de Filtros para Usuários
           {activeTab === "users" && role === "admin" && (
             <div className="filter-card mb-4 p-3 border-secondary">
               <Row className="align-items-end g-3">
@@ -239,7 +238,7 @@ export default function Dashboard() {
                     <Form.Control
                       type="text"
                       name="name"
-                      placeholder="Nome ou e-mail..."
+                      placeholder="Nome completo ou parte do nome"
                       value={filters.name}
                       onChange={handleFilterChange}
                       className="custom-input-dark"
@@ -268,12 +267,6 @@ export default function Dashboard() {
 
                 {/* Botões */}
                 <Col md={3} className="d-flex gap-2">
-                  <button
-                    className="btn-primary w-100"
-                    onClick={() => loadUsers(1)}
-                  >
-                    Filtrar
-                  </button>
                   <button
                     className="btn-action-outline px-3"
                     onClick={clearFilters}
