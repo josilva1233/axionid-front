@@ -67,87 +67,73 @@ export default function Login() {
   };
 
   return (
-    <div className="auth-page-wrapper">
-      <div className="auth-card">
-        <div className="auth-card animate-in">
-          <div className="brand">
-            <h1>
-              Axion<span>ID</span>
-            </h1>
+    <div className="auth-container"> {/* Container pai para centralização e fundo */}
+      <div className="auth-card animate-in">
+        <div className="brand">
+          <h1>
+            Axion<span>ID</span>
+          </h1>
+        </div>
+
+        {error && <div className="error-message" style={{ color: 'var(--danger)', marginBottom: '1rem', textAlign: 'center', fontSize: '0.9rem' }}>{error}</div>}
+
+        <form onSubmit={handleLogin} className="auth-form">
+          <div className="input-group">
+            <label>Identificação</label>
+            <input
+              type="text"
+              placeholder="CPF ou CNPJ"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
           </div>
 
-          {error && <div className="error-message">{error}</div>}
-
-          <form onSubmit={handleLogin} className="auth-form">
-            <div className="input-group">
-              <label>Identificação</label>
-              <input
-                type="text"
-                placeholder="CPF ou CNPJ"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
+          <div className="input-group">
+            <div className="label-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <label>Senha</label>
+              <Link to="/forgot-password" style={{ fontSize: "0.8rem", color: "var(--primary)", textDecoration: "none" }}>
+                Esqueceu a senha?
+              </Link>
             </div>
-
-            <div className="input-group">
-              <div
-                className="label-row"
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <label>Senha</label>
-                <Link
-                  to="/forgot-password"
-                  style={{
-                    fontSize: "0.8rem",
-                    color: "var(--primary)",
-                    textDecoration: "none",
-                  }}
-                >
-                  Esqueceu a senha?
-                </Link>
-              </div>
-              <input
-                type="password"
-                placeholder="Sua senha"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            <button type="submit" className="btn-primary" disabled={loading}>
-              {loading ? "Autenticando..." : "Acessar Painel"}
-            </button>
-
-            <div className="divider">
-              <span>ou continue com</span>
-            </div>
-
-            <button
-              type="button"
-              className="btn-google"
-              onClick={handleGoogleLogin}
-            >
-              <img
-                src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                width="18"
-                alt="Google"
-              />
-              Google Workspace
-            </button>
-          </form>
-
-          <div className="auth-footer">
-            <p>
-              Ainda não tem acesso?{" "}
-              <Link to="/register">Criar Conta AxionID</Link>
-            </p>
+            <input
+              type="password"
+              placeholder="Sua senha"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </div>
+
+          <button type="submit" className="btn-primary" disabled={loading}>
+            {loading ? "Autenticando..." : "Acessar Painel"}
+          </button>
+
+          <div className="divider" style={{ textAlign: 'center', margin: '20px 0', color: 'var(--text-dim)', fontSize: '0.85rem', position: 'relative' }}>
+            <span style={{ background: 'var(--card-bg)', padding: '0 10px', position: 'relative', zIndex: 1 }}>ou continue com</span>
+            <hr style={{ position: 'absolute', top: '50%', width: '100%', border: '0', borderTop: '1px solid var(--border)', margin: 0 }} />
+          </div>
+
+          <button
+            type="button"
+            className="btn-secondary" /* Usando a classe btn-secondary do seu CSS consolidado */
+            onClick={handleGoogleLogin}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
+          >
+            <img
+              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+              width="18"
+              alt="Google"
+            />
+            Google Workspace
+          </button>
+        </form>
+
+        <div className="auth-footer" style={{ marginTop: '24px', textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-dim)' }}>
+          <p>
+            Ainda não tem acesso?{" "}
+            <Link to="/register" style={{ color: 'var(--primary)', fontWeight: '600', textDecoration: 'none' }}>Criar Conta AxionID</Link>
+          </p>
         </div>
       </div>
     </div>
