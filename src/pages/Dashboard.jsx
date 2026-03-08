@@ -117,26 +117,52 @@ export default function Dashboard() {
     }
   };
 
-  const handleUserAction = async (type) => {
+const handleUserAction = async (type) => {
     setActionLoading(true);
     try {
-      if (type === 'promote') await api.post(`/api/v1/users/${selectedUser.id}/promote`);
-      if (type === 'toggle-status') await api.patch(`/api/v1/users/${selectedUser.id}/toggle-status`);
+      // 1. Ação de Excluir (com validação de nome por segurança)
       if (type === 'delete') {
-        if (!window.confirm("Confirmar exclusão?")) return;
+        const confirmName = window.prompt(`Para excluir permanentemente "${selectedUser.name}", digite o NOME dele abaixo:`);
+        if (confirmName !== selectedUser.name) {
+          if (confirmName !== null) alert("O nome digitado não confere. Operação cancelada.");
+          return;
+        }
         await api.delete(`/api/v1/users/${selectedUser.id}`);
+        alert("Usuário excluído com sucesso!");
         setSelectedUser(null);
-        loadUsers();
+        loadUsers(currentPage); // Recarrega a lista na página atual
         return;
       }
+
+      // 2. Ação de Promover
+      if (type === 'promote') {
+        if (!window.confirm("Promover este usuário a Administrador?")) return;
+        await api.post(`/api/v1/users/${selectedUser.id}/promote`);
+      }
+
+      // 3. Ação de Remover Admin (Nova)
+      if (type === 'remove-admin') {
+        if (!window.confirm("Remover privilégios administrativos deste usuário?")) return;
+        await api.post(`/api/v1/users/${selectedUser.id}/remove-admin`);
+      }
+
+      // 4. Ação de Alterar Status
+      if (type === 'toggle-status') {
+        const acao = selectedUser.is_active ? "suspender" : "ativar";
+        if (!window.confirm(`Deseja realmente ${acao} este usuário?`)) return;
+        await api.patch(`/api/v1/users/${selectedUser.id}/toggle-status`);
+      }
+
+      // Após qualquer ação (exceto delete), recarrega os detalhes para atualizar os botões na tela
       handleViewDetail(selectedUser.id);
+      loadUsers(currentPage); // Mantém a tabela em background atualizada
+      
     } catch (err) {
-      alert("Erro na operação");
+      alert(err.response?.data?.message || "Erro ao processar requisição.");
     } finally {
       setActionLoading(false);
     }
   };
-
   // --- EFFECTS ---
 
   useEffect(() => {
