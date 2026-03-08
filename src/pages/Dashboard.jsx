@@ -22,6 +22,12 @@ const WelcomeOperacional = ({ user }) => (
   </div>
 );
 
+const [filters, setFilters] = useState({
+  name: "", // Novo
+  method: "",
+  date: "",
+});
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const [role] = useState(localStorage.getItem("@AxionID:role"));
@@ -63,7 +69,7 @@ export default function Dashboard() {
         setLoading(false);
       }
     },
-    [role],
+    [role, filters.name],
   );
 
   const loadAuditLogs = useCallback(
@@ -133,7 +139,7 @@ export default function Dashboard() {
   };
 
   const clearFilters = () => {
-    setFilters({ method: "", date: "" });
+    setFilters({ name: "", method: "", date: "" });
     setCurrentPage(1);
   };
 
@@ -212,6 +218,76 @@ export default function Dashboard() {
               </button>
             </div>
           )}
+          {/* ... dentro do return do Dashboard.jsx ... */}
+          <main className="content-area p-4">
+            {/* Filtros para Usuários (Cole aqui) */}
+            {activeTab === "users" && role === "admin" && (
+              <div
+                className="filter-card mb-4 p-3"
+                style={{
+                  background: "rgba(255, 255, 255, 0.03)",
+                  borderRadius: "12px",
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                }}
+              >
+                <Row className="align-items-end g-3">
+                  <Col md={8}>
+                    <Form.Group>
+                      <Form.Label
+                        className="text-uppercase fw-bold mb-2"
+                        style={{
+                          color: "#6c757d",
+                          fontSize: "0.7rem",
+                          letterSpacing: "1px",
+                        }}
+                      >
+                        Buscar por Nome ou E-mail
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="name"
+                        placeholder="Digite o nome do usuário..."
+                        value={filters.name}
+                        onChange={handleFilterChange}
+                        className="custom-input-dark"
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={4} className="d-flex gap-2">
+                    <button
+                      className="btn-primary w-100"
+                      onClick={() => loadUsers(1)}
+                    >
+                      Buscar
+                    </button>
+                    <button
+                      className="btn-action-outline px-4"
+                      onClick={() => {
+                        setFilters({ ...filters, name: "" });
+                        loadUsers(1);
+                      }}
+                    >
+                      Limpar
+                    </button>
+                  </Col>
+                </Row>
+              </div>
+            )}
+
+            {/* Tabela de Usuários */}
+            <div className="content-card">
+              {activeTab === "users" ? (
+                role === "admin" ? (
+                  <UserTable users={users} />
+                ) : (
+                  <WelcomeOperacional user={currentUser} />
+                )
+              ) : (
+                role === "admin" && <AuditTable logs={auditLogs} />
+              )}
+            </div>
+          </main>
+
           {/* Filtros para Auditoria */}
           {activeTab === "audit" && role === "admin" && (
             <div
@@ -262,9 +338,8 @@ export default function Dashboard() {
                         letterSpacing: "1px",
                       }}
                     >
-                  
+                      Data
                     </Form.Label>
-                        Data
                     <Form.Control
                       type="date"
                       name="date"
