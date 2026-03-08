@@ -182,46 +182,7 @@
   filter: invert(1) grayscale(100%) brightness(200%);
 }
 
-/* Correção do Layout Principal */
-.main-wrapper {
-  flex: 1;
-  min-width: 0; /* Essencial para que o grid interno não quebre o flexbox */
-  display: flex;
-  flex-direction: column;
-}
 
-.content-area {
-  width: 100%;
-}
-
-/* O Grid de Detalhes */
-.detail-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Força duas colunas iguais */
-  gap: 20px;
-  width: 100%; /* Força ocupar todo o espaço disponível */
-}
-
-/* Garante que os cards não encolham além do conteúdo */
-.info-card {
-  min-width: 0; 
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 20px;
-}
-
-.actions-section {
-  grid-column: 1 / -1; /* Ocupa as duas colunas */
-  width: 100%;
-}
-
-/* Responsividade: No celular, vira uma coluna só */
-@media (max-width: 992px) {
-  .detail-grid {
-    grid-template-columns: 1fr;
-  }
-}
 
 body {
   padding: 20px 15px;
