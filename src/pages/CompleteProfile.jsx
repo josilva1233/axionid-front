@@ -6,7 +6,7 @@ export default function CompleteProfile() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [step, setStep] = useState(1); // 1: Documento, 2: Endereço, 3: Senha
+  const [step, setStep] = useState(1);
 
   const [formData, setFormData] = useState({
     cpf_cnpj: '',
@@ -21,7 +21,6 @@ export default function CompleteProfile() {
     password_confirmation: ''
   });
 
-  // Busca CEP automática via ViaCEP
   const handleZipCodeBlur = async (e) => {
     const cep = e.target.value.replace(/\D/g, '');
     if (cep.length === 8) {
@@ -66,9 +65,8 @@ export default function CompleteProfile() {
       const response = await api.post('/api/v1/complete-profile', formData);
       alert("Cadastro finalizado com sucesso!");
       
-      if (response.data.user?.is_admin) {
-        localStorage.setItem('@AxionID:role', 'admin');
-      }
+      const role = response.data.user?.is_admin === 1 || response.data.user?.is_admin === true ? "admin" : "user";
+      localStorage.setItem('@AxionID:role', role);
 
       navigate('/dashboard', { replace: true });
     } catch (error) {
@@ -87,7 +85,6 @@ export default function CompleteProfile() {
       <div className="auth-card animate-in">
         <div className="brand"><h1>Axion<span>ID</span></h1></div>
         
-        {/* STEPPER PADRONIZADO */}
         <div className="stepper-container" style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '24px' }}>
           {[1, 2, 3].map(i => (
             <div key={i} style={{ 
@@ -101,8 +98,6 @@ export default function CompleteProfile() {
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
-          
-          {/* PASSO 1: IDENTIFICAÇÃO */}
           {step === 1 && (
             <div className="step-content animate-in">
               <div className="auth-header" style={{ textAlign: 'center', marginBottom: '20px' }}>
@@ -120,7 +115,7 @@ export default function CompleteProfile() {
                   required 
                   autoFocus
                 />
-                {errors.cpf_cnpj && <span className="error-message" style={{position:'static'}}>{errors.cpf_cnpj[0]}</span>}
+                {errors.cpf_cnpj && <span className="error-message" style={{position:'static', fontSize: '0.75rem'}}>{errors.cpf_cnpj[0]}</span>}
               </div>
 
               <button 
@@ -134,7 +129,6 @@ export default function CompleteProfile() {
             </div>
           )}
 
-          {/* PASSO 2: ENDEREÇO */}
           {step === 2 && (
             <div className="step-content animate-in">
               <div className="auth-header" style={{ textAlign: 'center', marginBottom: '20px' }}>
@@ -188,7 +182,6 @@ export default function CompleteProfile() {
             </div>
           )}
 
-          {/* PASSO 3: SEGURANÇA */}
           {step === 3 && (
             <div className="step-content animate-in">
               <div className="auth-header" style={{ textAlign: 'center', marginBottom: '20px' }}>
@@ -203,7 +196,7 @@ export default function CompleteProfile() {
                   placeholder="Mínimo 6 caracteres" 
                   onChange={handleChange} required 
                 />
-                {errors.password && <span className="error-message" style={{position:'static'}}>{errors.password[0]}</span>}
+                {errors.password && <span className="error-message" style={{position:'static', fontSize: '0.75rem'}}>{errors.password[0]}</span>}
               </div>
 
               <div className="input-group">

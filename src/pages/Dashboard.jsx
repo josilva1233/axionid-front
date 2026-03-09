@@ -9,13 +9,14 @@ import AuditTable from "../components/dashboard/AuditTable";
 import UserDropdown from "../components/dashboard/UserDropdown";
 import UserDetail from "../components/dashboard/UserDetail";
 
+// Componente Interno Padronizado
 const WelcomeOperacional = ({ user }) => (
   <div className="text-center py-5 animate-in">
     <div className="mb-4">
-      <div className="display-4 text-primary">👋</div>
+      <div className="display-4" style={{ color: "var(--primary)" }}>👋</div>
     </div>
-    <h2 className="text-white mb-2">Bem-vindo, {user?.name}!</h2>
-    <p className="text-dim">
+    <h2 className="text-white mb-2" style={{ fontWeight: '600' }}>Bem-vindo, {user?.name}!</h2>
+    <p className="text-dim mx-auto" style={{ maxWidth: '500px', lineHeight: '1.6' }}>
       Você está logado no painel operacional da <strong>AxionID</strong>.<br />
       Utilize o menu lateral para navegar ou o avatar no topo para ver seu perfil.
     </p>
@@ -33,7 +34,6 @@ export default function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationData, setPaginationData] = useState(null);
 
-  // Estados para o Componente UserDetail
   const [selectedUser, setSelectedUser] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -44,7 +44,7 @@ export default function Dashboard() {
     date: "",
   });
 
-  // --- LÓGICA DE CARREGAMENTO ---
+  // --- LÓGICA DE CARREGAMENTO (API) ---
 
   const loadUsers = useCallback(async (page = 1) => {
     if (role !== "admin") return;
@@ -90,7 +90,7 @@ export default function Dashboard() {
     }
   }, [filters.method, filters.date, role]);
 
-  // --- HANDLERS DE FILTRO ---
+  // --- HANDLERS ---
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -102,8 +102,6 @@ export default function Dashboard() {
     setFilters({ name: "", method: "", date: "", completed: "" });
     setCurrentPage(1);
   };
-
-  // --- LÓGICA DO USER DETAIL (API) ---
 
   const handleViewDetail = async (id) => {
     setLoading(true);
@@ -117,52 +115,31 @@ export default function Dashboard() {
     }
   };
 
-const handleUserAction = async (type) => {
+  const handleUserAction = async (type) => {
     setActionLoading(true);
     try {
-      // 1. Ação de Excluir (com validação de nome por segurança)
       if (type === 'delete') {
-        const confirmName = window.prompt(`Para excluir permanentemente "${selectedUser.name}", digite o NOME dele abaixo:`);
-        if (confirmName !== selectedUser.name) {
-          if (confirmName !== null) alert("O nome digitado não confere. Operação cancelada.");
-          return;
-        }
+        const confirmName = window.prompt(`Para excluir "${selectedUser.name}", digite o NOME dele:`);
+        if (confirmName !== selectedUser.name) return;
         await api.delete(`/api/v1/users/${selectedUser.id}`);
-        alert("Usuário excluído com sucesso!");
         setSelectedUser(null);
-        loadUsers(currentPage); // Recarrega a lista na página atual
+        loadUsers(currentPage);
         return;
       }
 
-      // 2. Ação de Promover
-      if (type === 'promote') {
-        if (!window.confirm("Promover este usuário a Administrador?")) return;
-        await api.post(`/api/v1/users/${selectedUser.id}/promote`);
-      }
+      if (type === 'promote') await api.post(`/api/v1/users/${selectedUser.id}/promote`);
+      if (type === 'remove-admin') await api.post(`/api/v1/users/${selectedUser.id}/remove-admin`);
+      if (type === 'toggle-status') await api.patch(`/api/v1/users/${selectedUser.id}/toggle-status`);
 
-      // 3. Ação de Remover Admin (Nova)
-      if (type === 'remove-admin') {
-        if (!window.confirm("Remover privilégios administrativos deste usuário?")) return;
-        await api.post(`/api/v1/users/${selectedUser.id}/remove-admin`);
-      }
-
-      // 4. Ação de Alterar Status
-      if (type === 'toggle-status') {
-        const acao = selectedUser.is_active ? "suspender" : "ativar";
-        if (!window.confirm(`Deseja realmente ${acao} este usuário?`)) return;
-        await api.patch(`/api/v1/users/${selectedUser.id}/toggle-status`);
-      }
-
-      // Após qualquer ação (exceto delete), recarrega os detalhes para atualizar os botões na tela
       handleViewDetail(selectedUser.id);
-      loadUsers(currentPage); // Mantém a tabela em background atualizada
-      
+      loadUsers(currentPage);
     } catch (err) {
       alert(err.response?.data?.message || "Erro ao processar requisição.");
     } finally {
       setActionLoading(false);
     }
   };
+
   // --- EFFECTS ---
 
   useEffect(() => {
@@ -211,8 +188,8 @@ const handleUserAction = async (type) => {
       />
 
       <div className="main-wrapper">
-        <header className="main-header">
-          <h2 className="brand">
+        <header className="main-header" style={{ borderBottom: '1px solid var(--border-color)', padding: '1rem 2rem' }}>
+          <h2 className="brand" style={{ fontSize: '1.25rem', margin: 0 }}>
             {selectedUser ? "Detalhes do Usuário" : (activeTab === "users" ? "Gestão de Usuários" : "Auditoria")}
           </h2>
           {currentUser && <UserDropdown user={currentUser} onLogout={handleLogout} />}
@@ -228,73 +205,70 @@ const handleUserAction = async (type) => {
             />
           ) : (
             <>
-              {/* PESQUISA DE USUÁRIOS */}
-              {activeTab === "users" && role === "admin" && (
-                <div className="filter-card mb-4 p-3 border-secondary animate-in">
+              {/* FILTROS PADRONIZADOS */}
+              {role === "admin" && (
+                <div className="filter-card mb-4 p-4 animate-in" style={{ background: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                   <Row className="align-items-end g-3">
-                    <Col md={6}>
-                      <Form.Group>
-                        <Form.Label className="text-dim small fw-bold text-uppercase">Buscar Usuário</Form.Label>
-                        <Form.Control
-                          type="text"
-                          name="name"
-                          placeholder="Nome completo ou parte do nome."
-                          value={filters.name}
-                          onChange={handleFilterChange}
-                          className="custom-input-dark"
-                        />
-                      </Form.Group>
-                    </Col>
+                    {activeTab === "users" ? (
+                      <>
+                        <Col md={6}>
+                          <Form.Group>
+                            <Form.Label className="text-dim small fw-bold text-uppercase mb-2">Buscar por Nome</Form.Label>
+                            <Form.Control
+                              type="text"
+                              name="name"
+                              placeholder="Pesquisar..."
+                              value={filters.name}
+                              onChange={handleFilterChange}
+                              className="custom-input-dark"
+                            />
+                          </Form.Group>
+                        </Col>
+                        <Col md={3}>
+                          <Form.Group>
+                            <Form.Label className="text-dim small fw-bold text-uppercase mb-2">Status Perfil</Form.Label>
+                            <Form.Select name="completed" value={filters.completed} onChange={handleFilterChange} className="custom-input-dark">
+                              <option value="">Todos</option>
+                              <option value="1">Completo</option>
+                              <option value="0">Incompleto</option>
+                            </Form.Select>
+                          </Form.Group>
+                        </Col>
+                      </>
+                    ) : (
+                      <>
+                        <Col md={3}>
+                          <Form.Group>
+                            <Form.Label className="text-dim small fw-bold text-uppercase mb-2">Método HTTP</Form.Label>
+                            <Form.Select name="method" value={filters.method} onChange={handleFilterChange} className="custom-input-dark">
+                              <option value="">Todos</option>
+                              <option value="GET">GET</option>
+                              <option value="POST">POST</option>
+                              <option value="PUT">PUT</option>
+                              <option value="DELETE">DELETE</option>
+                            </Form.Select>
+                          </Form.Group>
+                        </Col>
+                        <Col md={3}>
+                          <Form.Group>
+                            <Form.Label className="text-dim small fw-bold text-uppercase mb-2">Data do Evento</Form.Label>
+                            <Form.Control type="date" name="date" value={filters.date} onChange={handleFilterChange} className="custom-input-dark" />
+                          </Form.Group>
+                        </Col>
+                      </>
+                    )}
                     <Col md={3}>
-                      <Form.Group>
-                        <Form.Label className="text-dim small fw-bold text-uppercase">Cadastro</Form.Label>
-                        <Form.Select name="completed" value={filters.completed} onChange={handleFilterChange} className="custom-input-dark">
-                          <option value="">Todos</option>
-                          <option value="1">Completo</option>
-                          <option value="0">Incompleto</option>
-                        </Form.Select>
-                      </Form.Group>
-                    </Col>
-                    <Col md={3}>
-                      <button className="btn-action-outline w-100" onClick={clearFilters}>Limpar</button>
+                      <button className="btn-secondary w-100" style={{ height: '42px' }} onClick={clearFilters}>Limpar Filtros</button>
                     </Col>
                   </Row>
                 </div>
               )}
 
-              {/* PESQUISA DE AUDITORIA */}
-              {activeTab === "audit" && role === "admin" && (
-                <div className="filter-card mb-4 p-3 border-secondary animate-in">
-                  <Row className="align-items-end g-3">
-                    <Col md={3}>
-                      <Form.Group>
-                        <Form.Label className="text-dim small fw-bold text-uppercase">Método</Form.Label>
-                        <Form.Select name="method" value={filters.method} onChange={handleFilterChange} className="custom-input-dark">
-                          <option value="">Todos</option>
-                          <option value="GET">GET</option>
-                          <option value="POST">POST</option>
-                          <option value="PUT">PUT</option>
-                          <option value="DELETE">DELETE</option>
-                        </Form.Select>
-                      </Form.Group>
-                    </Col>
-                    <Col md={3}>
-                      <Form.Group>
-                        <Form.Label className="text-dim small fw-bold text-uppercase">Data</Form.Label>
-                        <Form.Control type="date" name="date" value={filters.date} onChange={handleFilterChange} className="custom-input-dark" />
-                      </Form.Group>
-                    </Col>
-                    <Col md={6}>
-                      <button className="btn-action-outline px-4" onClick={clearFilters}>Limpar Auditoria</button>
-                    </Col>
-                  </Row>
-                </div>
-              )}
-
+              {/* AREA DE CONTEÚDO */}
               <div className={`tab-wrapper position-relative ${loading ? "is-loading" : ""}`}>
-                {loading && <div className="loading-overlay"><Spinner animation="border" variant="primary" /></div>}
+                {loading && <div className="loading-overlay" style={{ background: 'rgba(0,0,0,0.4)', borderRadius: '12px' }}><Spinner animation="border" variant="primary" /></div>}
                 
-                <div className="content-card">
+                <div className="content-card" style={{ background: 'var(--card-bg)', borderRadius: '12px', overflow: 'hidden' }}>
                   {activeTab === "users" ? (
                     role === "admin" ? <UserTable users={users} onViewDetail={handleViewDetail} /> : <WelcomeOperacional user={currentUser} />
                   ) : (
@@ -302,10 +276,11 @@ const handleUserAction = async (type) => {
                   )}
                 </div>
 
+                {/* PAGINAÇÃO PADRONIZADA */}
                 {role === "admin" && paginationData && paginationData.last > 1 && (
-                  <div className="d-flex justify-content-between align-items-center mt-4 p-3 bg-dark bg-opacity-25 rounded">
-                    <span className="small text-dim">Página {currentPage} de {paginationData.last}</span>
-                    <Pagination className="mb-0">
+                  <div className="d-flex justify-content-between align-items-center mt-4 p-3 rounded" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                    <span className="small text-dim">Exibindo página {currentPage} de {paginationData.last}</span>
+                    <Pagination className="mb-0 custom-pagination">
                       <Pagination.Prev disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)} />
                       {renderPaginationItems()}
                       <Pagination.Next disabled={currentPage === paginationData.last} onClick={() => setCurrentPage(currentPage + 1)} />

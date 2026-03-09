@@ -1,29 +1,62 @@
 export default function AuditTable({ logs }) {
+  if (!logs || logs.length === 0) {
+    return (
+      <div className="text-center py-5 text-dim">
+        <p>Nenhum registro de auditoria encontrado para os filtros selecionados.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="table-card">
+    <div className="table-responsive animate-in">
       <table className="axion-table">
         <thead>
           <tr>
-            <th>Data/Hora</th>
-            <th>Usuário</th>
-            <th>Método</th>
-            <th>URL</th>
-            <th>IP</th>
+            <th>DATA / HORA</th>
+            <th>USUÁRIO / ORIGEM</th>
+            <th className="text-center">MÉTODO</th>
+            <th>RECURSO (URL)</th>
+            <th>ENDEREÇO IP</th>
           </tr>
         </thead>
         <tbody>
-          {logs.map(log => (
+          {logs.map((log) => (
             <tr key={log.log_id}>
-              <td className="mono-text">{new Date(log.executed_at).toLocaleString()}</td>
+              {/* Data e Hora com fonte mono para melhor leitura de logs */}
+              <td className="mono-text" style={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                {new Date(log.executed_at).toLocaleString('pt-BR')}
+              </td>
+
+              {/* Informações do Usuário empilhadas */}
               <td>
-                <div className="user-info-min">
-                  <strong>{log.user_name || 'Sistema'}</strong>
-                  <span>{log.user_email}</span>
+                <div className="user-info-min" style={{ display: 'flex', flexDirection: 'column' }}>
+                  <strong style={{ color: 'var(--text-main)', fontSize: '0.9rem' }}>
+                    {log.user_name || 'Sistema / API'}
+                  </strong>
+                  <span className="text-dim" style={{ fontSize: '0.75rem' }}>
+                    {log.user_email || 'n/a'}
+                  </span>
                 </div>
               </td>
-              <td><span className={`method-badge ${log.method}`}>{log.method}</span></td>
-              <td className="url-cell">{log.url}</td>
-              <td className="mono-text">{log.ip_address}</td>
+
+              {/* Badge de Método HTTP dinâmico */}
+              <td className="text-center">
+                <span className={`method-badge ${log.method?.toLowerCase()}`}>
+                  {log.method}
+                </span>
+              </td>
+
+              {/* URL com quebra de linha inteligente para não quebrar o layout */}
+              <td className="url-cell">
+                <code style={{ fontSize: '0.8rem', color: 'var(--primary)', opacity: 0.8 }}>
+                  {log.url}
+                </code>
+              </td>
+
+              {/* IP Address */}
+              <td className="mono-text text-dim" style={{ fontSize: '0.85rem' }}>
+                {log.ip_address}
+              </td>
             </tr>
           ))}
         </tbody>

@@ -2,17 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 
 const UserDropdown = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showDetails, setShowDetails] = useState(false); // Estado para o "Modal" customizado
+  const [showDetails, setShowDetails] = useState(false);
   const dropdownRef = useRef(null);
   const detailsRef = useRef(null);
 
-  // Fecha ao clicar fora
+  // Fecha ao clicar fora de ambos os painéis
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
       }
-      // Opcional: fechar detalhes ao clicar fora também
       if (detailsRef.current && !detailsRef.current.contains(event.target) && !event.target.closest('.menu-item')) {
         setShowDetails(false);
       }
@@ -22,103 +21,90 @@ const UserDropdown = ({ user, onLogout }) => {
   }, []);
 
   return (
-    <div className="user-dropdown-container" ref={dropdownRef} style={{ position: 'relative' }}>
-      {/* Gatilho do Avatar */}
+    <div className="user-dropdown-container" ref={dropdownRef}>
+      {/* Gatilho do Avatar - Estilo AxionID */}
       <button 
-        className="avatar-trigger" 
+        className={`avatar-trigger ${isOpen ? 'active' : ''}`} 
         onClick={() => setIsOpen(!isOpen)}
         type="button"
+        title="Menu do Usuário"
       >
         {user?.name?.charAt(0).toUpperCase() || 'U'}
       </button>
 
-      {/* 1. DROPDOWN DE OPÇÕES (O que você já tinha) */}
+      {/* 1. MENU FLUTUANTE DE OPÇÕES */}
       {isOpen && (
-        <ul className="dropdown-floating-menu">
-          <li className="menu-header">
-            <span className="info-label">Logado como:</span>
-            <span className="info-name text-truncate d-block">{user?.name}</span>
-            <span className="info-email text-truncate d-block">{user?.email}</span>
-          </li>
-          <li className="menu-divider"></li>
-          <li>
+        <div className="dropdown-floating-menu animate-in">
+          <div className="menu-header">
+            <span className="info-label text-dim">Sessão ativa:</span>
+            <span className="info-name text-truncate">{user?.name}</span>
+            <span className="info-email text-truncate text-dim small">{user?.email}</span>
+          </div>
+          
+          <div className="menu-divider"></div>
+          
+          <div className="menu-body">
             <button className="menu-item" onClick={() => { setShowDetails(true); setIsOpen(false); }}>
-              <i className="bi bi-person"></i> Meus Detalhes
+              <span className="menu-icon">👤</span> Meus Detalhes
             </button>
-          </li>
-          <li>
+            
             <button className="menu-item logout-action" onClick={onLogout}>
-              <i className="bi bi-box-arrow-right"></i> Sair
+              <span className="menu-icon">🚪</span> Encerrar Sessão
             </button>
-          </li>
-        </ul>
+          </div>
+        </div>
       )}
 
-      {/* 2. "MODAL" DE DETALHES COM O MESMO ESTILO DO DROPDOWN */}
+      {/* 2. PAINEL DE DETALHES (MINI-PERFIL) */}
       {showDetails && (
-        <div 
-          className="dropdown-floating-menu details-panel" 
-          ref={detailsRef}
-          style={{ 
-            width: '300px', 
-            right: 0, 
-            top: '100%', 
-            padding: '20px',
-            marginTop: '10px' 
-          }}
-        >
+        <div className="dropdown-floating-menu details-panel animate-in" ref={detailsRef}>
           <div className="menu-header mb-3">
-            <h5 className="m-0 text-white fw-bold" style={{ fontSize: '1.1rem' }}>Minha Identidade</h5>
-            <small className="text-muted">AxionID</small>
+            <h5 className="text-white fw-bold mb-0">Minha Identidade</h5>
+            <span className="badge-operacional small">Verificada</span>
           </div>
 
-          <div className="details-content">
-            <h6 className="text-primary-custom mb-2" style={{ fontSize: '0.75rem', letterSpacing: '1px' }}>DADOS PESSOAIS</h6>
+          <div className="details-content custom-scrollbar">
+            <p className="section-subtitle">DADOS DA CONTA</p>
             
-            <div className="data-field mb-2">
-              <label className="d-block text-muted small">NOME COMPLETO</label>
-              <span className="text-white d-block">{user?.name}</span>
+            <div className="data-field">
+              <label>NOME COMPLETO</label>
+              <span>{user?.name}</span>
             </div>
 
-            <div className="data-field mb-2">
-              <label className="d-block text-muted small">E-MAIL CORPORATIVO</label>
-              <span className="text-white d-block">{user?.email}</span>
+            <div className="data-field">
+              <label>E-MAIL CADASTRADO</label>
+              <span>{user?.email}</span>
             </div>
 
-            <div className="data-field mb-3">
-              <label className="d-block text-muted small">CPF/CNPJ</label>
-              <span className="text-white d-block">{user?.cpf_cnpj || '12328361765'}</span>
+            <div className="data-field">
+              <label>DOCUMENTO ID</label>
+              <span className="mono-text">{user?.cpf_cnpj || 'Não informado'}</span>
             </div>
 
-            <div className="menu-divider mb-3"></div>
+            <div className="menu-divider my-3"></div>
 
-            <h6 className="text-primary-custom mb-2" style={{ fontSize: '0.75rem', letterSpacing: '1px' }}>ENDEREÇO DE REGISTRO</h6>
+            <p className="section-subtitle">ENDEREÇO REGISTRADO</p>
             {user?.address ? (
-              <div className="address-info" style={{ fontSize: '0.9rem' }}>
-                <div className="mb-2">
-                  <label className="d-block text-muted small">LOGRADOURO</label>
-                  <span className="text-white">{user.address.street}, {user.address.number}</span>
+              <div className="address-info-stack">
+                <div className="data-field">
+                  <label>LOGRADOURO</label>
+                  <span>{user.address.street}, {user.address.number}</span>
                 </div>
-                <div className="mb-2">
-                  <label className="d-block text-muted small">BAIRRO</label>
-                  <span className="text-white">{user.address.neighborhood}</span>
-                </div>
-                <div className="mb-2">
-                  <label className="d-block text-muted small">CIDADE/UF</label>
-                  <span className="text-white">{user.address.city} - {user.address.state}</span>
+                <div className="data-field">
+                  <label>CIDADE / UF</label>
+                  <span>{user.address.city} - {user.address.state}</span>
                 </div>
               </div>
             ) : (
-              <p className="text-muted small">Dados de endereço não disponíveis.</p>
+              <span className="text-dim italic small">Nenhum endereço vinculado à ID.</span>
             )}
           </div>
 
           <button 
-            className="menu-item mt-3 text-center w-100" 
-            style={{ justifyContent: 'center', background: 'rgba(255,255,255,0.05)' }}
+            className="btn-secondary w-100 mt-3" 
             onClick={() => setShowDetails(false)}
           >
-            Fechar
+            Fechar Painel
           </button>
         </div>
       )}

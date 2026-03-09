@@ -16,6 +16,7 @@ export default function ForgotPassword() {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (error) setError('');
   };
 
   // ETAPA 1: Solicitar Código
@@ -92,9 +93,10 @@ export default function ForgotPassword() {
           ))}
         </div>
 
-        {error && <div className="error-message">{error}</div>}
+        {error && <div className="error-message" style={{ marginBottom: '15px' }}>{error}</div>}
 
         <div className="step-content animate-in">
+          {/* PASSO 1: SOLICITAR CÓDIGO */}
           {step === 1 && (
             <form onSubmit={handleRequestCode} className="auth-form">
               <div className="auth-header" style={{ textAlign: 'center', marginBottom: '20px' }}>
@@ -105,8 +107,12 @@ export default function ForgotPassword() {
               <div className="input-group">
                 <label>E-mail Cadastrado</label>
                 <input 
-                  type="email" name="email" required 
-                  value={formData.email} onChange={handleChange}
+                  type="email" 
+                  name="email" 
+                  required 
+                  autoFocus
+                  value={formData.email} 
+                  onChange={handleChange}
                   placeholder="seu@email.com"
                 />
               </div>
@@ -123,6 +129,7 @@ export default function ForgotPassword() {
             </form>
           )}
 
+          {/* PASSO 2: VERIFICAR CÓDIGO */}
           {step === 2 && (
             <form onSubmit={handleVerifyCode} className="auth-form">
               <div className="auth-header" style={{ textAlign: 'center', marginBottom: '20px' }}>
@@ -133,8 +140,12 @@ export default function ForgotPassword() {
               <div className="input-group">
                 <label>Código de 6 dígitos</label>
                 <input 
-                  type="text" name="token" required 
-                  value={formData.token} onChange={handleChange}
+                  type="text" 
+                  name="token" 
+                  required 
+                  autoFocus
+                  value={formData.token} 
+                  onChange={handleChange}
                   placeholder="------"
                   maxLength="6"
                   style={{ 
@@ -147,21 +158,23 @@ export default function ForgotPassword() {
                 />
               </div>
 
-              <button type="submit" className="btn-primary" disabled={loading}>
-                {loading ? 'Validando...' : 'Confirmar Código'}
-              </button>
-              
-              <button 
-                type="button" 
-                onClick={() => setStep(1)} 
-                className="btn-secondary" 
-                style={{ marginTop: '10px', width: '100%' }}
-              >
-                Mudar E-mail
-              </button>
+              <div className="btn-group" style={{ display: 'flex', gap: '10px' }}>
+                <button 
+                  type="button" 
+                  className="btn-secondary" 
+                  style={{ flex: 1 }} 
+                  onClick={() => setStep(1)}
+                >
+                  Voltar
+                </button>
+                <button type="submit" className="btn-primary" style={{ flex: 2 }} disabled={loading}>
+                  {loading ? 'Validando...' : 'Confirmar'}
+                </button>
+              </div>
             </form>
           )}
 
+          {/* PASSO 3: NOVA SENHA */}
           {step === 3 && (
             <form onSubmit={handleResetPassword} className="auth-form">
               <div className="auth-header" style={{ textAlign: 'center', marginBottom: '20px' }}>
@@ -172,8 +185,12 @@ export default function ForgotPassword() {
               <div className="input-group">
                 <label>Nova Senha</label>
                 <input 
-                  type="password" name="password" required 
-                  value={formData.password} onChange={handleChange}
+                  type="password" 
+                  name="password" 
+                  required 
+                  autoFocus
+                  value={formData.password} 
+                  onChange={handleChange}
                   placeholder="Mínimo 8 caracteres"
                 />
               </div>
@@ -181,8 +198,11 @@ export default function ForgotPassword() {
               <div className="input-group">
                 <label>Confirmar Nova Senha</label>
                 <input 
-                  type="password" name="password_confirmation" required 
-                  value={formData.password_confirmation} onChange={handleChange}
+                  type="password" 
+                  name="password_confirmation" 
+                  required 
+                  value={formData.password_confirmation} 
+                  onChange={handleChange}
                   placeholder="Repita a nova senha"
                 />
               </div>
@@ -195,8 +215,8 @@ export default function ForgotPassword() {
         </div>
 
         <div className="auth-footer" style={{ marginTop: '25px', textAlign: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '20px' }}>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>
-            Não recebeu o e-mail? Verifique sua caixa de spam.
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', lineHeight: '1.4' }}>
+            Não recebeu o e-mail? Verifique sua caixa de spam ou tente novamente em instantes.
           </p>
         </div>
       </div>
