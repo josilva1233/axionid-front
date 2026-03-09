@@ -86,21 +86,13 @@
 
 .alert-complete-profile .btn-complete {
   background: #000 !important;
-
   color: #fff !important;
-
   border: none !important;
-
   padding: 10px 20px !important;
-
   border-radius: 8px !important;
-
   font-weight: 600 !important;
-
   font-size: 0.85rem;
-
   transition: all 0.2s ease;
-
   white-space: nowrap;
 }
 
