@@ -113,6 +113,21 @@ export default function Dashboard() {
     [filters.method, filters.date, role],
   );
 
+
+  const handleUpdateUser = async (id, formData) => {
+  setActionLoading(true);
+  try {
+    await api.put(`/api/v1/admin/users/${id}`, formData);
+    alert("Usuário atualizado com sucesso!");
+    handleViewDetail(id); // Recarrega os dados atualizados
+    loadUsers(currentPage); // Atualiza a lista ao fundo
+  } catch (err) {
+    alert(err.response?.data?.message || "Erro ao atualizar usuário.");
+  } finally {
+    setActionLoading(false);
+  }
+};
+
   // --- HANDLERS ---
 
   const handleFilterChange = (e) => {
@@ -261,6 +276,7 @@ export default function Dashboard() {
               user={selectedUser}
               onBack={() => setSelectedUser(null)}
               onAction={handleUserAction}
+              onUpdate={handleUpdateUser}
               actionLoading={actionLoading}
             />
           ) : (
