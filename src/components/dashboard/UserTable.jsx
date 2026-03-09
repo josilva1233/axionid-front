@@ -61,7 +61,7 @@ export default function UserTable({ users, onViewDetail }) {
                     onClick={() => onViewDetail(u.id)}
                     style={{ padding: '4px 12px', fontSize: '0.8rem' }}
                   >
-                    Gerenciar
+                    Detalhe
                   </button>
                 </td>
               </tr>
