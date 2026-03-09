@@ -301,7 +301,47 @@
   opacity: 0.7;
 }
 
+.btn-google-workspace {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 16px;
+  background-color: #ffffff; /* Fundo branco para destacar o logo oficial */
+  color: #1f1f1f; /* Texto escuro para contraste no fundo branco */
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  font-family: 'Inter', 'Roboto', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
 
+.btn-google-workspace:hover {
+  background-color: #f8f9fa;
+  border-color: #d2e3fc;
+  box-shadow: 0 4px 6px rgba(60, 64, 67, 0.1);
+}
+
+.btn-google-workspace:active {
+  background-color: #eeeeee;
+  transform: scale(0.98); /* Efeito de clique sutil */
+}
+
+.google-icon-wrapper img {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.btn-text {
+  flex-grow: 1;
+  text-align: center;
+  margin-right: 18px; /* Compensa o ícone para centralizar o texto perfeitamente */
+}
 /* 1. Remove o comportamento de "espremer" a tela */
 
 .modal-centered-custom {
