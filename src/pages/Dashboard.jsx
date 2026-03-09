@@ -117,7 +117,7 @@ export default function Dashboard() {
   const handleUpdateUser = async (id, formData) => {
   setActionLoading(true);
   try {
-    await api.put(`/api/v1/admin/users/${id}`, formData);
+    await api.put(`/api/v1/users/${id}/update-manual`, formData);
     alert("Usuário atualizado com sucesso!");
     handleViewDetail(id); // Recarrega os dados atualizados
     loadUsers(currentPage); // Atualiza a lista ao fundo
