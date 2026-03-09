@@ -183,6 +183,63 @@
   }
 }
 
+/* Container principal do filtro */
+.filter-card {
+  background: #161b22; /* Cor de fundo ligeiramente diferente do card principal */
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Labels estilizadas */
+.filter-label {
+  color: #8b949e;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* Inputs e Selects */
+.custom-input-dark {
+  background-color: #0d1117 !important;
+  border: 1px solid #30363d !important;
+  color: #c9d1d9 !important;
+  height: 42px;
+  font-size: 14px;
+  transition: all 0.2s ease-in-out;
+}
+
+.custom-input-dark:focus {
+  border-color: #58a6ff !important;
+  box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.15) !important;
+}
+
+/* Botão Limpar Filtros */
+.btn-filter-clear {
+  height: 42px;
+  background: transparent;
+  color: #8b949e;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-filter-clear:hover {
+  background: rgba(248, 81, 73, 0.1); /* Um leve vermelho ao passar o mouse */
+  color: #f85149;
+  border-color: rgba(248, 81, 73, 0.4);
+}
+
+
+
 /* 1. Remove o comportamento de "espremer" a tela */
 
 .modal-centered-custom {
