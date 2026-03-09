@@ -139,14 +139,12 @@ export default function Login() {
 
           <button
             type="button"
-            className="btn-google"
+            className="btn-google-auth"
             onClick={handleGoogleLogin}
-            aria-label="Entrar com Google Workspace"
           >
             <img
               src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-              alt="" // Vazio porque o texto do botão já explica a função
-              aria-hidden="true"
+              alt="Google Logo"
             />
             <span>Continuar com Google Workspace</span>
           </button>
