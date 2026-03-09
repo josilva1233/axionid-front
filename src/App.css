@@ -120,6 +120,69 @@
   }
 }
 
+/* Container dos botões */
+.critical-actions-grid {
+  display: flex;
+  flex-direction: column; /* Empilha no mobile */
+  gap: 16px;
+}
+
+/* Agrupamento dos botões de gestão */
+.main-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Estilo base para os botões críticos */
+.btn-critical-primary, .btn-critical-secondary, .btn-delete-permanent {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap; /* Evita quebra de linha no texto do botão */
+}
+
+.btn-critical-primary {
+  background: #4f46e5; /* Roxo padrão do seu sistema */
+  color: white;
+}
+
+.btn-critical-secondary {
+  background: transparent;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn-critical-secondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Botão de Excluir - Destaque total de perigo */
+.btn-delete-permanent {
+  background: transparent;
+  color: #dc3545;
+  border: 1px solid rgba(220, 53, 69, 0.4);
+}
+
+.btn-delete-permanent:hover {
+  background: #dc3545;
+  color: white;
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);
+}
+
+/* Desktop: Alinha o excluir à direita e os outros à esquerda */
+@media (min-width: 768px) {
+  .critical-actions-grid {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
 /* 1. Remove o comportamento de "espremer" a tela */
 
 .modal-centered-custom {
