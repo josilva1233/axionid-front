@@ -112,7 +112,7 @@ export default function Login() {
             <span>ou continue com</span>
           </div>
 
-          <button type="button" onClick={handleGoogleLogin}>
+          <button type="button" className="btn-google" onClick={handleGoogleLogin}>
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google" />
             Google Workspace
           </button>
