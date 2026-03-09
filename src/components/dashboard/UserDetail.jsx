@@ -209,7 +209,7 @@ export default function UserDetail({ user, onBack, onAction, actionLoading }) {
             opacity: 0.8,
           }}
         >
-          Zona de Gerenciamento Crítico
+          Gestão de Acesso e Privilégios
         </h4>
 
         <div className="critical-actions-grid">
