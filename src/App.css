@@ -239,6 +239,38 @@
 }
 
 
+.btn-table-action {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  font-size: 0.75rem; /* Um pouco menor para tabelas */
+  font-weight: 600;
+  color: #c9d1d9;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.btn-table-action:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #8b949e;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.btn-table-action:active {
+  transform: translateY(0);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.btn-table-action i {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
 
 /* 1. Remove o comportamento de "espremer" a tela */
 
