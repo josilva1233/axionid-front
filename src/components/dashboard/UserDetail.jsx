@@ -239,17 +239,17 @@ export default function UserDetail({ user, onBack, onAction, actionLoading }) {
             >
               {user.is_active ? "Suspender Acesso" : "Reativar Acesso"}
             </button>
-          </div>
 
-          <button
-            onClick={() => onAction("delete")}
-            disabled={actionLoading}
-            className="btn-delete-permanent"
-          >
-            {actionLoading
-              ? "Processando..."
-              : "Excluir Identidade Permanentemente"}
-          </button>
+            <button
+              onClick={() => onAction("delete")}
+              disabled={actionLoading}
+              className="btn-delete-permanent"
+            >
+              {actionLoading
+                ? "Processando..."
+                : "Excluir Identidade Permanentemente"}
+            </button>
+          </div>
         </div>
       </section>
     </div>
