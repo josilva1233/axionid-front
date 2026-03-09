@@ -9,11 +9,13 @@ export default function UserDetail({ user, onBack, onAction, actionLoading }) {
         style={{ borderBottom: "1px solid var(--border-color)" }}
       >
         <button
-          className="btn-secondary"
+          type="button"
+          className="btn-back-link"
           onClick={onBack}
-          style={{ padding: "8px 16px", fontSize: "0.9rem" }}
+          aria-label="Voltar para a lista de usuários"
         >
-          ← Voltar para a lista
+          <i className="bi bi-arrow-left"></i>
+          <span>Voltar para a lista</span>
         </button>
         <div className="text-dim small">
           UUID Identidade:{" "}

@@ -271,6 +271,36 @@
   opacity: 0.7;
 }
 
+.btn-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: #8b949e; /* Cor cinza suave para não competir com o conteúdo */
+  border: 1px solid transparent;
+  padding: 8px 0; /* Alinhado à esquerda sem padding extra */
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-back-link i {
+  transition: transform 0.2s ease;
+}
+
+.btn-back-link:hover {
+  color: #ffffff; /* Ganha destaque ao passar o mouse */
+}
+
+.btn-back-link:hover i {
+  transform: translateX(-4px); /* Pequena animação de movimento para a esquerda */
+}
+
+.btn-back-link:active {
+  opacity: 0.7;
+}
+
 
 /* 1. Remove o comportamento de "espremer" a tela */
 
