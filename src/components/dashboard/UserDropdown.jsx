@@ -56,81 +56,58 @@ const UserDropdown = ({ user, onLogout }) => {
       )}
 
       {/* 2. PAINEL DE DETALHES (MINI-PERFIL) */}
-{showDetails && (
-  <div className="details-panel-floating animate-in" ref={detailsRef}>
-    {/* Header com estilo de Card Premium */}
-    <div className="panel-header">
-      <div className="header-content">
-        <h5 className="title">Minha Identidade</h5>
-        <span className="status-badge">
-          <i className="bi bi-patch-check-fill me-1"></i> Verificada
-        </span>
-      </div>
-      <button className="btn-close-panel" onClick={() => setShowDetails(false)}>
-        <i className="bi bi-x"></i>
-      </button>
-    </div>
-
-    <div className="panel-body custom-scrollbar">
-      {/* Seção: Dados Pessoais */}
-      <section className="info-group">
-        <p className="group-label">Dados da Conta</p>
-        
-        <div className="info-item">
-          <div className="icon-box"><i className="bi bi-person"></i></div>
-          <div className="content">
-            <label>Nome Completo</label>
-            <span>{user?.name}</span>
+      {showDetails && (
+        <div className="dropdown-floating-menu details-panel animate-in" ref={detailsRef}>
+          <div className="menu-header mb-3">
+            <h5 className="text-white fw-bold mb-0">Minha Identidade</h5>
+            <span className="badge-operacional small">Verificada</span>
           </div>
-        </div>
 
-        <div className="info-item">
-          <div className="icon-box"><i className="bi bi-envelope"></i></div>
-          <div className="content">
-            <label>E-mail Cadastrado</label>
-            <span>{user?.email}</span>
-          </div>
-        </div>
-
-        <div className="info-item">
-          <div className="icon-box"><i className="bi bi-card-heading"></i></div>
-          <div className="content">
-            <label>Documento ID</label>
-            <span className="mono">{user?.cpf_cnpj || 'Não informado'}</span>
-          </div>
-        </div>
-      </section>
-
-      <div className="separator"></div>
-
-      {/* Seção: Localização */}
-      <section className="info-group">
-        <p className="group-label">Endereço Registrado</p>
-        {user?.address ? (
-          <div className="info-item">
-            <div className="icon-box"><i className="bi bi-geo-alt"></i></div>
-            <div className="content">
-              <label>Logradouro e Cidade</label>
-              <span>{user.address.street}, {user.address.number}</span>
-              <small>{user.address.city} — {user.address.state}</small>
+          <div className="details-content custom-scrollbar">
+            <p className="section-subtitle">DADOS DA CONTA</p>
+            
+            <div className="data-field">
+              <label>NOME COMPLETO</label>
+              <span>{user?.name}</span>
             </div>
-          </div>
-        ) : (
-          <div className="empty-state">
-            <i className="bi bi-info-circle me-2"></i>
-            Nenhum endereço vinculado.
-          </div>
-        )}
-      </section>
-    </div>
 
-    <div className="panel-footer">
-      <button className="btn-action-primary w-100" onClick={() => {/* Logica de editar */}}>
-        <i className="bi bi-pencil me-2"></i> Editar Perfil
-      </button>
-    </div>
-  </div>
-)}
+            <div className="data-field">
+              <label>E-MAIL CADASTRADO</label>
+              <span>{user?.email}</span>
+            </div>
+
+            <div className="data-field">
+              <label>DOCUMENTO ID</label>
+              <span className="mono-text">{user?.cpf_cnpj || 'Não informado'}</span>
+            </div>
+
+            <div className="menu-divider my-3"></div>
+
+            <p className="section-subtitle">ENDEREÇO REGISTRADO</p>
+            {user?.address ? (
+              <div className="address-info-stack">
+                <div className="data-field">
+                  <label>LOGRADOURO</label>
+                  <span>{user.address.street}, {user.address.number}</span>
+                </div>
+                <div className="data-field">
+                  <label>CIDADE / UF</label>
+                  <span>{user.address.city} - {user.address.state}</span>
+                </div>
+              </div>
+            ) : (
+              <span className="text-dim italic small">Nenhum endereço vinculado à ID.</span>
+            )}
+          </div>
+
+          <button 
+            className="btn-secondary w-100 mt-3" 
+            onClick={() => setShowDetails(false)}
+          >
+            Fechar Painel
+          </button>
+        </div>
+      )}
     </div>
   );
 };
