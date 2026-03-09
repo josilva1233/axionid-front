@@ -1,120 +1,306 @@
-/* Zerar interferências externas */
+/* =========================================
+   1. DESIGN SYSTEM & VARIÁVEIS (Identidade)
+   ========================================= */
+:root {
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --bg-dark: #0b0f1a;
+  --card-bg: #161b2c;
+  --sidebar-bg: #0e1220;
+  --text-main: #f8fafc;
+  --text-dim: #94a3b8;
+  --border: rgba(255, 255, 255, 0.08);
+  --input-bg: rgba(0, 0, 0, 0.2);
+  --error: #ef4444;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+}
+
+/* =========================================
+   2. RESET E REGRAS GLOBAIS
+   ========================================= */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-:root {
-  --bg-dark: #0f121d;
-  --card-bg: #161a27;
-  --primary: #5551ff;
-  --border: #242937;
-  --text-dim: #94a3b8;
+body {
+  background-color: var(--bg-dark);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--text-main);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-body {
-  background-color: var(--bg-dark) !important;
-  font-family: 'Inter', sans-serif;
-  color: white;
+/* Scrollbar Customizada */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+/* =========================================
+   3. ARQUITETURA DE LAYOUT (CORREÇÃO)
+   ========================================= */
+
+/* WRAPPER PARA LOGIN/AUTH (Centralização Total) */
+.auth-page-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  width: 100vw;
+  padding: 20px;
+  background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.07), transparent);
+}
+
+/* WRAPPER PARA DASHBOARD (Sidebar + Main) */
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.sidebar {
+  width: 280px;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  position: fixed;
+  height: 100vh;
+  z-index: 100;
+}
+
+.main-wrapper {
+  flex: 1;
+  margin-left: 280px; /* Alinhado à largura da sidebar */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: calc(100% - 280px);
+}
+
+/* =========================================
+   4. COMPONENTES: CARDS E MODAIS
+   ========================================= */
+.auth-card, .content-card, .detail-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  padding: 2rem;
+  border-radius: 24px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  width: 100%;
+  animation: slideUpFade 0.5s ease-out forwards;
+}
+
+.auth-card { max-width: 480px; }
+
+/* Modais (Bootstrap Overrides) */
+.modal-centered-custom {
+  display: flex !important;
+  align-items: center !important;
+  min-height: calc(100% - 3.5rem) !important;
+}
+
+.custom-modal-content {
+  background-color: #1a1d23 !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+  padding: 20px !important;
+}
+
+/* =========================================
+   5. HEADER E MENU DE USUÁRIO (DROPDOWN)
+   ========================================= */
+.main-header {
+  height: 80px;
+  padding: 0 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(11, 15, 26, 0.8);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 90;
+}
+
+.nav-avatar-circle {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.2s;
+}
+
+.nav-avatar-circle:hover { transform: scale(1.05); }
+
+/* DROPDOWN LIMPO (Sem bolinhas/bullets) */
+.dropdown-floating-menu {
+  position: absolute;
+  top: 55px;
+  right: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  min-width: 220px;
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.dropdown-floating-menu li {
+  list-style: none !important;
+  padding: 0;
   margin: 0;
 }
 
-/* Container Central de Login/Cadastro */
-.auth-container {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 40px;
+.menu-item {
   width: 100%;
-  max-width: 400px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* Logo AxionID */
-.brand-title {
-  font-size: 24px;
-  font-weight: 800;
-  text-align: center;
-  margin-bottom: 5px;
-}
-.brand-title span { color: var(--primary); }
-
-.brand-subtitle {
-  font-size: 12px;
-  color: var(--text-dim);
-  text-align: center;
-  letter-spacing: 2px;
-  margin-bottom: 20px;
-}
-
-/* Inputs (Resolvendo o problema da imagem 4b1e62) */
-.input-group-custom {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.input-group-custom label {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-dim);
-  text-transform: uppercase;
-}
-
-.input-group-custom input {
-  background: #1a1f2e;
-  border: 1px solid var(--border);
-  padding: 14px;
-  border-radius: 8px;
-  color: white;
-  width: 100%;
-}
-
-/* Botão Principal (Igual à imagem 4b783a) */
-.btn-axion {
-  background: var(--primary);
-  color: white;
+  padding: 12px 18px;
+  background: transparent;
   border: none;
-  padding: 15px;
-  border-radius: 10px;
-  font-weight: 700;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 10px;
   cursor: pointer;
+  transition: 0.2s;
+  text-align: left;
+}
+
+.menu-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+/* =========================================
+   6. TABELAS E ESTILO DE DADOS
+   ========================================= */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  min-height: 450px; /* Estabilização de layout */
+}
+
+.axion-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.axion-table th {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 800;
+  border-bottom: 2px solid var(--border);
+}
+
+.axion-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-main);
+  font-size: 0.9rem;
+}
+
+.axion-table tr:hover td {
+  background: rgba(99, 102, 241, 0.03);
+}
+
+/* =========================================
+   7. BOTÕES E INPUTS (UI Refinada)
+   ========================================= */
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: white;
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+}
+
+input, select {
+  background: var(--input-bg);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  color: white;
+  width: 100%;
   transition: 0.2s;
 }
 
-.btn-axion:hover {
-  background: #4440db;
-  transform: translateY(-2px);
+input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.05);
 }
 
-/* Paginação (Resolvendo a lista feia da imagem 4b1da4) */
+/* =========================================
+   8. PAGINAÇÃO E ANIMAÇÕES
+   ========================================= */
 .pagination {
   display: flex;
-  list-style: none;
-  gap: 10px;
   justify-content: center;
-  padding: 20px 0;
+  list-style: none !important;
+  gap: 8px;
+  margin-top: 25px;
 }
 
-.pagination li {
-  padding: 8px 15px;
+.page-link {
   background: var(--card-bg);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  cursor: pointer;
   color: var(--text-dim);
+  padding: 8px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: 0.2s;
 }
 
-.pagination li.active {
+.page-item.active .page-link {
   background: var(--primary);
   color: white;
   border-color: var(--primary);
+}
+
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================
+   9. RESPONSIVIDADE (Mobile)
+   ========================================= */
+@media (max-width: 992px) {
+  .sidebar { transform: translateX(-100%); width: 0; padding: 0; }
+  .main-wrapper { margin-left: 0; width: 100%; }
+  .main-header { padding: 0 20px; }
+  .detail-grid { grid-template-columns: 1fr; }
 }
