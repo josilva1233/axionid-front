@@ -118,7 +118,7 @@ export default function UserDetail({ user, onBack, onAction, onUpdate, actionLoa
                 disabled={actionLoading}
                 style={{ background: 'var(--success)', color: '#fff', border: 'none', borderRadius: '6px' }}
               >
-                {actionLoading ? "Salvando..." : <><i className="bi bi-check-lg me-2"></i> Salvar</>}
+                {actionLoading ? "Salvando..." : <><i className="bi bi-pencil me-2"></i> Salvar</>}
               </button>
             </div>
           )}
