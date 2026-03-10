@@ -113,10 +113,16 @@ export default function Dashboard() {
     [filters.method, filters.date, role],
   );
 
-
- const handleUpdateUser = async (id, formData) => {
+  const handleUpdateUser = async (id, formData) => {
     // 1. Definição dos campos obrigatórios de endereço
-    const requiredFields = ["zip_code", "street", "number", "neighborhood", "city", "state"];
+    const requiredFields = [
+      "zip_code",
+      "street",
+      "number",
+      "neighborhood",
+      "city",
+      "state",
+    ];
     let hasError = false;
 
     // 2. Validação: Verifica se estão vazios e aplica o estilo vermelho
@@ -133,7 +139,7 @@ export default function Dashboard() {
       } else {
         // Limpa o erro se o campo estiver preenchido
         if (inputElement) {
-          inputElement.style.border = ""; 
+          inputElement.style.border = "";
           inputElement.style.boxShadow = "";
         }
       }
@@ -150,8 +156,8 @@ export default function Dashboard() {
     try {
       await api.put(`/api/v1/users/${id}/update-manual`, formData);
       alert("Usuário atualizado com sucesso!");
-      handleViewDetail(id); 
-      loadUsers(currentPage); 
+      handleViewDetail(id);
+      loadUsers(currentPage);
     } catch (err) {
       alert(err.response?.data?.message || "Erro ao atualizar usuário.");
     } finally {
@@ -467,6 +473,40 @@ export default function Dashboard() {
             </>
           )}
         </main>
+        {/* Alerta de Cadastro Incompleto */}
+        <div
+          className="alert-complete-profile m-4 p-4 d-flex align-items-center justify-content-between"
+          style={{
+            background: "var(--warning-light, #fff3cd)",
+            borderLeft: "5px solid #ffc107",
+            borderRadius: "8px",
+            color: "#856404",
+          }}
+        >
+          <div className="d-flex align-items-center">
+            <i
+              className="bi bi-exclamation-triangle-fill me-3"
+              style={{ fontSize: "1.5rem" }}
+            ></i>
+            <div>
+              <h6 className="mb-0 fw-bold">
+                Seu perfil ainda não está completo!
+              </h6>
+              <small>
+                Complete suas informações para liberar todas as funcionalidades
+                do sistema.
+              </small>
+            </div>
+          </div>
+
+          <button
+            className="btn btn-warning btn-sm fw-bold px-4"
+            onClick={() => (window.location.href = "/perfil")} // Ajuste para sua rota de perfil
+            style={{ borderRadius: "20px" }}
+          >
+            Completar agora
+          </button>
+        </div>
       </div>
     </div>
   );
