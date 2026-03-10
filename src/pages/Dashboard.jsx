@@ -114,20 +114,50 @@ export default function Dashboard() {
   );
 
 
-  const handleUpdateUser = async (id, formData) => {
-  setActionLoading(true);
-  try {
-    await api.put(`/api/v1/users/${id}/update-manual`, formData);
-    alert("Usuário atualizado com sucesso!");
-    handleViewDetail(id); // Recarrega os dados atualizados
-    loadUsers(currentPage); // Atualiza a lista ao fundo
-  } catch (err) {
-    alert(err.response?.data?.message || "Erro ao atualizar usuário.");
-  } finally {
-    setActionLoading(false);
-  }
-};
+ const handleUpdateUser = async (id, formData) => {
+    // 1. Definição dos campos obrigatórios de endereço
+    const requiredFields = ["zip_code", "street", "number", "neighborhood", "city", "state"];
+    let hasError = false;
 
+    // 2. Validação: Verifica se estão vazios e aplica o estilo vermelho
+    requiredFields.forEach((field) => {
+      const value = formData[field];
+      const inputElement = document.getElementsByName(field)[0];
+
+      if (!value || String(value).trim() === "") {
+        hasError = true;
+        if (inputElement) {
+          inputElement.style.border = "2px solid #dc3545"; // Vermelho (var--danger)
+          inputElement.style.boxShadow = "0 0 5px rgba(220, 53, 69, 0.2)";
+        }
+      } else {
+        // Limpa o erro se o campo estiver preenchido
+        if (inputElement) {
+          inputElement.style.border = ""; 
+          inputElement.style.boxShadow = "";
+        }
+      }
+    });
+
+    // 3. Bloqueia o envio e exibe a mensagem se houver erro
+    if (hasError) {
+      alert("⚠️ Precisa completar o endereço antes de salvar.");
+      return; // Interrompe a execução
+    }
+
+    // --- Lógica original mantida abaixo ---
+    setActionLoading(true);
+    try {
+      await api.put(`/api/v1/users/${id}/update-manual`, formData);
+      alert("Usuário atualizado com sucesso!");
+      handleViewDetail(id); 
+      loadUsers(currentPage); 
+    } catch (err) {
+      alert(err.response?.data?.message || "Erro ao atualizar usuário.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
   // --- HANDLERS ---
 
   const handleFilterChange = (e) => {

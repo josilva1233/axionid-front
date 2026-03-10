@@ -23,9 +23,49 @@ export default function UserDetail({ user, onBack, onAction, onUpdate, actionLoa
 
   if (!user) return null;
 
+  // --- NOVA FUNÇÃO: AUTO-COMPLETE CEP ---
+  const handleCepBlur = async (e) => {
+    const cep = e.target.value.replace(/\D/g, ""); // Remove hifens ou pontos
+    
+    if (cep.length === 8) {
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data = await response.json();
+
+        if (!data.erro) {
+          setFormData((prev) => ({
+            ...prev,
+            street: data.logradouro,
+            neighborhood: data.bairro,
+            city: data.localidade,
+            state: data.uf,
+          }));
+
+          // Limpa bordas vermelhas se os dados forem preenchidos
+          const fields = ["zip_code", "street", "neighborhood", "city", "state"];
+          fields.forEach(name => {
+            const el = document.getElementsByName(name)[0];
+            if (el) {
+              el.style.border = "1px solid var(--border-color)";
+              el.style.boxShadow = "none";
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Erro ao buscar CEP:", error);
+      }
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    // Remove a cor vermelha assim que o usuário começa a digitar no campo
+    if (e.target.style.border.includes("rgb(220, 53, 69)")) {
+        e.target.style.border = "1px solid var(--primary)";
+        e.target.style.boxShadow = "none";
+    }
   };
 
   const handleSave = async () => {
@@ -164,6 +204,23 @@ export default function UserDetail({ user, onBack, onAction, onUpdate, actionLoa
           </h4>
           <div className="info-list">
             <div className="row g-2">
+              <div className="col-12 mt-2">
+                <label className="text-dim small d-block text-uppercase">CEP (Auto-complete)</label>
+                {isEditing ? (
+                  <input 
+                    type="text" 
+                    name="zip_code" 
+                    value={formData.zip_code} 
+                    onChange={handleChange} 
+                    onBlur={handleCepBlur} // DISPARA A BUSCA AO SAIR DO CAMPO
+                    className="custom-input-dark w-100" 
+                    placeholder="00000-000"
+                  />
+                ) : (
+                  <span className="text-white mono-text">{user.address?.zip_code || "---"}</span>
+                )}
+              </div>
+
               <div className="col-9 mb-2">
                 <label className="text-dim small d-block text-uppercase">Rua</label>
                 {isEditing ? (
@@ -205,11 +262,11 @@ export default function UserDetail({ user, onBack, onAction, onUpdate, actionLoa
                 )}
               </div>
               <div className="col-12 mt-2">
-                <label className="text-dim small d-block text-uppercase">CEP</label>
+                <label className="text-dim small d-block text-uppercase">Complemento</label>
                 {isEditing ? (
-                  <input type="text" name="zip_code" value={formData.zip_code} onChange={handleChange} className="custom-input-dark w-100" />
+                  <input type="text" name="complement" value={formData.complement} onChange={handleChange} className="custom-input-dark w-100" />
                 ) : (
-                  <span className="text-white mono-text">{user.address?.zip_code || "---"}</span>
+                  <span className="text-white">{user.address?.complement || "---"}</span>
                 )}
               </div>
             </div>
@@ -225,7 +282,7 @@ export default function UserDetail({ user, onBack, onAction, onUpdate, actionLoa
           borderRadius: "16px",
           border: "1px solid rgba(220, 53, 69, 0.2)",
           opacity: isEditing ? 0.5 : 1,
-          pointerEvents: isEditing ? 'none' : 'auto' // Desabilita ações críticas enquanto edita
+          pointerEvents: isEditing ? 'none' : 'auto' 
         }}
       >
         <h4 className="text-danger mb-4" style={{ fontSize: "0.75rem", fontWeight: "800", textTransform: "uppercase", letterSpacing: "1.5px" }}>
