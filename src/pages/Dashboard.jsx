@@ -464,15 +464,16 @@ export default function Dashboard() {
           )}
         </main>
 
-        {/* VALIDAÇÃO: Alerta de Cadastro Incompleto só aparece se is_completed for falso/zero */}
-        {currentUser && (currentUser.is_completed === 0 || currentUser.is_completed === false) && (
+        {/* VALIDAÇÃO: Alerta de Cadastro Incompleto corrigido para bater com o Backend */}
+        {currentUser && currentUser.profile_completed === false && (
           <div
-            className="alert-complete-profile m-4 p-4 d-flex align-items-center justify-content-between"
+            className="alert-complete-profile m-4 p-4 d-flex align-items-center justify-content-between animate-in"
             style={{
-              background: "var(--warning-light, #fff3cd)",
+              background: "#fff3cd",
               borderLeft: "5px solid #ffc107",
               borderRadius: "8px",
               color: "#856404",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
             }}
           >
             <div className="d-flex align-items-center">
@@ -485,15 +486,15 @@ export default function Dashboard() {
                   Seu perfil ainda não está completo!
                 </h6>
                 <small>
-                  Complete suas informações para liberar todas as funcionalidades
-                  do sistema.
+                  Complete suas informações para liberar todas as
+                  funcionalidades do sistema AxionID.
                 </small>
               </div>
             </div>
 
             <button
               className="btn btn-warning btn-sm fw-bold px-4"
-              onClick={() => navigate('/complete-profile')}
+              onClick={() => navigate("/complete-profile")}
               style={{ borderRadius: "20px" }}
             >
               Completar agora
