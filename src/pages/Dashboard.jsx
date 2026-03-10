@@ -114,7 +114,6 @@ export default function Dashboard() {
   );
 
   const handleUpdateUser = async (id, formData) => {
-    // 1. Definição dos campos obrigatórios de endereço
     const requiredFields = [
       "zip_code",
       "street",
@@ -125,7 +124,6 @@ export default function Dashboard() {
     ];
     let hasError = false;
 
-    // 2. Validação: Verifica se estão vazios e aplica o estilo vermelho
     requiredFields.forEach((field) => {
       const value = formData[field];
       const inputElement = document.getElementsByName(field)[0];
@@ -133,11 +131,10 @@ export default function Dashboard() {
       if (!value || String(value).trim() === "") {
         hasError = true;
         if (inputElement) {
-          inputElement.style.border = "2px solid #dc3545"; // Vermelho (var--danger)
+          inputElement.style.border = "2px solid #dc3545";
           inputElement.style.boxShadow = "0 0 5px rgba(220, 53, 69, 0.2)";
         }
       } else {
-        // Limpa o erro se o campo estiver preenchido
         if (inputElement) {
           inputElement.style.border = "";
           inputElement.style.boxShadow = "";
@@ -145,13 +142,11 @@ export default function Dashboard() {
       }
     });
 
-    // 3. Bloqueia o envio e exibe a mensagem se houver erro
     if (hasError) {
       alert("⚠️ Precisa completar o endereço antes de salvar.");
-      return; // Interrompe a execução
+      return;
     }
 
-    // --- Lógica original mantida abaixo ---
     setActionLoading(true);
     try {
       await api.put(`/api/v1/users/${id}/update-manual`, formData);
@@ -164,7 +159,6 @@ export default function Dashboard() {
       setActionLoading(false);
     }
   };
-  // --- HANDLERS ---
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -218,8 +212,6 @@ export default function Dashboard() {
       setActionLoading(false);
     }
   };
-
-  // --- EFFECTS ---
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -407,7 +399,6 @@ export default function Dashboard() {
                 </div>
               )}
 
-              {/* AREA DE CONTEÚDO */}
               <div
                 className={`tab-wrapper position-relative ${loading ? "is-loading" : ""}`}
               >
@@ -445,7 +436,6 @@ export default function Dashboard() {
                   )}
                 </div>
 
-                {/* PAGINAÇÃO PADRONIZADA */}
                 {role === "admin" &&
                   paginationData &&
                   paginationData.last > 1 && (
@@ -473,40 +463,43 @@ export default function Dashboard() {
             </>
           )}
         </main>
-        {/* Alerta de Cadastro Incompleto */}
-        <div
-          className="alert-complete-profile m-4 p-4 d-flex align-items-center justify-content-between"
-          style={{
-            background: "var(--warning-light, #fff3cd)",
-            borderLeft: "5px solid #ffc107",
-            borderRadius: "8px",
-            color: "#856404",
-          }}
-        >
-          <div className="d-flex align-items-center">
-            <i
-              className="bi bi-exclamation-triangle-fill me-3"
-              style={{ fontSize: "1.5rem" }}
-            ></i>
-            <div>
-              <h6 className="mb-0 fw-bold">
-                Seu perfil ainda não está completo!
-              </h6>
-              <small>
-                Complete suas informações para liberar todas as funcionalidades
-                do sistema.
-              </small>
-            </div>
-          </div>
 
-          <button
-            className="btn btn-warning btn-sm fw-bold px-4"
-            onClick={() => navigate('/complete-profile')} // Ajuste para sua rota de perfil
-            style={{ borderRadius: "20px" }}
+        {/* VALIDAÇÃO: Alerta de Cadastro Incompleto só aparece se is_completed for falso/zero */}
+        {currentUser && (currentUser.is_completed === 0 || currentUser.is_completed === false) && (
+          <div
+            className="alert-complete-profile m-4 p-4 d-flex align-items-center justify-content-between"
+            style={{
+              background: "var(--warning-light, #fff3cd)",
+              borderLeft: "5px solid #ffc107",
+              borderRadius: "8px",
+              color: "#856404",
+            }}
           >
-            Completar agora
-          </button>
-        </div>
+            <div className="d-flex align-items-center">
+              <i
+                className="bi bi-exclamation-triangle-fill me-3"
+                style={{ fontSize: "1.5rem" }}
+              ></i>
+              <div>
+                <h6 className="mb-0 fw-bold">
+                  Seu perfil ainda não está completo!
+                </h6>
+                <small>
+                  Complete suas informações para liberar todas as funcionalidades
+                  do sistema.
+                </small>
+              </div>
+            </div>
+
+            <button
+              className="btn btn-warning btn-sm fw-bold px-4"
+              onClick={() => navigate('/complete-profile')}
+              style={{ borderRadius: "20px" }}
+            >
+              Completar agora
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
