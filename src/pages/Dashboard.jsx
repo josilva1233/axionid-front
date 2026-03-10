@@ -501,7 +501,7 @@ export default function Dashboard() {
 
           <button
             className="btn btn-warning btn-sm fw-bold px-4"
-            onClick={() => (window.location.href = "/perfil")} // Ajuste para sua rota de perfil
+            onClick={() => navigate('/complete-profile')} // Ajuste para sua rota de perfil
             style={{ borderRadius: "20px" }}
           >
             Completar agora
