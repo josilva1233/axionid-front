@@ -84,13 +84,13 @@ export default function UserDetail({ user, onBack, onAction, onUpdate, actionLoa
   return (
     <div className="animate-in w-100">
       {/* CABEÇALHO DE NAVEGAÇÃO */}
-      <div
+<div
         className="d-flex justify-content-between align-items-center mb-4 pb-3"
         style={{ borderBottom: "1px solid var(--border-color)" }}
       >
         <button
           type="button"
-          className="btn-back-link"
+          className="btn-back-link d-flex align-items-center gap-2"
           onClick={onBack}
           aria-label="Voltar para a lista de usuários"
         >
@@ -98,31 +98,52 @@ export default function UserDetail({ user, onBack, onAction, onUpdate, actionLoa
           <span>Voltar para a lista</span>
         </button>
 
-        <div className="d-flex align-items-center gap-3">
+        <div className="d-flex align-items-center gap-4">
           {!isEditing ? (
             <button 
               className="btn-critical-primary px-4 py-2" 
               onClick={() => setIsEditing(true)}
-              style={{ fontSize: '0.85rem' }}
+              style={{ fontSize: '0.85rem', minWidth: '140px' }}
             >
               <i className="bi bi-pencil me-2"></i> Editar Usuário
             </button>
           ) : (
-            <div className="d-flex gap-2">
-              <button className="btn-critical-secondary px-3 py-2" onClick={() => setIsEditing(false)}>
+            <div className="d-flex align-items-center gap-3">
+              <button 
+                className="btn-critical-secondary px-4 py-2" 
+                onClick={() => setIsEditing(false)}
+                style={{ fontSize: '0.85rem', minWidth: '110px' }}
+              >
                 Cancelar
               </button>
               <button 
-                className="btn-save-confirm px-4 py-2" 
+                className="btn-save-confirm px-4 py-2 d-flex align-items-center justify-content-center" 
                 onClick={handleSave}
                 disabled={actionLoading}
-                style={{ background: 'var(--success)', color: '#fff', border: 'none', borderRadius: '6px' }}
+                style={{ 
+                  background: 'var(--success)', 
+                  color: '#fff', 
+                  border: 'none', 
+                  borderRadius: '6px',
+                  fontSize: '0.85rem',
+                  minWidth: '120px', // Garante que o botão não encolha
+                  transition: 'opacity 0.2s'
+                }}
               >
-                {actionLoading ? "Salvando..." : <><i className="bi bi-pencil me-2"></i> Salvar</>}
+                {actionLoading ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-check-lg me-2"></i> Salvar
+                  </>
+                )}
               </button>
             </div>
           )}
-          <div className="text-dim small d-none d-md-block">
+          <div className="text-dim small d-none d-lg-block ms-2">
             UUID: <span className="mono-text" style={{ color: "var(--primary)" }}>{user.id}</span>
           </div>
         </div>
