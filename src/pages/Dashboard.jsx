@@ -86,27 +86,21 @@ export default function Dashboard() {
 
   // --- FUNÇÕES DE AÇÃO DO GRUPO (Implementadas para o GroupDetail) ---
 
+// No seu Dashboard.js corrigido
 const handleAddUserToGroup = async (email) => {
-  setActionLoading(true);
   try {
-    // 1. Busca o ID do usuário diretamente no banco pelo e-mail
-    const searchRes = await api.get(`/api/v1/users/find-by-email/${email.trim()}`);
-    const userFound = searchRes.data;
+    // Busca o ID usando a rota que criamos no AuthController
+    const userRes = await api.get(`/api/v1/users/find-by-email/${encodeURIComponent(email)}`);
+    const userId = userRes.data.id;
 
-    // 2. Com o ID em mãos, envia para a rota de membros do grupo
+    // Envia o ID para o seu AxionGroupController@addMember
     await api.post(`/api/v1/groups/${selectedGroupId}/members`, { 
-      user_id: userFound.id 
+      user_id: userId 
     });
 
-    alert(`Sucesso! ${userFound.name} foi adicionado ao grupo.`);
-    loadGroups(currentPage);
+    alert("Membro adicionado!");
   } catch (err) {
-    const errorMsg = err.response?.status === 404 
-      ? "E-mail não cadastrado no AxionID." 
-      : "Erro ao adicionar usuário ao grupo.";
-    alert(errorMsg);
-  } finally {
-    setActionLoading(false);
+    alert(err.response?.data?.message || "Erro ao adicionar");
   }
 };
   const handleRemoveUserFromGroup = async (userId, userName) => {
