@@ -330,33 +330,40 @@ export default function Dashboard() {
             </>
           )}
         </main>
-        {/* ALERTA DE PERFIL INCOMPLETO */}
-        {currentUser && !currentUser.completed && (
-          <div className="incomplete-profile-alert animate-in" style={{
-            cursor: 'pointer',
-            transition: 'all 0.3s ease'
-          }}
-          onClick={() => handleViewDetail(currentUser.id)} // Abre o perfil ao clicar no card
+                {currentUser && currentUser.profile_completed === false && (
+          <div
+            className="alert-complete-profile m-4 p-4 d-flex align-items-center justify-content-between animate-in"
+            style={{
+              background: "#fff3cd",
+              borderLeft: "5px solid #ffc107",
+              borderRadius: "8px",
+              color: "#856404",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            }}
           >
-            <div className="d-flex align-items-center justify-content-between gap-3">
-              <div className="d-flex align-items-center gap-3">
-                <span style={{ fontSize: '1.2rem' }}>⚠️</span>
-                <div>
-                  <strong className="text-warning d-block">Perfil Incompleto</strong>
-                  <small className="text-white opacity-75">Atualize seus dados para liberar todas as funções.</small>
-                </div>
+            <div className="d-flex align-items-center">
+              <i
+                className="bi bi-exclamation-triangle-fill me-3"
+                style={{ fontSize: "1.5rem" }}
+              ></i>
+              <div>
+                <h6 className="mb-0 fw-bold">
+                  Seu perfil ainda não está completo!
+                </h6>
+                <small>
+                  Complete suas informações para liberar todas as
+                  funcionalidades do sistema AxionID.
+                </small>
               </div>
-              <button 
-                className="btn btn-warning btn-sm fw-bold" 
-                style={{ fontSize: '0.7rem', borderRadius: '6px' }}
-                onClick={(e) => {
-                  e.stopPropagation(); // Evita duplicar o clique do card
-                  handleViewDetail(currentUser.id);
-                }}
-              >
-                COMPLETAR AGORA
-              </button>
             </div>
+
+            <button
+              className="btn btn-warning btn-sm fw-bold px-4"
+              onClick={() => navigate("/complete-profile")}
+              style={{ borderRadius: "20px" }}
+            >
+              Completar agora
+            </button>
           </div>
         )}
       </div>
