@@ -351,15 +351,15 @@ export default function Dashboard() {
         </header>
 
         <main className="content-area p-4">
-                      {activeTab === "groups" && !showGroupForm && !selectedGroupId && (
-              <button
-                className="btn btn-primary btn-sm"
-                style={{ borderRadius: "8px", fontSize: "0.8rem" }}
-                onClick={() => setShowGroupForm(true)}
-              >
-                + Novo Grupo
-              </button>
-            )}
+          {activeTab === "groups" && !showGroupForm && !selectedGroupId && (
+            <button
+              className="btn btn-primary btn-sm"
+              style={{ borderRadius: "8px", fontSize: "0.8rem" }}
+              onClick={() => setShowGroupForm(true)}
+            >
+              + Novo Grupo
+            </button>
+          )}
           {selectedUser ? (
             <UserDetail
               user={selectedUser}
