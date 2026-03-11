@@ -12,6 +12,7 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
         {/* SEÇÃO PRINCIPAL - VISÍVEL PARA TODOS OS LOGADOS */}
         <div className="nav-group">
           <p className="nav-section-title">Principal</p>
+          
           <button 
             className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
             onClick={() => setActiveTab('users')}
@@ -20,6 +21,15 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
             <span className="nav-label">
               {role === 'admin' ? 'Gestão de Usuários' : 'Meu Acesso'}
             </span>
+          </button>
+
+          {/* NOVO MENU: GESTÃO DE GRUPOS */}
+          <button 
+            className={`nav-item ${activeTab === 'groups' ? 'active' : ''}`}
+            onClick={() => setActiveTab('groups')}
+          >
+            <span className="nav-icon">📁</span>
+            <span className="nav-label">Gestão de Grupos</span>
           </button>
         </div>
 
@@ -34,13 +44,6 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
               <span className="nav-icon">📜</span>
               <span className="nav-label">Logs de Auditoria</span>
             </button>
-            
-            {/* Exemplo de item futuro (opcional/comentado) */}
-            {/* <button className="nav-item">
-              <span className="nav-icon">🛡️</span>
-              <span className="nav-label">Políticas de Acesso</span>
-            </button> 
-            */}
           </div>
         )}
       </nav>
