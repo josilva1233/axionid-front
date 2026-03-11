@@ -5,48 +5,45 @@ export default function GroupDetail({ group, onBack, onAddUser, onRemoveUser, ac
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (emailToAdd) {
-      onAddUser(emailToAdd);
-      setEmailToAdd('');
-    }
+    if (!emailToAdd) return;
+    
+    // Dispara a função que está no Dashboard.js
+    onAddUser(emailToAdd);
+    setEmailToAdd('');
   };
 
-  if (!group) return <div className="text-center py-5 text-dim">Grupo não encontrado.</div>;
+  if (!group) {
+    return (
+      <div className="text-center py-5">
+        <p className="text-dim">Carregando dados do grupo...</p>
+        <button className="btn-secondary" onClick={onBack}>Voltar</button>
+      </div>
+    );
+  }
 
   return (
     <div className="group-detail-container animate-in">
-      {/* HEADER */}
-      <div className="d-flex align-items-center justify-content-between mb-4">
-        <div className="d-flex align-items-center gap-3">
-          <button 
-            className="btn-filter-clear" 
-            onClick={onBack} 
-            style={{ width: 'auto', padding: '8px 15px', borderRadius: '8px' }}
-          >
-            <i className="bi bi-arrow-left me-2"></i>Voltar
-          </button>
-          <h2 className="mb-0 text-white" style={{ fontSize: '1.4rem', fontWeight: '600' }}>
-            Gerenciar: <span className="text-primary">{group.name.toUpperCase()}</span>
-          </h2>
-        </div>
+      <div className="d-flex align-items-center gap-3 mb-4">
+        <button className="btn-filter-clear" onClick={onBack} style={{ width: 'auto', padding: '8px 15px' }}>
+          <i className="bi bi-arrow-left me-2"></i>Voltar
+        </button>
+        <h2 className="mb-0 text-white" style={{ fontSize: '1.4rem' }}>
+          Gerenciar Grupo: <span className="text-primary">{group.name?.toUpperCase()}</span>
+        </h2>
       </div>
 
       <div className="row g-4">
         {/* LISTA DE MEMBROS */}
         <div className="col-md-8">
           <div className="content-card p-4">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-              <h5 className="text-white mb-0">Membros do Grupo</h5>
-              <span className="badge badge-operacional">{group.users?.length || 0} usuários</span>
-            </div>
-            
+            <h5 className="text-white mb-4">Membros Atuais</h5>
             <div className="table-responsive">
               <table className="axion-table">
                 <thead>
                   <tr>
                     <th>NOME</th>
                     <th>E-MAIL</th>
-                    <th className="text-end">AÇÕES</th>
+                    <th className="text-end">AÇÃO</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -58,19 +55,18 @@ export default function GroupDetail({ group, onBack, onAddUser, onRemoveUser, ac
                         <td className="text-end">
                           <button 
                             className="btn btn-outline-danger btn-sm"
-                            style={{ borderRadius: '6px', fontSize: '0.75rem', padding: '5px 10px' }}
                             onClick={() => onRemoveUser(user.id, user.name)}
                             disabled={actionLoading}
                           >
-                            <i className="bi bi-person-x me-1"></i>Remover
+                            Remover
                           </button>
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="3" className="text-center py-5 text-dim">
-                        Nenhum membro encontrado neste grupo.
+                      <td colSpan="3" className="text-center py-4 text-dim">
+                        Nenhum membro vinculado a este grupo.
                       </td>
                     </tr>
                   )}
@@ -80,14 +76,10 @@ export default function GroupDetail({ group, onBack, onAddUser, onRemoveUser, ac
           </div>
         </div>
 
-        {/* BOX LATERAL PARA ADICIONAR */}
+        {/* FORMULÁRIO LATERAL */}
         <div className="col-md-4">
-          <div className="content-card p-4" style={{ border: '1px solid var(--border-color)' }}>
+          <div className="content-card p-4">
             <h5 className="text-white mb-3">Adicionar Membro</h5>
-            <p className="text-dim small mb-4">
-              O usuário deve estar previamente cadastrado no sistema AxionID.
-            </p>
-            
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
                 <label className="filter-label mb-2">E-mail do Usuário</label>
@@ -102,14 +94,10 @@ export default function GroupDetail({ group, onBack, onAddUser, onRemoveUser, ac
               </div>
               <button 
                 type="submit" 
-                className="btn btn-primary w-100 py-2 fw-bold" 
+                className="btn btn-primary w-100" 
                 disabled={actionLoading || !emailToAdd}
               >
-                {actionLoading ? (
-                  <span className="spinner-border spinner-border-sm"></span>
-                ) : (
-                  <><i className="bi bi-person-plus-fill me-2"></i>Inserir no Grupo</>
-                )}
+                {actionLoading ? 'Processando...' : 'Inserir no Grupo'}
               </button>
             </form>
           </div>
