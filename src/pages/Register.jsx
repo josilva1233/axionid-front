@@ -54,7 +54,8 @@ export default function Register() {
         await api.post('/api/v1/complete-profile', {
           cpf_cnpj: formData.cpf_cnpj,
           password: formData.password,
-          password_confirmation: formData.password_confirmation
+          password_confirmation: formData.password_confirmation,
+          from_google: isSocial
         });
       } else {
         // ROTA PARA CADASTRO MANUAL
