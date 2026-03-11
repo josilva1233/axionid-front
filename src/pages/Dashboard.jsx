@@ -330,7 +330,18 @@ export default function Dashboard() {
             </>
           )}
         </main>
-        {/* ... Alerta de perfil incompleto mantido ... */}
+        {/* ALERTA DE PERFIL INCOMPLETO */}
+        {currentUser && !currentUser.completed && (
+          <div className="incomplete-profile-alert animate-in">
+            <div className="d-flex align-items-center gap-3">
+              <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+              <div>
+                <strong className="text-warning d-block">Perfil Incompleto</strong>
+                <small className="text-white">Atualize seus dados para liberar todas as funções.</small>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
