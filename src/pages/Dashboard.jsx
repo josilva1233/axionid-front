@@ -89,7 +89,7 @@ export default function Dashboard() {
   const handleAddUserToGroup = async (email) => {
     setActionLoading(true);
     try {
-      await api.post(`/api/v1/groups/${selectedGroupId}/users`, { email });
+      await api.post(`/api/v1/groups/${selectedGroupId}/members`, { email });
       alert("Usuário adicionado ao grupo!");
       loadGroups(currentPage); // Atualiza os dados
     } catch (err) {
