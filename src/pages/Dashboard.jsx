@@ -86,16 +86,32 @@ export default function Dashboard() {
 
   // --- FUNÇÕES DE AÇÃO DO GRUPO (Implementadas para o GroupDetail) ---
 
-  const handleAddUserToGroup = async (email) => {
-    setActionLoading(true);
-    try {
-      await api.post(`/api/v1/groups/${selectedGroupId}/members`, { email });
-      alert("Usuário adicionado ao grupo!");
-      loadGroups(currentPage); // Atualiza os dados
-    } catch (err) {
-      alert(err.response?.data?.message || "Erro ao adicionar usuário.");
-    } finally { setActionLoading(false); }
-  };
+const handleAddUserToGroup = async (email) => {
+  setActionLoading(true);
+  try {
+    // 1. Busca o usuário pelo e-mail dentro da lista que já existe no estado 'users'
+    const userFound = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
+
+    if (!userFound) {
+      alert("Usuário não encontrado. Ele precisa estar cadastrado e visível na lista de usuários.");
+      setActionLoading(false);
+      return;
+    }
+
+    // 2. Envia o 'user_id' (ID numérico) para a rota correta do seu backend
+    await api.post(`/api/v1/groups/${selectedGroupId}/members`, { 
+      user_id: userFound.id 
+    });
+
+    alert(`Usuário ${userFound.name} adicionado com sucesso!`);
+    loadGroups(currentPage); // Recarrega a lista para mostrar o novo membro
+  } catch (err) {
+    const msg = err.response?.data?.message || "Erro ao adicionar usuário ao grupo.";
+    alert(msg);
+  } finally {
+    setActionLoading(false);
+  }
+};
 
   const handleRemoveUserFromGroup = async (userId, userName) => {
     if (!window.confirm(`Remover ${userName} do grupo?`)) return;
