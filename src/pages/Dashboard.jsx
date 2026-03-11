@@ -101,7 +101,7 @@ export default function Dashboard() {
     if (!window.confirm(`Remover ${userName} do grupo?`)) return;
     setActionLoading(true);
     try {
-      await api.delete(`/api/v1/groups/${selectedGroupId}/users/${userId}`);
+      await api.delete(`/api/v1/groups/${selectedGroupId}/members/${userId}`);
       loadGroups(currentPage);
     } catch (err) {
       alert("Erro ao remover usuário.");
