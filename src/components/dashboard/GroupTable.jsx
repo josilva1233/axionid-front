@@ -16,7 +16,7 @@ export default function GroupTable({ groups, onViewDetail }) {
           {groups.length > 0 ? (
             groups.map((g) => (
               <tr key={g.id}>
-                {/* ID técnico com estilo Mono */}
+                {/* ID técnico com estilo Monos */}
                 <td
                   className="mono-text"
                   style={{ fontSize: "0.8rem", opacity: 0.7 }}
