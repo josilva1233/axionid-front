@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
 
-export default function GroupDetail({ group, onBack, onAddUser, onRemoveUser, actionLoading }) {
+export default function GroupDetail({ group, onBack, onAddUser, onRemoveUser, onDeleteGroup, actionLoading }) {
   const [emailToAdd, setEmailToAdd] = useState('');
 
   const handleSubmit = (e) => {
@@ -12,6 +11,8 @@ export default function GroupDetail({ group, onBack, onAddUser, onRemoveUser, ac
     setEmailToAdd('');
   };
 
+
+
   if (!group) {
     return (
       <div className="text-center py-5">
@@ -20,6 +21,12 @@ export default function GroupDetail({ group, onBack, onAddUser, onRemoveUser, ac
       </div>
     );
   }
+
+  const handleDelete = () => {
+    if (window.confirm(`ATENÇÃO: Deseja realmente excluir o grupo "${group.name}"? Esta ação não pode ser desfeita.`)) {
+      onDeleteGroup(group.id);
+    }
+  };
 
   return (
     <div className="group-detail-container animate-in">
@@ -103,6 +110,31 @@ export default function GroupDetail({ group, onBack, onAddUser, onRemoveUser, ac
           </div>
         </div>
       </div>
+      {/* SEÇÃO DE AÇÕES CRÍTICAS - PADRÃO AXION */}
+      <section className="actions-section mt-5 p-4 border-danger-subtle bg-danger-subtle-opacity-5 rounded-16">
+        <div className="d-flex align-items-center gap-2 mb-4">
+            <i className="bi bi-exclamation-octagon-fill text-danger"></i>
+            <h4 className="text-danger mb-0 fs-x-small fw-800 text-uppercase letter-spacing-2">
+              Zona de Perigo: Gestão do Grupo
+            </h4>
+        </div>
+
+        <div className="critical-actions-grid d-flex flex-column flex-md-row gap-3">
+          <div className="flex-grow-1">
+            <p className="text-dim small mb-0">
+              A exclusão do grupo removerá permanentemente todos os vínculos de membros e históricos associados.
+            </p>
+          </div>
+          
+          <button 
+            onClick={handleDelete} 
+            disabled={actionLoading} 
+            className="btn-delete-permanent px-4"
+          >
+            {actionLoading ? "Processando..." : "Excluir Grupo Permanentemente"}
+          </button>
+        </div>
+      </section>
     </div>
   );
 }
