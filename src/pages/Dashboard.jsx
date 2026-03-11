@@ -5,6 +5,7 @@ import api from "../services/api";
 
 import Sidebar from "../components/dashboard/Sidebar";
 import UserTable from "../components/dashboard/UserTable";
+import GroupTable from "../components/dashboard/GroupTable";
 import AuditTable from "../components/dashboard/AuditTable";
 import UserDropdown from "../components/dashboard/UserDropdown";
 import UserDetail from "../components/dashboard/UserDetail";
@@ -36,6 +37,7 @@ export default function Dashboard() {
   const [role] = useState(localStorage.getItem("@AxionID:role"));
   const [activeTab, setActiveTab] = useState("users");
   const [users, setUsers] = useState([]);
+  const [groups, setGroups] = useState([]); // Novo estado para grupos
   const [auditLogs, setAuditLogs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
@@ -82,6 +84,33 @@ export default function Dashboard() {
       }
     },
     [role, filters.name, filters.completed],
+  );
+
+  // Nova função para carregar grupos
+  const loadGroups = useCallback(
+    async (page = 1) => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({ page });
+        // Adicione filtros de grupo aqui se necessário no futuro
+        const res = await api.get(`/api/v1/groups?${params.toString()}`);
+        setGroups(res.data.data || res.data);
+        setPaginationData(
+          res.data.current_page
+            ? {
+                current: res.data.current_page,
+                last: res.data.last_page,
+                total: res.data.total,
+              }
+            : null,
+        );
+      } catch (err) {
+        console.error("Erro ao carregar grupos:", err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
   );
 
   const loadAuditLogs = useCallback(
@@ -183,6 +212,12 @@ export default function Dashboard() {
     }
   };
 
+  // Handler para detalhe de grupos (ajuste conforme sua rota de detalhes de grupo)
+  const handleViewDetailGroup = (id) => {
+    console.log("Visualizar grupo:", id);
+    // Ex: navigate(`/groups/${id}`);
+  };
+
   const handleUserAction = async (type) => {
     setActionLoading(true);
     try {
@@ -226,12 +261,14 @@ export default function Dashboard() {
   }, [navigate]);
 
   useEffect(() => {
-    if (role === "admin") {
-      activeTab === "users"
-        ? loadUsers(currentPage)
-        : loadAuditLogs(currentPage);
+    if (activeTab === "users") {
+      loadUsers(currentPage);
+    } else if (activeTab === "audit") {
+      loadAuditLogs(currentPage);
+    } else if (activeTab === "groups") {
+      loadGroups(currentPage);
     }
-  }, [activeTab, role, loadUsers, loadAuditLogs, currentPage]);
+  }, [activeTab, role, loadUsers, loadAuditLogs, loadGroups, currentPage]);
 
   const handleLogout = async () => {
     try {
@@ -291,7 +328,9 @@ export default function Dashboard() {
               ? "Detalhes do Usuário"
               : activeTab === "users"
                 ? "Gestão de Usuários"
-                : "Auditoria"}
+                : activeTab === "groups"
+                  ? "Gestão de Grupos"
+                  : "Auditoria"}
           </h2>
           {currentUser && (
             <UserDropdown user={currentUser} onLogout={handleLogout} />
@@ -309,7 +348,7 @@ export default function Dashboard() {
             />
           ) : (
             <>
-              {role === "admin" && (
+              {role === "admin" && activeTab !== "groups" && (
                 <div className="filter-card mb-4 p-4 animate-in">
                   <Row className="align-items-end g-3">
                     {activeTab === "users" ? (
@@ -422,7 +461,7 @@ export default function Dashboard() {
                     overflow: "hidden",
                   }}
                 >
-                  {activeTab === "users" ? (
+                  {activeTab === "users" && (
                     role === "admin" ? (
                       <UserTable
                         users={users}
@@ -431,8 +470,17 @@ export default function Dashboard() {
                     ) : (
                       <WelcomeOperacional user={currentUser} />
                     )
-                  ) : (
-                    role === "admin" && <AuditTable logs={auditLogs} />
+                  )}
+
+                  {activeTab === "audit" && role === "admin" && (
+                    <AuditTable logs={auditLogs} />
+                  )}
+
+                  {activeTab === "groups" && (
+                    <GroupTable 
+                      groups={groups} 
+                      onViewDetail={(id) => handleViewDetailGroup(id)} 
+                    />
                   )}
                 </div>
 
@@ -464,7 +512,7 @@ export default function Dashboard() {
           )}
         </main>
 
-        {/* VALIDAÇÃO: Alerta de Cadastro Incompleto corrigido para bater com o Backend */}
+        {/* VALIDAÇÃO: Alerta de Cadastro Incompleto */}
         {currentUser && currentUser.profile_completed === false && (
           <div
             className="alert-complete-profile m-4 p-4 d-flex align-items-center justify-content-between animate-in"
