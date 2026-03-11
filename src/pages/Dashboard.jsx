@@ -344,7 +344,14 @@ export default function Dashboard() {
                       ? "Gestão de Grupos"
                       : "Auditoria"}
             </h2>
-            {activeTab === "groups" && !showGroupForm && !selectedGroupId && (
+          </div>
+          {currentUser && (
+            <UserDropdown user={currentUser} onLogout={handleLogout} />
+          )}
+        </header>
+
+        <main className="content-area p-4">
+                      {activeTab === "groups" && !showGroupForm && !selectedGroupId && (
               <button
                 className="btn btn-primary btn-sm"
                 style={{ borderRadius: "8px", fontSize: "0.8rem" }}
@@ -353,13 +360,6 @@ export default function Dashboard() {
                 + Novo Grupo
               </button>
             )}
-          </div>
-          {currentUser && (
-            <UserDropdown user={currentUser} onLogout={handleLogout} />
-          )}
-        </header>
-
-        <main className="content-area p-4">
           {selectedUser ? (
             <UserDetail
               user={selectedUser}
