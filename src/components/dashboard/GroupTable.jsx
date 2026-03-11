@@ -15,33 +15,56 @@ export default function GroupTable({ groups, onViewDetail, currentUser }) {
         <tbody>
           {groups.length > 0 ? (
             groups.map((g) => {
-              // --- LÓGICA DE PERMISSÃO ACRESCENTADA AQUI ---
-              const isGroupAdmin = 
-                g.creator_id === currentUser?.id || 
-                g.users?.some(u => u.id === currentUser?.id && u.pivot?.role === 'admin');
+              // 1. Verifica se é Admin Global do Sistema (is_admin no banco)
+              const isSystemAdmin =
+                currentUser?.is_admin === 1 || currentUser?.is_admin === true;
+
+              // 2. Verifica se tem permissão de gerência (Criador OU Admin do Grupo OU Admin Global)
+              const canManage =
+                isSystemAdmin ||
+                g.creator_id === currentUser?.id ||
+                g.users?.some(
+                  (u) => u.id === currentUser?.id && u.pivot?.role === "admin",
+                );
 
               return (
                 <tr key={g.id}>
-                  <td className="mono-text" style={{ fontSize: "0.8rem", opacity: 0.7 }}>
+                  {/* ID técnico com estilo Monos */}
+                  <td
+                    className="mono-text"
+                    style={{ fontSize: "0.8rem", opacity: 0.7 }}
+                  >
                     #{g.id}
                   </td>
 
+                  {/* Nome do Grupo em destaque */}
                   <td>
-                    <strong style={{ color: "var(--primary)", letterSpacing: "0.5px" }}>
+                    <strong
+                      style={{
+                        color: "var(--primary)",
+                        letterSpacing: "0.5px",
+                      }}
+                    >
                       {g.name.toUpperCase()}
                     </strong>
                   </td>
 
+                  {/* Criador do Grupo */}
                   <td className="text-dim" style={{ fontSize: "0.9rem" }}>
                     {g.creator?.name || "Sistema"}
                   </td>
 
+                  {/* Contagem de Membros com Badge Operacional */}
                   <td className="text-center">
-                    <span className="badge badge-operacional" style={{ fontSize: "0.75rem", minWidth: "40px" }}>
+                    <span
+                      className="badge badge-operacional"
+                      style={{ fontSize: "0.75rem", minWidth: "40px" }}
+                    >
                       {g.users_count || g.users?.length || 0}
                     </span>
                   </td>
 
+                  {/* Status de Vínculo (Lógica baseada em permissão) */}
                   <td className="text-center">
                     <div className="d-flex align-items-center justify-content-center gap-2">
                       <span
@@ -50,18 +73,29 @@ export default function GroupTable({ groups, onViewDetail, currentUser }) {
                           width: "8px",
                           height: "8px",
                           borderRadius: "50%",
-                          backgroundColor: isGroupAdmin ? "var(--primary)" : "#6c757d",
+                          backgroundColor: canManage
+                            ? "var(--primary)"
+                            : "#6c757d",
                         }}
                       />
-                      <span style={{ fontSize: "0.85rem", color: "var(--text-main)" }}>
-                        {isGroupAdmin ? "Administrador" : "Membro"}
+                      <span
+                        style={{
+                          fontSize: "0.85rem",
+                          color: "var(--text-main)",
+                        }}
+                      >
+                        {isSystemAdmin
+                          ? "Admin Global"
+                          : canManage
+                            ? "Administrador"
+                            : "Membro"}
                       </span>
                     </div>
                   </td>
 
+                  {/* Ações: Gerenciar para Admins, Cadeado para Membros */}
                   <td className="text-end">
-                    {/* --- BOTÃO CONDICIONAL ACRESCENTADO AQUI --- */}
-                    {isGroupAdmin ? (
+                    {canManage ? (
                       <button
                         className="btn-table-action"
                         onClick={() => onViewDetail(g.id)}
@@ -71,7 +105,10 @@ export default function GroupTable({ groups, onViewDetail, currentUser }) {
                         Gerenciar
                       </button>
                     ) : (
-                      <span className="text-dim small" style={{ fontStyle: 'italic' }}>
+                      <span
+                        className="text-dim small"
+                        style={{ fontStyle: "italic", opacity: 0.8 }}
+                      >
                         <i className="bi bi-lock-fill me-1"></i> Somente Leitura
                       </span>
                     )}
@@ -84,7 +121,9 @@ export default function GroupTable({ groups, onViewDetail, currentUser }) {
               <td colSpan="6" className="text-center py-5 text-dim">
                 <div className="d-flex flex-column align-items-center">
                   <span style={{ fontSize: "1.5rem" }}>📁</span>
-                  <p className="mt-2 mb-0">Nenhum grupo identificado nesta conta.</p>
+                  <p className="mt-2 mb-0">
+                    Nenhum grupo identificado nesta conta.
+                  </p>
                 </div>
               </td>
             </tr>
