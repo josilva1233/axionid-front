@@ -57,9 +57,31 @@ export default function Dashboard() {
     method: "",
     date: "",
   });
-
   // --- LÓGICA DE CARREGAMENTO (API) ---
   // (loadUsers, loadGroups, loadAuditLogs mantidos exatamente como no seu original)
+
+// No componente pai
+const handleDeleteGroup = useCallback(async (groupId) => {
+    setActionLoading(true);
+    try {
+        await api.delete(`/v1/groups/${groupId}`);
+        
+        // 1. Atualiza a lista local removendo o grupo (Otimização de performance)
+        setGroups(prev => prev.filter(g => g.id !== groupId));
+        
+        // 2. Volta para a lista principal
+        setSelectedGroup(null); 
+        setView('list'); 
+        
+        // Mensagem de sucesso (opcional)
+        // toast.success("Grupo excluído com sucesso");
+    } catch (error) {
+        console.error("Erro ao deletar grupo:", error);
+        alert("Não foi possível excluir o grupo.");
+    } finally {
+        setActionLoading(false);
+    }
+}, [groups]); // Dependência da lista de grupos
 
   const loadUsers = useCallback(
     async (page = 1) => {
