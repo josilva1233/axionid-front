@@ -6,6 +6,7 @@ import api from "../services/api";
 import Sidebar from "../components/dashboard/Sidebar";
 import UserTable from "../components/dashboard/UserTable";
 import GroupTable from "../components/dashboard/GroupTable";
+import GroupForm from "../components/dashboard/GroupForm";
 import AuditTable from "../components/dashboard/AuditTable";
 import UserDropdown from "../components/dashboard/UserDropdown";
 import UserDetail from "../components/dashboard/UserDetail";
@@ -37,7 +38,7 @@ export default function Dashboard() {
   const [role] = useState(localStorage.getItem("@AxionID:role"));
   const [activeTab, setActiveTab] = useState("users");
   const [users, setUsers] = useState([]);
-  const [groups, setGroups] = useState([]); // Novo estado para grupos
+  const [groups, setGroups] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
@@ -46,6 +47,7 @@ export default function Dashboard() {
 
   const [selectedUser, setSelectedUser] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [showGroupForm, setShowGroupForm] = useState(false); // Controle do form de grupos
 
   const [filters, setFilters] = useState({
     name: "",
@@ -86,13 +88,11 @@ export default function Dashboard() {
     [role, filters.name, filters.completed],
   );
 
-  // Nova função para carregar grupos
   const loadGroups = useCallback(
     async (page = 1) => {
       setLoading(true);
       try {
         const params = new URLSearchParams({ page });
-        // Adicione filtros de grupo aqui se necessário no futuro
         const res = await api.get(`/api/v1/groups?${params.toString()}`);
         setGroups(res.data.data || res.data);
         setPaginationData(
@@ -141,6 +141,22 @@ export default function Dashboard() {
     },
     [filters.method, filters.date, role],
   );
+
+  // --- FUNÇÕES DE AÇÃO ---
+
+  const handleCreateGroup = async (formData) => {
+    setActionLoading(true);
+    try {
+      await api.post("/api/v1/groups", formData);
+      alert("Grupo cadastrado com sucesso!");
+      setShowGroupForm(false);
+      loadGroups(1);
+    } catch (err) {
+      alert(err.response?.data?.message || "Erro ao cadastrar grupo.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const handleUpdateUser = async (id, formData) => {
     const requiredFields = [
@@ -212,10 +228,8 @@ export default function Dashboard() {
     }
   };
 
-  // Handler para detalhe de grupos (ajuste conforme sua rota de detalhes de grupo)
   const handleViewDetailGroup = (id) => {
     console.log("Visualizar grupo:", id);
-    // Ex: navigate(`/groups/${id}`);
   };
 
   const handleUserAction = async (type) => {
@@ -247,6 +261,8 @@ export default function Dashboard() {
       setActionLoading(false);
     }
   };
+
+  // --- EFFECTS ---
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -309,6 +325,7 @@ export default function Dashboard() {
         setActiveTab={(tab) => {
           setActiveTab(tab);
           setSelectedUser(null);
+          setShowGroupForm(false); // Reseta o form ao mudar de aba
           setCurrentPage(1);
         }}
         role={role}
@@ -323,15 +340,26 @@ export default function Dashboard() {
             padding: "1rem 2rem",
           }}
         >
-          <h2 className="brand" style={{ fontSize: "1.25rem", margin: 0 }}>
-            {selectedUser
-              ? "Detalhes do Usuário"
-              : activeTab === "users"
-                ? "Gestão de Usuários"
-                : activeTab === "groups"
-                  ? "Gestão de Grupos"
-                  : "Auditoria"}
-          </h2>
+          <div className="d-flex align-items-center gap-3">
+             <h2 className="brand" style={{ fontSize: "1.25rem", margin: 0 }}>
+              {selectedUser
+                ? "Detalhes do Usuário"
+                : activeTab === "users"
+                  ? "Gestão de Usuários"
+                  : activeTab === "groups"
+                    ? "Gestão de Grupos"
+                    : "Auditoria"}
+            </h2>
+            {activeTab === "groups" && !showGroupForm && (
+              <button 
+                className="btn btn-primary btn-sm" 
+                style={{ borderRadius: '8px', fontSize: '0.8rem' }}
+                onClick={() => setShowGroupForm(true)}
+              >
+                + Novo Grupo
+              </button>
+            )}
+          </div>
           {currentUser && (
             <UserDropdown user={currentUser} onLogout={handleLogout} />
           )}
@@ -477,14 +505,23 @@ export default function Dashboard() {
                   )}
 
                   {activeTab === "groups" && (
-                    <GroupTable 
-                      groups={groups} 
-                      onViewDetail={(id) => handleViewDetailGroup(id)} 
-                    />
+                    showGroupForm ? (
+                      <GroupForm 
+                        onSave={handleCreateGroup} 
+                        onCancel={() => setShowGroupForm(false)} 
+                        loading={actionLoading}
+                      />
+                    ) : (
+                      <GroupTable 
+                        groups={groups} 
+                        onViewDetail={(id) => handleViewDetailGroup(id)} 
+                      />
+                    )
                   )}
                 </div>
 
                 {role === "admin" &&
+                  !showGroupForm &&
                   paginationData &&
                   paginationData.last > 1 && (
                     <div
@@ -512,7 +549,6 @@ export default function Dashboard() {
           )}
         </main>
 
-        {/* VALIDAÇÃO: Alerta de Cadastro Incompleto */}
         {currentUser && currentUser.profile_completed === false && (
           <div
             className="alert-complete-profile m-4 p-4 d-flex align-items-center justify-content-between animate-in"
