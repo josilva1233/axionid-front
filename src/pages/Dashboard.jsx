@@ -332,13 +332,30 @@ export default function Dashboard() {
         </main>
         {/* ALERTA DE PERFIL INCOMPLETO */}
         {currentUser && !currentUser.completed && (
-          <div className="incomplete-profile-alert animate-in">
-            <div className="d-flex align-items-center gap-3">
-              <span style={{ fontSize: '1.2rem' }}>⚠️</span>
-              <div>
-                <strong className="text-warning d-block">Perfil Incompleto</strong>
-                <small className="text-white">Atualize seus dados para liberar todas as funções.</small>
+          <div className="incomplete-profile-alert animate-in" style={{
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
+          }}
+          onClick={() => handleViewDetail(currentUser.id)} // Abre o perfil ao clicar no card
+          >
+            <div className="d-flex align-items-center justify-content-between gap-3">
+              <div className="d-flex align-items-center gap-3">
+                <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+                <div>
+                  <strong className="text-warning d-block">Perfil Incompleto</strong>
+                  <small className="text-white opacity-75">Atualize seus dados para liberar todas as funções.</small>
+                </div>
               </div>
+              <button 
+                className="btn btn-warning btn-sm fw-bold" 
+                style={{ fontSize: '0.7rem', borderRadius: '6px' }}
+                onClick={(e) => {
+                  e.stopPropagation(); // Evita duplicar o clique do card
+                  handleViewDetail(currentUser.id);
+                }}
+              >
+                COMPLETAR AGORA
+              </button>
             </div>
           </div>
         )}
