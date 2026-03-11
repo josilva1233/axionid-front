@@ -89,30 +89,26 @@ export default function Dashboard() {
 const handleAddUserToGroup = async (email) => {
   setActionLoading(true);
   try {
-    // 1. Busca o usuário pelo e-mail dentro da lista que já existe no estado 'users'
-    const userFound = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
+    // 1. Busca o ID do usuário diretamente no banco pelo e-mail
+    const searchRes = await api.get(`/api/v1/users/find-by-email/${email.trim()}`);
+    const userFound = searchRes.data;
 
-    if (!userFound) {
-      alert("Usuário não encontrado. Ele precisa estar cadastrado e visível na lista de usuários.");
-      setActionLoading(false);
-      return;
-    }
-
-    // 2. Envia o 'user_id' (ID numérico) para a rota correta do seu backend
+    // 2. Com o ID em mãos, envia para a rota de membros do grupo
     await api.post(`/api/v1/groups/${selectedGroupId}/members`, { 
       user_id: userFound.id 
     });
 
-    alert(`Usuário ${userFound.name} adicionado com sucesso!`);
-    loadGroups(currentPage); // Recarrega a lista para mostrar o novo membro
+    alert(`Sucesso! ${userFound.name} foi adicionado ao grupo.`);
+    loadGroups(currentPage);
   } catch (err) {
-    const msg = err.response?.data?.message || "Erro ao adicionar usuário ao grupo.";
-    alert(msg);
+    const errorMsg = err.response?.status === 404 
+      ? "E-mail não cadastrado no AxionID." 
+      : "Erro ao adicionar usuário ao grupo.";
+    alert(errorMsg);
   } finally {
     setActionLoading(false);
   }
 };
-
   const handleRemoveUserFromGroup = async (userId, userName) => {
     if (!window.confirm(`Remover ${userName} do grupo?`)) return;
     setActionLoading(true);
