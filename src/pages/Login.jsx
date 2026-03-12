@@ -125,6 +125,7 @@ export default function Login() {
               placeholder="Sua senha"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autocomplete="current-password"
               required
             />
           </div>
