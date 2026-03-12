@@ -93,6 +93,7 @@ export default function Login() {
               type="text"
               placeholder="CPF ou CNPJ"
               value={username}
+              autoComplete="username"
               onChange={(e) => setUsername(e.target.value)}
               required
               autoFocus
