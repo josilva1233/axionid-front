@@ -335,7 +335,7 @@ const loadAuditLogs = useCallback(
     return items;
   };
 
-  return (
+ return (
     <div className="dashboard-layout animate-in">
       <Sidebar
         activeTab={activeTab}
@@ -371,15 +371,7 @@ const loadAuditLogs = useCallback(
         </header>
 
         <main className="content-area p-4">
-          {activeTab === "groups" && !showGroupForm && !selectedGroupId && (
-            <button
-              className="btn btn-primary btn-sm"
-              style={{ borderRadius: "8px", fontSize: "0.8rem" }}
-              onClick={() => setShowGroupForm(true)}
-            >
-              + Novo Grupo
-            </button>
-          )}
+          {/* BOTÃO REMOVIDO DAQUI PARA ENTRAR NO FILTER-CARD ABAIXO */}
 
           {selectedUser ? (
             <UserDetail
@@ -395,15 +387,16 @@ const loadAuditLogs = useCallback(
               onBack={() => setSelectedGroupId(null)}
               onAddUser={handleAddUserToGroup}
               onRemoveUser={handleRemoveUserFromGroup}
-              onDeleteGroup={handleDeleteGroup} // Passando a função corrigida
+              onDeleteGroup={handleDeleteGroup} 
               actionLoading={actionLoading}
             />
           ) : (
             <>
-              {role === "admin" && activeTab !== "groups" && (
+              {/* AREA DE FILTROS E AÇÕES RÁPIDAS */}
+              {!showGroupForm && !selectedGroupId && (
                 <div className="filter-card mb-4 p-4 animate-in">
                   <Row className="align-items-end g-3">
-                    {activeTab === "users" ? (
+                    {activeTab === "users" && role === "admin" ? (
                       <>
                         <Col md={5}>
                           <Form.Group>
@@ -433,8 +426,32 @@ const loadAuditLogs = useCallback(
                             </Form.Select>
                           </Form.Group>
                         </Col>
+                        <Col md={3}>
+                          <button className="btn-filter-clear w-100" onClick={clearFilters}>
+                            <i className="bi bi-eraser me-2"></i> Limpar Filtros
+                          </button>
+                        </Col>
                       </>
-                    ) : (
+                    ) : activeTab === "groups" ? (
+                      <>
+                        {/* AQUI O BOTÃO + GRUPO COM A "MESMA CARA" DO FILTRO */}
+                        <Col md={9}>
+                          <div className="d-flex flex-column">
+                            <span className="filter-label mb-2">Ações de Grupo</span>
+                            <div className="text-dim small">Crie novos grupos para gerenciar permissões de usuários de forma coletiva.</div>
+                          </div>
+                        </Col>
+                        <Col md={3}>
+                          <button 
+                            className="btn-primary-axion w-100 py-2 fw-bold" 
+                            style={{ height: "45px", borderRadius: "8px" }}
+                            onClick={() => setShowGroupForm(true)}
+                          >
+                            <i className="bi bi-plus-lg me-2"></i> Novo Grupo
+                          </button>
+                        </Col>
+                      </>
+                    ) : activeTab === "audit" && role === "admin" ? (
                       <>
                         <Col md={5}>
                           <Form.Group>
@@ -465,13 +482,13 @@ const loadAuditLogs = useCallback(
                             />
                           </Form.Group>
                         </Col>
+                        <Col md={3}>
+                          <button className="btn-filter-clear w-100" onClick={clearFilters}>
+                            <i className="bi bi-eraser me-2"></i> Limpar Filtros
+                          </button>
+                        </Col>
                       </>
-                    )}
-                    <Col md={3}>
-                      <button className="btn-filter-clear w-100" onClick={clearFilters}>
-                        <i className="bi bi-eraser me-2"></i> Limpar Filtros
-                      </button>
-                    </Col>
+                    ) : null}
                   </Row>
                 </div>
               )}
@@ -504,7 +521,7 @@ const loadAuditLogs = useCallback(
                     <GroupTable
                       groups={groups}
                       onViewDetail={(id) => setSelectedGroupId(id)}
-                      onDeleteGroup={handleDeleteGroup} // Passando para a tabela também se necessário
+                      onDeleteGroup={handleDeleteGroup}
                       currentUser={currentUser}
                     />
                   ))}
