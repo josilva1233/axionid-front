@@ -34,10 +34,10 @@ export default function GroupForm({ onSave, onCancel, loading }) {
           />
         </Form.Group>
 
-        <div className="d-flex gap-2 w-100">
+        <div className="d-flex gap-2 mt-3">
           <button
             type="submit"
-            className="btn-table-action w-100"
+            className="btn-primary-axion w-100 py-2"
             disabled={loading}
           >
             {loading ? (
@@ -49,7 +49,7 @@ export default function GroupForm({ onSave, onCancel, loading }) {
 
           <button
             type="button"
-            className="btn-filter-clear w-100"
+            className="btn-filter-clear w-100 py-2"
             onClick={onCancel}
             disabled={loading}
           >
