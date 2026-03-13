@@ -146,5 +146,30 @@ export default function GroupDetail({
         </div>
       </div>
     </div>
+
+    {/* SEÇÃO: ZONA DE PERIGO */}
+{(isSystemAdmin || Number(currentUserId) === Number(group.creator_id)) && (
+  <div className="mt-5 pt-4">
+    <div className="danger-zone-wrapper border border-danger rounded-3 p-4">
+      <div className="d-flex align-items-center justify-content-between">
+        <div>
+          <h5 className="text-danger fw-bold mb-1">Zona de Perigo</h5>
+          <p className="text-dim small mb-0">
+            A exclusão de um grupo é permanente. Todos os vínculos de membros e dados associados serão apagados.
+          </p>
+        </div>
+        <button 
+          className="btn btn-outline-danger px-4 fw-bold"
+          onClick={handleDelete}
+          disabled={actionLoading}
+          style={{ transition: 'all 0.3s ease' }}
+        >
+          <i className="bi bi-trash3 me-2"></i>
+          Excluir este grupo
+        </button>
+      </div>
+    </div>
+  </div>
+)}
   );
 }
