@@ -188,31 +188,42 @@ export default function GroupDetail({
         </div>
       </div>
       {/* SEÇÃO: ZONA DE PERIGO */}
-      {(isSystemAdmin ||
-        Number(currentUserId) === Number(group.creator_id)) && (
-        <div className="mt-5 pt-4">
-          <div className="danger-zone-wrapper border border-danger rounded-3 p-4">
-            <div className="d-flex align-items-center justify-content-between">
-              <div>
-                <h5 className="text-danger fw-bold mb-1">Zona de Perigo</h5>
-                <p className="text-dim small mb-0">
-                  A exclusão de um grupo é permanente. Todos os vínculos de
-                  membros e dados associados serão apagados.
-                </p>
-              </div>
-              <button
-                className="btn btn-outline-danger px-4 fw-bold"
-                onClick={handleDelete}
-                disabled={actionLoading}
-                style={{ transition: "all 0.3s ease" }}
-              >
-                <i className="bi bi-trash3 me-2"></i>
-                Excluir este grupo
-              </button>
-            </div>
-          </div>
+{/* SEÇÃO: ZONA DE PERIGO (PADRÃO CRITICAL ACTIONS) */}
+{(isSystemAdmin || Number(currentUserId) === Number(group.creator_id)) && (
+  <div className="mt-5 pt-4 border-top border-secondary">
+    <h4 className="text-danger mb-4 fw-bold">
+      Zona de Perigo e Exclusão
+    </h4>
+
+    <div className="critical-actions-grid">
+      <div className="main-actions">
+        {/* Aviso textual integrado no fluxo do grid se necessário, ou apenas os botões */}
+        <div className="mb-3">
+          <p className="text-dim small mb-0">
+            <i className="bi bi-exclamation-triangle-fill text-danger me-2"></i>
+            A exclusão deste grupo é **irreversível**. Todos os dados de membros e histórico vinculados ao grupo 
+            <span className="text-white fw-bold"> {group.name?.toUpperCase()}</span> serão apagados permanentemente.
+          </p>
         </div>
-      )}
+
+        <button 
+          onClick={handleDelete} 
+          disabled={actionLoading} 
+          className="btn-delete-permanent w-100"
+        >
+          {actionLoading ? (
+            <>
+              <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Processando Exclusão...
+            </>
+          ) : (
+            "Excluir Grupo Permanentemente"
+          )}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
