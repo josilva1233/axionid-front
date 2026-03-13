@@ -10,9 +10,8 @@ import GroupForm from "../components/dashboard/GroupForm";
 import AuditTable from "../components/dashboard/AuditTable";
 import UserDropdown from "../components/dashboard/UserDropdown";
 import UserDetail from "../components/dashboard/UserDetail";
-import GroupDetail from "../components/dashboard/GroupDetail"; // Importe o componente novo
+import GroupDetail from "../components/dashboard/GroupDetail";
 
-// ... Componente WelcomeOperacional mantido ...
 const WelcomeOperacional = ({ user }) => (
   <div className="text-center py-5 animate-in">
     <div className="mb-4">
@@ -47,7 +46,7 @@ export default function Dashboard() {
   const [paginationData, setPaginationData] = useState(null);
 
   const [selectedUser, setSelectedUser] = useState(null);
-  const [selectedGroupId, setSelectedGroupId] = useState(null); // Estado para o grupo selecionado
+  const [selectedGroupId, setSelectedGroupId] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [showGroupForm, setShowGroupForm] = useState(false);
 
@@ -57,31 +56,8 @@ export default function Dashboard() {
     method: "",
     date: "",
   });
-  // --- LÓGICA DE CARREGAMENTO (API) ---
-  // (loadUsers, loadGroups, loadAuditLogs mantidos exatamente como no seu original)
 
-// No componente pai
-const handleDeleteGroup = useCallback(async (groupId) => {
-    setActionLoading(true);
-    try {
-        await api.delete(`/v1/groups/${groupId}`);
-        
-        // 1. Atualiza a lista local removendo o grupo (Otimização de performance)
-        setGroups(prev => prev.filter(g => g.id !== groupId));
-        
-        // 2. Volta para a lista principal
-        setSelectedGroup(null); 
-        setView('list'); 
-        
-        // Mensagem de sucesso (opcional)
-        // toast.success("Grupo excluído com sucesso");
-    } catch (error) {
-        console.error("Erro ao deletar grupo:", error);
-        alert("Não foi possível excluir o grupo.");
-    } finally {
-        setActionLoading(false);
-    }
-}, [groups]); // Dependência da lista de grupos
+  // --- LÓGICA DE CARREGAMENTO (API) ---
 
   const loadUsers = useCallback(
     async (page = 1) => {
@@ -162,27 +138,49 @@ const handleDeleteGroup = useCallback(async (groupId) => {
     [filters.method, filters.date, role],
   );
 
-  // --- FUNÇÕES DE AÇÃO DO GRUPO (Implementadas para o GroupDetail) ---
+  // --- FUNÇÕES DE AÇÃO DO GRUPO ---
 
-  // No seu Dashboard.js corrigido
+  const handleDeleteGroup = useCallback(async (groupId) => {
+    if (!window.confirm("Tem certeza que deseja excluir este grupo?")) return;
+    setActionLoading(true);
+    try {
+      // Correção da Rota: adicionado /api/v1
+      await api.delete(`/api/v1/groups/${groupId}`);
+      
+      // Atualização local do estado
+      setGroups(prev => prev.filter(g => g.id !== groupId));
+      
+      // Reseta a visualização para a lista
+      setSelectedGroupId(null); 
+      setShowGroupForm(false);
+      
+      alert("Grupo excluído com sucesso!");
+    } catch (error) {
+      console.error("Erro ao deletar grupo:", error);
+      alert(error.response?.data?.message || "Não foi possível excluir o grupo.");
+    } finally {
+      setActionLoading(false);
+    }
+  }, []);
+
   const handleAddUserToGroup = async (email) => {
     try {
-      // Busca o ID usando a rota que criamos no AuthController
       const userRes = await api.get(
         `/api/v1/users/find-by-email/${encodeURIComponent(email)}`,
       );
       const userId = userRes.data.id;
 
-      // Envia o ID para o seu AxionGroupController@addMember
       await api.post(`/api/v1/groups/${selectedGroupId}/members`, {
         user_id: userId,
       });
 
       alert("Membro adicionado!");
+      loadGroups(currentPage);
     } catch (err) {
       alert(err.response?.data?.message || "Erro ao adicionar");
     }
   };
+
   const handleRemoveUserFromGroup = async (userId, userName) => {
     if (!window.confirm(`Remover ${userName} do grupo?`)) return;
     setActionLoading(true);
@@ -195,8 +193,6 @@ const handleDeleteGroup = useCallback(async (groupId) => {
       setActionLoading(false);
     }
   };
-
-  // --- RESTANTE DAS FUNÇÕES (handleCreateGroup, handleUpdateUser, etc mantidos) ---
 
   const handleCreateGroup = async (formData) => {
     setActionLoading(true);
@@ -213,7 +209,6 @@ const handleDeleteGroup = useCallback(async (groupId) => {
   };
 
   const handleUpdateUser = async (id, formData) => {
-    // ... lógica de validação de endereço mantida ...
     setActionLoading(true);
     try {
       await api.put(`/api/v1/users/${id}/update-manual`, formData);
@@ -251,7 +246,6 @@ const handleDeleteGroup = useCallback(async (groupId) => {
   };
 
   const handleUserAction = async (type) => {
-    // ... lógica de delete/promote/toggle mantida ...
     setActionLoading(true);
     try {
       if (type === "delete") {
@@ -278,8 +272,6 @@ const handleDeleteGroup = useCallback(async (groupId) => {
       setActionLoading(false);
     }
   };
-
-  // --- EFFECTS E RENDER ---
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -338,7 +330,7 @@ const handleDeleteGroup = useCallback(async (groupId) => {
         setActiveTab={(tab) => {
           setActiveTab(tab);
           setSelectedUser(null);
-          setSelectedGroupId(null); // Resetar ao mudar de aba
+          setSelectedGroupId(null);
           setShowGroupForm(false);
           setCurrentPage(1);
         }}
@@ -347,13 +339,7 @@ const handleDeleteGroup = useCallback(async (groupId) => {
       />
 
       <div className="main-wrapper">
-        <header
-          className="main-header"
-          style={{
-            borderBottom: "1px solid var(--border-color)",
-            padding: "1rem 2rem",
-          }}
-        >
+        <header className="main-header" style={{ borderBottom: "1px solid var(--border-color)", padding: "1rem 2rem" }}>
           <div className="d-flex align-items-center gap-3">
             <h2 className="brand" style={{ fontSize: "1.25rem", margin: 0 }}>
               {selectedUser
@@ -382,6 +368,7 @@ const handleDeleteGroup = useCallback(async (groupId) => {
               + Novo Grupo
             </button>
           )}
+
           {selectedUser ? (
             <UserDetail
               user={selectedUser}
@@ -396,6 +383,7 @@ const handleDeleteGroup = useCallback(async (groupId) => {
               onBack={() => setSelectedGroupId(null)}
               onAddUser={handleAddUserToGroup}
               onRemoveUser={handleRemoveUserFromGroup}
+              onDeleteGroup={handleDeleteGroup} // Passando a função corrigida
               actionLoading={actionLoading}
             />
           ) : (
@@ -407,9 +395,7 @@ const handleDeleteGroup = useCallback(async (groupId) => {
                       <>
                         <Col md={5}>
                           <Form.Group>
-                            <Form.Label className="filter-label">
-                              Buscar por Nome
-                            </Form.Label>
+                            <Form.Label className="filter-label">Buscar por Nome</Form.Label>
                             <Form.Control
                               type="text"
                               name="name"
@@ -422,9 +408,7 @@ const handleDeleteGroup = useCallback(async (groupId) => {
                         </Col>
                         <Col md={4}>
                           <Form.Group>
-                            <Form.Label className="filter-label">
-                              Status Perfil
-                            </Form.Label>
+                            <Form.Label className="filter-label">Status Perfil</Form.Label>
                             <Form.Select
                               name="completed"
                               value={filters.completed}
@@ -442,9 +426,7 @@ const handleDeleteGroup = useCallback(async (groupId) => {
                       <>
                         <Col md={5}>
                           <Form.Group>
-                            <Form.Label className="filter-label">
-                              Método HTTP
-                            </Form.Label>
+                            <Form.Label className="filter-label">Método HTTP</Form.Label>
                             <Form.Select
                               name="method"
                               value={filters.method}
@@ -461,9 +443,7 @@ const handleDeleteGroup = useCallback(async (groupId) => {
                         </Col>
                         <Col md={4}>
                           <Form.Group>
-                            <Form.Label className="filter-label">
-                              Data do Evento
-                            </Form.Label>
+                            <Form.Label className="filter-label">Data do Evento</Form.Label>
                             <Form.Control
                               type="date"
                               name="date"
@@ -476,10 +456,7 @@ const handleDeleteGroup = useCallback(async (groupId) => {
                       </>
                     )}
                     <Col md={3}>
-                      <button
-                        className="btn-filter-clear w-100"
-                        onClick={clearFilters}
-                      >
+                      <button className="btn-filter-clear w-100" onClick={clearFilters}>
                         <i className="bi bi-eraser me-2"></i> Limpar Filtros
                       </button>
                     </Col>
@@ -487,118 +464,68 @@ const handleDeleteGroup = useCallback(async (groupId) => {
                 </div>
               )}
 
-              <div
-                className={`tab-wrapper position-relative ${loading ? "is-loading" : ""}`}
-              >
+              <div className={`tab-wrapper position-relative ${loading ? "is-loading" : ""}`}>
                 {loading && (
-                  <div
-                    className="loading-overlay"
-                    style={{
-                      background: "rgba(0,0,0,0.4)",
-                      borderRadius: "12px",
-                    }}
-                  >
+                  <div className="loading-overlay" style={{ background: "rgba(0,0,0,0.4)", borderRadius: "12px" }}>
                     <Spinner animation="border" variant="primary" />
                   </div>
                 )}
 
-                <div
-                  className="content-card"
-                  style={{
-                    background: "var(--card-bg)",
-                    borderRadius: "12px",
-                    overflow: "hidden",
-                  }}
-                >
-                  {activeTab === "users" &&
-                    (role === "admin" ? (
-                      <UserTable
-                        users={users}
-                        onViewDetail={handleViewDetail}
-                      />
-                    ) : (
-                      <WelcomeOperacional user={currentUser} />
-                    ))}
+                <div className="content-card" style={{ background: "var(--card-bg)", borderRadius: "12px", overflow: "hidden" }}>
+                  {activeTab === "users" && (role === "admin" ? (
+                    <UserTable users={users} onViewDetail={handleViewDetail} />
+                  ) : (
+                    <WelcomeOperacional user={currentUser} />
+                  ))}
+                  
                   {activeTab === "audit" && role === "admin" && (
                     <AuditTable logs={auditLogs} />
                   )}
-                  {/* Procure por esta linha no seu Dashboard.js e altere para: */}
-                  {activeTab === "groups" &&
-                    (showGroupForm ? (
-                      <GroupForm
-                        onSave={handleCreateGroup}
-                        onCancel={() => setShowGroupForm(false)}
-                        loading={actionLoading}
-                      />
-                    ) : (
-                      <GroupTable
-                        groups={groups}
-                        onViewDetail={(id) => setSelectedGroupId(id)}
-                        currentUser={currentUser} // <-- ADICIONE ISSO AQUI
-                      />
-                    ))}
+                  
+                  {activeTab === "groups" && (showGroupForm ? (
+                    <GroupForm
+                      onSave={handleCreateGroup}
+                      onCancel={() => setShowGroupForm(false)}
+                      loading={actionLoading}
+                    />
+                  ) : (
+                    <GroupTable
+                      groups={groups}
+                      onViewDetail={(id) => setSelectedGroupId(id)}
+                      onDeleteGroup={handleDeleteGroup} // Passando para a tabela também se necessário
+                      currentUser={currentUser}
+                    />
+                  ))}
                 </div>
 
-                {role === "admin" &&
-                  !showGroupForm &&
-                  !selectedGroupId &&
-                  paginationData?.last > 1 && (
-                    <div
-                      className="d-flex justify-content-between align-items-center mt-4 p-3 rounded"
-                      style={{ background: "rgba(255,255,255,0.03)" }}
-                    >
-                      <span className="small text-dim">
-                        Exibindo página {currentPage} de {paginationData.last}
-                      </span>
-                      <Pagination className="mb-0 custom-pagination">
-                        <Pagination.Prev
-                          disabled={currentPage === 1}
-                          onClick={() => setCurrentPage(currentPage - 1)}
-                        />
-                        {renderPaginationItems()}
-                        <Pagination.Next
-                          disabled={currentPage === paginationData.last}
-                          onClick={() => setCurrentPage(currentPage + 1)}
-                        />
-                      </Pagination>
-                    </div>
-                  )}
+                {role === "admin" && !showGroupForm && !selectedGroupId && paginationData?.last > 1 && (
+                  <div className="d-flex justify-content-between align-items-center mt-4 p-3 rounded" style={{ background: "rgba(255,255,255,0.03)" }}>
+                    <span className="small text-dim">
+                      Exibindo página {currentPage} de {paginationData.last}
+                    </span>
+                    <Pagination className="mb-0 custom-pagination">
+                      <Pagination.Prev disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)} />
+                      {renderPaginationItems()}
+                      <Pagination.Next disabled={currentPage === paginationData.last} onClick={() => setCurrentPage(currentPage + 1)} />
+                    </Pagination>
+                  </div>
+                )}
               </div>
             </>
           )}
         </main>
+        
         {currentUser && currentUser.profile_completed === false && (
-          <div
-            className="alert-complete-profile m-4 p-4 d-flex align-items-center justify-content-between animate-in"
-            style={{
-              background: "#fff3cd",
-              borderLeft: "5px solid #ffc107",
-              borderRadius: "8px",
-              color: "#856404",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-            }}
-          >
+          <div className="alert-complete-profile m-4 p-4 d-flex align-items-center justify-content-between animate-in"
+               style={{ background: "#fff3cd", borderLeft: "5px solid #ffc107", borderRadius: "8px", color: "#856404", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
             <div className="d-flex align-items-center">
-              <i
-                className="bi bi-exclamation-triangle-fill me-3"
-                style={{ fontSize: "1.5rem" }}
-              ></i>
+              <i className="bi bi-exclamation-triangle-fill me-3" style={{ fontSize: "1.5rem" }}></i>
               <div>
-                <h6 className="mb-0 fw-bold">
-                  Seu perfil ainda não está completo!
-                </h6>
-                <small>
-                  Complete suas informações para liberar todas as
-                  funcionalidades do sistema AxionID.
-                </small>
+                <h6 className="mb-0 fw-bold">Seu perfil ainda não está completo!</h6>
+                <small>Complete suas informações para liberar todas as funcionalidades.</small>
               </div>
             </div>
-
-            <button
-              className="btn btn-warning btn-sm fw-bold px-4"
-              onClick={() => navigate("/complete-profile")}
-              style={{ borderRadius: "20px" }}
-            >
+            <button className="btn btn-warning btn-sm fw-bold px-4" onClick={() => navigate("/complete-profile")} style={{ borderRadius: "20px" }}>
               Completar agora
             </button>
           </div>
