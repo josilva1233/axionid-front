@@ -541,8 +541,9 @@ export default function Dashboard() {
                       </>
                     ) : activeTab === "groups" ? (
                       <>
-                        {/* AQUI O BOTÃO + GRUPO COM A "MESMA CARA" DO FILTRO */}
-                        <Col md={9}>
+                        {/* O Row pai deve ter align-items-end para alinhar botões e input por baixo */}
+                        <Row className="align-items-end">
+                          {/* Campo de Busca - Ocupa metade da largura (6/12) */}
                           <Col md={6}>
                             <Form.Group>
                               <Form.Label className="filter-label">
@@ -554,10 +555,12 @@ export default function Dashboard() {
                                 value={filters.name}
                                 onChange={handleFilterChange}
                                 className="custom-input-dark"
-                                placeholder="Nome do grupo ou nome do usuário..."
+                                placeholder="Nome do grupo ou usuário..."
                               />
                             </Form.Group>
                           </Col>
+
+                          {/* Botão Limpar - Ocupa 3/12 */}
                           <Col md={3}>
                             <button
                               className="btn-filter-clear w-100"
@@ -567,25 +570,18 @@ export default function Dashboard() {
                               <i className="bi bi-eraser me-2"></i> Limpar
                             </button>
                           </Col>
-                          {/* ... botão de Novo Grupo ... */}
-                          <div className="d-flex flex-column">
-                            <span className="filter-label mb-2">
-                              Ações de Grupo
-                            </span>
-                            <div className="text-dim small">
-                              Crie novos grupos.
-                            </div>
-                          </div>
-                        </Col>
-                        <Col md={3}>
-                          <button
-                            className="btn-primary-axion w-100 py-2 fw-bold"
-                            style={{ height: "45px", borderRadius: "8px" }}
-                            onClick={() => setShowGroupForm(true)}
-                          >
-                            <i className="bi bi-plus-lg me-2"></i> Novo Grupo
-                          </button>
-                        </Col>
+
+                          {/* Botão Novo Grupo - Ocupa 3/12 */}
+                          <Col md={3}>
+                            <button
+                              className="btn-primary-axion w-100 py-2 fw-bold"
+                              style={{ height: "45px", borderRadius: "8px" }}
+                              onClick={() => setShowGroupForm(true)}
+                            >
+                              <i className="bi bi-plus-lg me-2"></i> Novo Grupo
+                            </button>
+                          </Col>
+                        </Row>
                       </>
                     ) : activeTab === "audit" && role === "admin" ? (
                       <>
