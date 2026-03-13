@@ -187,11 +187,18 @@ export default function GroupDetail({
           </div>
         </div>
       </div>
-      {/* SEÇÃO: ZONA DE PERIGO */}
 {/* SEÇÃO: ZONA DE PERIGO (PADRÃO CRITICAL ACTIONS) */}
 {(isSystemAdmin || Number(currentUserId) === Number(group.creator_id)) && (
   <div className="mt-5 pt-4 border-top border-secondary">
-    <h4 className="text-danger mb-4 fw-bold">
+    <h4 
+      className="text-danger mb-4" 
+      style={{ 
+        fontSize: "0.75rem", 
+        fontWeight: "800", 
+        textTransform: "uppercase", 
+        letterSpacing: "1.5px" 
+      }}
+    >
       Zona de Perigo e Exclusão
     </h4>
 
