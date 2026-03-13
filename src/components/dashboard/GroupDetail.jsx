@@ -186,8 +186,33 @@ export default function GroupDetail({
           </div>
         </div>
       </div>
-
-
+      {/* Nova linha para a Zona de Perigo (Excluir Grupo) */}
+      <div className="row mt-4">
+        <div className="col-12">
+          <div
+            className="info-card p-4 border-danger-subtle"
+            style={{ border: "1px solid rgba(255, 0, 0, 0.2)" }}
+          >
+            <div className="d-flex justify-content-between align-items-center">
+              <div>
+                <h5 className="text-danger fw-bold mb-1">Zona de Perigo</h5>
+                <p className="text-dim small mb-0">
+                  Uma vez excluído, o grupo e seus vínculos não podem ser
+                  recuperados.
+                </p>
+              </div>
+              <button
+                className="btn btn-outline-danger"
+                onClick={() => onDeleteGroup(group.id)}
+                style={{ height: "42px", fontWeight: "bold" }}
+              >
+                <i className="bi bi-trash3 me-2"></i>
+                Excluir Grupo
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
