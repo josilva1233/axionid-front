@@ -1,13 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import ReCAPTCHA from "react-google-recaptcha";
 import api from "../services/api";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [captchaToken, setCaptchaToken] = useState(null); // Estado para o captcha
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const recaptchaRef = useRef(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -36,11 +39,23 @@ export default function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    // Validação do Captcha antes de prosseguir
+    if (!captchaToken) {
+      setError("Por favor, confirme que você não é um robô.");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
     try {
-      const response = await api.post("/api/v1/login", { username, password });
+      const response = await api.post("/api/v1/login", { 
+        username, 
+        password,
+        captcha_token: captchaToken // Enviando o token para o Laravel
+      });
+      
       const { token, user } = response.data;
 
       localStorage.setItem("@AxionID:token", token);
@@ -51,8 +66,11 @@ export default function Login() {
       api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       navigate("/dashboard", { replace: true });
     } catch (err) {
-      setError("Usuário ou senha incorretos.");
+      setError(err.response?.data?.message || "Usuário ou senha incorretos.");
       console.error("Erro no login manual", err);
+      // Reseta o captcha em caso de erro para nova tentativa
+      setCaptchaToken(null);
+      recaptchaRef.current?.reset();
     } finally {
       setLoading(false);
     }
@@ -126,8 +144,19 @@ export default function Login() {
               placeholder="Sua senha"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              autocomplete="current-password"
+              autoComplete="current-password"
               required
+            />
+          </div>
+
+          {/* GOOGLE RECAPTCHA INCLUÍDO AQUI */}
+          <div className="input-group recaptcha-container" style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+            <ReCAPTCHA
+              ref={recaptchaRef}
+              sitekey="6Le6nIksAAAAAHeRPgNLRsUZVraJ7BtBzgJbFwhY"
+              onChange={(token) => setCaptchaToken(token)}
+              onExpired={() => setCaptchaToken(null)}
+              theme="dark"
             />
           </div>
 
