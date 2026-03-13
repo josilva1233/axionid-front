@@ -88,27 +88,40 @@ export default function Dashboard() {
     [role, filters.name, filters.completed],
   );
 
-  const loadGroups = useCallback(async (page = 1) => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({ page });
-      const res = await api.get(`/api/v1/groups?${params.toString()}`);
-      setGroups(res.data.data || res.data);
-      setPaginationData(
-        res.data.current_page
-          ? {
-              current: res.data.current_page,
-              last: res.data.last_page,
-              total: res.data.total,
-            }
-          : null,
-      );
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const loadGroups = useCallback(
+    async (page = 1) => {
+      setLoading(true);
+      try {
+        // 1. Criamos os parâmetros incluindo o nome que está no estado 'filters'
+        const params = new URLSearchParams();
+        params.append("page", page);
+
+        if (filters.name) {
+          params.append("name", filters.name);
+        }
+
+        // 2. Chamada para a API com a query string correta
+        const res = await api.get(`/api/v1/groups?${params.toString()}`);
+
+        setGroups(res.data.data || res.data);
+        setPaginationData(
+          res.data.current_page
+            ? {
+                current: res.data.current_page,
+                last: res.data.last_page,
+                total: res.data.total,
+              }
+            : null,
+        );
+      } catch (err) {
+        console.error("Erro na busca de grupos:", err);
+      } finally {
+        setLoading(false);
+      }
+      // 3. ADICIONE filters.name AQUI para que a função se atualize quando você digitar
+    },
+    [filters.name],
+  );
 
   const loadAuditLogs = useCallback(
     async (page = 1) => {
