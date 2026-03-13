@@ -286,7 +286,42 @@ export default function Dashboard() {
       setActionLoading(false);
     }
   };
+  const handleDemoteUser = async (userId) => {
+    if (actionLoading) return;
 
+    setActionLoading(true);
+    try {
+      // Note o final da URL: /demote
+      await api.patch(
+        `/api/v1/groups/${selectedGroupId}/members/${userId}/demote`,
+      );
+
+      // Atualização do Estado para refletir na tela imediatamente
+      setGroups((prevGroups) =>
+        prevGroups.map((group) => {
+          if (group.id === selectedGroupId) {
+            return {
+              ...group,
+              users: group.users.map((user) =>
+                user.id === userId
+                  ? { ...user, pivot: { ...user.pivot, role: "member" } }
+                  : user,
+              ),
+            };
+          }
+          return group;
+        }),
+      );
+
+      // Opcional: toast.success("Permissões de admin removidas");
+    } catch (error) {
+      console.error("Erro ao rebaixar:", error);
+      // Exibe a mensagem de erro vinda do Laravel (ex: "O grupo precisa de pelo menos um admin")
+      alert(error.response?.data?.message || "Erro ao processar solicitação.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
   const handleViewDetail = async (id) => {
     setLoading(true);
     try {
@@ -436,6 +471,7 @@ export default function Dashboard() {
               onAddUser={handleAddUserToGroup}
               onRemoveUser={handleRemoveUserFromGroup}
               onPromoteUser={handlePromoteUser}
+              onDemoteUser={handleDemoteUser}
               onDeleteGroup={handleDeleteGroup}
               actionLoading={actionLoading}
             />
