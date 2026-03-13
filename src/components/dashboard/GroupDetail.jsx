@@ -162,29 +162,40 @@ export default function GroupDetail({
           <div className="info-card p-4">
             <h5 className="text-white mb-3 fw-bold">Adicionar Membro</h5>
             <form onSubmit={handleSubmit}>
-              <label className="text-dim small text-uppercase fw-bold mb-2 d-block">
-                E-mail do Usuário
-              </label>
+              <div className="mb-3">
+                <label className="text-dim small text-uppercase fw-bold mb-2 d-block">
+                  E-mail do Usuário
+                </label>
 
-              {/* Container Flexbox para alinhar input e botão */}
-              <div className="d-flex gap-2">
-                <input
-                  type="email"
-                  className="custom-input-dark flex-grow-1" // Ocupa o espaço disponível
-                  value={emailToAdd}
-                  onChange={(e) => setEmailToAdd(e.target.value)}
-                  placeholder="usuario@email.com"
-                  required
-                  style={{ height: "42px" }} // Garante altura igual ao botão
-                />
-                <button
-                  type="submit"
-                  className="btn-primary-axion px-3 fw-bold"
-                  disabled={actionLoading || !emailToAdd}
-                  style={{ height: "42px", whiteSpace: "nowrap" }} // nowrap impede o texto de quebrar
-                >
-                  {actionLoading ? "..." : "Inserir"}
-                </button>
+                {/* Input Group do Bootstrap para alinhar lado a lado */}
+                <div className="input-group">
+                  <input
+                    type="email"
+                    className="custom-input-dark form-control"
+                    value={emailToAdd}
+                    onChange={(e) => setEmailToAdd(e.target.value)}
+                    placeholder="usuario@email.com"
+                    required
+                    style={{
+                      backgroundColor: "#111",
+                      color: "white",
+                      border: "1px solid #333",
+                      borderRadius: "8px 0 0 8px", // Arredonda apenas o canto esquerdo
+                    }}
+                  />
+                  <button
+                    type="submit"
+                    className="btn btn-primary-axion px-3"
+                    disabled={actionLoading || !emailToAdd}
+                    style={{
+                      borderRadius: "0 8px 8px 0", // Arredonda apenas o canto direito
+                      whiteSpace: "nowrap",
+                      minWidth: "80px",
+                    }}
+                  >
+                    {actionLoading ? "..." : "Inserir"}
+                  </button>
+                </div>
               </div>
             </form>
           </div>
