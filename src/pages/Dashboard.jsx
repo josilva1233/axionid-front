@@ -110,16 +110,27 @@ export default function Dashboard() {
     }
   }, []);
 
-  const loadAuditLogs = useCallback(
+const loadAuditLogs = useCallback(
     async (page = 1) => {
+      // Verificação de segurança local
       if (role !== "admin") return;
+      
       setLoading(true);
       try {
-        const params = new URLSearchParams({ page });
+        const params = new URLSearchParams({ page: page.toString() });
+        
+        // Mantendo os filtros de método e data
         if (filters.method) params.append("method", filters.method);
         if (filters.date) params.append("date", filters.date);
-        const res = await api.get(`/api/v1/audit-logs?${params.toString()}`);
-        setAuditLogs(res.data.data || res.data);
+
+        // CORREÇÃO AQUI: Adicionado o prefixo /admin conforme a nova rota da API
+        const res = await api.get(`/api/v1/admin/audit-logs?${params.toString()}`);
+
+        // O Laravel Paginate retorna os dados dentro de .data
+        // res.data é a resposta do Axios, res.data.data são os registros do Laravel
+        setAuditLogs(res.data.data || []);
+
+        // Atualização da paginação baseada no retorno do Laravel Paginate
         setPaginationData(
           res.data.current_page
             ? {
@@ -130,12 +141,13 @@ export default function Dashboard() {
             : null,
         );
       } catch (err) {
-        console.error(err);
+        console.error("Erro ao carregar logs de auditoria:", err);
+        // Opcional: setAuditLogs([]); para evitar dados antigos em caso de erro
       } finally {
         setLoading(false);
       }
     },
-    [filters.method, filters.date, role],
+    [filters.method, filters.date, role], // Dependências corretas
   );
 
   // --- FUNÇÕES DE AÇÃO DO GRUPO ---
