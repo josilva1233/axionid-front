@@ -44,7 +44,7 @@ export default function GroupForm({ onSave, onCancel, loading }) {
                 <Spinner animation="border" size="sm" />
               ) : (
                 <>
-                  <i className="bi bi-check-lg me-2"></i> Salvar Grupo
+                  <i className="btn-table-action w-100 px-3 py-2"></i> Salvar Grupo
                 </>
               )}
             </button>
