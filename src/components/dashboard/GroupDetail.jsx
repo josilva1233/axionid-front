@@ -21,7 +21,11 @@ export default function GroupDetail({
 
   const handleDelete = () => {
     if (!group?.id) return;
-    if (window.confirm(`ATENÇÃO: Deseja realmente excluir o grupo "${group.name}"?`)) {
+    if (
+      window.confirm(
+        `ATENÇÃO: Deseja realmente excluir o grupo "${group.name}"?`,
+      )
+    ) {
       onDeleteGroup(group.id);
     }
   };
@@ -30,7 +34,9 @@ export default function GroupDetail({
     return (
       <div className="text-center py-5">
         <p className="text-dim">Carregando dados do grupo...</p>
-        <button className="btn-secondary" onClick={onBack}>Voltar</button>
+        <button className="btn-secondary" onClick={onBack}>
+          Voltar
+        </button>
       </div>
     );
   }
@@ -39,12 +45,16 @@ export default function GroupDetail({
     <div className="group-detail-container animate-in w-100">
       <div className="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom-theme">
         <div className="d-flex align-items-center gap-3">
-          <button className="btn-filter-clear d-flex align-items-center px-3 py-2" onClick={onBack}>
+          <button
+            className="btn-filter-clear d-flex align-items-center px-3 py-2"
+            onClick={onBack}
+          >
             <i className="bi bi-arrow-left me-2"></i>
             <span>Voltar</span>
           </button>
           <h2 className="mb-0 text-white fs-4 fw-bold">
-            Gerenciar Grupo: <span className="text-primary">{group.name?.toUpperCase()}</span>
+            Gerenciar Grupo:{" "}
+            <span className="text-primary">{group.name?.toUpperCase()}</span>
           </h2>
         </div>
       </div>
@@ -70,20 +80,30 @@ export default function GroupDetail({
                           <div className="d-flex align-items-center">
                             <strong className="text-white">{user.name}</strong>
                             {user.pivot?.role === "admin" && (
-                              <span className="badge bg-primary ms-2" style={{ fontSize: "0.6rem" }}>ADMIN</span>
+                              <span
+                                className="badge bg-primary ms-2"
+                                style={{ fontSize: "0.6rem" }}
+                              >
+                                ADMIN
+                              </span>
                             )}
                           </div>
                         </td>
                         <td className="text-dim">{user.email}</td>
                         <td className="text-end">
                           <div className="d-flex gap-2 justify-content-end align-items-center">
-                            
                             {/* BOTÃO ALTERNÁVEL: PROMOVER OU REMOVER ADMIN */}
                             {user.pivot?.role === "admin" ? (
                               <button
                                 className="btn btn-outline-warning btn-sm px-3"
-                                style={{ fontSize: "0.75rem", height: "32px", minWidth: "120px" }}
-                                onClick={() => onDemoteUser && onDemoteUser(user.id)}
+                                style={{
+                                  fontSize: "0.75rem",
+                                  height: "32px",
+                                  minWidth: "120px",
+                                }}
+                                onClick={() =>
+                                  onDemoteUser && onDemoteUser(user.id)
+                                }
                                 disabled={actionLoading}
                                 title="Remover cargo de administrador"
                               >
@@ -93,8 +113,14 @@ export default function GroupDetail({
                             ) : (
                               <button
                                 className="btn btn-outline-success btn-sm px-3"
-                                style={{ fontSize: "0.75rem", height: "32px", minWidth: "120px" }}
-                                onClick={() => onPromoteUser && onPromoteUser(user.id)}
+                                style={{
+                                  fontSize: "0.75rem",
+                                  height: "32px",
+                                  minWidth: "120px",
+                                }}
+                                onClick={() =>
+                                  onPromoteUser && onPromoteUser(user.id)
+                                }
                                 disabled={actionLoading}
                               >
                                 <i className="bi bi-shield-check me-1"></i>
@@ -115,7 +141,14 @@ export default function GroupDetail({
                       </tr>
                     ))
                   ) : (
-                    <tr><td colSpan="3" className="text-center py-5 text-dim italic">Nenhum membro vinculado.</td></tr>
+                    <tr>
+                      <td
+                        colSpan="3"
+                        className="text-center py-5 text-dim italic"
+                      >
+                        Nenhum membro vinculado.
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </table>
@@ -128,7 +161,9 @@ export default function GroupDetail({
             <h5 className="text-white mb-3 fw-bold">Adicionar Membro</h5>
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
-                <label className="text-dim small text-uppercase fw-bold mb-2 d-block">E-mail do Usuário</label>
+                <label className="text-dim small text-uppercase fw-bold mb-2 d-block">
+                  E-mail do Usuário
+                </label>
                 <input
                   type="email"
                   className="custom-input-dark w-100"
@@ -138,38 +173,43 @@ export default function GroupDetail({
                   required
                 />
               </div>
-              <button type="submit" className="btn-primary-axion w-100 py-2 fw-bold" disabled={actionLoading || !emailToAdd}>
+              <button
+                type="submit"
+                className="btn-primary-axion w-100 py-2 fw-bold"
+                disabled={actionLoading || !emailToAdd}
+              >
                 {actionLoading ? "Processando..." : "Inserir no Grupo"}
               </button>
             </form>
           </div>
         </div>
       </div>
-    </div>
-
-    {/* SEÇÃO: ZONA DE PERIGO */}
-{(isSystemAdmin || Number(currentUserId) === Number(group.creator_id)) && (
-  <div className="mt-5 pt-4">
-    <div className="danger-zone-wrapper border border-danger rounded-3 p-4">
-      <div className="d-flex align-items-center justify-content-between">
-        <div>
-          <h5 className="text-danger fw-bold mb-1">Zona de Perigo</h5>
-          <p className="text-dim small mb-0">
-            A exclusão de um grupo é permanente. Todos os vínculos de membros e dados associados serão apagados.
-          </p>
+      {/* SEÇÃO: ZONA DE PERIGO */}
+      {(isSystemAdmin ||
+        Number(currentUserId) === Number(group.creator_id)) && (
+        <div className="mt-5 pt-4">
+          <div className="danger-zone-wrapper border border-danger rounded-3 p-4">
+            <div className="d-flex align-items-center justify-content-between">
+              <div>
+                <h5 className="text-danger fw-bold mb-1">Zona de Perigo</h5>
+                <p className="text-dim small mb-0">
+                  A exclusão de um grupo é permanente. Todos os vínculos de
+                  membros e dados associados serão apagados.
+                </p>
+              </div>
+              <button
+                className="btn btn-outline-danger px-4 fw-bold"
+                onClick={handleDelete}
+                disabled={actionLoading}
+                style={{ transition: "all 0.3s ease" }}
+              >
+                <i className="bi bi-trash3 me-2"></i>
+                Excluir este grupo
+              </button>
+            </div>
+          </div>
         </div>
-        <button 
-          className="btn btn-outline-danger px-4 fw-bold"
-          onClick={handleDelete}
-          disabled={actionLoading}
-          style={{ transition: 'all 0.3s ease' }}
-        >
-          <i className="bi bi-trash3 me-2"></i>
-          Excluir este grupo
-        </button>
-      </div>
+      )}
     </div>
-  </div>
-)}
   );
 }
