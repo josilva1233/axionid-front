@@ -162,26 +162,30 @@ export default function GroupDetail({
           <div className="info-card p-4">
             <h5 className="text-white mb-3 fw-bold">Adicionar Membro</h5>
             <form onSubmit={handleSubmit}>
-              <div className="mb-3">
-                <label className="text-dim small text-uppercase fw-bold mb-2 d-block">
-                  E-mail do Usuário
-                </label>
+              <label className="text-dim small text-uppercase fw-bold mb-2 d-block">
+                E-mail do Usuário
+              </label>
+
+              {/* Container Flexbox para alinhar input e botão */}
+              <div className="d-flex gap-2">
                 <input
                   type="email"
-                  className="custom-input-dark w-100"
+                  className="custom-input-dark flex-grow-1" // Ocupa o espaço disponível
                   value={emailToAdd}
                   onChange={(e) => setEmailToAdd(e.target.value)}
                   placeholder="usuario@email.com"
                   required
+                  style={{ height: "42px" }} // Garante altura igual ao botão
                 />
+                <button
+                  type="submit"
+                  className="btn-primary-axion px-3 fw-bold"
+                  disabled={actionLoading || !emailToAdd}
+                  style={{ height: "42px", whiteSpace: "nowrap" }} // nowrap impede o texto de quebrar
+                >
+                  {actionLoading ? "..." : "Inserir"}
+                </button>
               </div>
-              <button
-                type="submit"
-                className="btn-primary-axion w-100 py-2 fw-bold"
-                disabled={actionLoading || !emailToAdd}
-              >
-                {actionLoading ? "Processando..." : "Inserir no Grupo"}
-              </button>
             </form>
           </div>
         </div>
