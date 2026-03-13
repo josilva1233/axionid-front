@@ -254,38 +254,31 @@ export default function Dashboard() {
 
     setActionLoading(true);
     try {
-      // Ajustado para PATCH e passando os IDs na URL conforme o seu Controller
+      // 1. O método DEVE ser PATCH conforme seu Controller
+      // 2. A URL deve seguir o padrão: /api/v1/groups/{groupId}/members/{userId}/promote
       await api.patch(
         `/v1/groups/${selectedGroupId}/members/${userId}/promote`,
       );
 
-      // Atualização do estado local para refletir a mudança instantaneamente
-      setGroups((prevGroups) => {
-        return prevGroups.map((group) => {
+      // Atualização do estado local para refletir a mudança na UI
+      setGroups((prevGroups) =>
+        prevGroups.map((group) => {
           if (group.id === selectedGroupId) {
             return {
               ...group,
-              users: group.users.map((user) => {
-                if (user.id === userId) {
-                  return {
-                    ...user,
-                    pivot: { ...user.pivot, role: "admin" },
-                  };
-                }
-                return user;
-              }),
+              users: group.users.map((user) =>
+                user.id === userId
+                  ? { ...user, pivot: { ...user.pivot, role: "admin" } }
+                  : user,
+              ),
             };
           }
           return group;
-        });
-      });
-
-      // Opcional: Alerta de sucesso
-      // alert("Membro promovido com sucesso!");
+        }),
+      );
     } catch (error) {
       console.error("Erro ao promover:", error);
-      const msg = error.response?.data?.message || "Erro ao promover usuário.";
-      alert(msg);
+      alert(error.response?.data?.message || "Erro ao processar promoção.");
     } finally {
       setActionLoading(false);
     }
