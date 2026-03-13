@@ -245,6 +245,19 @@ const loadAuditLogs = useCallback(
     setCurrentPage(1);
   };
 
+  const handlePromoteUser = async (userId) => {
+  setActionLoading(true);
+  try {
+    // Sua chamada para o Laravel aqui
+    // await api.post(`/groups/${selectedGroupId}/promote`, { user_id: userId });
+    console.log("Promovendo usuário:", userId);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    setActionLoading(false);
+  }
+};
+
   const handleViewDetail = async (id) => {
     setLoading(true);
     try {
@@ -387,6 +400,7 @@ const loadAuditLogs = useCallback(
               onBack={() => setSelectedGroupId(null)}
               onAddUser={handleAddUserToGroup}
               onRemoveUser={handleRemoveUserFromGroup}
+              onPromoteUser={handlePromoteUser}
               onDeleteGroup={handleDeleteGroup} 
               actionLoading={actionLoading}
             />

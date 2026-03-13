@@ -73,6 +73,18 @@ export default function UserDetail({ user, onBack, onAction, onUpdate, actionLoa
     setIsEditing(false);
   };
 
+  {user.pivot?.role !== 'admin' && (
+  <button 
+    className="btn btn-outline-success btn-sm px-3"
+    style={{ fontSize: '0.75rem', height: '32px' }}
+    onClick={() => onPromoteUser && onPromoteUser(user.id)} // O "onPromoteUser &&" evita o erro f is not a function
+    disabled={actionLoading}
+  >
+    <i className="bi bi-shield-check me-1"></i>
+    Promover
+  </button>
+)}
+
   // Estilo comum para os inputs quando desabilitados (para não ficarem cinzas demais)
   const disabledInputStyle = {
     opacity: 0.8,
