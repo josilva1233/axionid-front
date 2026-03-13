@@ -50,12 +50,12 @@ export default function Login() {
     setError("");
 
     try {
-      const response = await api.post("/api/v1/login", { 
-        username, 
+      const response = await api.post("/api/v1/login", {
+        username,
         password,
-        captcha_token: captchaToken // Enviando o token para o Laravel
+        captcha_token: captchaToken, // Enviando o token para o Laravel
       });
-      
+
       const { token, user } = response.data;
 
       localStorage.setItem("@AxionID:token", token);
@@ -149,11 +149,17 @@ export default function Login() {
             />
           </div>
 
-          {/* GOOGLE RECAPTCHA INCLUÍDO AQUI */}
-          <div className="input-group recaptcha-container" style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+          {/* RECAPTCHA CENTRALIZADO */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              margin: "20px 0",
+            }}
+          >
             <ReCAPTCHA
               ref={recaptchaRef}
-              sitekey="6Le6nIksAAAAAHeRPgNLRsUZVraJ7BtBzgJbFwhY"
+              sitekey="6Lc5n4ksAAAAAEXLVSyq519dGet20T0gaQ2LXzPY"
               onChange={(token) => setCaptchaToken(token)}
               onExpired={() => setCaptchaToken(null)}
               theme="dark"
