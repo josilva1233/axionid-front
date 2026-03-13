@@ -36,7 +36,7 @@ export default function GroupForm({ onSave, onCancel, loading }) {
           <Col md={3}>
             <button
               type="submit"
-              className="btn-primary-axion w-btn-table-action w-100 px-3 py-2 fw-bold"
+              className="bw-btn-table-action w-100 px-3 py-2 fw-bold"
               style={{ height: "45px" }} // Garante a mesma altura do input
               disabled={loading}
             >
