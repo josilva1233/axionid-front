@@ -7,53 +7,59 @@ export default function GroupForm({ onSave, onCancel, loading }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name.trim()) return alert("O nome do grupo é obrigatório.");
-    // Como sua API espera apenas 'name', removi a description para manter limpo
     onSave({ name });
   };
 
   return (
-    <div className="group-form-container animate-in p-4 mb-4 border border-secondary rounded-3 shadow-sm bg-dark-custom">
+    <div className="filter-card mb-4 p-4 animate-in">
+      {/* Título fora da Row para manter o padrão */}
       <h4 className="text-white mb-4">Criar Novo Grupo</h4>
-      
-      <Form onSubmit={handleSubmit}>
-        <Form.Group className="mb-4">
-          <Form.Label className="text-dim small mb-2">Nome do Grupo</Form.Label>
-          <Form.Control
-            type="text"
-            className="custom-input-dark py-2"
-            placeholder="Ex: Administradores, Financeiro..."
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </Form.Group>
 
-        {/* Usamos Row e Col para garantir o alinhamento lado a lado perfeito.
-          O g-2 adiciona o espaçamento (gap) entre as colunas.
-        */}
-        <Row className="g-2">
-          <Col xs={6}>
+      <Form onSubmit={handleSubmit}>
+        <Row className="align-items-end g-3">
+          {/* CAMPO DE NOME - Ocupa 6 colunas (mesmo tamanho do busca por nome) */}
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label className="filter-label">Nome do Grupo</Form.Label>
+              <Form.Control
+                type="text"
+                className="custom-input-dark"
+                placeholder="Ex: Administradores, Financeiro..."
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </Form.Group>
+          </Col>
+
+          {/* BOTÃO SALVAR - Ocupa 3 colunas */}
+          <Col md={3}>
             <button
               type="submit"
-              className="btn-primary-axion w-100 py-2 fw-bold"
+              className="btn-primary-axion w-100"
+              style={{ height: "45px" }} // Garante a mesma altura do input
               disabled={loading}
             >
               {loading ? (
-                <Spinner animation="border" size="sm" role="status" aria-hidden="true" />
+                <Spinner animation="border" size="sm" />
               ) : (
-                "Salvar Grupo"
+                <>
+                  <i className="bi bi-check-lg me-2"></i> Salvar Grupo
+                </>
               )}
             </button>
           </Col>
 
-          <Col xs={6}>
+          {/* BOTÃO CANCELAR - Ocupa 3 colunas */}
+          <Col md={3}>
             <button
               type="button"
-              className="btn-filter-clear w-100 py-2"
+              className="btn-filter-clear w-100"
+              style={{ height: "45px" }} // Garante a mesma altura do input
               onClick={onCancel}
               disabled={loading}
             >
-              Cancelar
+              <i className="bi bi-x-lg me-2"></i> Cancelar
             </button>
           </Col>
         </Row>
