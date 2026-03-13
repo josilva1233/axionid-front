@@ -11,7 +11,6 @@ export default function GroupDetail({
   actionLoading,
   currentUserId, // Adicione esta prop para identificar o usuário logado
   isSystemAdmin, // Adicione esta prop para saber se é admin total
-
 }) {
   const [emailToAdd, setEmailToAdd] = useState("");
 
@@ -187,9 +186,16 @@ export default function GroupDetail({
           </div>
         </div>
       </div>
-{/* SEÇÃO: ZONA DE PERIGO (PADRÃO CRITICAL ACTIONS) */}
+{/* SEÇÃO DE AÇÕES CRÍTICAS - PADRÃO IDENTIDADE VISUAL */}
 {(isSystemAdmin || Number(currentUserId) === Number(group.creator_id)) && (
-  <div className="mt-5 pt-4 border-top border-secondary">
+  <section
+    className="actions-section mt-5 p-4"
+    style={{
+      background: "rgba(220, 53, 69, 0.05)",
+      borderRadius: "16px",
+      border: "1px solid rgba(220, 53, 69, 0.2)",
+    }}
+  >
     <h4 
       className="text-danger mb-4" 
       style={{ 
@@ -199,38 +205,29 @@ export default function GroupDetail({
         letterSpacing: "1.5px" 
       }}
     >
-      Zona de Perigo e Exclusão
+      Gestão de Acesso e Privilégios do Grupo
     </h4>
 
     <div className="critical-actions-grid">
       <div className="main-actions">
-        {/* Aviso textual integrado no fluxo do grid se necessário, ou apenas os botões */}
-        <div className="mb-3">
-          <p className="text-dim small mb-0">
-            <i className="bi bi-exclamation-triangle-fill text-danger me-2"></i>
-            A exclusão deste grupo é **irreversível**. Todos os dados de membros e histórico vinculados ao grupo 
-            <span className="text-white fw-bold"> {group.name?.toUpperCase()}</span> serão apagados permanentemente.
-          </p>
-        </div>
-
+        {/* Mantendo o padrão de grid, mas focado na exclusão do grupo */}
         <button 
           onClick={handleDelete} 
           disabled={actionLoading} 
-          className="btn-delete-permanent w-100"
+          className="btn-delete-permanent"
         >
-          {actionLoading ? (
-            <>
-              <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-              Processando Exclusão...
-            </>
-          ) : (
-            "Excluir Grupo Permanentemente"
-          )}
+          {actionLoading ? "Processando..." : "Excluir Grupo Permanentemente"}
         </button>
       </div>
     </div>
-  </div>
+    
+    <p className="text-dim small mt-3 mb-0">
+      <i className="bi bi-info-circle me-2"></i>
+      Atenção: A exclusão do grupo <strong>{group.name?.toUpperCase()}</strong> removerá todos os vínculos de membros imediatamente.
+    </p>
+  </section>
 )}
+
     </div>
   );
 }
