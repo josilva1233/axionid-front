@@ -474,7 +474,7 @@ export default function Dashboard() {
               onDemoteUser={handleDemoteUser}
               onDeleteGroup={handleDeleteGroup}
               actionLoading={actionLoading}
-              currentUserId={currentUser?.id} 
+              currentUserId={currentUser?.id}
               isSystemAdmin={currentUser?.is_admin}
             />
           ) : (
@@ -530,6 +530,31 @@ export default function Dashboard() {
                       <>
                         {/* AQUI O BOTÃO + GRUPO COM A "MESMA CARA" DO FILTRO */}
                         <Col md={9}>
+                          <Col md={6}>
+                            <Form.Group>
+                              <Form.Label className="filter-label">
+                                Buscar Grupos ou Membros
+                              </Form.Label>
+                              <Form.Control
+                                type="text"
+                                name="name"
+                                value={filters.name}
+                                onChange={handleFilterChange}
+                                className="custom-input-dark"
+                                placeholder="Nome do grupo ou nome do usuário..."
+                              />
+                            </Form.Group>
+                          </Col>
+                          <Col md={3}>
+                            <button
+                              className="btn-filter-clear w-100"
+                              onClick={clearFilters}
+                              style={{ height: "45px" }}
+                            >
+                              <i className="bi bi-eraser me-2"></i> Limpar
+                            </button>
+                          </Col>
+                          {/* ... botão de Novo Grupo ... */}
                           <div className="d-flex flex-column">
                             <span className="filter-label mb-2">
                               Ações de Grupo

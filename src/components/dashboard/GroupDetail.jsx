@@ -186,48 +186,52 @@ export default function GroupDetail({
           </div>
         </div>
       </div>
-{/* SEÇÃO DE AÇÕES CRÍTICAS - PADRÃO IDENTIDADE VISUAL */}
-{(isSystemAdmin || Number(currentUserId) === Number(group.creator_id)) && (
-  <section
-    className="actions-section mt-5 p-4"
-    style={{
-      background: "rgba(220, 53, 69, 0.05)",
-      borderRadius: "16px",
-      border: "1px solid rgba(220, 53, 69, 0.2)",
-    }}
-  >
-    <h4 
-      className="text-danger mb-4" 
-      style={{ 
-        fontSize: "0.75rem", 
-        fontWeight: "800", 
-        textTransform: "uppercase", 
-        letterSpacing: "1.5px" 
-      }}
-    >
-      Gestão de Acesso e Privilégios do Grupo
-    </h4>
-
-    <div className="critical-actions-grid">
-      <div className="main-actions">
-        {/* Mantendo o padrão de grid, mas focado na exclusão do grupo */}
-        <button 
-          onClick={handleDelete} 
-          disabled={actionLoading} 
-          className="btn-delete-permanent"
+      {/* SEÇÃO DE AÇÕES CRÍTICAS - PADRÃO IDENTIDADE VISUAL */}
+      {(isSystemAdmin ||
+        Number(currentUserId) === Number(group.creator_id)) && (
+        <section
+          className="actions-section mt-5 p-4"
+          style={{
+            background: "rgba(220, 53, 69, 0.05)",
+            borderRadius: "16px",
+            border: "1px solid rgba(220, 53, 69, 0.2)",
+          }}
         >
-          {actionLoading ? "Processando..." : "Excluir Grupo Permanentemente"}
-        </button>
-      </div>
-    </div>
-    
-    <p className="text-dim small mt-3 mb-0">
-      <i className="bi bi-info-circle me-2"></i>
-      Atenção: A exclusão do grupo <strong>{group.name?.toUpperCase()}</strong> removerá todos os vínculos de membros imediatamente.
-    </p>
-  </section>
-)}
+          <h4
+            className="text-danger mb-4"
+            style={{
+              fontSize: "0.75rem",
+              fontWeight: "800",
+              textTransform: "uppercase",
+              letterSpacing: "1.5px",
+            }}
+          >
+            Gestão de Acesso e Privilégios do Grupo
+          </h4>
 
+          <div className="critical-actions-grid">
+            <div className="main-actions">
+              {/* Mantendo o padrão de grid, mas focado na exclusão do grupo */}
+              <button
+                onClick={handleDelete}
+                disabled={actionLoading}
+                className="btn-delete-permanent"
+              >
+                {actionLoading
+                  ? "Processando..."
+                  : "Excluir Grupo Permanentemente"}
+              </button>
+            </div>
+          </div>
+
+          <p className="text-dim small mt-3 mb-0">
+            <i className="bi bi-info-circle me-2"></i>
+            Atenção: A exclusão do grupo{" "}
+            <strong>{group.name?.toUpperCase()}</strong> removerá todos os
+            vínculos de membros imediatamente.
+          </p>
+        </section>
+      )}
     </div>
   );
 }
