@@ -573,8 +573,7 @@ export default function Dashboard() {
                               Ações de Grupo
                             </span>
                             <div className="text-dim small">
-                              Crie novos grupos para gerenciar permissões de
-                              usuários de forma coletiva.
+                              Crie novos grupos.
                             </div>
                           </div>
                         </Col>
