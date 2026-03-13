@@ -166,87 +166,28 @@ export default function GroupDetail({
                 <label className="text-dim small text-uppercase fw-bold mb-2 d-block">
                   E-mail do Usuário
                 </label>
-
-                {/* Input Group do Bootstrap para alinhar lado a lado */}
-                <div className="input-group">
-                  <input
-                    type="email"
-                    className="custom-input-dark form-control"
-                    value={emailToAdd}
-                    onChange={(e) => setEmailToAdd(e.target.value)}
-                    placeholder="usuario@email.com"
-                    required
-                    style={{
-                      backgroundColor: "#111",
-                      color: "white",
-                      border: "1px solid #333",
-                      borderRadius: "8px 0 0 8px", // Arredonda apenas o canto esquerdo
-                    }}
-                  />
-                  <button
-                    type="submit"
-                    className="btn btn-primary-axion px-3"
-                    disabled={actionLoading || !emailToAdd}
-                    style={{
-                      borderRadius: "0 8px 8px 0", // Arredonda apenas o canto direito
-                      whiteSpace: "nowrap",
-                      minWidth: "80px",
-                    }}
-                  >
-                    {actionLoading ? "..." : "Inserir"}
-                  </button>
-                </div>
+                <input
+                  type="email"
+                  className="custom-input-dark w-100"
+                  value={emailToAdd}
+                  onChange={(e) => setEmailToAdd(e.target.value)}
+                  placeholder="usuario@email.com"
+                  required
+                />
               </div>
+              <button
+                type="submit"
+                className="btn-primary-axion w-100 py-2 fw-bold"
+                disabled={actionLoading || !emailToAdd}
+              >
+                {actionLoading ? "Processando..." : "Inserir no Grupo"}
+              </button>
             </form>
           </div>
         </div>
       </div>
-      {/* SEÇÃO DE AÇÕES CRÍTICAS - PADRÃO IDENTIDADE VISUAL */}
-      {(isSystemAdmin ||
-        Number(currentUserId) === Number(group.creator_id)) && (
-        <section
-          className="actions-section mt-5 p-4"
-          style={{
-            background: "rgba(220, 53, 69, 0.05)",
-            borderRadius: "16px",
-            border: "1px solid rgba(220, 53, 69, 0.2)",
-          }}
-        >
-          <h4
-            className="text-danger mb-4"
-            style={{
-              fontSize: "0.75rem",
-              fontWeight: "800",
-              textTransform: "uppercase",
-              letterSpacing: "1.5px",
-            }}
-          >
-            Gestão de Acesso e Privilégios do Grupo
-          </h4>
 
-          <div className="critical-actions-grid">
-            <div className="main-actions">
-              {/* Mantendo o padrão de grid, mas focado na exclusão do grupo */}
-              <button
-                onClick={handleDelete}
-                disabled={actionLoading}
-                className="btn-delete-permanent"
-              >
-                {actionLoading
-                  ? "Processando..."
-                  : "Excluir Grupo Permanentemente"}
-              </button>
-            </div>
-          </div>
 
-          <p className="text-dim small mt-3 mb-0">
-            <i className="bi bi-info-circle me-2"></i>
-            Atenção: A exclusão do grupo{" "}
-            <strong>{group.name?.toUpperCase()}</strong> removerá todos os
-            vínculos de membros imediatamente.
-          </p>
-        </section>
-      )}
     </div>
   );
 }
