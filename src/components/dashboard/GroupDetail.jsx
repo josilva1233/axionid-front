@@ -9,6 +9,9 @@ export default function GroupDetail({
   onDemoteUser, // Nova prop necessária para remover a função admin
   onDeleteGroup,
   actionLoading,
+  currentUserId, // Adicione esta prop para identificar o usuário logado
+  isSystemAdmin, // Adicione esta prop para saber se é admin total
+
 }) {
   const [emailToAdd, setEmailToAdd] = useState("");
 
