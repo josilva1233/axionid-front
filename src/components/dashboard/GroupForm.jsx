@@ -34,18 +34,22 @@ export default function GroupForm({ onSave, onCancel, loading }) {
           />
         </Form.Group>
 
-        <div className="d-flex gap-2">
+        <div className="d-flex gap-2 w-100">
           <button
             type="submit"
             className="btn-table-action w-100"
             disabled={loading}
           >
-            {loading ? <Spinner size="sm" /> : "Salvar Grupo"}
+            {loading ? (
+              <Spinner animation="border" size="sm" />
+            ) : (
+              "Salvar Grupo"
+            )}
           </button>
 
           <button
             type="button"
-            className="btn-filter-clear"
+            className="btn-filter-clear w-100"
             onClick={onCancel}
             disabled={loading}
           >
