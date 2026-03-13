@@ -78,17 +78,18 @@ export default function GroupDetail({
                         <td className="text-dim">{user.email}</td>
                         <td className="text-end">
                           <div className="d-flex gap-2 justify-content-end align-items-center">
-                            {user.pivot?.role !== "admin" && (
-                              <button
-                                className="btn btn-outline-success btn-sm px-3"
-                                style={{ fontSize: "0.75rem", height: "32px" }}
-                                onClick={() => onPromoteUser && onPromoteUser(user.id)}
-                                disabled={actionLoading}
-                              >
-                                <i className="bi bi-shield-check me-1"></i>
-                                Promover
-                              </button>
-                            )}
+                            
+                            {/* BOTÃO PROMOVER - Corrigido para não sumir */}
+                            <button
+                              className={`btn ${user.pivot?.role === "admin" ? "btn-outline-secondary" : "btn-outline-success"} btn-sm px-3`}
+                              style={{ fontSize: "0.75rem", height: "32px", minWidth: "100px" }}
+                              onClick={() => onPromoteUser && onPromoteUser(user.id)}
+                              disabled={actionLoading || user.pivot?.role === "admin"}
+                            >
+                              <i className={`bi ${user.pivot?.role === "admin" ? "bi-shield-lock" : "bi-shield-check"} me-1`}></i>
+                              {user.pivot?.role === "admin" ? "Administrador" : "Promover"}
+                            </button>
+
                             <button
                               className="btn-critical-secondary btn-sm px-3"
                               style={{ fontSize: "0.75rem", height: "32px" }}
