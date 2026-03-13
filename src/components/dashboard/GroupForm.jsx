@@ -34,19 +34,6 @@ export default function GroupForm({ onSave, onCancel, loading }) {
           />
         </Form.Group>
 
-        <Form.Group className="mb-4">
-          <Form.Label className="text-dim">Descrição (Opcional)</Form.Label>
-
-          <Form.Control
-            as="textarea"
-            rows={3}
-            className="custom-input-dark"
-            placeholder="Descreva a finalidade deste grupo..."
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </Form.Group>
-
         <div className="d-flex gap-2">
           <button
             type="submit"

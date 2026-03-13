@@ -1,6 +1,7 @@
 import { useState } from "react";
 
-export default function GroupDetail({ group, onBack, onAddUser, onRemoveUser, onDeleteGroup, actionLoading }) {
+// Adicionado a prop onPromoteUser
+export default function GroupDetail({ group, onBack, onAddUser, onRemoveUser, onPromoteUser, onDeleteGroup, actionLoading }) {
   const [emailToAdd, setEmailToAdd] = useState('');
 
   const handleSubmit = (e) => {
@@ -11,12 +12,8 @@ export default function GroupDetail({ group, onBack, onAddUser, onRemoveUser, on
   };
 
   const handleDelete = () => {
-    // O aviso de performance [Violation] ocorre porque o navegador "para" aqui
-    // Se o grupo não existir por erro de estado, evitamos o erro
     if (!group?.id) return;
-
     if (window.confirm(`ATENÇÃO: Deseja realmente excluir o grupo "${group.name}"?`)) {
-      // Certifique-se de que o nome aqui é IDENTICO ao da prop acima
       onDeleteGroup(group.id);
     }
   };
@@ -56,23 +53,45 @@ export default function GroupDetail({ group, onBack, onAddUser, onRemoveUser, on
                   <tr>
                     <th>NOME</th>
                     <th>E-MAIL</th>
-                    <th className="text-end">AÇÃO</th>
+                    <th className="text-end">AÇÕES</th>
                   </tr>
                 </thead>
                 <tbody>
                   {group.users?.length > 0 ? (
                     group.users.map((user) => (
                       <tr key={user.id}>
-                        <td><strong className="text-white">{user.name}</strong></td>
+                        <td>
+                          <div className="d-flex align-items-center">
+                            <strong className="text-white">{user.name}</strong>
+                            {/* Badge visual se o usuário for admin do grupo */}
+                            {user.pivot?.role === 'admin' && (
+                              <span className="badge bg-primary-subtle text-primary ms-2 small-caps-bold" style={{fontSize: '0.65rem'}}>ADMIN</span>
+                            )}
+                          </div>
+                        </td>
                         <td className="text-dim">{user.email}</td>
                         <td className="text-end">
-                          <button 
-                            className="btn-critical-secondary btn-sm px-3"
-                            onClick={() => onRemoveUser(user.id, user.name)}
-                            disabled={actionLoading}
-                          >
-                            Remover
-                          </button>
+                          <div className="d-flex gap-2 justify-content-end">
+                            {/* Botão Promover - Só aparece se o usuário NÃO for admin ainda */}
+                            {user.pivot?.role !== 'admin' && (
+                              <button 
+                                className="btn-filter-clear btn-sm px-2"
+                                title="Promover a Admin"
+                                onClick={() => onPromoteUser(user.id)}
+                                disabled={actionLoading}
+                              >
+                                <i className="bi bi-shield-check text-success"></i>
+                              </button>
+                            )}
+                            
+                            <button 
+                              className="btn-critical-secondary btn-sm px-3"
+                              onClick={() => onRemoveUser(user.id, user.name)}
+                              disabled={actionLoading}
+                            >
+                              Remover
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
