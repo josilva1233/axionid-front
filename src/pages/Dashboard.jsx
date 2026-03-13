@@ -574,7 +574,7 @@ export default function Dashboard() {
                           {/* Botão Novo Grupo - Ocupa 3/12 */}
                           <Col md={3}>
                             <button
-                              className="btn-primary-axion w-100 py-2 fw-bold"
+                              className="btn-table-action w-100"
                               style={{ height: "45px", borderRadius: "8px" }}
                               onClick={() => setShowGroupForm(true)}
                             >
