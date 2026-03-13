@@ -1,6 +1,5 @@
 import { useState } from "react";
 
-// Adicionado a prop onPromoteUser
 export default function GroupDetail({
   group,
   onBack,
@@ -61,7 +60,7 @@ export default function GroupDetail({
       </div>
 
       <div className="row g-4">
-        {/* LISTA DE MEMBROS CORRIGIDA */}
+        {/* LISTA DE MEMBROS */}
         <div className="col-md-8">
           <div className="info-card p-4">
             <h5 className="text-white mb-4 fw-bold">Membros Atuais</h5>
@@ -81,12 +80,9 @@ export default function GroupDetail({
                         <td>
                           <div className="d-flex align-items-center">
                             <strong className="text-white">{user.name}</strong>
-                            {/* Badge do Admin */}
-                            {user.pivot?.role === "admin" && (
-                              <span
-                                className="badge bg-primary ms-2"
-                                style={{ fontSize: "0.6rem" }}
-                              >
+                            {/* O Laravel envia os dados da tabela pivô dentro do objeto 'pivot' */}
+                            {user.pivot?.role === 'admin' && (
+                              <span className="badge bg-primary ms-2" style={{ fontSize: '0.6rem' }}>
                                 ADMIN
                               </span>
                             )}
@@ -95,12 +91,12 @@ export default function GroupDetail({
                         <td className="text-dim">{user.email}</td>
                         <td className="text-end">
                           <div className="d-flex gap-2 justify-content-end align-items-center">
-                            {/* Botão Promover Estilizado como o Remover */}
+                            {/* Botão Promover - Só aparece se não for admin */}
                             {user.pivot?.role !== "admin" && (
                               <button
                                 className="btn btn-outline-success btn-sm px-3"
                                 style={{ fontSize: "0.75rem", height: "32px" }}
-                                onClick={() => onPromoteUser(user.id)}
+                                onClick={() => onPromoteUser && onPromoteUser(user.id)}
                                 disabled={actionLoading}
                               >
                                 <i className="bi bi-shield-check me-1"></i>
@@ -135,19 +131,6 @@ export default function GroupDetail({
             </div>
           </div>
         </div>
-
-        {/* Dentro do map de usuários no GroupDetail.js */}
-<td>
-  <div className="d-flex align-items-center">
-    <strong className="text-white">{user.name}</strong>
-    {/* O Laravel envia os dados da tabela pivô dentro do objeto 'pivot' */}
-    {user.pivot?.role === 'admin' && (
-      <span className="badge bg-primary ms-2" style={{ fontSize: '0.6rem' }}>
-        ADMIN
-      </span>
-    )}
-  </div>
-</td>
 
         {/* FORMULÁRIO LATERAL */}
         <div className="col-md-4">
