@@ -474,6 +474,8 @@ export default function Dashboard() {
               onDemoteUser={handleDemoteUser}
               onDeleteGroup={handleDeleteGroup}
               actionLoading={actionLoading}
+              currentUserId={currentUser?.id} 
+              isSystemAdmin={currentUser?.is_admin}
             />
           ) : (
             <>
