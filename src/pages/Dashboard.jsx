@@ -254,13 +254,13 @@ export default function Dashboard() {
 
     setActionLoading(true);
     try {
-      // 1. O método DEVE ser PATCH conforme seu Controller
-      // 2. A URL deve seguir o padrão: /api/v1/groups/{groupId}/members/{userId}/promote
+      // 1. URL com /api e o parâmetro correto /{group_id}/
+      // 2. Método PATCH conforme definido no seu Route::patch
       await api.patch(
-        `/v1/groups/${selectedGroupId}/members/${userId}/promote`,
+        `/api/v1/groups/${selectedGroupId}/members/${userId}/promote`,
       );
 
-      // Atualização do estado local para refletir a mudança na UI
+      // Atualização local da UI
       setGroups((prevGroups) =>
         prevGroups.map((group) => {
           if (group.id === selectedGroupId) {
@@ -276,6 +276,9 @@ export default function Dashboard() {
           return group;
         }),
       );
+
+      // Feedback opcional
+      // toast.success("Membro promovido!");
     } catch (error) {
       console.error("Erro ao promover:", error);
       alert(error.response?.data?.message || "Erro ao processar promoção.");

@@ -20,11 +20,7 @@ export default function GroupDetail({
 
   const handleDelete = () => {
     if (!group?.id) return;
-    if (
-      window.confirm(
-        `ATENÇÃO: Deseja realmente excluir o grupo "${group.name}"?`,
-      )
-    ) {
+    if (window.confirm(`ATENÇÃO: Deseja realmente excluir o grupo "${group.name}"?`)) {
       onDeleteGroup(group.id);
     }
   };
@@ -33,9 +29,7 @@ export default function GroupDetail({
     return (
       <div className="text-center py-5">
         <p className="text-dim">Carregando dados do grupo...</p>
-        <button className="btn-secondary" onClick={onBack}>
-          Voltar
-        </button>
+        <button className="btn-secondary" onClick={onBack}>Voltar</button>
       </div>
     );
   }
@@ -45,16 +39,12 @@ export default function GroupDetail({
       {/* HEADER */}
       <div className="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom-theme">
         <div className="d-flex align-items-center gap-3">
-          <button
-            className="btn-filter-clear d-flex align-items-center px-3 py-2"
-            onClick={onBack}
-          >
+          <button className="btn-filter-clear d-flex align-items-center px-3 py-2" onClick={onBack}>
             <i className="bi bi-arrow-left me-2"></i>
             <span>Voltar</span>
           </button>
           <h2 className="mb-0 text-white fs-4 fw-bold">
-            Gerenciar Grupo:{" "}
-            <span className="text-primary">{group.name?.toUpperCase()}</span>
+            Gerenciar Grupo: <span className="text-primary">{group.name?.toUpperCase()}</span>
           </h2>
         </div>
       </div>
@@ -80,18 +70,14 @@ export default function GroupDetail({
                         <td>
                           <div className="d-flex align-items-center">
                             <strong className="text-white">{user.name}</strong>
-                            {/* O Laravel envia os dados da tabela pivô dentro do objeto 'pivot' */}
-                            {user.pivot?.role === 'admin' && (
-                              <span className="badge bg-primary ms-2" style={{ fontSize: '0.6rem' }}>
-                                ADMIN
-                              </span>
+                            {user.pivot?.role === "admin" && (
+                              <span className="badge bg-primary ms-2" style={{ fontSize: "0.6rem" }}>ADMIN</span>
                             )}
                           </div>
                         </td>
                         <td className="text-dim">{user.email}</td>
                         <td className="text-end">
                           <div className="d-flex gap-2 justify-content-end align-items-center">
-                            {/* Botão Promover - Só aparece se não for admin */}
                             {user.pivot?.role !== "admin" && (
                               <button
                                 className="btn btn-outline-success btn-sm px-3"
@@ -103,7 +89,6 @@ export default function GroupDetail({
                                 Promover
                               </button>
                             )}
-
                             <button
                               className="btn-critical-secondary btn-sm px-3"
                               style={{ fontSize: "0.75rem", height: "32px" }}
@@ -118,10 +103,7 @@ export default function GroupDetail({
                     ))
                   ) : (
                     <tr>
-                      <td
-                        colSpan="3"
-                        className="text-center py-5 text-dim italic"
-                      >
+                      <td colSpan="3" className="text-center py-5 text-dim italic">
                         Nenhum membro vinculado a este grupo.
                       </td>
                     </tr>
@@ -138,9 +120,7 @@ export default function GroupDetail({
             <h5 className="text-white mb-3 fw-bold">Adicionar Membro</h5>
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
-                <label className="text-dim small text-uppercase fw-bold mb-2 d-block">
-                  E-mail do Usuário
-                </label>
+                <label className="text-dim small text-uppercase fw-bold mb-2 d-block">E-mail do Usuário</label>
                 <input
                   type="email"
                   className="custom-input-dark w-100"
@@ -170,11 +150,9 @@ export default function GroupDetail({
             Zona de Perigo
           </h4>
         </div>
-
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
           <p className="text-dim small mb-0 flex-grow-1">
-            A exclusão do grupo removerá permanentemente todos os registros de
-            permissões.
+            A exclusão do grupo removerá permanentemente todos os registros de permissões.
           </p>
           <button
             type="button"
