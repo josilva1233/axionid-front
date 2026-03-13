@@ -37,7 +37,7 @@ export default function GroupForm({ onSave, onCancel, loading }) {
         <div className="d-flex gap-2">
           <button
             type="submit"
-            className="btn-primary-custom"
+            className="btn-table-action w-100"
             disabled={loading}
           >
             {loading ? <Spinner size="sm" /> : "Salvar Grupo"}

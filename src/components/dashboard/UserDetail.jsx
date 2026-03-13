@@ -125,7 +125,7 @@ export default function UserDetail({ user, onBack, onAction, onUpdate, actionLoa
                 Cancelar
               </button>
               <button 
-                className="btn-save-confirm px-4 py-2" 
+                className="btn-table-action w-100 px-3 py-2" 
                 onClick={handleSave}
                 disabled={actionLoading}
                 style={{ background: 'var(--success)', color: '#fff', border: 'none', borderRadius: '6px' }}
