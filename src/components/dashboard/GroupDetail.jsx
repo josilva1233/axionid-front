@@ -136,6 +136,19 @@ export default function GroupDetail({
           </div>
         </div>
 
+        {/* Dentro do map de usuários no GroupDetail.js */}
+<td>
+  <div className="d-flex align-items-center">
+    <strong className="text-white">{user.name}</strong>
+    {/* O Laravel envia os dados da tabela pivô dentro do objeto 'pivot' */}
+    {user.pivot?.role === 'admin' && (
+      <span className="badge bg-primary ms-2" style={{ fontSize: '0.6rem' }}>
+        ADMIN
+      </span>
+    )}
+  </div>
+</td>
+
         {/* FORMULÁRIO LATERAL */}
         <div className="col-md-4">
           <div className="info-card p-4">

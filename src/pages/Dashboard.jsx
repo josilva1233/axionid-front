@@ -110,21 +110,23 @@ export default function Dashboard() {
     }
   }, []);
 
-const loadAuditLogs = useCallback(
+  const loadAuditLogs = useCallback(
     async (page = 1) => {
       // Verificação de segurança local
       if (role !== "admin") return;
-      
+
       setLoading(true);
       try {
         const params = new URLSearchParams({ page: page.toString() });
-        
+
         // Mantendo os filtros de método e data
         if (filters.method) params.append("method", filters.method);
         if (filters.date) params.append("date", filters.date);
 
         // CORREÇÃO AQUI: Adicionado o prefixo /admin conforme a nova rota da API
-        const res = await api.get(`/api/v1/admin/audit-logs?${params.toString()}`);
+        const res = await api.get(
+          `/api/v1/admin/audit-logs?${params.toString()}`,
+        );
 
         // O Laravel Paginate retorna os dados dentro de .data
         // res.data é a resposta do Axios, res.data.data são os registros do Laravel
@@ -158,18 +160,20 @@ const loadAuditLogs = useCallback(
     try {
       // Correção da Rota: adicionado /api/v1
       await api.delete(`/api/v1/groups/${groupId}`);
-      
+
       // Atualização local do estado
-      setGroups(prev => prev.filter(g => g.id !== groupId));
-      
+      setGroups((prev) => prev.filter((g) => g.id !== groupId));
+
       // Reseta a visualização para a lista
-      setSelectedGroupId(null); 
+      setSelectedGroupId(null);
       setShowGroupForm(false);
-      
+
       alert("Grupo excluído com sucesso!");
     } catch (error) {
       console.error("Erro ao deletar grupo:", error);
-      alert(error.response?.data?.message || "Não foi possível excluir o grupo.");
+      alert(
+        error.response?.data?.message || "Não foi possível excluir o grupo.",
+      );
     } finally {
       setActionLoading(false);
     }
@@ -246,17 +250,46 @@ const loadAuditLogs = useCallback(
   };
 
   const handlePromoteUser = async (userId) => {
-  setActionLoading(true);
-  try {
-    // Sua chamada para o Laravel aqui
-    // await api.post(`/groups/${selectedGroupId}/promote`, { user_id: userId });
-    console.log("Promovendo usuário:", userId);
-  } catch (error) {
-    console.error(error);
-  } finally {
-    setActionLoading(false);
-  }
-};
+    if (actionLoading) return;
+
+    setActionLoading(true);
+    try {
+      // Ajustado para PATCH e passando os IDs na URL conforme o seu Controller
+      await api.patch(
+        `/v1/groups/${selectedGroupId}/members/${userId}/promote`,
+      );
+
+      // Atualização do estado local para refletir a mudança instantaneamente
+      setGroups((prevGroups) => {
+        return prevGroups.map((group) => {
+          if (group.id === selectedGroupId) {
+            return {
+              ...group,
+              users: group.users.map((user) => {
+                if (user.id === userId) {
+                  return {
+                    ...user,
+                    pivot: { ...user.pivot, role: "admin" },
+                  };
+                }
+                return user;
+              }),
+            };
+          }
+          return group;
+        });
+      });
+
+      // Opcional: Alerta de sucesso
+      // alert("Membro promovido com sucesso!");
+    } catch (error) {
+      console.error("Erro ao promover:", error);
+      const msg = error.response?.data?.message || "Erro ao promover usuário.";
+      alert(msg);
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const handleViewDetail = async (id) => {
     setLoading(true);
@@ -348,7 +381,7 @@ const loadAuditLogs = useCallback(
     return items;
   };
 
- return (
+  return (
     <div className="dashboard-layout animate-in">
       <Sidebar
         activeTab={activeTab}
@@ -364,7 +397,13 @@ const loadAuditLogs = useCallback(
       />
 
       <div className="main-wrapper">
-        <header className="main-header" style={{ borderBottom: "1px solid var(--border-color)", padding: "1rem 2rem" }}>
+        <header
+          className="main-header"
+          style={{
+            borderBottom: "1px solid var(--border-color)",
+            padding: "1rem 2rem",
+          }}
+        >
           <div className="d-flex align-items-center gap-3">
             <h2 className="brand" style={{ fontSize: "1.25rem", margin: 0 }}>
               {selectedUser
@@ -401,7 +440,7 @@ const loadAuditLogs = useCallback(
               onAddUser={handleAddUserToGroup}
               onRemoveUser={handleRemoveUserFromGroup}
               onPromoteUser={handlePromoteUser}
-              onDeleteGroup={handleDeleteGroup} 
+              onDeleteGroup={handleDeleteGroup}
               actionLoading={actionLoading}
             />
           ) : (
@@ -414,7 +453,9 @@ const loadAuditLogs = useCallback(
                       <>
                         <Col md={5}>
                           <Form.Group>
-                            <Form.Label className="filter-label">Buscar por Nome</Form.Label>
+                            <Form.Label className="filter-label">
+                              Buscar por Nome
+                            </Form.Label>
                             <Form.Control
                               type="text"
                               name="name"
@@ -427,7 +468,9 @@ const loadAuditLogs = useCallback(
                         </Col>
                         <Col md={4}>
                           <Form.Group>
-                            <Form.Label className="filter-label">Status Perfil</Form.Label>
+                            <Form.Label className="filter-label">
+                              Status Perfil
+                            </Form.Label>
                             <Form.Select
                               name="completed"
                               value={filters.completed}
@@ -441,7 +484,10 @@ const loadAuditLogs = useCallback(
                           </Form.Group>
                         </Col>
                         <Col md={3}>
-                          <button className="btn-filter-clear w-100" onClick={clearFilters}>
+                          <button
+                            className="btn-filter-clear w-100"
+                            onClick={clearFilters}
+                          >
                             <i className="bi bi-eraser me-2"></i> Limpar Filtros
                           </button>
                         </Col>
@@ -451,13 +497,18 @@ const loadAuditLogs = useCallback(
                         {/* AQUI O BOTÃO + GRUPO COM A "MESMA CARA" DO FILTRO */}
                         <Col md={9}>
                           <div className="d-flex flex-column">
-                            <span className="filter-label mb-2">Ações de Grupo</span>
-                            <div className="text-dim small">Crie novos grupos para gerenciar permissões de usuários de forma coletiva.</div>
+                            <span className="filter-label mb-2">
+                              Ações de Grupo
+                            </span>
+                            <div className="text-dim small">
+                              Crie novos grupos para gerenciar permissões de
+                              usuários de forma coletiva.
+                            </div>
                           </div>
                         </Col>
                         <Col md={3}>
-                          <button 
-                            className="btn-primary-axion w-100 py-2 fw-bold" 
+                          <button
+                            className="btn-primary-axion w-100 py-2 fw-bold"
                             style={{ height: "45px", borderRadius: "8px" }}
                             onClick={() => setShowGroupForm(true)}
                           >
@@ -469,7 +520,9 @@ const loadAuditLogs = useCallback(
                       <>
                         <Col md={5}>
                           <Form.Group>
-                            <Form.Label className="filter-label">Método HTTP</Form.Label>
+                            <Form.Label className="filter-label">
+                              Método HTTP
+                            </Form.Label>
                             <Form.Select
                               name="method"
                               value={filters.method}
@@ -486,7 +539,9 @@ const loadAuditLogs = useCallback(
                         </Col>
                         <Col md={4}>
                           <Form.Group>
-                            <Form.Label className="filter-label">Data do Evento</Form.Label>
+                            <Form.Label className="filter-label">
+                              Data do Evento
+                            </Form.Label>
                             <Form.Control
                               type="date"
                               name="date"
@@ -497,7 +552,10 @@ const loadAuditLogs = useCallback(
                           </Form.Group>
                         </Col>
                         <Col md={3}>
-                          <button className="btn-filter-clear w-100" onClick={clearFilters}>
+                          <button
+                            className="btn-filter-clear w-100"
+                            onClick={clearFilters}
+                          >
                             <i className="bi bi-eraser me-2"></i> Limpar Filtros
                           </button>
                         </Col>
@@ -507,68 +565,120 @@ const loadAuditLogs = useCallback(
                 </div>
               )}
 
-              <div className={`tab-wrapper position-relative ${loading ? "is-loading" : ""}`}>
+              <div
+                className={`tab-wrapper position-relative ${loading ? "is-loading" : ""}`}
+              >
                 {loading && (
-                  <div className="loading-overlay" style={{ background: "rgba(0,0,0,0.4)", borderRadius: "12px" }}>
+                  <div
+                    className="loading-overlay"
+                    style={{
+                      background: "rgba(0,0,0,0.4)",
+                      borderRadius: "12px",
+                    }}
+                  >
                     <Spinner animation="border" variant="primary" />
                   </div>
                 )}
 
-                <div className="content-card" style={{ background: "var(--card-bg)", borderRadius: "12px", overflow: "hidden" }}>
-                  {activeTab === "users" && (role === "admin" ? (
-                    <UserTable users={users} onViewDetail={handleViewDetail} />
-                  ) : (
-                    <WelcomeOperacional user={currentUser} />
-                  ))}
-                  
+                <div
+                  className="content-card"
+                  style={{
+                    background: "var(--card-bg)",
+                    borderRadius: "12px",
+                    overflow: "hidden",
+                  }}
+                >
+                  {activeTab === "users" &&
+                    (role === "admin" ? (
+                      <UserTable
+                        users={users}
+                        onViewDetail={handleViewDetail}
+                      />
+                    ) : (
+                      <WelcomeOperacional user={currentUser} />
+                    ))}
+
                   {activeTab === "audit" && role === "admin" && (
                     <AuditTable logs={auditLogs} />
                   )}
-                  
-                  {activeTab === "groups" && (showGroupForm ? (
-                    <GroupForm
-                      onSave={handleCreateGroup}
-                      onCancel={() => setShowGroupForm(false)}
-                      loading={actionLoading}
-                    />
-                  ) : (
-                    <GroupTable
-                      groups={groups}
-                      onViewDetail={(id) => setSelectedGroupId(id)}
-                      onDeleteGroup={handleDeleteGroup}
-                      currentUser={currentUser}
-                    />
-                  ))}
+
+                  {activeTab === "groups" &&
+                    (showGroupForm ? (
+                      <GroupForm
+                        onSave={handleCreateGroup}
+                        onCancel={() => setShowGroupForm(false)}
+                        loading={actionLoading}
+                      />
+                    ) : (
+                      <GroupTable
+                        groups={groups}
+                        onViewDetail={(id) => setSelectedGroupId(id)}
+                        onDeleteGroup={handleDeleteGroup}
+                        currentUser={currentUser}
+                      />
+                    ))}
                 </div>
 
-                {role === "admin" && !showGroupForm && !selectedGroupId && paginationData?.last > 1 && (
-                  <div className="d-flex justify-content-between align-items-center mt-4 p-3 rounded" style={{ background: "rgba(255,255,255,0.03)" }}>
-                    <span className="small text-dim">
-                      Exibindo página {currentPage} de {paginationData.last}
-                    </span>
-                    <Pagination className="mb-0 custom-pagination">
-                      <Pagination.Prev disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)} />
-                      {renderPaginationItems()}
-                      <Pagination.Next disabled={currentPage === paginationData.last} onClick={() => setCurrentPage(currentPage + 1)} />
-                    </Pagination>
-                  </div>
-                )}
+                {role === "admin" &&
+                  !showGroupForm &&
+                  !selectedGroupId &&
+                  paginationData?.last > 1 && (
+                    <div
+                      className="d-flex justify-content-between align-items-center mt-4 p-3 rounded"
+                      style={{ background: "rgba(255,255,255,0.03)" }}
+                    >
+                      <span className="small text-dim">
+                        Exibindo página {currentPage} de {paginationData.last}
+                      </span>
+                      <Pagination className="mb-0 custom-pagination">
+                        <Pagination.Prev
+                          disabled={currentPage === 1}
+                          onClick={() => setCurrentPage(currentPage - 1)}
+                        />
+                        {renderPaginationItems()}
+                        <Pagination.Next
+                          disabled={currentPage === paginationData.last}
+                          onClick={() => setCurrentPage(currentPage + 1)}
+                        />
+                      </Pagination>
+                    </div>
+                  )}
               </div>
             </>
           )}
         </main>
-        
+
         {currentUser && currentUser.profile_completed === false && (
-          <div className="alert-complete-profile m-4 p-4 d-flex align-items-center justify-content-between animate-in"
-               style={{ background: "#fff3cd", borderLeft: "5px solid #ffc107", borderRadius: "8px", color: "#856404", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+          <div
+            className="alert-complete-profile m-4 p-4 d-flex align-items-center justify-content-between animate-in"
+            style={{
+              background: "#fff3cd",
+              borderLeft: "5px solid #ffc107",
+              borderRadius: "8px",
+              color: "#856404",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            }}
+          >
             <div className="d-flex align-items-center">
-              <i className="bi bi-exclamation-triangle-fill me-3" style={{ fontSize: "1.5rem" }}></i>
+              <i
+                className="bi bi-exclamation-triangle-fill me-3"
+                style={{ fontSize: "1.5rem" }}
+              ></i>
               <div>
-                <h6 className="mb-0 fw-bold">Seu perfil ainda não está completo!</h6>
-                <small>Complete suas informações para liberar todas as funcionalidades.</small>
+                <h6 className="mb-0 fw-bold">
+                  Seu perfil ainda não está completo!
+                </h6>
+                <small>
+                  Complete suas informações para liberar todas as
+                  funcionalidades.
+                </small>
               </div>
             </div>
-            <button className="btn btn-warning btn-sm fw-bold px-4" onClick={() => navigate("/complete-profile")} style={{ borderRadius: "20px" }}>
+            <button
+              className="btn btn-warning btn-sm fw-bold px-4"
+              onClick={() => navigate("/complete-profile")}
+              style={{ borderRadius: "20px" }}
+            >
               Completar agora
             </button>
           </div>
