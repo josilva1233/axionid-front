@@ -6,11 +6,9 @@ export default function GroupDetail({
   onAddUser,
   onRemoveUser,
   onPromoteUser,
-  onDemoteUser,
+  onDemoteUser, // Nova prop necessária para remover a função admin
   onDeleteGroup,
   actionLoading,
-  currentUserId, // Adicione esta prop para identificar o usuário logado
-  isSystemAdmin, // Adicione esta prop para saber se é admin total
 }) {
   const [emailToAdd, setEmailToAdd] = useState("");
 
@@ -23,7 +21,7 @@ export default function GroupDetail({
 
   const handleDelete = () => {
     if (!group?.id) return;
-    if (window.confirm(`PERIGO: Deseja realmente EXCLUIR PERMANENTEMENTE o grupo "${group.name}"? Esta ação não pode ser desfeita.`)) {
+    if (window.confirm(`ATENÇÃO: Deseja realmente excluir o grupo "${group.name}"?`)) {
       onDeleteGroup(group.id);
     }
   };
@@ -49,18 +47,6 @@ export default function GroupDetail({
             Gerenciar Grupo: <span className="text-primary">{group.name?.toUpperCase()}</span>
           </h2>
         </div>
-
-        {/* BOTÃO EXCLUIR GRUPO - Visível apenas para o Dono ou Super Admin */}
-        {(isSystemAdmin || Number(currentUserId) === Number(group.creator_id)) && (
-          <button 
-            className="btn btn-outline-danger d-flex align-items-center px-3" 
-            onClick={handleDelete}
-            disabled={actionLoading}
-          >
-            <i className="bi bi-trash3 me-2"></i>
-            Excluir Grupo
-          </button>
-        )}
       </div>
 
       <div className="row g-4">
@@ -78,67 +64,56 @@ export default function GroupDetail({
                 </thead>
                 <tbody>
                   {group.users?.length > 0 ? (
-                    group.users.map((user) => {
-                      const isOwner = Number(user.id) === Number(group.creator_id);
-                      const isMe = Number(user.id) === Number(currentUserId);
-                      // Travas: Admin total ignora bloqueios, outros não podem mexer no dono ou em si mesmos
-                      const canManage = isSystemAdmin || (!isOwner && !isMe);
-
-                      return (
-                        <tr key={user.id}>
-                          <td>
-                            <div className="d-flex align-items-center">
-                              <strong className={isMe ? "text-primary" : "text-white"}>
-                                {user.name} {isMe && "(Você)"}
-                              </strong>
-                              {isOwner && (
-                                <span className="badge bg-warning text-dark ms-2" style={{ fontSize: "0.6rem" }}>DONO</span>
-                              )}
-                              {user.pivot?.role === "admin" && !isOwner && (
-                                <span className="badge bg-primary ms-2" style={{ fontSize: "0.6rem" }}>ADMIN</span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="text-dim">{user.email}</td>
-                          <td className="text-end">
-                            <div className="d-flex gap-2 justify-content-end align-items-center">
-                              
-                              {user.pivot?.role === "admin" ? (
-                                <button
-                                  className="btn btn-outline-warning btn-sm px-3"
-                                  style={{ fontSize: "0.75rem", height: "32px", minWidth: "120px" }}
-                                  onClick={() => onDemoteUser && onDemoteUser(user.id)}
-                                  disabled={actionLoading || !canManage}
-                                  title={!canManage ? "Proteção de cargo" : "Remover admin"}
-                                >
-                                  <i className={`bi ${canManage ? 'bi-shield-minus' : 'bi-shield-lock'} me-1`}></i>
-                                  Remover Admin
-                                </button>
-                              ) : (
-                                <button
-                                  className="btn btn-outline-success btn-sm px-3"
-                                  style={{ fontSize: "0.75rem", height: "32px", minWidth: "120px" }}
-                                  onClick={() => onPromoteUser && onPromoteUser(user.id)}
-                                  disabled={actionLoading}
-                                >
-                                  <i className="bi bi-shield-check me-1"></i>
-                                  Tornar Admin
-                                </button>
-                              )}
-
+                    group.users.map((user) => (
+                      <tr key={user.id}>
+                        <td>
+                          <div className="d-flex align-items-center">
+                            <strong className="text-white">{user.name}</strong>
+                            {user.pivot?.role === "admin" && (
+                              <span className="badge bg-primary ms-2" style={{ fontSize: "0.6rem" }}>ADMIN</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="text-dim">{user.email}</td>
+                        <td className="text-end">
+                          <div className="d-flex gap-2 justify-content-end align-items-center">
+                            
+                            {/* BOTÃO ALTERNÁVEL: PROMOVER OU REMOVER ADMIN */}
+                            {user.pivot?.role === "admin" ? (
                               <button
-                                className="btn-critical-secondary btn-sm px-3"
-                                style={{ fontSize: "0.75rem", height: "32px" }}
-                                onClick={() => onRemoveUser(user.id, user.name)}
-                                disabled={actionLoading || !canManage}
+                                className="btn btn-outline-warning btn-sm px-3"
+                                style={{ fontSize: "0.75rem", height: "32px", minWidth: "120px" }}
+                                onClick={() => onDemoteUser && onDemoteUser(user.id)}
+                                disabled={actionLoading}
+                                title="Remover cargo de administrador"
                               >
-                                Remover
+                                <i className="bi bi-shield-minus me-1"></i>
+                                Remover Admin
                               </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
+                            ) : (
+                              <button
+                                className="btn btn-outline-success btn-sm px-3"
+                                style={{ fontSize: "0.75rem", height: "32px", minWidth: "120px" }}
+                                onClick={() => onPromoteUser && onPromoteUser(user.id)}
+                                disabled={actionLoading}
+                              >
+                                <i className="bi bi-shield-check me-1"></i>
+                                Tornar Admin
+                              </button>
+                            )}
+
+                            <button
+                              className="btn-critical-secondary btn-sm px-3"
+                              style={{ fontSize: "0.75rem", height: "32px" }}
+                              onClick={() => onRemoveUser(user.id, user.name)}
+                              disabled={actionLoading}
+                            >
+                              Remover
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
                   ) : (
                     <tr><td colSpan="3" className="text-center py-5 text-dim italic">Nenhum membro vinculado.</td></tr>
                   )}
