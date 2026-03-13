@@ -1,32 +1,26 @@
 import { useState } from "react";
-import { Form, Spinner } from "react-bootstrap";
+import { Form, Spinner, Row, Col } from "react-bootstrap";
+
 export default function GroupForm({ onSave, onCancel, loading }) {
   const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name.trim()) return alert("O nome do grupo é obrigatório.");
-    onSave({ name, description });
+    // Como sua API espera apenas 'name', removi a description para manter limpo
+    onSave({ name });
   };
 
   return (
-    <div
-      className="group-form-container animate-in p-4 mb-4"
-      style={{
-        background: "rgba(255,255,255,0.03)",
-        borderRadius: "12px",
-        border: "1px solid var(--border-color)",
-      }}
-    >
+    <div className="group-form-container animate-in p-4 mb-4 border border-secondary rounded-3 shadow-sm bg-dark-custom">
       <h4 className="text-white mb-4">Criar Novo Grupo</h4>
+      
       <Form onSubmit={handleSubmit}>
-        <Form.Group className="mb-3">
-          <Form.Label className="text-dim">Nome do Grupo</Form.Label>
-
+        <Form.Group className="mb-4">
+          <Form.Label className="text-dim small mb-2">Nome do Grupo</Form.Label>
           <Form.Control
             type="text"
-            className="custom-input-dark"
+            className="custom-input-dark py-2"
             placeholder="Ex: Administradores, Financeiro..."
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -34,28 +28,35 @@ export default function GroupForm({ onSave, onCancel, loading }) {
           />
         </Form.Group>
 
-        <div className="d-flex gap-2 mt-3">
-          <button
-            type="submit"
-            className="btn-primary-axion w-100 py-2"
-            disabled={loading}
-          >
-            {loading ? (
-              <Spinner animation="border" size="sm" />
-            ) : (
-              "Salvar Grupo"
-            )}
-          </button>
+        {/* Usamos Row e Col para garantir o alinhamento lado a lado perfeito.
+          O g-2 adiciona o espaçamento (gap) entre as colunas.
+        */}
+        <Row className="g-2">
+          <Col xs={6}>
+            <button
+              type="submit"
+              className="btn-primary-axion w-100 py-2 fw-bold"
+              disabled={loading}
+            >
+              {loading ? (
+                <Spinner animation="border" size="sm" role="status" aria-hidden="true" />
+              ) : (
+                "Salvar Grupo"
+              )}
+            </button>
+          </Col>
 
-          <button
-            type="button"
-            className="btn-filter-clear w-100 py-2"
-            onClick={onCancel}
-            disabled={loading}
-          >
-            Cancelar
-          </button>
-        </div>
+          <Col xs={6}>
+            <button
+              type="button"
+              className="btn-filter-clear w-100 py-2"
+              onClick={onCancel}
+              disabled={loading}
+            >
+              Cancelar
+            </button>
+          </Col>
+        </Row>
       </Form>
     </div>
   );
