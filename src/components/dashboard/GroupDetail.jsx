@@ -186,134 +186,33 @@ export default function GroupDetail({
           </div>
         </div>
       </div>
-      <section
-        className="actions-section mt-5 p-4"
-        style={{
-          background: "rgba(220, 53, 69, 0.05)",
-          borderRadius: "16px",
-          border: "1px solid rgba(220, 53, 69, 0.2)",
-          opacity: isEditing ? 0.5 : 1,
-          pointerEvents: isEditing ? "none" : "auto",
-        }}
-      >
-        <h4
-          className="text-danger mb-4"
-          style={{
-            fontSize: "0.75rem",
-            fontWeight: "800",
-            textTransform: "uppercase",
-            letterSpacing: "1.5px",
-          }}
-        >
-          Gestão de Acesso e Privilégios
-        </h4>
-
-        <div className="critical-actions-grid">
-          {/* Usaremos d-flex para alinhar lado a lado com wrap para mobile */}
-          <div className="d-flex flex-wrap gap-3 justify-content-start">
-            {user.is_admin ? (
+      {/* Nova linha para a Zona de Perigo (Excluir Grupo) */}
+      <div className="row mt-4">
+        <div className="col-12">
+          <div
+            className="info-card p-4 border-danger-subtle"
+            style={{ border: "1px solid rgba(255, 0, 0, 0.2)" }}
+          >
+            <div className="d-flex justify-content-between align-items-center">
+              <div>
+                <h5 className="text-danger fw-bold mb-1">Zona de Perigo</h5>
+                <p className="text-dim small mb-0">
+                  Uma vez excluído, o grupo e seus vínculos não podem ser
+                  recuperados.
+                </p>
+              </div>
               <button
-                onClick={() => onAction("remove-admin")}
-                disabled={actionLoading}
-                className="btn-critical-secondary"
+                className="btn btn-outline-danger"
+                onClick={() => onDeleteGroup(group.id)}
+                style={{ height: "42px", fontWeight: "bold" }}
               >
-                Revogar Privilégios Admin
+                <i className="bi bi-trash3 me-2"></i>
+                Excluir Grupo
               </button>
-            ) : (
-              <button
-                onClick={() => onAction("promote")}
-                disabled={actionLoading}
-                className="btn-critical-primary"
-              >
-                Promover a Administrador
-              </button>
-            )}
-
-            <button
-              onClick={() => onAction("toggle-status")}
-              disabled={actionLoading}
-              className="btn-critical-secondary"
-            >
-              {user.is_active ? "Suspender Acesso" : "Reativar Acesso"}
-            </button>
-
-            {/* O botão de excluir fica por último, idealmente com um estilo de destaque maior */}
-            <button
-              onClick={() => onAction("delete")}
-              disabled={actionLoading}
-              className="btn-delete-permanent"
-            >
-              {actionLoading
-                ? "Processando..."
-                : "Excluir Identidade Permanentemente"}
-            </button>
+            </div>
           </div>
         </div>
-      </section>
-      <section
-        className="actions-section mt-5 p-4"
-        style={{
-          background: "rgba(220, 53, 69, 0.05)",
-          borderRadius: "16px",
-          border: "1px solid rgba(220, 53, 69, 0.2)",
-          opacity: isEditing ? 0.5 : 1,
-          pointerEvents: isEditing ? "none" : "auto",
-        }}
-      >
-        <h4
-          className="text-danger mb-4"
-          style={{
-            fontSize: "0.75rem",
-            fontWeight: "800",
-            textTransform: "uppercase",
-            letterSpacing: "1.5px",
-          }}
-        >
-          Gestão de Acesso e Privilégios
-        </h4>
-
-        <div className="critical-actions-grid">
-          {/* Usaremos d-flex para alinhar lado a lado com wrap para mobile */}
-          <div className="d-flex flex-wrap gap-3 justify-content-start">
-            {user.is_admin ? (
-              <button
-                onClick={() => onAction("remove-admin")}
-                disabled={actionLoading}
-                className="btn-critical-secondary"
-              >
-                Revogar Privilégios Admin
-              </button>
-            ) : (
-              <button
-                onClick={() => onAction("promote")}
-                disabled={actionLoading}
-                className="btn-critical-primary"
-              >
-                Promover a Administrador
-              </button>
-            )}
-
-            <button
-              onClick={() => onAction("toggle-status")}
-              disabled={actionLoading}
-              className="btn-critical-secondary"
-            >
-              {user.is_active ? "Suspender Acesso" : "Reativar Acesso"}
-            </button>
-
-            {/* O botão de excluir fica por último, idealmente com um estilo de destaque maior */}
-            <button
-              onClick={() => onAction("delete")}
-              disabled={actionLoading}
-              className="btn-delete-permanent"
-            >
-              {actionLoading
-                ? "Processando..."
-                : "Excluir Identidade Permanentemente"}
-            </button>
-          </div>
-        </div>
-      </section>
+      </div>
     </div>
   );
 }
