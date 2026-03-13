@@ -20,7 +20,21 @@
     0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
 }
 
+/* Centraliza e redimensiona o reCAPTCHA */
+.auth-form .g-recaptcha > div {
+  margin: 0 auto;             /* Centraliza horizontalmente */
+  transform: scale(0.85);    /* Reduz o tamanho para 85% do original */
+  -webkit-transform: scale(0.85); /* Compatibilidade com WebKit */
+  transform-origin: center center; /* Garante que o ponto de escala seja o centro */
+  -webkit-transform-origin: center center;
+}
 
+/* Opcional: Ajusta o espaçamento vertical */
+.auth-form .g-recaptcha {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  text-align: center; /* Garante a centralização se margin: 0 auto falhar */
+}
 
 /* =========================================
 
