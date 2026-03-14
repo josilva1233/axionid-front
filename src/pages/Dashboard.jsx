@@ -26,6 +26,36 @@ export default function Dashboard() {
   const [showGroupForm, setShowGroupForm] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
+  // ... outros states
+  const [permissions, setPermissions] = useState([]); // ADICIONE ESTA LINHA
+  const [showPermissionForm, setShowPermissionForm] = useState(false);
+
+  // Função para carregar permissões da API
+  const loadPermissions = useCallback(async () => {
+    try {
+      const res = await api.get("/api/v1/permissions");
+      // Ajuste conforme a estrutura do seu retorno (res.data ou res.data.data)
+      setPermissions(res.data.data || res.data);
+    } catch (err) {
+      console.error("Erro ao carregar permissões:", err);
+    }
+  }, []);
+
+  // No seu useEffect que monitora as abas, adicione a chamada:
+  useEffect(() => {
+    if (activeTab === "users") loadUsers(currentPage);
+    else if (activeTab === "audit") loadAuditLogs(currentPage);
+    else if (activeTab === "groups") loadGroups(currentPage);
+    else if (activeTab === "permissions") loadPermissions(); // ADICIONE ESTA LINHA
+  }, [
+    activeTab,
+    currentPage,
+    loadUsers,
+    loadGroups,
+    loadAuditLogs,
+    loadPermissions,
+  ]);
+
   const {
     loading,
     users,
@@ -251,6 +281,23 @@ export default function Dashboard() {
             </>
           )}
         </main>
+        {activeTab === "permissions" && (
+          <div className="animate-in">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <h3 className="text-white mb-0">Gestão de Permissões</h3>
+              <button
+                className="btn-primary-axion px-4"
+                onClick={() => setShowPermissionForm(true)}
+              >
+                Nova Permissão
+              </button>
+            </div>
+
+            <div className="content-card">
+              <PermissionTable permissions={permissions} loading={loading} />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
