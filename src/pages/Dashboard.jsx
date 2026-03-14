@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import { Spinner } from "react-bootstrap";
+import Swal from "sweetalert2";
 import api from "../services/api";
 import { useDashboardData } from "../hooks/useDashboardData";
 
@@ -29,7 +30,18 @@ export default function Dashboard() {
 
   const [permissions, setPermissions] = useState([]);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
-
+// 2. Configuração do Alerta Customizado (Axion Style)
+  const AxionAlert = Swal.mixin({
+    background: '#111214', // Fundo escuro igual ao seu dashboard
+    color: '#ffffff',
+    confirmButtonColor: '#6f42c1', // Roxo Axion
+    cancelButtonColor: '#343a40',
+    customClass: {
+      popup: 'border border-secondary',
+      confirmButton: 'px-4 py-2 rounded-3 fw-bold',
+      cancelButton: 'px-4 py-2 rounded-3 fw-bold'
+    }
+  });
   const {
     loading, users, groups, auditLogs, filters,
     setFilters, loadUsers, loadGroups, loadAuditLogs,
