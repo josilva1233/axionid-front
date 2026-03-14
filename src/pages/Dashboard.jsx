@@ -16,6 +16,7 @@ import GroupDetail from "../components/dashboard/GroupDetail";
 import DashboardFilters from "../components/dashboard/DashboardFilters";
 import PermissionTable from "../components/dashboard/PermissionTable";
 import PermissionForm from "../components/dashboard/PermissionForm";
+import OperationView from "../components/dashboard/OperationView";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -457,7 +458,9 @@ export default function Dashboard() {
                       permissions={permissions}
                       loading={loading}
                     />
-                  )}
+                  )}: (
+    <OperationView />
+  )
                 </div>
               </div>
             </>
