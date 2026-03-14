@@ -308,9 +308,36 @@ export default function Dashboard() {
 
       <div className="main-wrapper">
         <header className="main-header d-flex justify-content-between align-items-center p-3">
-          <h2 className="brand mb-0" style={{ fontSize: "1.25rem" }}>
-            AxionID Admin
+          <h2
+            className="brand mb-0"
+            style={{
+              fontSize: "1.25rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            AxionID
+            <span
+              style={{
+                fontSize: "0.75rem",
+                padding: "2px 8px",
+                borderRadius: "4px",
+                background:
+                  role === "admin"
+                    ? "rgba(111, 66, 193, 0.2)"
+                    : "rgba(108, 117, 125, 0.2)",
+                color: role === "admin" ? "#a180e6" : "#adb5bd",
+                border: `1px solid ${role === "admin" ? "rgba(111, 66, 193, 0.3)" : "rgba(108, 117, 125, 0.3)"}`,
+                fontWeight: "500",
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
+              }}
+            >
+              {role === "admin" ? "Admin" : "Comum"}
+            </span>
           </h2>
+
           {currentUser && (
             <UserDropdown user={currentUser} onLogout={handleLogout} />
           )}
