@@ -30,18 +30,21 @@ export default function Dashboard() {
 
   const [permissions, setPermissions] = useState([]);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
-// 2. Configuração do Alerta Customizado (Axion Style)
+
+  // Configuração do Alerta Customizado (Axion Style)
   const AxionAlert = Swal.mixin({
-    background: '#111214', // Fundo escuro igual ao seu dashboard
+    background: '#111214',
     color: '#ffffff',
-    confirmButtonColor: '#6f42c1', // Roxo Axion
+    confirmButtonColor: '#6f42c1', 
     cancelButtonColor: '#343a40',
     customClass: {
-      popup: 'border border-secondary',
-      confirmButton: 'px-4 py-2 rounded-3 fw-bold',
-      cancelButton: 'px-4 py-2 rounded-3 fw-bold'
-    }
+      popup: 'border border-secondary rounded-4',
+      confirmButton: 'px-4 py-2 rounded-3 fw-bold mx-2',
+      cancelButton: 'px-4 py-2 rounded-3 fw-bold mx-2'
+    },
+    buttonsStyling: true
   });
+
   const {
     loading, users, groups, auditLogs, filters,
     setFilters, loadUsers, loadGroups, loadAuditLogs,
@@ -75,72 +78,106 @@ export default function Dashboard() {
     else if (activeTab === "permissions") loadPermissions();
   }, [activeTab, currentPage, loadUsers, loadGroups, loadAuditLogs, loadPermissions]);
 
-  // --- FUNÇÕES DE GESTÃO DE USUÁRIOS (CORRIGIDAS) ---
+  // --- FUNÇÕES DE GESTÃO DE USUÁRIOS (ATUALIZADAS COM SWEETALERT2) ---
 
   const handleUpdateUser = async (userId, data) => {
     setActionLoading(true);
     try {
-      // Ajustado para bater com Route::put('/users/{id}/update-manual')
       await api.put(`/api/v1/admin/users/${userId}/update-manual`, data);
-      alert("Dados atualizados com sucesso!");
+      
+      AxionAlert.fire({
+        icon: 'success',
+        title: 'Sucesso!',
+        text: 'Dados atualizados com sucesso!',
+        timer: 2000,
+        showConfirmButton: false
+      });
       
       const res = await api.get(`/api/v1/admin/users/${userId}`);
       setSelectedUser(res.data.data || res.data);
       loadUsers(currentPage);
     } catch (err) {
-      alert("Erro ao atualizar dados.");
+      AxionAlert.fire('Erro!', 'Não foi possível atualizar os dados.', 'error');
     } finally { setActionLoading(false); }
   };
 
   const handleDeleteUser = async (userId, userName) => {
-    if (!window.confirm(`Excluir permanentemente ${userName}?`)) return;
-    setActionLoading(true);
-    try {
-      await api.delete(`/api/v1/admin/users/${userId}`);
-      alert("Usuário removido!");
-      setSelectedUser(null);
-      loadUsers(currentPage);
-    } catch (err) {
-      alert("Erro ao excluir.");
-    } finally { setActionLoading(false); }
+    const result = await AxionAlert.fire({
+      title: 'Tem certeza?',
+      text: `Deseja excluir permanentemente ${userName}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, excluir!',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#d33'
+    });
+
+    if (result.isConfirmed) {
+      setActionLoading(true);
+      try {
+        await api.delete(`/api/v1/admin/users/${userId}`);
+        AxionAlert.fire('Removido!', 'Usuário excluído com sucesso.', 'success');
+        setSelectedUser(null);
+        loadUsers(currentPage);
+      } catch (err) {
+        AxionAlert.fire('Erro!', 'Erro ao tentar excluir usuário.', 'error');
+      } finally { setActionLoading(false); }
+    }
   };
 
   const handleToggleAdmin = async (userId, currentStatus) => {
-    // Sincronizado com Route::post('/users/{id}/promote') e '/users/{id}/remove-admin'
     const endpoint = currentStatus ? "remove-admin" : "promote";
     const actionText = currentStatus ? "rebaixar para usuário comum" : "promover a administrador";
 
-    if (!window.confirm(`Deseja realmente ${actionText}?`)) return;
+    const result = await AxionAlert.fire({
+      title: 'Alterar nível de acesso?',
+      text: `Você irá ${actionText} este usuário.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Confirmar',
+      cancelButtonText: 'Cancelar'
+    });
 
-    setActionLoading(true);
-    try {
-      await api.post(`/api/v1/admin/users/${userId}/${endpoint}`);
-      alert("Nível de acesso alterado!");
-      
-      const res = await api.get(`/api/v1/admin/users/${userId}`);
-      setSelectedUser(res.data.data || res.data);
-      loadUsers(currentPage);
-    } catch (err) {
-      alert(err.response?.data?.message || "Erro na operação de privilégios.");
-    } finally { setActionLoading(false); }
+    if (result.isConfirmed) {
+      setActionLoading(true);
+      try {
+        await api.post(`/api/v1/admin/users/${userId}/${endpoint}`);
+        AxionAlert.fire('Sucesso!', 'Nível de acesso alterado!', 'success');
+        
+        const res = await api.get(`/api/v1/admin/users/${userId}`);
+        setSelectedUser(res.data.data || res.data);
+        loadUsers(currentPage);
+      } catch (err) {
+        AxionAlert.fire('Erro!', err.response?.data?.message || "Erro na operação.", 'error');
+      } finally { setActionLoading(false); }
+    }
   };
 
   const handleToggleStatus = async (userId, currentStatus) => {
-    // Sincronizado com Route::patch('/users/{id}/toggle-status')
     const action = currentStatus ? "suspender" : "ativar";
-    if (!window.confirm(`Deseja ${action} o acesso?`)) return;
     
-    setActionLoading(true);
-    try {
-      await api.patch(`/api/v1/admin/users/${userId}/toggle-status`);
-      alert(`Usuário ${action}ado!`);
-      
-      const res = await api.get(`/api/v1/admin/users/${userId}`);
-      setSelectedUser(res.data.data || res.data);
-      loadUsers(currentPage);
-    } catch (err) {
-      alert("Erro ao alterar status.");
-    } finally { setActionLoading(false); }
+    const result = await AxionAlert.fire({
+      title: 'Alterar status?',
+      text: `Deseja realmente ${action} o acesso deste usuário?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: `Sim, ${action}!`,
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+      setActionLoading(true);
+      try {
+        await api.patch(`/api/v1/admin/users/${userId}/toggle-status`);
+        AxionAlert.fire('Concluído!', `Usuário ${action}ado com sucesso!`, 'success');
+        
+        const res = await api.get(`/api/v1/admin/users/${userId}`);
+        setSelectedUser(res.data.data || res.data);
+        loadUsers(currentPage);
+      } catch (err) {
+        AxionAlert.fire('Erro!', 'Não foi possível alterar o status.', 'error');
+      } finally { setActionLoading(false); }
+    }
   };
 
   // --- FUNÇÕES DE GRUPOS ---
@@ -149,10 +186,10 @@ export default function Dashboard() {
     try {
       const endpoint = `/api/v1/groups/${selectedGroupId}/members/${userId}/${type}`;
       const res = await api.patch(endpoint);
-      alert(res.data.message || "Operação realizada com sucesso!");
+      AxionAlert.fire('Sucesso!', res.data.message || "Operação realizada!", 'success');
       await loadGroups(currentPage);
     } catch (err) { 
-      alert(err.response?.data?.message || "Erro ao alterar cargo no grupo."); 
+      AxionAlert.fire('Erro!', 'Erro ao alterar cargo no grupo.', 'error');
     } finally { setActionLoading(false); }
   };
 
@@ -161,21 +198,36 @@ export default function Dashboard() {
     setActionLoading(true);
     try {
       const userToInvite = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-      if (!userToInvite) return alert("Usuário não encontrado.");
+      if (!userToInvite) return AxionAlert.fire('Aviso', 'Usuário não encontrado.', 'info');
+      
       await api.post(`/api/v1/groups/${selectedGroupId}/members`, { user_id: userToInvite.id });
+      AxionAlert.fire('Adicionado!', 'Usuário inserido no grupo.', 'success');
       await loadGroups(currentPage);
-    } catch (err) { alert("Erro ao adicionar."); }
-    finally { setActionLoading(false); }
+    } catch (err) { 
+      AxionAlert.fire('Erro!', 'Não foi possível adicionar o usuário.', 'error'); 
+    } finally { setActionLoading(false); }
   };
 
   const handleRemoveUserFromGroup = async (userId, userName) => {
-    if (!window.confirm(`Remover ${userName}?`)) return;
-    setActionLoading(true);
-    try {
-      await api.delete(`/api/v1/groups/${selectedGroupId}/members/${userId}`);
-      await loadGroups(currentPage);
-    } catch (err) { alert("Erro ao remover."); }
-    finally { setActionLoading(false); }
+    const result = await AxionAlert.fire({
+      title: 'Remover do grupo?',
+      text: `Deseja retirar ${userName} deste grupo?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Remover',
+      cancelButtonText: 'Manter'
+    });
+
+    if (result.isConfirmed) {
+      setActionLoading(true);
+      try {
+        await api.delete(`/api/v1/groups/${selectedGroupId}/members/${userId}`);
+        AxionAlert.fire('Removido!', 'Membro removido do grupo.', 'success');
+        await loadGroups(currentPage);
+      } catch (err) { 
+        AxionAlert.fire('Erro!', 'Não foi possível remover.', 'error'); 
+      } finally { setActionLoading(false); }
+    }
   };
 
   const handleLogout = () => {
@@ -227,7 +279,11 @@ export default function Dashboard() {
               onRemoveUser={handleRemoveUserFromGroup}
               onPromoteUser={(uid) => handleGroupMemberRole(uid, "promote")}
               onDemoteUser={(uid) => handleGroupMemberRole(uid, "demote")}
-              onDeleteGroup={(id) => api.delete(`/api/v1/groups/${id}`).then(() => { setSelectedGroupId(null); loadGroups(1); })}
+              onDeleteGroup={(id) => api.delete(`/api/v1/groups/${id}`).then(() => { 
+                AxionAlert.fire('Excluído!', 'Grupo removido com sucesso.', 'success');
+                setSelectedGroupId(null); 
+                loadGroups(1); 
+              })}
             />
           ) : (
             <>
