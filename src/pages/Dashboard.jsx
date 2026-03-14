@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
-import { Spinner, Modal, Form, Button } from "react-bootstrap";
+import { Spinner } from "react-bootstrap";
+import Swal from "sweetalert2"; // Importado SweetAlert2
 import api from "../services/api";
 import { useDashboardData } from "../hooks/useDashboardData";
 
@@ -30,7 +31,19 @@ export default function Dashboard() {
   // Estados para Permissões
   const [permissions, setPermissions] = useState([]);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
-  const [newPermission, setNewPermission] = useState({ name: "", label: "" });
+
+  // Configuração Customizada do SweetAlert2 (Tema AxionID)
+  const AxionAlert = Swal.mixin({
+    background: '#111214',
+    color: '#ffffff',
+    confirmButtonColor: '#6f42c1',
+    cancelButtonColor: '#343a40',
+    customClass: {
+      popup: 'border border-secondary rounded-4',
+      confirmButton: 'px-4 py-2 rounded-3 fw-bold mx-2',
+      cancelButton: 'px-4 py-2 rounded-3 fw-bold mx-2'
+    }
+  });
 
   const {
     loading, users, groups, auditLogs, filters,
@@ -44,7 +57,6 @@ export default function Dashboard() {
       const res = await api.get("/api/v1/admin/permissions");
       setPermissions(res.data.data || res.data || []);
     } catch (err) {
-      console.error("Erro ao carregar permissões:", err);
       setPermissions([]); 
     }
   }, []);
@@ -66,53 +78,117 @@ export default function Dashboard() {
     else if (activeTab === "permissions") loadPermissions();
   }, [activeTab, currentPage, loadUsers, loadGroups, loadAuditLogs, loadPermissions]);
 
-  // --- NOVAS FUNÇÕES DE GESTÃO DE USUÁRIOS ---
-  const handleDeleteUser = async (userId, userName) => {
-    if (!window.confirm(`Deseja realmente excluir permanentemente o usuário ${userName}?`)) return;
+  // --- GESTÃO DE USUÁRIOS (CORREÇÕES SWEETALERT E PRIVILÉGIOS) ---
+  
+  const handleUpdateUser = async (userId, data) => {
     setActionLoading(true);
     try {
-      await api.delete(`/api/v1/admin/users/${userId}`);
-      alert("Usuário removido com sucesso!");
+      await api.put(`/api/v1/admin/users/${userId}/update-manual`, data);
+      AxionAlert.fire({ icon: 'success', title: 'Sucesso!', text: 'Perfil atualizado.', timer: 1500, showConfirmButton: false });
+      
+      const res = await api.get(`/api/v1/admin/users/${userId}`);
+      setSelectedUser(res.data.data || res.data);
       loadUsers(currentPage);
     } catch (err) {
-      alert(err.response?.data?.message || "Erro ao excluir usuário.");
+      AxionAlert.fire('Erro!', 'Não foi possível salvar as alterações.', 'error');
     } finally { setActionLoading(false); }
   };
 
+  const handleDeleteUser = async (userId, userName) => {
+    const result = await AxionAlert.fire({
+      title: 'Excluir usuário?',
+      text: `Deseja realmente remover permanentemente ${userName}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, excluir',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+      setActionLoading(true);
+      try {
+        await api.delete(`/api/v1/admin/users/${userId}`);
+        AxionAlert.fire('Removido!', 'Usuário deletado do sistema.', 'success');
+        setSelectedUser(null);
+        loadUsers(currentPage);
+      } catch (err) {
+        AxionAlert.fire('Erro!', 'Falha ao excluir usuário.', 'error');
+      } finally { setActionLoading(false); }
+    }
+  };
+
   const handleToggleAdmin = async (userId, currentStatus) => {
-    const action = currentStatus ? "rebaixar para usuário comum" : "promover a administrador";
-    if (!window.confirm(`Deseja ${action}?`)) return;
-    setActionLoading(true);
-    try {
-      await api.patch(`/api/v1/admin/users/${userId}/toggle-admin`);
-      alert("Nível de acesso atualizado!");
-      loadUsers(currentPage);
-    } catch (err) {
-      alert("Erro ao alterar nível de acesso.");
-    } finally { setActionLoading(false); }
+    const endpoint = currentStatus ? "remove-admin" : "promote";
+    const actionText = currentStatus ? "rebaixar para usuário comum" : "promover a administrador";
+
+    const result = await AxionAlert.fire({
+      title: 'Alterar Privilégios?',
+      text: `Deseja realmente ${actionText}?`,
+      icon: 'question',
+      showCancelButton: true
+    });
+
+    if (result.isConfirmed) {
+      setActionLoading(true);
+      try {
+        await api.post(`/api/v1/admin/users/${userId}/${endpoint}`);
+        AxionAlert.fire('Sucesso!', 'Nível de acesso alterado.', 'success');
+        
+        const res = await api.get(`/api/v1/admin/users/${userId}`);
+        setSelectedUser(res.data.data || res.data);
+        loadUsers(currentPage);
+      } catch (err) {
+        AxionAlert.fire('Erro!', 'Não foi possível alterar o cargo.', 'error');
+      } finally { setActionLoading(false); }
+    }
+  };
+
+  const handleToggleStatus = async (userId, currentStatus) => {
+    const action = currentStatus ? "suspender" : "ativar";
+    
+    const result = await AxionAlert.fire({
+      title: 'Status da Conta',
+      text: `Deseja ${action} o acesso deste usuário?`,
+      icon: 'warning',
+      showCancelButton: true
+    });
+
+    if (result.isConfirmed) {
+      setActionLoading(true);
+      try {
+        await api.patch(`/api/v1/admin/users/${userId}/toggle-status`);
+        AxionAlert.fire('Concluído!', `Usuário agora está ${currentStatus ? 'inativo' : 'ativo'}.`, 'success');
+        
+        const res = await api.get(`/api/v1/admin/users/${userId}`);
+        setSelectedUser(res.data.data || res.data);
+        loadUsers(currentPage);
+      } catch (err) {
+        AxionAlert.fire('Erro!', 'Falha ao atualizar status.', 'error');
+      } finally { setActionLoading(false); }
+    }
   };
 
   const handleCreatePermission = async (data) => {
     setActionLoading(true);
     try {
       await api.post("/api/v1/admin/permissions", data);
+      AxionAlert.fire({ icon: 'success', title: 'Criada!', text: 'Permissão registrada.', timer: 2000, showConfirmButton: false });
       setShowPermissionModal(false);
-      await loadPermissions(); 
-      alert("Permissão criada com sucesso!");
+      loadPermissions();
     } catch (err) {
-      alert(err.response?.data?.message || "Erro ao criar permissão.");
+      AxionAlert.fire('Erro!', 'Não foi possível criar a permissão.', 'error');
     } finally { setActionLoading(false); }
   };
 
+  // --- FUNÇÕES DE GRUPOS ---
   const handleGroupMemberRole = async (userId, type) => {
     setActionLoading(true);
     try {
-      const endpoint = `/api/v1/groups/${selectedGroupId}/members/${userId}/${type}`;
-      const res = await api.patch(endpoint);
-      alert(res.data.message || "Operação realizada com sucesso!");
+      await api.patch(`/api/v1/groups/${selectedGroupId}/members/${userId}/${type}`);
+      AxionAlert.fire('Sucesso!', 'Cargo no grupo atualizado.', 'success');
       await loadGroups(currentPage);
     } catch (err) { 
-      alert(err.response?.data?.message || "Erro ao alterar cargo no grupo."); 
+       AxionAlert.fire('Erro', 'Erro ao alterar cargo no grupo.', 'error');
     } finally { setActionLoading(false); }
   };
 
@@ -121,21 +197,30 @@ export default function Dashboard() {
     setActionLoading(true);
     try {
       const userToInvite = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-      if (!userToInvite) return alert("Usuário não encontrado.");
+      if (!userToInvite) return AxionAlert.fire('Aviso', 'Usuário não encontrado.', 'info');
       await api.post(`/api/v1/groups/${selectedGroupId}/members`, { user_id: userToInvite.id });
       await loadGroups(currentPage);
-    } catch (err) { alert("Erro ao adicionar."); }
+    } catch (err) { AxionAlert.fire('Erro', 'Erro ao adicionar.', 'error'); }
     finally { setActionLoading(false); }
   };
 
   const handleRemoveUserFromGroup = async (userId, userName) => {
-    if (!window.confirm(`Remover ${userName}?`)) return;
-    setActionLoading(true);
-    try {
-      await api.delete(`/api/v1/groups/${selectedGroupId}/members/${userId}`);
-      await loadGroups(currentPage);
-    } catch (err) { alert("Erro ao remover."); }
-    finally { setActionLoading(false); }
+    const result = await AxionAlert.fire({
+      title: 'Remover do grupo?',
+      text: `Deseja remover ${userName}?`,
+      icon: 'warning',
+      showCancelButton: true
+    });
+
+    if (result.isConfirmed) {
+      setActionLoading(true);
+      try {
+        await api.delete(`/api/v1/groups/${selectedGroupId}/members/${userId}`);
+        await loadGroups(currentPage);
+        AxionAlert.fire('Removido!', '', 'success');
+      } catch (err) { AxionAlert.fire('Erro', 'Erro ao remover.', 'error'); }
+      finally { setActionLoading(false); }
+    }
   };
 
   const handleLogout = () => {
@@ -179,7 +264,18 @@ export default function Dashboard() {
           )}
 
           {selectedUser ? (
-            <UserDetail user={selectedUser} onBack={() => setSelectedUser(null)} />
+            <UserDetail 
+              user={selectedUser} 
+              onBack={() => setSelectedUser(null)} 
+              actionLoading={actionLoading}
+              onUpdate={handleUpdateUser}
+              onAction={async (type) => {
+                if (type === "promote") await handleToggleAdmin(selectedUser.id, false);
+                else if (type === "remove-admin") await handleToggleAdmin(selectedUser.id, true);
+                else if (type === "toggle-status") await handleToggleStatus(selectedUser.id, selectedUser.is_active);
+                else if (type === "delete") await handleDeleteUser(selectedUser.id, selectedUser.name);
+              }}
+            />
           ) : selectedGroupId ? (
             <GroupDetail
               group={groups.find((g) => g.id === selectedGroupId)}
@@ -236,7 +332,7 @@ export default function Dashboard() {
                     )
                   )}
                   {activeTab === "permissions" && (
-                    <PermissionTable permissions={permissions} loading={loading} />//15
+                    <PermissionTable permissions={permissions} loading={loading} />
                   )}
                 </div>
               </div>
