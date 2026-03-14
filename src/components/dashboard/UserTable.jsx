@@ -71,7 +71,7 @@ export default function UserTable({ users, onViewDetail, onDeleteUser, onToggleA
                       onClick={() => onViewDetail(u.id)}
                       title="Visualizar Detalhes"
                     >
-                      <i className="bi bi-eye">Detlhar</i>
+                      <i className="bi bi-eye">Gerenciar</i>
                     </button>
                   </div>
                 </td>
