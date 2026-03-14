@@ -1,14 +1,23 @@
 import { Row, Col, Form } from "react-bootstrap";
 
-export default function DashboardFilters({ activeTab, role, filters, onFilterChange, onClear, onNewGroup, onNewPermission }) {
+export default function DashboardFilters({ 
+  activeTab, 
+  role, 
+  filters, 
+  onFilterChange, 
+  onClear, 
+  onNewGroup, 
+  onNewPermission 
+}) {
   const isUserTab = activeTab === "users" && role === "admin";
   const isGroupTab = activeTab === "groups";
   const isAuditTab = activeTab === "audit" && role === "admin";
-  const isPermissionTab = activeTab === "permissions"; // Adicionado
+  const isPermissionTab = activeTab === "permissions"; // Chave da correção
 
   return (
     <div className="filter-card mb-4 p-4 animate-in">
       <Row className="align-items-end g-3">
+        {/* Filtros de Usuários */}
         {isUserTab && (
           <>
             <Col md={5}>
@@ -30,6 +39,7 @@ export default function DashboardFilters({ activeTab, role, filters, onFilterCha
           </>
         )}
 
+        {/* Filtros de Grupos */}
         {isGroupTab && (
           <>
             <Col md={6}>
@@ -46,23 +56,31 @@ export default function DashboardFilters({ activeTab, role, filters, onFilterCha
           </>
         )}
 
-        {/* CORREÇÃO: Bloco de Permissões */}
+        {/* CORREÇÃO: Filtros de Permissões (Agora exibe o botão) */}
         {isPermissionTab && (
           <>
             <Col md={6}>
               <Form.Group>
                 <Form.Label className="filter-label">Buscar Permissões</Form.Label>
-                <Form.Control type="text" name="name" value={filters.name} onChange={onFilterChange} className="custom-input-dark" placeholder="Filtrar permissões..." />
+                <Form.Control 
+                  type="text" 
+                  name="name" 
+                  value={filters.name} 
+                  onChange={onFilterChange} 
+                  className="custom-input-dark" 
+                  placeholder="Filtrar por slug ou nome..."
+                />
               </Form.Group>
             </Col>
             <Col md={3}>
               <button className="btn-table-action w-100" style={{ height: "45px" }} onClick={onNewPermission}>
-                <i className="bi bi-shield-lock me-2"></i> Nova Permissão
+                <i className="bi bi-plus-lg me-2"></i> Nova Permissão
               </button>
             </Col>
           </>
         )}
 
+        {/* Auditoria */}
         {isAuditTab && (
           <>
             <Col md={5}>
