@@ -1,25 +1,28 @@
 import { useEffect, useState } from "react";
-import { Table, Spinner } from "react-bootstrap";
+import { Row, Col, Card, Badge, Spinner, Button } from "react-bootstrap";
 
 export default function OperationView() {
-  const [coins, setCoins] = useState([]);
+  const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // API Pública da CoinGecko - Lista de Preços em tempo real
-    fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1')
+    // API Pública de Notícias Espaciais e Tecnológicas (Sem Token necessário)
+    fetch('https://api.spaceflightnewsapi.net/v4/articles/?limit=12')
       .then(res => res.json())
       .then(data => {
-        setCoins(data);
+        setNews(data.results || []);
         setLoading(false);
       })
-      .catch(err => console.error("Erro na API:", err));
+      .catch(err => {
+        console.error("Erro ao carregar notícias:", err);
+        setLoading(false);
+      });
   }, []);
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center p-5">
-        <Spinner animation="border" variant="primary" />
+      <div className="d-flex justify-content-center align-items-center p-5" style={{ minHeight: '300px' }}>
+        <Spinner animation="grow" variant="primary" />
       </div>
     );
   }
@@ -27,43 +30,71 @@ export default function OperationView() {
   return (
     <div className="p-2 animate-in">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h4 className="text-white mb-0">Painel de Operações de Mercado</h4>
-        <span className="badge bg-primary">Live Data</span>
+        <div>
+          <h4 className="text-white mb-1">Operações de Monitoramento</h4>
+          <p className="text-secondary small">Feed global de tecnologia e infraestrutura</p>
+        </div>
+        <Badge bg="success" className="p-2 shadow-sm">SISTEMA ONLINE</Badge>
       </div>
 
-      <Table responsive hover className="custom-table">
-        <thead>
-          <tr>
-            <th>Ativo</th>
-            <th>Preço (USD)</th>
-            <th>24h %</th>
-            <th>Volume</th>
-          </tr>
-        </thead>
-        <tbody>
-          {coins.map((coin) => (
-            <tr key={coin.id}>
-              <td>
-                <div className="d-flex align-items-center">
-                  <img src={coin.image} alt={coin.name} width="24" className="me-2" />
-                  <span className="fw-bold text-white">{coin.symbol.toUpperCase()}</span>
+      <Row className="g-4">
+        {news.map((item) => (
+          <Col key={item.id} md={6} lg={4} xl={3}>
+            <Card className="h-100 bg-dark border-secondary text-white card-hover-effect">
+              <div className="position-relative">
+                <Card.Img 
+                  variant="top" 
+                  src={item.image_url} 
+                  style={{ height: '160px', objectFit: 'cover' }} 
+                />
+                <Badge 
+                  bg="primary" 
+                  className="position-absolute top-0 start-0 m-2"
+                  style={{ fontSize: '0.65rem' }}
+                >
+                  {item.news_site}
+                </Badge>
+              </div>
+              
+              <Card.Body className="d-flex flex-column p-3">
+                <Card.Title style={{ fontSize: '0.95rem', fontWeight: '600', lineHeight: '1.4' }}>
+                  {item.title}
+                </Card.Title>
+                
+                <Card.Text className="text-secondary small flex-grow-1" style={{ fontSize: '0.8rem' }}>
+                  {item.summary ? item.summary.substring(0, 90) + "..." : "Monitoramento em tempo real..."}
+                </Card.Text>
+
+                <div className="mt-3 pt-3 border-top border-secondary d-flex justify-content-between align-items-center">
+                  <span className="text-muted" style={{ fontSize: '0.7rem' }}>
+                    {new Date(item.published_at).toLocaleDateString()}
+                  </span>
+                  <Button 
+                    variant="link" 
+                    size="sm" 
+                    className="p-0 text-decoration-none text-primary fw-bold"
+                    href={item.url} 
+                    target="_blank"
+                  >
+                    DETALHES <i className="bi bi-arrow-right"></i>
+                  </Button>
                 </div>
-              </td>
-              <td className="text-white">
-                ${coin.current_price.toLocaleString()}
-              </td>
-              <td>
-                <span style={{ color: coin.price_change_percentage_24h > 0 ? '#00ff88' : '#ff4d4d' }}>
-                  {coin.price_change_percentage_24h?.toFixed(2)}%
-                </span>
-              </td>
-              <td className="text-secondary">
-                ${coin.total_volume.toLocaleString()}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+              </Card.Body>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+
+      <style>{`
+        .card-hover-effect {
+          transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+        .card-hover-effect:hover {
+          transform: translateY(-5px);
+          border-color: #6f42c1 !important;
+          box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+        }
+      `}</style>
     </div>
   );
 }
