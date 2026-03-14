@@ -29,7 +29,7 @@ export default function Dashboard() {
 
   // Estados para Permissões
   const [permissions, setPermissions] = useState([]);
-  const [showPermissionModal, setShowPermissionModal] = useState(false); // Usado para controlar a exibição do PermissionForm
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [newPermission, setNewPermission] = useState({ name: "", label: "" });
 
   const {
@@ -66,7 +66,32 @@ export default function Dashboard() {
     else if (activeTab === "permissions") loadPermissions();
   }, [activeTab, currentPage, loadUsers, loadGroups, loadAuditLogs, loadPermissions]);
 
-  // --- FUNÇÃO ADICIONAR PERMISSÃO (Agora recebe dados do PermissionForm) ---
+  // --- NOVAS FUNÇÕES DE GESTÃO DE USUÁRIOS ---
+  const handleDeleteUser = async (userId, userName) => {
+    if (!window.confirm(`Deseja realmente excluir permanentemente o usuário ${userName}?`)) return;
+    setActionLoading(true);
+    try {
+      await api.delete(`/api/v1/admin/users/${userId}`);
+      alert("Usuário removido com sucesso!");
+      loadUsers(currentPage);
+    } catch (err) {
+      alert(err.response?.data?.message || "Erro ao excluir usuário.");
+    } finally { setActionLoading(false); }
+  };
+
+  const handleToggleAdmin = async (userId, currentStatus) => {
+    const action = currentStatus ? "rebaixar para usuário comum" : "promover a administrador";
+    if (!window.confirm(`Deseja ${action}?`)) return;
+    setActionLoading(true);
+    try {
+      await api.patch(`/api/v1/admin/users/${userId}/toggle-admin`);
+      alert("Nível de acesso atualizado!");
+      loadUsers(currentPage);
+    } catch (err) {
+      alert("Erro ao alterar nível de acesso.");
+    } finally { setActionLoading(false); }
+  };
+
   const handleCreatePermission = async (data) => {
     setActionLoading(true);
     try {
@@ -79,7 +104,6 @@ export default function Dashboard() {
     } finally { setActionLoading(false); }
   };
 
-  // --- CORREÇÃO: ALTERAR CARGO NO GRUPO (PROMOTE/DEMOTE) ---
   const handleGroupMemberRole = async (userId, type) => {
     setActionLoading(true);
     try {
@@ -92,7 +116,6 @@ export default function Dashboard() {
     } finally { setActionLoading(false); }
   };
 
-  // --- OUTROS HANDLERS ---
   const handleAddUserToGroup = async (email) => {
     if (!selectedGroupId) return;
     setActionLoading(true);
@@ -128,8 +151,8 @@ export default function Dashboard() {
           setActiveTab(tab);
           setSelectedUser(null);
           setSelectedGroupId(null);
-          setShowPermissionModal(false); // Reseta o form ao trocar de aba
-          setShowGroupForm(false); // Reseta o form ao trocar de aba
+          setShowPermissionModal(false);
+          setShowGroupForm(false);
         }}
       />
 
@@ -141,7 +164,6 @@ export default function Dashboard() {
 
         <main className="content-area p-4">
           
-          {/* Cabeçalho da Aba de Permissões */}
           {activeTab === "permissions" && !selectedUser && !selectedGroupId && (
             <div className="d-flex justify-content-between align-items-center mb-4">
               <h4 className="text-white mb-0">Gestão de Permissões</h4>
@@ -182,7 +204,6 @@ export default function Dashboard() {
                 />
               )}
 
-              {/* Inclusão do PermissionForm (Estilo Card igual ao GroupForm) */}
               {activeTab === "permissions" && showPermissionModal && (
                 <PermissionForm 
                   loading={actionLoading}
@@ -197,7 +218,15 @@ export default function Dashboard() {
                 )}
 
                 <div className="content-card">
-                  {activeTab === "users" && <UserTable users={users} onViewDetail={(id) => api.get(`/api/v1/admin/users/${id}`).then(res => setSelectedUser(res.data.data || res.data))} />}
+                  {activeTab === "users" && (
+                    <UserTable 
+                      users={users} 
+                      onViewDetail={(id) => api.get(`/api/v1/admin/users/${id}`).then(res => setSelectedUser(res.data.data || res.data))}
+                      onDeleteUser={handleDeleteUser}
+                      onToggleAdmin={handleToggleAdmin}
+                      isGlobalAdmin={isGlobalAdmin}
+                    />
+                  )}
                   {activeTab === "audit" && <AuditTable logs={auditLogs} />}
                   {activeTab === "groups" && (
                     showGroupForm ? (
