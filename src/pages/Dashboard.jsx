@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
-import { Spinner } from "react-bootstrap";
-
+import { Spinner, Modal, Form, Button } from "react-bootstrap";
 import api from "../services/api";
 import { useDashboardData } from "../hooks/useDashboardData";
 
@@ -28,8 +27,10 @@ export default function Dashboard() {
   const [showGroupForm, setShowGroupForm] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
+  // Estados para Permissões
   const [permissions, setPermissions] = useState([]);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const [newPermission, setNewPermission] = useState({ name: "", label: "" });
 
   const {
     loading, users, groups, auditLogs, filters,
@@ -43,6 +44,7 @@ export default function Dashboard() {
       const res = await api.get("/api/v1/admin/permissions");
       setPermissions(res.data.data || res.data || []);
     } catch (err) {
+      console.error("Erro ao carregar permissões:", err);
       setPermissions([]); 
     }
   }, []);
@@ -64,75 +66,44 @@ export default function Dashboard() {
     else if (activeTab === "permissions") loadPermissions();
   }, [activeTab, currentPage, loadUsers, loadGroups, loadAuditLogs, loadPermissions]);
 
-  // --- FUNÇÕES DE GESTÃO DE USUÁRIOS (CORRIGIDAS) ---
-
-  const handleUpdateUser = async (userId, data) => {
-    setActionLoading(true);
-    try {
-      // Ajustado para bater com Route::put('/users/{id}/update-manual')
-      await api.put(`/api/v1/admin/users/${userId}/update-manual`, data);
-      alert("Dados atualizados com sucesso!");
-      
-      const res = await api.get(`/api/v1/admin/users/${userId}`);
-      setSelectedUser(res.data.data || res.data);
-      loadUsers(currentPage);
-    } catch (err) {
-      alert("Erro ao atualizar dados.");
-    } finally { setActionLoading(false); }
-  };
-
+  // --- NOVAS FUNÇÕES DE GESTÃO DE USUÁRIOS ---
   const handleDeleteUser = async (userId, userName) => {
-    if (!window.confirm(`Excluir permanentemente ${userName}?`)) return;
+    if (!window.confirm(`Deseja realmente excluir permanentemente o usuário ${userName}?`)) return;
     setActionLoading(true);
     try {
       await api.delete(`/api/v1/admin/users/${userId}`);
-      alert("Usuário removido!");
-      setSelectedUser(null);
+      alert("Usuário removido com sucesso!");
       loadUsers(currentPage);
     } catch (err) {
-      alert("Erro ao excluir.");
+      alert(err.response?.data?.message || "Erro ao excluir usuário.");
     } finally { setActionLoading(false); }
   };
 
   const handleToggleAdmin = async (userId, currentStatus) => {
-    // Sincronizado com Route::post('/users/{id}/promote') e '/users/{id}/remove-admin'
-    const endpoint = currentStatus ? "remove-admin" : "promote";
-    const actionText = currentStatus ? "rebaixar para usuário comum" : "promover a administrador";
-
-    if (!window.confirm(`Deseja realmente ${actionText}?`)) return;
-
+    const action = currentStatus ? "rebaixar para usuário comum" : "promover a administrador";
+    if (!window.confirm(`Deseja ${action}?`)) return;
     setActionLoading(true);
     try {
-      await api.post(`/api/v1/admin/users/${userId}/${endpoint}`);
-      alert("Nível de acesso alterado!");
-      
-      const res = await api.get(`/api/v1/admin/users/${userId}`);
-      setSelectedUser(res.data.data || res.data);
+      await api.patch(`/api/v1/admin/users/${userId}/toggle-admin`);
+      alert("Nível de acesso atualizado!");
       loadUsers(currentPage);
     } catch (err) {
-      alert(err.response?.data?.message || "Erro na operação de privilégios.");
+      alert("Erro ao alterar nível de acesso.");
     } finally { setActionLoading(false); }
   };
 
-  const handleToggleStatus = async (userId, currentStatus) => {
-    // Sincronizado com Route::patch('/users/{id}/toggle-status')
-    const action = currentStatus ? "suspender" : "ativar";
-    if (!window.confirm(`Deseja ${action} o acesso?`)) return;
-    
+  const handleCreatePermission = async (data) => {
     setActionLoading(true);
     try {
-      await api.patch(`/api/v1/admin/users/${userId}/toggle-status`);
-      alert(`Usuário ${action}ado!`);
-      
-      const res = await api.get(`/api/v1/admin/users/${userId}`);
-      setSelectedUser(res.data.data || res.data);
-      loadUsers(currentPage);
+      await api.post("/api/v1/admin/permissions", data);
+      setShowPermissionModal(false);
+      await loadPermissions(); 
+      alert("Permissão criada com sucesso!");
     } catch (err) {
-      alert("Erro ao alterar status.");
+      alert(err.response?.data?.message || "Erro ao criar permissão.");
     } finally { setActionLoading(false); }
   };
 
-  // --- FUNÇÕES DE GRUPOS ---
   const handleGroupMemberRole = async (userId, type) => {
     setActionLoading(true);
     try {
@@ -192,19 +163,23 @@ export default function Dashboard() {
         </header>
 
         <main className="content-area p-4">
+          
+          {activeTab === "permissions" && !selectedUser && !selectedGroupId && (
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <h4 className="text-white mb-0">Gestão de Permissões</h4>
+              {!showPermissionModal && (
+                <button 
+                  className="btn-primary-axion px-4 py-2" 
+                  onClick={() => setShowPermissionModal(true)}
+                >
+                  + Nova Permissão
+                </button>
+              )}
+            </div>
+          )}
+
           {selectedUser ? (
-            <UserDetail 
-              user={selectedUser} 
-              onBack={() => setSelectedUser(null)}
-              actionLoading={actionLoading}
-              onUpdate={handleUpdateUser}
-              onAction={async (type) => {
-                if (type === "promote") await handleToggleAdmin(selectedUser.id, false);
-                else if (type === "remove-admin") await handleToggleAdmin(selectedUser.id, true);
-                else if (type === "toggle-status") await handleToggleStatus(selectedUser.id, selectedUser.is_active);
-                else if (type === "delete") await handleDeleteUser(selectedUser.id, selectedUser.name);
-              }}
-            />
+            <UserDetail user={selectedUser} onBack={() => setSelectedUser(null)} />
           ) : selectedGroupId ? (
             <GroupDetail
               group={groups.find((g) => g.id === selectedGroupId)}
@@ -226,6 +201,14 @@ export default function Dashboard() {
                   onFilterChange={(e) => setFilters({ ...filters, [e.target.name]: e.target.value })}
                   onClear={() => setFilters({ name: "", completed: "", method: "", date: "" })}
                   onNewGroup={() => setShowGroupForm(true)}
+                />
+              )}
+
+              {activeTab === "permissions" && showPermissionModal && (
+                <PermissionForm 
+                  loading={actionLoading}
+                  onCancel={() => setShowPermissionModal(false)}
+                  onSave={handleCreatePermission} 
                 />
               )}
 
@@ -252,7 +235,9 @@ export default function Dashboard() {
                       <GroupTable groups={groups} onViewDetail={setSelectedGroupId} isGlobalAdmin={isGlobalAdmin} currentUser={currentUser} />
                     )
                   )}
-                  {activeTab === "permissions" && <PermissionTable permissions={permissions} loading={loading} />}
+                  {activeTab === "permissions" && (
+                    <PermissionTable permissions={permissions} loading={loading} />//15
+                  )}
                 </div>
               </div>
             </>
