@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
-import { Spinner } from "react-bootstrap";
+import { Spinner, Modal, Form, Button } from "react-bootstrap"; // Importações para o Modal
 import api from "../services/api";
 import { useDashboardData } from "../hooks/useDashboardData";
 
@@ -26,49 +26,37 @@ export default function Dashboard() {
   const [showGroupForm, setShowGroupForm] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Estados para Permissões
+  // --- PERMISSÕES ---
   const [permissions, setPermissions] = useState([]);
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const [newPermission, setNewPermission] = useState({ name: "", label: "" });
 
   const {
-    loading,
-    users,
-    groups,
-    auditLogs,
-    filters,
-    setFilters,
-    loadUsers,
-    loadGroups,
-    loadAuditLogs,
+    loading, users, groups, auditLogs, filters, 
+    setFilters, loadUsers, loadGroups, loadAuditLogs 
   } = useDashboardData(role);
 
-  // Define se é Admin Global
   const isGlobalAdmin = role === "admin" || currentUser?.is_admin === true;
 
-  // FUNÇÃO CORRIGIDA: Agora aponta para /admin/permissions conforme seu api.php
   const loadPermissions = useCallback(async () => {
     try {
       const res = await api.get("/api/v1/admin/permissions");
       setPermissions(res.data.data || res.data || []);
     } catch (err) {
       console.error("Erro ao carregar permissões:", err);
-      setPermissions([]); 
     }
   }, []);
 
-  // Carrega Perfil do Usuário Logado
   useEffect(() => {
     const loadProfile = async () => {
       try {
         const res = await api.get("/api/v1/me");
         setCurrentUser(res.data);
-      } catch {
-        navigate("/login");
-      }
+      } catch { navigate("/login"); }
     };
     loadProfile();
   }, [navigate]);
 
-  // Monitor de abas
   useEffect(() => {
     if (activeTab === "users") loadUsers(currentPage);
     else if (activeTab === "audit") loadAuditLogs(currentPage);
@@ -76,23 +64,52 @@ export default function Dashboard() {
     else if (activeTab === "permissions") loadPermissions();
   }, [activeTab, currentPage, loadUsers, loadGroups, loadAuditLogs, loadPermissions]);
 
-  // --- HANDLERS ---
+  // --- FUNÇÃO ADICIONAR PERMISSÃO (NOVO) ---
+  const handleCreatePermission = async (e) => {
+    e.preventDefault();
+    setActionLoading(true);
+    try {
+      await api.post("/api/v1/admin/permissions", newPermission);
+      setShowPermissionModal(false);
+      setNewPermission({ name: "", label: "" });
+      loadPermissions();
+    } catch (err) {
+      alert("Erro ao criar permissão. Verifique se o slug já existe.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // --- FUNÇÕES DE GRUPO ---
+  const handleGroupMemberRole = async (userId, type) => {
+    setActionLoading(true);
+    try {
+      // Corrigido para bater com api.php: /{group_id}/members/{user_id}/promote ou /demote
+      // Nota: No seu PHP o demote usa a variável {group_id} mas o promote usa {id}. 
+      // Ajustamos para a rota que você definiu.
+      const url = type === 'promote' 
+        ? `/api/v1/groups/${selectedGroupId}/members/${userId}/promote`
+        : `/api/v1/groups/${selectedGroupId}/members/${userId}/demote`;
+        
+      await api.patch(url);
+      loadGroups(currentPage);
+    } catch (err) {
+      alert("Erro ao alterar privilégios no grupo.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const handleAddUserToGroup = async (email) => {
     if (!selectedGroupId) return;
     setActionLoading(true);
     try {
       const userToInvite = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-      if (!userToInvite) {
-        alert("Usuário não encontrado na lista.");
-        return;
-      }
+      if (!userToInvite) return alert("Usuário não encontrado.");
       await api.post(`/api/v1/groups/${selectedGroupId}/members`, { user_id: userToInvite.id });
-      alert("Membro adicionado!");
       loadGroups(currentPage);
-    } catch (err) {
-      alert(err.response?.data?.message || "Erro ao adicionar.");
-    } finally { setActionLoading(false); }
+    } catch (err) { alert("Erro ao adicionar."); }
+    finally { setActionLoading(false); }
   };
 
   const handleRemoveUserFromGroup = async (userId, userName) => {
@@ -102,17 +119,6 @@ export default function Dashboard() {
       await api.delete(`/api/v1/groups/${selectedGroupId}/members/${userId}`);
       loadGroups(currentPage);
     } catch (err) { alert("Erro ao remover."); }
-    finally { setActionLoading(false); }
-  };
-
-  const handleGroupMemberRole = async (userId, type) => {
-    setActionLoading(true);
-    try {
-      // Bate com a rota: Route::patch('/{group_id}/members/{user_id}/promote'...)
-      const endpoint = `/api/v1/groups/${selectedGroupId}/members/${userId}/${type}`;
-      await api.patch(endpoint);
-      loadGroups(currentPage);
-    } catch (err) { alert("Erro ao alterar cargo."); }
     finally { setActionLoading(false); }
   };
 
@@ -144,9 +150,7 @@ export default function Dashboard() {
   return (
     <div className="dashboard-layout animate-in">
       <Sidebar
-        activeTab={activeTab}
-        role={role}
-        onLogout={handleLogout}
+        activeTab={activeTab} role={role} onLogout={handleLogout}
         setActiveTab={(tab) => {
           setActiveTab(tab);
           setSelectedUser(null);
@@ -161,6 +165,16 @@ export default function Dashboard() {
         </header>
 
         <main className="content-area p-4">
+          {/* Botão Nova Permissão no topo (quando aba ativa) */}
+          {activeTab === "permissions" && !selectedUser && !selectedGroupId && (
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <h3 className="text-white mb-0">Gestão de Permissões</h3>
+              <button className="btn-primary-axion px-4" onClick={() => setShowPermissionModal(true)}>
+                + Nova Permissão
+              </button>
+            </div>
+          )}
+
           {selectedUser ? (
             <UserDetail user={selectedUser} onBack={() => setSelectedUser(null)} />
           ) : selectedGroupId ? (
@@ -178,20 +192,18 @@ export default function Dashboard() {
             />
           ) : (
             <>
-              <DashboardFilters
-                activeTab={activeTab}
-                role={role}
-                filters={filters}
-                onFilterChange={(e) => setFilters({ ...filters, [e.target.name]: e.target.value })}
-                onClear={() => setFilters({ name: "", completed: "", method: "", date: "" })}
-                onNewGroup={() => setShowGroupForm(true)}
-              />
+              {activeTab !== "permissions" && (
+                <DashboardFilters
+                  activeTab={activeTab} role={role} filters={filters}
+                  onFilterChange={(e) => setFilters({ ...filters, [e.target.name]: e.target.value })}
+                  onClear={() => setFilters({ name: "", completed: "", method: "", date: "" })}
+                  onNewGroup={() => setShowGroupForm(true)}
+                />
+              )}
 
               <div className={`tab-wrapper position-relative ${loading || actionLoading ? "is-loading" : ""}`}>
                 {(loading || actionLoading) && (
-                  <div className="loading-overlay">
-                    <Spinner animation="border" variant="primary" />
-                  </div>
+                  <div className="loading-overlay"><Spinner animation="border" variant="primary" /></div>
                 )}
 
                 <div className="content-card">
@@ -205,16 +217,7 @@ export default function Dashboard() {
                     )
                   )}
                   {activeTab === "permissions" && (
-                    <div className="p-3">
-                      <div className="d-flex justify-content-between align-items-center mb-4">
-                        <h5 className="text-white mb-0">Permissões do Sistema</h5>
-                        {/* No seu PHP, a rota de POST também é /api/v1/admin/permissions */}
-                        <button className="btn-primary-axion btn-sm px-3" onClick={() => {/* Modal de criação aqui */}}>
-                          Nova Permissão
-                        </button>
-                      </div>
-                      <PermissionTable permissions={permissions} loading={loading} />
-                    </div>
+                    <PermissionTable permissions={permissions} loading={loading} />
                   )}
                 </div>
               </div>
@@ -222,6 +225,41 @@ export default function Dashboard() {
           )}
         </main>
       </div>
+
+      {/* Modal para Adicionar Permissão */}
+      <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)} centered contentClassName="bg-dark text-white border-secondary">
+        <Modal.Header closeButton closeVariant="white">
+          <Modal.Title>Criar Nova Permissão</Modal.Title>
+        </Modal.Header>
+        <Form onSubmit={handleCreatePermission}>
+          <Modal.Body>
+            <Form.Group className="mb-3">
+              <Form.Label>Nome Amigável (Label)</Form.Label>
+              <Form.Control 
+                type="text" placeholder="Ex: Deletar Usuários" required
+                value={newPermission.label}
+                onChange={(e) => setNewPermission({...newPermission, label: e.target.value})}
+                className="bg-secondary border-0 text-white"
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Slug do Sistema (Name)</Form.Label>
+              <Form.Control 
+                type="text" placeholder="Ex: users.delete" required
+                value={newPermission.name}
+                onChange={(e) => setNewPermission({...newPermission, name: e.target.value})}
+                className="bg-secondary border-0 text-white"
+              />
+            </Form.Group>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="outline-light" onClick={() => setShowPermissionModal(false)}>Cancelar</Button>
+            <Button variant="primary" type="submit" disabled={actionLoading}>
+              {actionLoading ? "Salvando..." : "Criar Permissão"}
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
     </div>
   );
 }
