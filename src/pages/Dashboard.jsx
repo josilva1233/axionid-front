@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect, useCallback } from "react"; // useCallback adicionado
+import { useState, useEffect, useCallback } from "react";
 import { Spinner } from "react-bootstrap";
 import api from "../services/api";
 import { useDashboardData } from "../hooks/useDashboardData";
@@ -42,18 +42,20 @@ export default function Dashboard() {
     loadAuditLogs,
   } = useDashboardData(role);
 
-  // Função para carregar permissões da API
+  // Define se é Admin Global
+  const isGlobalAdmin = role === "admin" || currentUser?.is_admin === true;
+
+  // Função para carregar permissões da API com tratamento de erro 404
   const loadPermissions = useCallback(async () => {
     try {
       const res = await api.get("/api/v1/permissions");
-      setPermissions(res.data.data || res.data);
+      setPermissions(res.data.data || res.data || []);
     } catch (err) {
       console.error("Erro ao carregar permissões:", err);
+      // Evita travar a interface se a rota não existir no backend ainda
+      setPermissions([]); 
     }
   }, []);
-
-  // Define se é Admin Global
-  const isGlobalAdmin = role === "admin" || currentUser?.is_admin === true;
 
   // Carrega Perfil do Usuário Logado
   useEffect(() => {
@@ -68,7 +70,7 @@ export default function Dashboard() {
     loadProfile();
   }, [navigate]);
 
-  // Gerenciador central de carga de dados conforme a Aba Ativa
+  // Gerenciador central de carga de dados
   useEffect(() => {
     if (activeTab === "users") loadUsers(currentPage);
     else if (activeTab === "audit") loadAuditLogs(currentPage);
@@ -76,32 +78,23 @@ export default function Dashboard() {
     else if (activeTab === "permissions") loadPermissions();
   }, [activeTab, currentPage, loadUsers, loadGroups, loadAuditLogs, loadPermissions]);
 
-  // --- FUNÇÕES DE GERENCIAMENTO DE GRUPOS ---
+  // --- HANDLERS ---
 
   const handleAddUserToGroup = async (email) => {
     if (!selectedGroupId) return;
     setActionLoading(true);
     try {
-      const userToInvite = users.find(
-        (u) => u.email.toLowerCase() === email.toLowerCase(),
-      );
-
+      const userToInvite = users.find(u => u.email.toLowerCase() === email.toLowerCase());
       if (!userToInvite) {
         alert("Usuário não encontrado na lista atual.");
         return;
       }
-
-      await api.post(`/api/v1/groups/${selectedGroupId}/members`, {
-        user_id: userToInvite.id,
-      });
-
+      await api.post(`/api/v1/groups/${selectedGroupId}/members`, { user_id: userToInvite.id });
       alert("Membro adicionado!");
-      await loadGroups(currentPage);
+      loadGroups(currentPage);
     } catch (err) {
       alert(err.response?.data?.message || "Erro ao adicionar membro.");
-    } finally {
-      setActionLoading(false);
-    }
+    } finally { setActionLoading(false); }
   };
 
   const handleRemoveUserFromGroup = async (userId, userName) => {
@@ -109,12 +102,9 @@ export default function Dashboard() {
     setActionLoading(true);
     try {
       await api.delete(`/api/v1/groups/${selectedGroupId}/members/${userId}`);
-      await loadGroups(currentPage);
-    } catch (err) {
-      alert("Erro ao remover membro.");
-    } finally {
-      setActionLoading(false);
-    }
+      loadGroups(currentPage);
+    } catch (err) { alert("Erro ao remover membro."); }
+    finally { setActionLoading(false); }
   };
 
   const handleGroupMemberRole = async (userId, type) => {
@@ -122,25 +112,20 @@ export default function Dashboard() {
     try {
       const endpoint = `/api/v1/groups/${selectedGroupId}/members/${userId}/${type}`;
       await api.patch(endpoint);
-      await loadGroups(currentPage);
-    } catch (err) {
-      alert("Erro ao alterar cargo.");
-    } finally {
-      setActionLoading(false);
-    }
+      loadGroups(currentPage);
+    } catch (err) { alert("Erro ao alterar cargo."); }
+    finally { setActionLoading(false); }
   };
 
   const handleDeleteGroup = async (groupId) => {
+    if (!window.confirm("Excluir este grupo permanentemente?")) return;
     setActionLoading(true);
     try {
       await api.delete(`/api/v1/groups/${groupId}`);
       setSelectedGroupId(null);
       loadGroups(1);
-    } catch (err) {
-      alert("Erro ao excluir grupo.");
-    } finally {
-      setActionLoading(false);
-    }
+    } catch (err) { alert("Erro ao excluir grupo."); }
+    finally { setActionLoading(false); }
   };
 
   const handleViewUserDetail = async (id) => {
@@ -148,11 +133,8 @@ export default function Dashboard() {
     try {
       const res = await api.get(`/api/v1/admin/users/${id}`);
       setSelectedUser(res.data.data || res.data);
-    } catch (err) {
-      alert("Erro ao buscar detalhes.");
-    } finally {
-      setActionLoading(false);
-    }
+    } catch (err) { alert("Erro ao buscar detalhes."); }
+    finally { setActionLoading(false); }
   };
 
   const handleLogout = () => {
@@ -175,25 +157,16 @@ export default function Dashboard() {
 
       <div className="main-wrapper">
         <header className="main-header d-flex justify-content-between align-items-center p-3">
-          <h2 className="brand mb-0" style={{ fontSize: "1.25rem" }}>
-            AxionID Admin
-          </h2>
-          {currentUser && (
-            <UserDropdown user={currentUser} onLogout={handleLogout} />
-          )}
+          <h2 className="brand mb-0" style={{ fontSize: "1.25rem" }}>AxionID Admin</h2>
+          {currentUser && <UserDropdown user={currentUser} onLogout={handleLogout} />}
         </header>
 
         <main className="content-area p-4">
-          {/* 1. Detalhe do Usuário */}
-          {selectedUser && (
-            <UserDetail
-              user={selectedUser}
-              onBack={() => setSelectedUser(null)}
-            />
-          )}
-
-          {/* 2. Detalhe do Grupo */}
-          {!selectedUser && selectedGroupId && (
+          {/* VISÃO DETALHADA DE USUÁRIO */}
+          {selectedUser ? (
+            <UserDetail user={selectedUser} onBack={() => setSelectedUser(null)} />
+          ) : selectedGroupId ? (
+            /* VISÃO DETALHADA DE GRUPO */
             <GroupDetail
               group={groups.find((g) => g.id === selectedGroupId)}
               onBack={() => setSelectedGroupId(null)}
@@ -206,21 +179,15 @@ export default function Dashboard() {
               onDemoteUser={(uid) => handleGroupMemberRole(uid, "demote")}
               onDeleteGroup={handleDeleteGroup}
             />
-          )}
-
-          {/* 3. Visão das Abas Principais */}
-          {!selectedUser && !selectedGroupId && (
+          ) : (
+            /* VISÃO PRINCIPAL (TABELAS) */
             <>
               <DashboardFilters
                 activeTab={activeTab}
                 role={role}
                 filters={filters}
-                onFilterChange={(e) =>
-                  setFilters({ ...filters, [e.target.name]: e.target.value })
-                }
-                onClear={() =>
-                  setFilters({ name: "", completed: "", method: "", date: "" })
-                }
+                onFilterChange={(e) => setFilters({ ...filters, [e.target.name]: e.target.value })}
+                onClear={() => setFilters({ name: "", completed: "", method: "", date: "" })}
                 onNewGroup={() => setShowGroupForm(true)}
               />
 
@@ -232,43 +199,20 @@ export default function Dashboard() {
                 )}
 
                 <div className="content-card">
-                  {activeTab === "users" && (
-                    <UserTable users={users} onViewDetail={handleViewUserDetail} />
-                  )}
-                  
-                  {activeTab === "audit" && (
-                    <AuditTable logs={auditLogs} />
-                  )}
-
+                  {activeTab === "users" && <UserTable users={users} onViewDetail={handleViewUserDetail} />}
+                  {activeTab === "audit" && <AuditTable logs={auditLogs} />}
                   {activeTab === "groups" && (
                     showGroupForm ? (
-                      <GroupForm
-                        onCancel={() => setShowGroupForm(false)}
-                        onUpdate={() => {
-                          setShowGroupForm(false);
-                          loadGroups(1);
-                        }}
-                      />
+                      <GroupForm onCancel={() => setShowGroupForm(false)} onUpdate={() => { setShowGroupForm(false); loadGroups(1); }} />
                     ) : (
-                      <GroupTable
-                        groups={groups}
-                        onViewDetail={setSelectedGroupId}
-                        isGlobalAdmin={isGlobalAdmin}
-                        currentUser={currentUser}
-                      />
+                      <GroupTable groups={groups} onViewDetail={setSelectedGroupId} isGlobalAdmin={isGlobalAdmin} currentUser={currentUser} />
                     )
                   )}
-
                   {activeTab === "permissions" && (
-                    <div className="animate-in">
-                      <div className="d-flex justify-content-between align-items-center mb-4 p-2">
+                    <div className="p-3">
+                      <div className="d-flex justify-content-between align-items-center mb-4">
                         <h5 className="text-white mb-0">Permissões do Sistema</h5>
-                        <button
-                          className="btn-primary-axion btn-sm px-3"
-                          onClick={() => setShowPermissionForm(true)}
-                        >
-                          Nova Permissão
-                        </button>
+                        <button className="btn-primary-axion btn-sm px-3" onClick={() => setShowPermissionForm(true)}>Nova Permissão</button>
                       </div>
                       <PermissionTable permissions={permissions} loading={loading} />
                     </div>
