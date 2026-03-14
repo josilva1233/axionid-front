@@ -4,10 +4,21 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
 
   return (
     <aside className="sidebar">
-      {/* BRAND PADRONIZADA NO TOPO DA SIDEBAR */}
+      {/* BRAND DINÂMICA: Muda de acordo com o cargo */}
       <div className="sidebar-brand">
         <div className="brand">
-          <h1>Axion<span>ID</span></h1>
+          <h1>
+            Axion<span>ID</span> 
+            <small style={{ 
+              fontSize: '0.5em', 
+              display: 'block', 
+              opacity: 0.7,
+              fontWeight: '300',
+              marginTop: '-5px'
+            }}>
+              {isAdmin ? 'Admin' : 'Comum'}
+            </small>
+          </h1>
         </div>
       </div>
       
@@ -26,7 +37,6 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
             </span>
           </button>
 
-          {/* MENU: GESTÃO DE GRUPOS - Visível para todos, mas o conteúdo interno será filtrado no Dashboard */}
           <button 
             className={`nav-item ${activeTab === 'groups' ? 'active' : ''}`}
             onClick={() => setActiveTab('groups')}
@@ -51,7 +61,6 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
               <span className="nav-label">Logs de Auditoria</span>
             </button>
 
-            {/* MENU: PERMISSÕES - Somente Admin */}
             <button 
               className={`nav-item ${activeTab === 'permissions' ? 'active' : ''}`}
               onClick={() => setActiveTab('permissions')}
