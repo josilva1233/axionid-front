@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import { Spinner } from "react-bootstrap";
-import Swal from "sweetalert2";
+
 import api from "../services/api";
 import { useDashboardData } from "../hooks/useDashboardData";
 
