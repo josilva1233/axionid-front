@@ -1,4 +1,5 @@
-export default function UserTable({ users, onViewDetail }) {
+// Adicionamos as props onDeleteUser e onToggleAdmin aqui
+export default function UserTable({ users, onViewDetail, onDeleteUser, onToggleAdmin, isGlobalAdmin }) {
   return (
     <div className="table-responsive animate-in">
       <table className="axion-table">
@@ -16,37 +17,35 @@ export default function UserTable({ users, onViewDetail }) {
           {users.length > 0 ? (
             users.map((u) => (
               <tr key={u.id}>
-                {/* ID com estilo Mono para leitura técnica */}
-                <td
-                  className="mono-text"
-                  style={{ fontSize: "0.8rem", opacity: 0.7 }}
-                >
+                <td className="mono-text" style={{ fontSize: "0.8rem", opacity: 0.7 }}>
                   #{u.id}
                 </td>
 
-                {/* Nome em destaque */}
                 <td>
                   <strong style={{ color: "var(--text-main)" }}>
                     {u.name}
                   </strong>
                 </td>
 
-                {/* E-mail com cor atenuada */}
                 <td className="text-dim" style={{ fontSize: "0.9rem" }}>
                   {u.email}
                 </td>
 
-                {/* Nível de Acesso com Badges Padronizadas */}
                 <td className="text-center">
                   <span
                     className={`badge ${u.is_admin ? "badge-success" : "badge-operacional"}`}
-                    style={{ fontSize: "0.7rem" }}
+                    style={{ 
+                      fontSize: "0.7rem", 
+                      cursor: isGlobalAdmin ? "pointer" : "default" 
+                    }}
+                    // Chama a função de promover/rebaixar ao clicar na badge
+                    onClick={() => isGlobalAdmin && onToggleAdmin && onToggleAdmin(u.id, u.is_admin)}
+                    title={isGlobalAdmin ? "Clique para alterar nível" : ""}
                   >
                     {u.is_admin ? "ADMIN" : "USER"}
                   </span>
                 </td>
 
-                {/* Status Ativo/Bloqueado */}
                 <td className="text-center">
                   <div className="d-flex align-items-center justify-content-center gap-2">
                     <span
@@ -55,32 +54,37 @@ export default function UserTable({ users, onViewDetail }) {
                         width: "8px",
                         height: "8px",
                         borderRadius: "50%",
-                        backgroundColor: u.is_active
-                          ? "var(--success)"
-                          : "var(--danger)",
+                        backgroundColor: u.is_active ? "var(--success)" : "var(--danger)",
                       }}
                     />
-                    <span
-                      style={{
-                        fontSize: "0.85rem",
-                        color: u.is_active ? "var(--success)" : "var(--danger)",
-                      }}
-                    >
+                    <span style={{ fontSize: "0.85rem", color: u.is_active ? "var(--success)" : "var(--danger)" }}>
                       {u.is_active ? "Ativo" : "Bloqueado"}
                     </span>
                   </div>
                 </td>
 
-                {/* Botão de Ação Alinhado à Direita */}
                 <td className="text-end">
-                  <button
-                    className="btn-table-action"
-                    onClick={() => onViewDetail(u.id)}
-                    title="Visualizar Detalhes"
-                  >
-                    <i className="bi bi-eye me-1"></i>
-                    Detalhes
-                  </button>
+                  <div className="d-flex justify-content-end gap-2">
+                    {/* Botão Detalhes */}
+                    <button
+                      className="btn-table-action"
+                      onClick={() => onViewDetail(u.id)}
+                      title="Visualizar Detalhes"
+                    >
+                      <i className="bi bi-eye"></i>
+                    </button>
+
+                    {/* Botão Excluir (Só aparece para Admin Global) */}
+                    {isGlobalAdmin && (
+                      <button
+                        className="btn-table-action text-danger"
+                        onClick={() => onDeleteUser && onDeleteUser(u.id, u.name)}
+                        title="Excluir Usuário"
+                      >
+                        <i className="bi bi-trash"></i>
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))
@@ -89,9 +93,7 @@ export default function UserTable({ users, onViewDetail }) {
               <td colSpan="6" className="text-center py-5 text-dim">
                 <div className="d-flex flex-column align-items-center">
                   <span style={{ fontSize: "1.5rem" }}>🔍</span>
-                  <p className="mt-2 mb-0">
-                    Nenhum usuário encontrado na base de dados.
-                  </p>
+                  <p className="mt-2 mb-0">Nenhum usuário encontrado.</p>
                 </div>
               </td>
             </tr>
