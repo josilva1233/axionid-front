@@ -13,6 +13,7 @@ import UserDropdown from "../components/dashboard/UserDropdown";
 import UserDetail from "../components/dashboard/UserDetail";
 import GroupDetail from "../components/dashboard/GroupDetail";
 import DashboardFilters from "../components/dashboard/DashboardFilters";
+import PermissionTable from "../components/dashboard/PermissionTable";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -151,7 +152,14 @@ export default function Dashboard() {
           <h2 className="brand mb-0" style={{ fontSize: "1.25rem" }}>AxionID Admin</h2>
           {currentUser && <UserDropdown user={currentUser} onLogout={handleLogout} />}
         </header>
-
+{activeTab === "permissions" && (
+  <div className="content-card">
+    <div className="d-flex justify-content-between align-items-center mb-4 p-3 border-bottom-theme">
+        <h5 className="text-white mb-0">Controle de Acessos & Permissões</h5>
+    </div>
+    <PermissionTable permissions={permissions} loading={loading} />
+  </div>
+)}
         <main className="content-area p-4">
           {selectedUser ? (
             <UserDetail 
