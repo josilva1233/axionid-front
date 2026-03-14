@@ -386,7 +386,7 @@ export default function Dashboard() {
           ) : (
             <>
               {/* Remova a trava {activeTab !== "permissions" && ... } e deixe apenas o componente: */}
-
+              {(role === 'admin' || activeTab !== 'users') && (
               <DashboardFilters
                 activeTab={activeTab}
                 role={role}
@@ -400,6 +400,7 @@ export default function Dashboard() {
                 onNewGroup={() => setShowGroupForm(true)}
                 onNewPermission={() => setShowPermissionModal(true)}
               />
+              )}
 
               {/* O Form só aparece se a aba for permissões E o modal estiver aberto */}
               {activeTab === "permissions" && showPermissionModal && (
