@@ -4,7 +4,7 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
 
   return (
     <aside className="sidebar">
-      {/* BRAND DINÂMICA: Muda de acordo com o cargo */}
+      {/* BRAND DINÂMICA: AxionID Admin ou AxionID Comum */}
       <div className="sidebar-brand">
         <div className="brand">
           <h1>
@@ -24,12 +24,9 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
       
       <nav className="sidebar-nav">
 
-        {/* SEÇÃO PRINCIPAL/OPERAÇÃO */}
+        {/* SEÇÃO MANTIDA COMO PRINCIPAL PARA TODOS */}
         <div className="nav-group">
-          {/* Título dinâmico: Principal para Admin, Operação para Comum */}
-          <p className="nav-section-title">
-            {isAdmin ? 'Principal' : 'Operação'}
-          </p>
+          <p className="nav-section-title">Principal</p>
           
           <button 
             className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
@@ -37,7 +34,8 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
           >
             <span className="nav-icon">👥</span>
             <span className="nav-label">
-              {isAdmin ? 'Gestão de Usuários' : 'Usuários'}
+              {/* CORREÇÃO: Gestão de Usuários para Admin, Operação para Comum */}
+              {isAdmin ? 'Gestão de Usuários' : 'Operação'}
             </span>
           </button>
 
