@@ -63,14 +63,15 @@ export default function Dashboard() {
     else if (activeTab === "permissions") loadPermissions();
   }, [activeTab, currentPage, loadUsers, loadGroups, loadAuditLogs, loadPermissions]);
 
-  // --- FUNÇÕES DE GESTÃO DE USUÁRIOS ---
+  // --- FUNÇÕES DE GESTÃO DE USUÁRIOS (CORRIGIDAS) ---
 
   const handleUpdateUser = async (userId, data) => {
     setActionLoading(true);
     try {
-      await api.put(`/api/v1/admin/users/${userId}`, data);
+      // Ajustado para bater com Route::put('/users/{id}/update-manual')
+      await api.put(`/api/v1/admin/users/${userId}/update-manual`, data);
       alert("Dados atualizados com sucesso!");
-      // Atualiza o usuário selecionado no estado para refletir as mudanças na UI
+      
       const res = await api.get(`/api/v1/admin/users/${userId}`);
       setSelectedUser(res.data.data || res.data);
       loadUsers(currentPage);
@@ -93,24 +94,30 @@ export default function Dashboard() {
   };
 
   const handleToggleAdmin = async (userId, currentStatus) => {
-    const action = currentStatus ? "rebaixar" : "promover";
-    if (!window.confirm(`Deseja ${action} este usuário?`)) return;
+    // Sincronizado com Route::post('/users/{id}/promote') e '/users/{id}/remove-admin'
+    const endpoint = currentStatus ? "remove-admin" : "promote";
+    const actionText = currentStatus ? "rebaixar para usuário comum" : "promover a administrador";
+
+    if (!window.confirm(`Deseja realmente ${actionText}?`)) return;
+
     setActionLoading(true);
     try {
-      await api.patch(`/api/v1/admin/users/${userId}/toggle-admin`);
+      await api.post(`/api/v1/admin/users/${userId}/${endpoint}`);
       alert("Nível de acesso alterado!");
       
       const res = await api.get(`/api/v1/admin/users/${userId}`);
       setSelectedUser(res.data.data || res.data);
       loadUsers(currentPage);
     } catch (err) {
-      alert("Erro na operação.");
+      alert(err.response?.data?.message || "Erro na operação de privilégios.");
     } finally { setActionLoading(false); }
   };
 
   const handleToggleStatus = async (userId, currentStatus) => {
+    // Sincronizado com Route::patch('/users/{id}/toggle-status')
     const action = currentStatus ? "suspender" : "ativar";
     if (!window.confirm(`Deseja ${action} o acesso?`)) return;
+    
     setActionLoading(true);
     try {
       await api.patch(`/api/v1/admin/users/${userId}/toggle-status`);
@@ -124,7 +131,40 @@ export default function Dashboard() {
     } finally { setActionLoading(false); }
   };
 
-  // --- RENDERIZAÇÃO ---
+  // --- FUNÇÕES DE GRUPOS ---
+  const handleGroupMemberRole = async (userId, type) => {
+    setActionLoading(true);
+    try {
+      const endpoint = `/api/v1/groups/${selectedGroupId}/members/${userId}/${type}`;
+      const res = await api.patch(endpoint);
+      alert(res.data.message || "Operação realizada com sucesso!");
+      await loadGroups(currentPage);
+    } catch (err) { 
+      alert(err.response?.data?.message || "Erro ao alterar cargo no grupo."); 
+    } finally { setActionLoading(false); }
+  };
+
+  const handleAddUserToGroup = async (email) => {
+    if (!selectedGroupId) return;
+    setActionLoading(true);
+    try {
+      const userToInvite = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+      if (!userToInvite) return alert("Usuário não encontrado.");
+      await api.post(`/api/v1/groups/${selectedGroupId}/members`, { user_id: userToInvite.id });
+      await loadGroups(currentPage);
+    } catch (err) { alert("Erro ao adicionar."); }
+    finally { setActionLoading(false); }
+  };
+
+  const handleRemoveUserFromGroup = async (userId, userName) => {
+    if (!window.confirm(`Remover ${userName}?`)) return;
+    setActionLoading(true);
+    try {
+      await api.delete(`/api/v1/groups/${selectedGroupId}/members/${userId}`);
+      await loadGroups(currentPage);
+    } catch (err) { alert("Erro ao remover."); }
+    finally { setActionLoading(false); }
+  };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -158,7 +198,8 @@ export default function Dashboard() {
               actionLoading={actionLoading}
               onUpdate={handleUpdateUser}
               onAction={async (type) => {
-                if (type === "promote" || type === "remove-admin") await handleToggleAdmin(selectedUser.id, selectedUser.is_admin);
+                if (type === "promote") await handleToggleAdmin(selectedUser.id, false);
+                else if (type === "remove-admin") await handleToggleAdmin(selectedUser.id, true);
                 else if (type === "toggle-status") await handleToggleStatus(selectedUser.id, selectedUser.is_active);
                 else if (type === "delete") await handleDeleteUser(selectedUser.id, selectedUser.name);
               }}
