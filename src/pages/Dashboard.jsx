@@ -14,6 +14,7 @@ import UserDetail from "../components/dashboard/UserDetail";
 import GroupDetail from "../components/dashboard/GroupDetail";
 import DashboardFilters from "../components/dashboard/DashboardFilters";
 import PermissionTable from "../components/dashboard/PermissionTable";
+import PermissionForm from "../components/dashboard/PermissionForm";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ export default function Dashboard() {
 
   // Estados para Permissões
   const [permissions, setPermissions] = useState([]);
-  const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Usado para controlar a exibição do PermissionForm
   const [newPermission, setNewPermission] = useState({ name: "", label: "" });
 
   const {
@@ -65,15 +66,13 @@ export default function Dashboard() {
     else if (activeTab === "permissions") loadPermissions();
   }, [activeTab, currentPage, loadUsers, loadGroups, loadAuditLogs, loadPermissions]);
 
-  // --- FUNÇÃO ADICIONAR PERMISSÃO ---
-  const handleCreatePermission = async (e) => {
-    e.preventDefault();
+  // --- FUNÇÃO ADICIONAR PERMISSÃO (Agora recebe dados do PermissionForm) ---
+  const handleCreatePermission = async (data) => {
     setActionLoading(true);
     try {
-      await api.post("/api/v1/admin/permissions", newPermission);
+      await api.post("/api/v1/admin/permissions", data);
       setShowPermissionModal(false);
-      setNewPermission({ name: "", label: "" });
-      await loadPermissions(); // Recarrega a lista após criar
+      await loadPermissions(); 
       alert("Permissão criada com sucesso!");
     } catch (err) {
       alert(err.response?.data?.message || "Erro ao criar permissão.");
@@ -84,13 +83,9 @@ export default function Dashboard() {
   const handleGroupMemberRole = async (userId, type) => {
     setActionLoading(true);
     try {
-      // Bate com api.php corrigido: /{group_id}/members/{user_id}/demote
       const endpoint = `/api/v1/groups/${selectedGroupId}/members/${userId}/${type}`;
       const res = await api.patch(endpoint);
-      
       alert(res.data.message || "Operação realizada com sucesso!");
-      
-      // Essencial: recarregar os dados para refletir a mudança no banco na UI
       await loadGroups(currentPage);
     } catch (err) { 
       alert(err.response?.data?.message || "Erro ao alterar cargo no grupo."); 
@@ -133,6 +128,8 @@ export default function Dashboard() {
           setActiveTab(tab);
           setSelectedUser(null);
           setSelectedGroupId(null);
+          setShowPermissionModal(false); // Reseta o form ao trocar de aba
+          setShowGroupForm(false); // Reseta o form ao trocar de aba
         }}
       />
 
@@ -143,16 +140,19 @@ export default function Dashboard() {
         </header>
 
         <main className="content-area p-4">
-          {/* BOTÃO NOVA PERMISSÃO NO TOPO - Visível apenas na aba de permissões e sem detalhes abertos */}
+          
+          {/* Cabeçalho da Aba de Permissões */}
           {activeTab === "permissions" && !selectedUser && !selectedGroupId && (
             <div className="d-flex justify-content-between align-items-center mb-4">
               <h4 className="text-white mb-0">Gestão de Permissões</h4>
-              <button 
-                className="btn-primary-axion px-4 py-2" 
-                onClick={() => setShowPermissionModal(true)}
-              >
-                + Nova Permissão
-              </button>
+              {!showPermissionModal && (
+                <button 
+                  className="btn-primary-axion px-4 py-2" 
+                  onClick={() => setShowPermissionModal(true)}
+                >
+                  + Nova Permissão
+                </button>
+              )}
             </div>
           )}
 
@@ -173,13 +173,21 @@ export default function Dashboard() {
             />
           ) : (
             <>
-              {/* Filtros aparecem apenas para usuários, auditoria e grupos */}
               {activeTab !== "permissions" && (
                 <DashboardFilters
                   activeTab={activeTab} role={role} filters={filters}
                   onFilterChange={(e) => setFilters({ ...filters, [e.target.name]: e.target.value })}
                   onClear={() => setFilters({ name: "", completed: "", method: "", date: "" })}
                   onNewGroup={() => setShowGroupForm(true)}
+                />
+              )}
+
+              {/* Inclusão do PermissionForm (Estilo Card igual ao GroupForm) */}
+              {activeTab === "permissions" && showPermissionModal && (
+                <PermissionForm 
+                  loading={actionLoading}
+                  onCancel={() => setShowPermissionModal(false)}
+                  onSave={handleCreatePermission} 
                 />
               )}
 
@@ -198,48 +206,15 @@ export default function Dashboard() {
                       <GroupTable groups={groups} onViewDetail={setSelectedGroupId} isGlobalAdmin={isGlobalAdmin} currentUser={currentUser} />
                     )
                   )}
-                  {activeTab === "permissions" && <PermissionTable permissions={permissions} loading={loading} />}
+                  {activeTab === "permissions" && (
+                    <PermissionTable permissions={permissions} loading={loading} />
+                  )}
                 </div>
               </div>
             </>
           )}
         </main>
       </div>
-
-      {/* MODAL DE CRIAÇÃO DE PERMISSÃO - Resolve o problema de desconfiguração da Sidebar */}
-      <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)} centered contentClassName="bg-dark text-white border-secondary">
-        <Modal.Header closeButton closeVariant="white">
-          <Modal.Title>Criar Nova Permissão</Modal.Title>
-        </Modal.Header>
-        <Form onSubmit={handleCreatePermission}>
-          <Modal.Body>
-            <Form.Group className="mb-3">
-              <Form.Label>Nome Amigável (Label)</Form.Label>
-              <Form.Control 
-                type="text" placeholder="Ex: Deletar Usuários" required
-                value={newPermission.label}
-                onChange={(e) => setNewPermission({...newPermission, label: e.target.value})}
-                className="bg-secondary border-0 text-white"
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Slug do Sistema (Name)</Form.Label>
-              <Form.Control 
-                type="text" placeholder="Ex: users.delete" required
-                value={newPermission.name}
-                onChange={(e) => setNewPermission({...newPermission, name: e.target.value})}
-                className="bg-secondary border-0 text-white"
-              />
-            </Form.Group>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="outline-light" onClick={() => setShowPermissionModal(false)}>Cancelar</Button>
-            <Button variant="primary" type="submit" disabled={actionLoading}>
-              {actionLoading ? "Salvando..." : "Criar Permissão"}
-            </Button>
-          </Modal.Footer>
-        </Form>
-      </Modal>
     </div>
   );
 }
