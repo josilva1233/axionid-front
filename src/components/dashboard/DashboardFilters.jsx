@@ -1,13 +1,23 @@
 import { Row, Col, Form } from "react-bootstrap";
 
-export default function DashboardFilters({ activeTab, role, filters, onFilterChange, onClear, onNewGroup }) {
+export default function DashboardFilters({ 
+  activeTab, 
+  role, 
+  filters, 
+  onFilterChange, 
+  onClear, 
+  onNewGroup,
+  onNewPermission // Adicionada esta prop
+}) {
   const isUserTab = activeTab === "users" && role === "admin";
   const isGroupTab = activeTab === "groups";
   const isAuditTab = activeTab === "audit" && role === "admin";
+  const isPermissionTab = activeTab === "permissions"; // Nova constante
 
   return (
     <div className="filter-card mb-4 p-4 animate-in">
       <Row className="align-items-end g-3">
+        {/* --- FILTROS DE USUÁRIOS --- */}
         {isUserTab && (
           <>
             <Col md={5}>
@@ -29,6 +39,7 @@ export default function DashboardFilters({ activeTab, role, filters, onFilterCha
           </>
         )}
 
+        {/* --- FILTROS DE GRUPOS --- */}
         {isGroupTab && (
           <>
             <Col md={6}>
@@ -45,6 +56,31 @@ export default function DashboardFilters({ activeTab, role, filters, onFilterCha
           </>
         )}
 
+        {/* --- NOVO: FILTROS DE PERMISSÕES --- */}
+        {isPermissionTab && (
+          <>
+            <Col md={6}>
+              <Form.Group>
+                <Form.Label className="filter-label">Buscar Permissões</Form.Label>
+                <Form.Control 
+                  type="text" 
+                  name="name" 
+                  value={filters.name} 
+                  onChange={onFilterChange} 
+                  className="custom-input-dark" 
+                  placeholder="Ex: admin.users..."
+                />
+              </Form.Group>
+            </Col>
+            <Col md={3}>
+              <button className="btn-primary-axion w-100" style={{ height: "45px" }} onClick={onNewPermission}>
+                <i className="bi bi-shield-lock me-2"></i> Nova Permissão
+              </button>
+            </Col>
+          </>
+        )}
+
+        {/* --- FILTROS DE AUDITORIA --- */}
         {isAuditTab && (
           <>
             <Col md={5}>
@@ -66,7 +102,7 @@ export default function DashboardFilters({ activeTab, role, filters, onFilterCha
           </>
         )}
 
-        <Col md={isGroupTab ? 3 : 3}>
+        <Col md={3}>
           <button className="btn-filter-clear w-100" style={{ height: "45px" }} onClick={onClear}>
             <i className="bi bi-eraser me-2"></i> Limpar Filtros
           </button>

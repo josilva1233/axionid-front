@@ -249,19 +249,7 @@ export default function Dashboard() {
 
         <main className="content-area p-4">
           
-          {activeTab === "permissions" && !selectedUser && !selectedGroupId && (
-            <div className="d-flex justify-content-between align-items-center mb-4">
-              <h4 className="text-white mb-0">Gestão de Permissões</h4>
-              {!showPermissionModal && (
-                <button 
-                  className="btn-primary-axion px-4 py-2" 
-                  onClick={() => setShowPermissionModal(true)}
-                >
-                  + Nova Permissão
-                </button>
-              )}
-            </div>
-          )}
+
 
           {selectedUser ? (
             <UserDetail 
@@ -297,6 +285,7 @@ export default function Dashboard() {
                   onFilterChange={(e) => setFilters({ ...filters, [e.target.name]: e.target.value })}
                   onClear={() => setFilters({ name: "", completed: "", method: "", date: "" })}
                   onNewGroup={() => setShowGroupForm(true)}
+                  onNewPermission={() => setShowPermissionModal(true)} // Botão para abrir modal de nova permissão
                 />
               )}
 
