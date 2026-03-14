@@ -68,7 +68,7 @@ export default function Dashboard() {
         if (filters.name) params.append("name", filters.name);
         if (filters.completed !== "")
           params.append("completed", filters.completed);
-        const res = await api.get(`/api/v1/users?${params.toString()}`);
+        const res = await api.get(`/api/v1/admin/users?${params.toString()}`);
         setUsers(res.data.data || res.data);
         setPaginationData(
           res.data.current_page
