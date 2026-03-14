@@ -240,7 +240,7 @@ export default function Dashboard() {
   const handleUpdateUser = async (id, formData) => {
     setActionLoading(true);
     try {
-      await api.put(`/api/v1/users/${id}/update-manual`, formData);
+      await api.put(`/api/v1/admin/users${id}/update-manual`, formData);
       alert("Usuário atualizado com sucesso!");
       handleViewDetail(id);
       loadUsers(currentPage);
@@ -338,7 +338,7 @@ export default function Dashboard() {
   const handleViewDetail = async (id) => {
     setLoading(true);
     try {
-      const res = await api.get(`/api/v1/users/${id}`);
+      const res = await api.get(`/api/v1/admin/users/${id}`);
       setSelectedUser(res.data.data);
     } catch (err) {
       alert("Erro ao buscar detalhes");
@@ -355,17 +355,17 @@ export default function Dashboard() {
           `Para excluir "${selectedUser.name}", digite o NOME dele:`,
         );
         if (confirmName !== selectedUser.name) return;
-        await api.delete(`/api/v1/users/${selectedUser.id}`);
+        await api.delete(`/api/v1/admin/users/${selectedUser.id}`);
         setSelectedUser(null);
         loadUsers(currentPage);
         return;
       }
       if (type === "promote")
-        await api.post(`/api/v1/users/${selectedUser.id}/promote`);
+        await api.post(`/api/v1/admin/users/${selectedUser.id}/promote`);
       if (type === "remove-admin")
-        await api.post(`/api/v1/users/${selectedUser.id}/remove-admin`);
+        await api.post(`/api/v1/admin/users/${selectedUser.id}/remove-admin`);
       if (type === "toggle-status")
-        await api.patch(`/api/v1/users/${selectedUser.id}/toggle-status`);
+        await api.patch(`/api/v1/admin/users/${selectedUser.id}/toggle-status`);
       handleViewDetail(selectedUser.id);
       loadUsers(currentPage);
     } catch (err) {
@@ -574,7 +574,7 @@ export default function Dashboard() {
                           {/* Botão Novo Grupo - Ocupa 3/12 */}
                           <Col md={3}>
                             <button
-                              className="btn-table-action w-100"
+                              className="btn-table-action"
                               style={{ height: "45px", borderRadius: "8px" }}
                               onClick={() => setShowGroupForm(true)}
                             >
