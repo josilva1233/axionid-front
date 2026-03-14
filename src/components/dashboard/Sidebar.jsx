@@ -1,4 +1,7 @@
 export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
+  // Verifica se é admin para facilitar as condições abaixo
+  const isAdmin = role === 'admin';
+
   return (
     <aside className="sidebar">
       {/* BRAND PADRONIZADA NO TOPO DA SIDEBAR */}
@@ -9,7 +12,7 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
       </div>
       
       <nav className="sidebar-nav">
-        {/* SEÇÃO PRINCIPAL - VISÍVEL PARA TODOS OS LOGADOS */}
+        {/* SEÇÃO PRINCIPAL - VISÍVEL PARA TODOS */}
         <div className="nav-group">
           <p className="nav-section-title">Principal</p>
           
@@ -19,22 +22,24 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
           >
             <span className="nav-icon">👥</span>
             <span className="nav-label">
-              {role === 'admin' ? 'Gestão de Usuários' : 'Meu Acesso'}
+              {isAdmin ? 'Gestão de Usuários' : 'Usuários'}
             </span>
           </button>
 
-          {/* MENU: GESTÃO DE GRUPOS */}
+          {/* MENU: GESTÃO DE GRUPOS - Visível para todos, mas o conteúdo interno será filtrado no Dashboard */}
           <button 
             className={`nav-item ${activeTab === 'groups' ? 'active' : ''}`}
             onClick={() => setActiveTab('groups')}
           >
             <span className="nav-icon">📁</span>
-            <span className="nav-label">Gestão de Grupos</span>
+            <span className="nav-label">
+               {isAdmin ? 'Gestão de Grupos' : 'Meus Grupos'}
+            </span>
           </button>
         </div>
 
         {/* SEÇÃO DE SEGURANÇA - EXCLUSIVA PARA ADMIN */}
-        {role === 'admin' && (
+        {isAdmin && (
           <div className="nav-group animate-in" style={{ marginTop: '24px' }}>
             <p className="nav-section-title">Segurança</p>
             
@@ -46,7 +51,7 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
               <span className="nav-label">Logs de Auditoria</span>
             </button>
 
-            {/* NOVO MENU: PERMISSÕES */}
+            {/* MENU: PERMISSÕES - Somente Admin */}
             <button 
               className={`nav-item ${activeTab === 'permissions' ? 'active' : ''}`}
               onClick={() => setActiveTab('permissions')}
@@ -58,7 +63,7 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
         )}
       </nav>
 
-      {/* FOOTER DA SIDEBAR COM BOTÃO DE LOGOUT ESTILIZADO */}
+      {/* FOOTER DA SIDEBAR */}
       <div className="sidebar-footer">
         <button 
           onClick={onLogout} 
