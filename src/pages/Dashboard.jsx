@@ -73,24 +73,27 @@ export default function Dashboard() {
       await api.post("/api/v1/admin/permissions", newPermission);
       setShowPermissionModal(false);
       setNewPermission({ name: "", label: "" });
-      loadPermissions();
+      await loadPermissions(); // Recarrega a lista após criar
       alert("Permissão criada com sucesso!");
     } catch (err) {
-      alert("Erro ao criar permissão. Verifique os dados.");
+      alert(err.response?.data?.message || "Erro ao criar permissão.");
     } finally { setActionLoading(false); }
   };
 
-  // --- CORREÇÃO: REMOVER ADMIN DO GRUPO ---
+  // --- CORREÇÃO: ALTERAR CARGO NO GRUPO (PROMOTE/DEMOTE) ---
   const handleGroupMemberRole = async (userId, type) => {
     setActionLoading(true);
     try {
-      // Conforme seu api.php: /{group_id}/members/{user_id}/demote
+      // Bate com api.php corrigido: /{group_id}/members/{user_id}/demote
       const endpoint = `/api/v1/groups/${selectedGroupId}/members/${userId}/${type}`;
-      await api.patch(endpoint);
-      alert(type === "promote" ? "Promovido a Admin do Grupo!" : "Privilégios de Admin removidos!");
-      loadGroups(currentPage);
+      const res = await api.patch(endpoint);
+      
+      alert(res.data.message || "Operação realizada com sucesso!");
+      
+      // Essencial: recarregar os dados para refletir a mudança no banco na UI
+      await loadGroups(currentPage);
     } catch (err) { 
-      alert("Erro ao alterar cargo no grupo."); 
+      alert(err.response?.data?.message || "Erro ao alterar cargo no grupo."); 
     } finally { setActionLoading(false); }
   };
 
@@ -102,7 +105,7 @@ export default function Dashboard() {
       const userToInvite = users.find(u => u.email.toLowerCase() === email.toLowerCase());
       if (!userToInvite) return alert("Usuário não encontrado.");
       await api.post(`/api/v1/groups/${selectedGroupId}/members`, { user_id: userToInvite.id });
-      loadGroups(currentPage);
+      await loadGroups(currentPage);
     } catch (err) { alert("Erro ao adicionar."); }
     finally { setActionLoading(false); }
   };
@@ -112,7 +115,7 @@ export default function Dashboard() {
     setActionLoading(true);
     try {
       await api.delete(`/api/v1/groups/${selectedGroupId}/members/${userId}`);
-      loadGroups(currentPage);
+      await loadGroups(currentPage);
     } catch (err) { alert("Erro ao remover."); }
     finally { setActionLoading(false); }
   };
@@ -140,7 +143,7 @@ export default function Dashboard() {
         </header>
 
         <main className="content-area p-4">
-          {/* BOTÃO NOVA PERMISSÃO NO TOPO */}
+          {/* BOTÃO NOVA PERMISSÃO NO TOPO - Visível apenas na aba de permissões e sem detalhes abertos */}
           {activeTab === "permissions" && !selectedUser && !selectedGroupId && (
             <div className="d-flex justify-content-between align-items-center mb-4">
               <h4 className="text-white mb-0">Gestão de Permissões</h4>
@@ -170,6 +173,7 @@ export default function Dashboard() {
             />
           ) : (
             <>
+              {/* Filtros aparecem apenas para usuários, auditoria e grupos */}
               {activeTab !== "permissions" && (
                 <DashboardFilters
                   activeTab={activeTab} role={role} filters={filters}
@@ -202,7 +206,7 @@ export default function Dashboard() {
         </main>
       </div>
 
-      {/* MODAL DE CRIAÇÃO DE PERMISSÃO */}
+      {/* MODAL DE CRIAÇÃO DE PERMISSÃO - Resolve o problema de desconfiguração da Sidebar */}
       <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)} centered contentClassName="bg-dark text-white border-secondary">
         <Modal.Header closeButton closeVariant="white">
           <Modal.Title>Criar Nova Permissão</Modal.Title>
@@ -210,7 +214,7 @@ export default function Dashboard() {
         <Form onSubmit={handleCreatePermission}>
           <Modal.Body>
             <Form.Group className="mb-3">
-              <Form.Label>Nome (Label)</Form.Label>
+              <Form.Label>Nome Amigável (Label)</Form.Label>
               <Form.Control 
                 type="text" placeholder="Ex: Deletar Usuários" required
                 value={newPermission.label}
@@ -219,7 +223,7 @@ export default function Dashboard() {
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Slug (Name)</Form.Label>
+              <Form.Label>Slug do Sistema (Name)</Form.Label>
               <Form.Control 
                 type="text" placeholder="Ex: users.delete" required
                 value={newPermission.name}
