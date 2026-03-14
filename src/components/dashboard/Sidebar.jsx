@@ -23,9 +23,13 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
       </div>
       
       <nav className="sidebar-nav">
-        {/* SEÇÃO PRINCIPAL - VISÍVEL PARA TODOS */}
+
+        {/* SEÇÃO PRINCIPAL/OPERAÇÃO */}
         <div className="nav-group">
-          <p className="nav-section-title">Principal</p>
+          {/* Título dinâmico: Principal para Admin, Operação para Comum */}
+          <p className="nav-section-title">
+            {isAdmin ? 'Principal' : 'Operação'}
+          </p>
           
           <button 
             className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
