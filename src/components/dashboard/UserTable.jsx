@@ -73,17 +73,6 @@ export default function UserTable({ users, onViewDetail, onDeleteUser, onToggleA
                     >
                       <i className="bi bi-eye"></i>
                     </button>
-
-                    {/* Botão Excluir (Só aparece para Admin Global) */}
-                    {isGlobalAdmin && (
-                      <button
-                        className="btn-table-action text-danger"
-                        onClick={() => onDeleteUser && onDeleteUser(u.id, u.name)}
-                        title="Excluir Usuário"
-                      >
-                        <i className="bi bi-trash"></i>
-                      </button>
-                    )}
                   </div>
                 </td>
               </tr>
