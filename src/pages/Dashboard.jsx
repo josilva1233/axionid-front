@@ -30,9 +30,9 @@ export default function Dashboard() {
     setFilters, loadUsers, loadGroups, loadAuditLogs 
   } = useDashboardData(role);
 
+  // Define se é Admin Global para ignorar travas de edição
   const isGlobalAdmin = role === "admin" || currentUser?.is_admin === true;
 
-  // Carregamento de Perfil
   useEffect(() => {
     const loadProfile = async () => {
       try {
@@ -43,24 +43,34 @@ export default function Dashboard() {
     loadProfile();
   }, [navigate]);
 
-  // Carregamento de Dados das Tabelas
   useEffect(() => {
     if (activeTab === "users") loadUsers(currentPage);
     else if (activeTab === "audit") loadAuditLogs(currentPage);
     else if (activeTab === "groups") loadGroups(currentPage);
   }, [activeTab, currentPage, loadUsers, loadGroups, loadAuditLogs]);
 
-  // --- FUNÇÕES PARA O COMPONENTE GROUPDETAIL (NOMES SINCRONIZADOS) ---
+  // --- FUNÇÕES DE GERENCIAMENTO DE GRUPOS (ALINHADAS COM OPENAPI) ---
 
   const handleAddUserToGroup = async (email) => {
     if (!selectedGroupId) return;
     setActionLoading(true);
     try {
-      // Endpoint ajustado para seu backend (geralmente via e-mail ou user_id)
-      await api.post(`/api/v1/groups/${selectedGroupId}/members`, { email });
-      await loadGroups(currentPage); // Recarrega dados
+      // O seu Swagger exige user_id. Buscamos o ID na nossa lista de usuários pelo e-mail
+      const userToInvite = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+      
+      if (!userToInvite) {
+        alert("Usuário não encontrado na lista. Ele precisa estar cadastrado no sistema.");
+        return;
+      }
+
+      await api.post(`/api/v1/groups/${selectedGroupId}/members`, { 
+        user_id: userToInvite.id 
+      });
+
+      alert("Membro adicionado com sucesso!");
+      await loadGroups(currentPage); // Recarrega para atualizar a lista de membros no componente
     } catch (err) {
-      alert(err.response?.data?.message || "Erro ao adicionar usuário.");
+      alert(err.response?.data?.message || "Erro ao adicionar membro.");
     } finally {
       setActionLoading(false);
     }
@@ -73,7 +83,7 @@ export default function Dashboard() {
       await api.delete(`/api/v1/groups/${selectedGroupId}/members/${userId}`);
       await loadGroups(currentPage);
     } catch (err) {
-      alert("Erro ao remover usuário.");
+      alert("Erro ao remover membro.");
     } finally {
       setActionLoading(false);
     }
@@ -82,8 +92,9 @@ export default function Dashboard() {
   const handleGroupMemberRole = async (userId, type) => {
     setActionLoading(true);
     try {
-      // type pode ser 'promote' ou 'demote'
-      await api.patch(`/api/v1/groups/${selectedGroupId}/members/${userId}/role`, { action: type });
+      // URLs conforme seu OpenAPI: .../members/{user_id}/promote ou .../members/{user_id}/demote
+      const endpoint = `/api/v1/groups/${selectedGroupId}/members/${userId}/${type}`;
+      await api.patch(endpoint);
       await loadGroups(currentPage);
     } catch (err) {
       alert("Erro ao alterar cargo do membro.");
@@ -105,6 +116,20 @@ export default function Dashboard() {
     }
   };
 
+  // --- FUNÇÕES DE USUÁRIOS ---
+
+  const handleViewUserDetail = async (id) => {
+    setActionLoading(true);
+    try {
+      const res = await api.get(`/api/v1/admin/users/${id}`);
+      setSelectedUser(res.data.data || res.data);
+    } catch (err) {
+      alert("Erro ao buscar detalhes.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.clear();
     navigate("/login");
@@ -115,9 +140,9 @@ export default function Dashboard() {
       <Sidebar 
         activeTab={activeTab} role={role} onLogout={handleLogout} 
         setActiveTab={(tab) => { 
-            setActiveTab(tab); 
-            setSelectedUser(null); 
-            setSelectedGroupId(null); 
+          setActiveTab(tab); 
+          setSelectedUser(null); 
+          setSelectedGroupId(null); 
         }} 
       />
 
@@ -130,17 +155,16 @@ export default function Dashboard() {
         <main className="content-area p-4">
           {selectedUser ? (
             <UserDetail 
-                user={selectedUser} 
-                onBack={() => setSelectedUser(null)} 
+              user={selectedUser} 
+              onBack={() => setSelectedUser(null)} 
             />
           ) : selectedGroupId ? (
             <GroupDetail 
               group={groups.find(g => g.id === selectedGroupId)} 
               onBack={() => setSelectedGroupId(null)}
-              isSystemAdmin={isGlobalAdmin}
+              isSystemAdmin={isGlobalAdmin} // Alinhado com a prop do seu GroupDetail
               currentUserId={currentUser?.id}
               actionLoading={actionLoading}
-              // MAPEAMENTO EXATO DAS PROPS QUE VOCÊ ENVIOU NO GROUPDETAIL:
               onAddUser={handleAddUserToGroup}
               onRemoveUser={handleRemoveUserFromGroup}
               onPromoteUser={(uid) => handleGroupMemberRole(uid, 'promote')}
@@ -158,20 +182,14 @@ export default function Dashboard() {
 
               <div className={`tab-wrapper position-relative ${loading || actionLoading ? "is-loading" : ""}`}>
                 {(loading || actionLoading) && (
-                    <div className="loading-overlay"><Spinner animation="border" variant="primary" /></div>
+                  <div className="loading-overlay">
+                    <Spinner animation="border" variant="primary" />
+                  </div>
                 )}
                 
                 <div className="content-card">
                   {activeTab === "users" && (
-                    <UserTable 
-                        users={users} 
-                        onViewDetail={async (id) => {
-                            setActionLoading(true);
-                            const res = await api.get(`/api/v1/admin/users/${id}`);
-                            setSelectedUser(res.data.data || res.data);
-                            setActionLoading(false);
-                        }} 
-                    />
+                    <UserTable users={users} onViewDetail={handleViewUserDetail} />
                   )}
                   {activeTab === "audit" && <AuditTable logs={auditLogs} />}
                   {activeTab === "groups" && (
