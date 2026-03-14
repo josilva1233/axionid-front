@@ -58,7 +58,7 @@ export default function UserTable({ users, onViewDetail, onDeleteUser, onToggleA
                       }}
                     />
                     <span style={{ fontSize: "0.85rem", color: u.is_active ? "var(--success)" : "var(--danger)" }}>
-                      {u.is_active ? "Ativo" : "Bloqueado"}
+                      {u.is_active ? "Ativo" : "Inativo"}
                     </span>
                   </div>
                 </td>
@@ -71,7 +71,7 @@ export default function UserTable({ users, onViewDetail, onDeleteUser, onToggleA
                       onClick={() => onViewDetail(u.id)}
                       title="Visualizar Detalhes"
                     >
-                      <i className="bi bi-eye"></i>
+                      <i className="bi bi-eye">Detlhar</i>
                     </button>
                   </div>
                 </td>
