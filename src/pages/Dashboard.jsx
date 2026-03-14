@@ -26,9 +26,16 @@ export default function Dashboard() {
   const [showGroupForm, setShowGroupForm] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const { 
-    loading, users, groups, auditLogs, filters, 
-    setFilters, loadUsers, loadGroups, loadAuditLogs 
+  const {
+    loading,
+    users,
+    groups,
+    auditLogs,
+    filters,
+    setFilters,
+    loadUsers,
+    loadGroups,
+    loadAuditLogs,
   } = useDashboardData(role);
 
   // Define se é Admin Global para ignorar travas de edição
@@ -39,7 +46,9 @@ export default function Dashboard() {
       try {
         const res = await api.get("/api/v1/me");
         setCurrentUser(res.data);
-      } catch { navigate("/login"); }
+      } catch {
+        navigate("/login");
+      }
     };
     loadProfile();
   }, [navigate]);
@@ -57,15 +66,19 @@ export default function Dashboard() {
     setActionLoading(true);
     try {
       // O seu Swagger exige user_id. Buscamos o ID na nossa lista de usuários pelo e-mail
-      const userToInvite = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-      
+      const userToInvite = users.find(
+        (u) => u.email.toLowerCase() === email.toLowerCase(),
+      );
+
       if (!userToInvite) {
-        alert("Usuário não encontrado na lista. Ele precisa estar cadastrado no sistema.");
+        alert(
+          "Usuário não encontrado na lista. Ele precisa estar cadastrado no sistema.",
+        );
         return;
       }
 
-      await api.post(`/api/v1/groups/${selectedGroupId}/members`, { 
-        user_id: userToInvite.id 
+      await api.post(`/api/v1/groups/${selectedGroupId}/members`, {
+        user_id: userToInvite.id,
       });
 
       alert("Membro adicionado com sucesso!");
@@ -138,80 +151,101 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-layout animate-in">
-      <Sidebar 
-        activeTab={activeTab} role={role} onLogout={handleLogout} 
-        setActiveTab={(tab) => { 
-          setActiveTab(tab); 
-          setSelectedUser(null); 
-          setSelectedGroupId(null); 
-        }} 
+      <Sidebar
+        activeTab={activeTab}
+        role={role}
+        onLogout={handleLogout}
+        setActiveTab={(tab) => {
+          setActiveTab(tab);
+          setSelectedUser(null);
+          setSelectedGroupId(null);
+        }}
       />
 
       <div className="main-wrapper">
         <header className="main-header d-flex justify-content-between align-items-center p-3">
-          <h2 className="brand mb-0" style={{ fontSize: "1.25rem" }}>AxionID Admin</h2>
-          {currentUser && <UserDropdown user={currentUser} onLogout={handleLogout} />}
+          <h2 className="brand mb-0" style={{ fontSize: "1.25rem" }}>
+            AxionID Admin
+          </h2>
+          {currentUser && (
+            <UserDropdown user={currentUser} onLogout={handleLogout} />
+          )}
         </header>
-{activeTab === "permissions" && (
-  <div className="content-card">
-    <div className="d-flex justify-content-between align-items-center mb-4 p-3 border-bottom-theme">
-        <h5 className="text-white mb-0">Controle de Acessos & Permissões</h5>
-    </div>
-    <PermissionTable permissions={permissions} loading={loading} />
-  </div>
-)}
+        {activeTab === "permissions" && (
+          <div className="content-card">
+            <div className="d-flex justify-content-between align-items-center mb-4 p-3 border-bottom-theme">
+              <h5 className="text-white mb-0">
+                Controle de Acessos & Permissões
+              </h5>
+            </div>
+            <PermissionTable permissions={permissions} loading={loading} />
+          </div>
+        )}
         <main className="content-area p-4">
           {selectedUser ? (
-            <UserDetail 
-              user={selectedUser} 
-              onBack={() => setSelectedUser(null)} 
+            <UserDetail
+              user={selectedUser}
+              onBack={() => setSelectedUser(null)}
             />
           ) : selectedGroupId ? (
-            <GroupDetail 
-              group={groups.find(g => g.id === selectedGroupId)} 
+            <GroupDetail
+              group={groups.find((g) => g.id === selectedGroupId)}
               onBack={() => setSelectedGroupId(null)}
               isSystemAdmin={isGlobalAdmin} // Alinhado com a prop do seu GroupDetail
               currentUserId={currentUser?.id}
               actionLoading={actionLoading}
               onAddUser={handleAddUserToGroup}
               onRemoveUser={handleRemoveUserFromGroup}
-              onPromoteUser={(uid) => handleGroupMemberRole(uid, 'promote')}
-              onDemoteUser={(uid) => handleGroupMemberRole(uid, 'demote')}
+              onPromoteUser={(uid) => handleGroupMemberRole(uid, "promote")}
+              onDemoteUser={(uid) => handleGroupMemberRole(uid, "demote")}
               onDeleteGroup={handleDeleteGroup}
             />
           ) : (
             <>
-              <DashboardFilters 
-                activeTab={activeTab} role={role} filters={filters} 
-                onFilterChange={(e) => setFilters({...filters, [e.target.name]: e.target.value})} 
-                onClear={() => setFilters({name:"", completed:"", method:"", date:""})}
+              <DashboardFilters
+                activeTab={activeTab}
+                role={role}
+                filters={filters}
+                onFilterChange={(e) =>
+                  setFilters({ ...filters, [e.target.name]: e.target.value })
+                }
+                onClear={() =>
+                  setFilters({ name: "", completed: "", method: "", date: "" })
+                }
                 onNewGroup={() => setShowGroupForm(true)}
               />
 
-              <div className={`tab-wrapper position-relative ${loading || actionLoading ? "is-loading" : ""}`}>
+              <div
+                className={`tab-wrapper position-relative ${loading || actionLoading ? "is-loading" : ""}`}
+              >
                 {(loading || actionLoading) && (
                   <div className="loading-overlay">
                     <Spinner animation="border" variant="primary" />
                   </div>
                 )}
-                
+
                 <div className="content-card">
                   {activeTab === "users" && (
-                    <UserTable users={users} onViewDetail={handleViewUserDetail} />
+                    <UserTable
+                      users={users}
+                      onViewDetail={handleViewUserDetail}
+                    />
                   )}
                   {activeTab === "audit" && <AuditTable logs={auditLogs} />}
-                  {activeTab === "groups" && (
-                    showGroupForm ? (
-                      <GroupForm onCancel={() => setShowGroupForm(false)} onUpdate={() => loadGroups(1)} />
+                  {activeTab === "groups" &&
+                    (showGroupForm ? (
+                      <GroupForm
+                        onCancel={() => setShowGroupForm(false)}
+                        onUpdate={() => loadGroups(1)}
+                      />
                     ) : (
-                      <GroupTable 
-                        groups={groups} 
-                        onViewDetail={setSelectedGroupId} 
+                      <GroupTable
+                        groups={groups}
+                        onViewDetail={setSelectedGroupId}
                         isGlobalAdmin={isGlobalAdmin}
                         currentUser={currentUser}
                       />
-                    )
-                  )}
+                    ))}
                 </div>
               </div>
             </>

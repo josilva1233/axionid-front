@@ -23,7 +23,7 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
             </span>
           </button>
 
-          {/* NOVO MENU: GESTÃO DE GRUPOS */}
+          {/* MENU: GESTÃO DE GRUPOS */}
           <button 
             className={`nav-item ${activeTab === 'groups' ? 'active' : ''}`}
             onClick={() => setActiveTab('groups')}
@@ -37,12 +37,22 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
         {role === 'admin' && (
           <div className="nav-group animate-in" style={{ marginTop: '24px' }}>
             <p className="nav-section-title">Segurança</p>
+            
             <button 
               className={`nav-item ${activeTab === 'audit' ? 'active' : ''}`}
               onClick={() => setActiveTab('audit')}
             >
               <span className="nav-icon">📜</span>
               <span className="nav-label">Logs de Auditoria</span>
+            </button>
+
+            {/* NOVO MENU: PERMISSÕES */}
+            <button 
+              className={`nav-item ${activeTab === 'permissions' ? 'active' : ''}`}
+              onClick={() => setActiveTab('permissions')}
+            >
+              <span className="nav-icon">🛡️</span>
+              <span className="nav-label">Permissões</span>
             </button>
           </div>
         )}
