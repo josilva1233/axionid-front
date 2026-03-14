@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Spinner } from "react-bootstrap";
 import api from "../services/api";
 import { useDashboardData } from "../hooks/useDashboardData";
@@ -32,49 +32,16 @@ export default function Dashboard() {
   const [showGroupForm, setShowGroupForm] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Hook de dados
+  // Hook de dados modularizado
   const { 
-    loading, users, groups, auditLogs, paginationData, filters, 
+    loading, users, groups, auditLogs, filters, 
     setFilters, loadUsers, loadGroups, loadAuditLogs 
   } = useDashboardData(role);
 
-  // 1. FUNÇÃO PARA CARREGAR DETALHES (CORRIGIDA)
-  const handleViewDetail = async (id) => {
-    // Definimos um loading manual para não travar a lista inteira
-    setActionLoading(true); 
-    try {
-      const res = await api.get(`/api/v1/admin/users/${id}`);
-      // res.data.data ou res.data dependendo do seu retorno Laravel
-      const userData = res.data.data || res.data;
-      setSelectedUser(userData); 
-    } catch (err) {
-      console.error(err);
-      alert("Erro ao buscar detalhes do usuário");
-    } finally {
-      setActionLoading(false);
-    }
-  };
+  // Definição de Admin Global (Lógica para liberar edição de qualquer grupo)
+  const isGlobalAdmin = role === "admin" || currentUser?.is_admin === true;
 
-  // 2. FUNÇÕES DE AÇÃO (Promote, Status, etc)
-  const handleUserAction = async (type) => {
-    if (!selectedUser) return;
-    setActionLoading(true);
-    try {
-      if (type === "promote") await api.post(`/api/v1/admin/users/${selectedUser.id}/promote`);
-      if (type === "remove-admin") await api.post(`/api/v1/admin/users/${selectedUser.id}/remove-admin`);
-      if (type === "toggle-status") await api.patch(`/api/v1/admin/users/${selectedUser.id}/toggle-status`);
-      
-      // Recarrega os detalhes e a lista
-      handleViewDetail(selectedUser.id);
-      loadUsers(currentPage);
-    } catch (err) {
-      alert("Erro ao processar ação.");
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  // Efeitos de Carregamento
+  // Carregar Perfil do Usuário Logado
   useEffect(() => {
     const loadProfile = async () => {
       try {
@@ -85,13 +52,45 @@ export default function Dashboard() {
     loadProfile();
   }, [navigate]);
 
+  // Carregar dados da aba ativa
   useEffect(() => {
     if (activeTab === "users") loadUsers(currentPage);
     else if (activeTab === "audit") loadAuditLogs(currentPage);
     else if (activeTab === "groups") loadGroups(currentPage);
   }, [activeTab, currentPage, loadUsers, loadGroups, loadAuditLogs]);
 
-  // Handlers
+  // Buscar detalhes completos do usuário (Corrige campos vazios no UserDetail)
+  const handleViewDetail = async (id) => {
+    setActionLoading(true); 
+    try {
+      const res = await api.get(`/api/v1/admin/users/${id}`);
+      const userData = res.data.data || res.data;
+      setSelectedUser(userData); 
+    } catch (err) {
+      alert("Erro ao buscar detalhes do usuário");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Ações administrativas de usuário
+  const handleUserAction = async (type) => {
+    if (!selectedUser) return;
+    setActionLoading(true);
+    try {
+      if (type === "promote") await api.post(`/api/v1/admin/users/${selectedUser.id}/promote`);
+      if (type === "remove-admin") await api.post(`/api/v1/admin/users/${selectedUser.id}/remove-admin`);
+      if (type === "toggle-status") await api.patch(`/api/v1/admin/users/${selectedUser.id}/toggle-status`);
+      
+      handleViewDetail(selectedUser.id);
+      loadUsers(currentPage);
+    } catch (err) {
+      alert("Erro ao processar ação.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
@@ -136,7 +135,9 @@ export default function Dashboard() {
           ) : selectedGroupId ? (
             <GroupDetail 
               group={groups.find(g => g.id === selectedGroupId)} 
-              onBack={() => setSelectedGroupId(null)} 
+              onBack={() => setSelectedGroupId(null)}
+              isGlobalAdmin={isGlobalAdmin} // Passa permissão para o detalhe
+              currentUser={currentUser}
             />
           ) : (
             <>
@@ -154,7 +155,7 @@ export default function Dashboard() {
                 />
               )}
 
-              <div className={`tab-wrapper position-relative ${loading ? "is-loading" : ""}`}>
+              <div className={`tab-wrapper position-relative ${loading || actionLoading ? "is-loading" : ""}`}>
                 {(loading || actionLoading) && (
                     <div className="loading-overlay">
                         <Spinner animation="border" variant="primary" />
@@ -164,10 +165,7 @@ export default function Dashboard() {
                 <div className="content-card">
                   {activeTab === "users" && (
                     role === "admin" ? (
-                      <UserTable 
-                        users={users} 
-                        onViewDetail={handleViewDetail} // Chama a função que busca na API
-                      />
+                      <UserTable users={users} onViewDetail={handleViewDetail} />
                     ) : (
                       <WelcomeOperacional user={currentUser} />
                     )
@@ -182,6 +180,8 @@ export default function Dashboard() {
                       <GroupTable 
                         groups={groups} 
                         onViewDetail={setSelectedGroupId} 
+                        isGlobalAdmin={isGlobalAdmin} // LIBERA O BOTÃO GERENCIAR PARA VOCÊ
+                        currentUser={currentUser}
                       />
                     )
                   )}
