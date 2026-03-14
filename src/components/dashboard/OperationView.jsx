@@ -1,99 +1,105 @@
-import { useEffect, useState } from "react";
-import { Row, Col, Card, Badge, Spinner, Button } from "react-bootstrap";
+import { useState, useRef, useEffect } from "react";
+import { Form, Button, Card, Badge, Spinner } from "react-bootstrap";
 
 export default function OperationView() {
-  const [news, setNews] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [messages, setMessages] = useState([
+    { role: 'ai', content: 'Olá! Sou o assistente inteligente do AxionID. Como posso ajudar na sua operação hoje?' }
+  ]);
+  const [input, setInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef(null);
 
-  useEffect(() => {
-    // API Pública de Notícias Espaciais e Tecnológicas (Sem Token necessário)
-    fetch('https://api.spaceflightnewsapi.net/v4/articles/?limit=12')
-      .then(res => res.json())
-      .then(data => {
-        setNews(data.results || []);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error("Erro ao carregar notícias:", err);
-        setLoading(false);
-      });
-  }, []);
+  // Auto-scroll para a última mensagem
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
-  if (loading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center p-5" style={{ minHeight: '300px' }}>
-        <Spinner animation="grow" variant="primary" />
-      </div>
-    );
-  }
+  useEffect(scrollToBottom, [messages]);
+
+  const handleSend = (e) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+
+    const userMsg = { role: 'user', content: input };
+    setMessages(prev => [...prev, userMsg]);
+    setInput("");
+    setIsTyping(true);
+
+    // Simulação de resposta da IA
+    setTimeout(() => {
+      const aiResponse = { 
+        role: 'ai', 
+        content: `Analisei seu pedido sobre "${input}". No momento, estou em modo de demonstração, mas posso processar logs, gerar relatórios e validar acessos em tempo real assim que a integração com a API for concluída.` 
+      };
+      setMessages(prev => [...prev, aiResponse]);
+      setIsTyping(false);
+    }, 1500);
+  };
 
   return (
-    <div className="p-2 animate-in">
+    <div className="p-2 animate-in d-flex flex-column" style={{ height: 'calc(100vh - 160px)' }}>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h4 className="text-white mb-1">Operações de Monitoramento</h4>
-          <p className="text-secondary small">Feed global de tecnologia e infraestrutura</p>
+          <h4 className="text-white mb-1">Axion AI Research</h4>
+          <p className="text-secondary small">Assistente operacional inteligente v1.0</p>
         </div>
-        <Badge bg="success" className="p-2 shadow-sm">SISTEMA ONLINE</Badge>
+        <Badge bg="info" className="p-2 shadow-sm">AI AGENT ACTIVE</Badge>
       </div>
 
-      <Row className="g-4">
-        {news.map((item) => (
-          <Col key={item.id} md={6} lg={4} xl={3}>
-            <Card className="h-100 bg-dark border-secondary text-white card-hover-effect">
-              <div className="position-relative">
-                <Card.Img 
-                  variant="top" 
-                  src={item.image_url} 
-                  style={{ height: '160px', objectFit: 'cover' }} 
-                />
-                <Badge 
-                  bg="primary" 
-                  className="position-absolute top-0 start-0 m-2"
-                  style={{ fontSize: '0.65rem' }}
-                >
-                  {item.news_site}
-                </Badge>
-              </div>
-              
-              <Card.Body className="d-flex flex-column p-3">
-                <Card.Title style={{ fontSize: '0.95rem', fontWeight: '600', lineHeight: '1.4' }}>
-                  {item.title}
-                </Card.Title>
-                
-                <Card.Text className="text-secondary small flex-grow-1" style={{ fontSize: '0.8rem' }}>
-                  {item.summary ? item.summary.substring(0, 90) + "..." : "Monitoramento em tempo real..."}
-                </Card.Text>
-
-                <div className="mt-3 pt-3 border-top border-secondary d-flex justify-content-between align-items-center">
-                  <span className="text-muted" style={{ fontSize: '0.7rem' }}>
-                    {new Date(item.published_at).toLocaleDateString()}
-                  </span>
-                  <Button 
-                    variant="link" 
-                    size="sm" 
-                    className="p-0 text-decoration-none text-primary fw-bold"
-                    href={item.url} 
-                    target="_blank"
-                  >
-                    DETALHES <i className="bi bi-arrow-right"></i>
-                  </Button>
+      {/* Área de Chat */}
+      <Card className="flex-grow-1 bg-dark border-secondary overflow-hidden d-flex flex-column">
+        <Card.Body className="overflow-auto p-4 custom-scrollbar" style={{ background: '#0f1012' }}>
+          {messages.map((msg, idx) => (
+            <div key={idx} className={`d-flex mb-4 ${msg.role === 'user' ? 'justify-content-end' : 'justify-content-start'}`}>
+              <div 
+                className={`p-3 rounded-4 shadow-sm`} 
+                style={{ 
+                  maxWidth: '80%',
+                  background: msg.role === 'user' ? '#6f42c1' : '#1d1e22',
+                  color: '#fff',
+                  border: msg.role === 'user' ? 'none' : '1px solid #343a40'
+                }}
+              >
+                <div className="small mb-1 opacity-50 fw-bold">
+                  {msg.role === 'user' ? 'VOCÊ' : 'AXION AI'}
                 </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        ))}
-      </Row>
+                {msg.content}
+              </div>
+            </div>
+          ))}
+          {isTyping && (
+            <div className="text-secondary small animate-pulse">
+              <Spinner animation="grow" size="sm" variant="info" className="me-2" />
+              IA está processando...
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </Card.Body>
+
+        {/* Input de Pesquisa */}
+        <Card.Footer className="bg-dark border-secondary p-3">
+          <Form onSubmit={handleSend} className="d-flex gap-2">
+            <Form.Control
+              type="text"
+              placeholder="Digite sua dúvida ou comando operacional..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              className="custom-input-dark border-secondary py-2"
+              style={{ background: '#0a0b0d', color: '#fff' }}
+            />
+            <Button type="submit" variant="primary" className="px-4">
+              <i className="bi bi-send"></i>
+            </Button>
+          </Form>
+        </Card.Footer>
+      </Card>
 
       <style>{`
-        .card-hover-effect {
-          transition: transform 0.3s ease, border-color 0.3s ease;
-        }
-        .card-hover-effect:hover {
-          transform: translateY(-5px);
-          border-color: #6f42c1 !important;
-          box-shadow: 0 10px 20px rgba(0,0,0,0.4);
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #343a40; border-radius: 10px; }
+        .animate-pulse { animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
       `}</style>
     </div>
   );
