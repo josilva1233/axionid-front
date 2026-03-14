@@ -279,7 +279,7 @@ export default function Dashboard() {
             />
           ) : (
             <>
-              {activeTab !== "permissions" && (
+              {activeTab == "permissions" && (
                 <DashboardFilters
                   activeTab={activeTab} role={role} filters={filters}
                   onFilterChange={(e) => setFilters({ ...filters, [e.target.name]: e.target.value })}
