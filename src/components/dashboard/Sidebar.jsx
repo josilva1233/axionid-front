@@ -35,7 +35,7 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
             <span className="nav-icon">👥</span>
             <span className="nav-label">
               {/* CORREÇÃO: Gestão de Usuários para Admin, Operação para Comum */}
-              {isAdmin ? 'Gestão de Usuários' : 'Operação'}
+              {isAdmin ? 'Gestão de Usuários' : 'Operações'}
             </span>
           </button>
 
