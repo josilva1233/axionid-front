@@ -279,13 +279,13 @@ export default function Dashboard() {
             />
           ) : (
             <>
-              {activeTab == "permissions" && (
+              {activeTab !== "permissions" && (
                 <DashboardFilters
                   activeTab={activeTab} role={role} filters={filters}
                   onFilterChange={(e) => setFilters({ ...filters, [e.target.name]: e.target.value })}
                   onClear={() => setFilters({ name: "", completed: "", method: "", date: "" })}
                   onNewGroup={() => setShowGroupForm(true)}
-                  onNewPermission={() => setShowPermissionModal(true)} // Botão para abrir modal de nova permissão
+                   // Botão para abrir modal de nova permissão
                 />
               )}
 
@@ -294,6 +294,7 @@ export default function Dashboard() {
                   loading={actionLoading}
                   onCancel={() => setShowPermissionModal(false)}
                   onSave={handleCreatePermission} 
+                  onNewPermission={() => setShowPermissionModal(true)}
                 />
               )}
 
