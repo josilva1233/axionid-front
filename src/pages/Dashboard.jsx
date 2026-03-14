@@ -28,7 +28,6 @@ export default function Dashboard() {
 
   // Estados para Permissões
   const [permissions, setPermissions] = useState([]);
-  const [showPermissionForm, setShowPermissionForm] = useState(false);
 
   const {
     loading,
@@ -45,14 +44,13 @@ export default function Dashboard() {
   // Define se é Admin Global
   const isGlobalAdmin = role === "admin" || currentUser?.is_admin === true;
 
-  // Função para carregar permissões da API com tratamento de erro 404
+  // FUNÇÃO CORRIGIDA: Agora aponta para /admin/permissions conforme seu api.php
   const loadPermissions = useCallback(async () => {
     try {
-      const res = await api.get("/api/v1/permissions");
+      const res = await api.get("/api/v1/admin/permissions");
       setPermissions(res.data.data || res.data || []);
     } catch (err) {
       console.error("Erro ao carregar permissões:", err);
-      // Evita travar a interface se a rota não existir no backend ainda
       setPermissions([]); 
     }
   }, []);
@@ -70,7 +68,7 @@ export default function Dashboard() {
     loadProfile();
   }, [navigate]);
 
-  // Gerenciador central de carga de dados
+  // Monitor de abas
   useEffect(() => {
     if (activeTab === "users") loadUsers(currentPage);
     else if (activeTab === "audit") loadAuditLogs(currentPage);
@@ -86,30 +84,31 @@ export default function Dashboard() {
     try {
       const userToInvite = users.find(u => u.email.toLowerCase() === email.toLowerCase());
       if (!userToInvite) {
-        alert("Usuário não encontrado na lista atual.");
+        alert("Usuário não encontrado na lista.");
         return;
       }
       await api.post(`/api/v1/groups/${selectedGroupId}/members`, { user_id: userToInvite.id });
       alert("Membro adicionado!");
       loadGroups(currentPage);
     } catch (err) {
-      alert(err.response?.data?.message || "Erro ao adicionar membro.");
+      alert(err.response?.data?.message || "Erro ao adicionar.");
     } finally { setActionLoading(false); }
   };
 
   const handleRemoveUserFromGroup = async (userId, userName) => {
-    if (!window.confirm(`Remover ${userName} do grupo?`)) return;
+    if (!window.confirm(`Remover ${userName}?`)) return;
     setActionLoading(true);
     try {
       await api.delete(`/api/v1/groups/${selectedGroupId}/members/${userId}`);
       loadGroups(currentPage);
-    } catch (err) { alert("Erro ao remover membro."); }
+    } catch (err) { alert("Erro ao remover."); }
     finally { setActionLoading(false); }
   };
 
   const handleGroupMemberRole = async (userId, type) => {
     setActionLoading(true);
     try {
+      // Bate com a rota: Route::patch('/{group_id}/members/{user_id}/promote'...)
       const endpoint = `/api/v1/groups/${selectedGroupId}/members/${userId}/${type}`;
       await api.patch(endpoint);
       loadGroups(currentPage);
@@ -118,13 +117,13 @@ export default function Dashboard() {
   };
 
   const handleDeleteGroup = async (groupId) => {
-    if (!window.confirm("Excluir este grupo permanentemente?")) return;
+    if (!window.confirm("Excluir grupo?")) return;
     setActionLoading(true);
     try {
       await api.delete(`/api/v1/groups/${groupId}`);
       setSelectedGroupId(null);
       loadGroups(1);
-    } catch (err) { alert("Erro ao excluir grupo."); }
+    } catch (err) { alert("Erro ao excluir."); }
     finally { setActionLoading(false); }
   };
 
@@ -162,11 +161,9 @@ export default function Dashboard() {
         </header>
 
         <main className="content-area p-4">
-          {/* VISÃO DETALHADA DE USUÁRIO */}
           {selectedUser ? (
             <UserDetail user={selectedUser} onBack={() => setSelectedUser(null)} />
           ) : selectedGroupId ? (
-            /* VISÃO DETALHADA DE GRUPO */
             <GroupDetail
               group={groups.find((g) => g.id === selectedGroupId)}
               onBack={() => setSelectedGroupId(null)}
@@ -180,7 +177,6 @@ export default function Dashboard() {
               onDeleteGroup={handleDeleteGroup}
             />
           ) : (
-            /* VISÃO PRINCIPAL (TABELAS) */
             <>
               <DashboardFilters
                 activeTab={activeTab}
@@ -212,7 +208,10 @@ export default function Dashboard() {
                     <div className="p-3">
                       <div className="d-flex justify-content-between align-items-center mb-4">
                         <h5 className="text-white mb-0">Permissões do Sistema</h5>
-                        <button className="btn-primary-axion btn-sm px-3" onClick={() => setShowPermissionForm(true)}>Nova Permissão</button>
+                        {/* No seu PHP, a rota de POST também é /api/v1/admin/permissions */}
+                        <button className="btn-primary-axion btn-sm px-3" onClick={() => {/* Modal de criação aqui */}}>
+                          Nova Permissão
+                        </button>
                       </div>
                       <PermissionTable permissions={permissions} loading={loading} />
                     </div>
