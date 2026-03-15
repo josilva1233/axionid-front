@@ -110,10 +110,12 @@ export default function UserDetail({
   return (
     <div className="animate-in w-100">
 {/* CABEÇALHO DE NAVEGAÇÃO */}
+{/* CABEÇALHO DE NAVEGAÇÃO */}
       <div
         className="d-flex justify-content-between align-items-center mb-4 pb-3"
         style={{ borderBottom: "1px solid var(--border-color)" }}
       >
+        {/* LADO ESQUERDO: BOTÃO VOLTAR */}
         <button
           className="btn-filter-clear d-flex align-items-center px-3 py-2"
           onClick={onBack}
@@ -122,16 +124,16 @@ export default function UserDetail({
           <span>Voltar</span>
         </button>
         
-        {/* Container principal das ações e info */}
+        {/* LADO DIREITO: GRUPO DE BOTÕES + UUID */}
         <div className="d-flex align-items-center gap-3">
           
-          {/* Botões Lado a Lado */}
+          {/* BOTÕES LADO A LADO */}
           <div className="d-flex gap-2">
             {!isEditing ? (
               <button
                 className="btn-critical-primary px-4 py-2"
                 onClick={() => setIsEditing(true)}
-                style={{ fontSize: "0.85rem" }}
+                style={{ fontSize: "0.85rem", whiteSpace: "nowrap" }}
               >
                 <i className="bi bi-pencil me-2"></i> Editar Usuário
               </button>
@@ -140,6 +142,7 @@ export default function UserDetail({
                 <button
                   className="btn-critical-secondary px-3 py-2"
                   onClick={() => setIsEditing(false)}
+                  style={{ whiteSpace: "nowrap" }}
                 >
                   Cancelar
                 </button>
@@ -152,7 +155,8 @@ export default function UserDetail({
                     color: "#fff",
                     border: "none",
                     borderRadius: "6px",
-                    minWidth: "100px"
+                    minWidth: "100px",
+                    whiteSpace: "nowrap"
                   }}
                 >
                   {actionLoading ? "Salvando..." : <><i className="bi bi-check-lg me-2"></i> Salvar</>}
@@ -161,9 +165,15 @@ export default function UserDetail({
             )}
           </div>
 
-          {/* UUID Separado por uma borda sutil ou apenas o gap */}
-          <div className="text-dim small d-none d-md-block border-start ps-3" style={{ borderColor: 'var(--border-color) !important' }}>
-            UUID: <span className="mono-text" style={{ color: "var(--primary)" }}>{user.id}</span>
+          {/* UUID COM BORDA LATERAL PARA SEPARAR VISUALMENTE */}
+          <div 
+            className="text-dim small d-none d-md-block border-start ps-3" 
+            style={{ borderColor: 'var(--border-color)', lineHeight: '1' }}
+          >
+            <span style={{ opacity: 0.6 }}>UUID:</span>{" "}
+            <span className="mono-text" style={{ color: "var(--primary)" }}>
+              {user.id}
+            </span>
           </div>
         </div>
       </div>
