@@ -386,20 +386,25 @@ export default function Dashboard() {
           ) : (
             <>
               {/* Remova a trava {activeTab !== "permissions" && ... } e deixe apenas o componente: */}
-              {(role === 'admin' || activeTab !== 'users') && (
-              <DashboardFilters
-                activeTab={activeTab}
-                role={role}
-                filters={filters}
-                onFilterChange={(e) =>
-                  setFilters({ ...filters, [e.target.name]: e.target.value })
-                }
-                onClear={() =>
-                  setFilters({ name: "", completed: "", method: "", date: "" })
-                }
-                onNewGroup={() => setShowGroupForm(true)}
-                onNewPermission={() => setShowPermissionModal(true)}
-              />
+              {(role === "admin" || activeTab !== "users") && (
+                <DashboardFilters
+                  activeTab={activeTab}
+                  role={role}
+                  filters={filters}
+                  onFilterChange={(e) =>
+                    setFilters({ ...filters, [e.target.name]: e.target.value })
+                  }
+                  onClear={() =>
+                    setFilters({
+                      name: "",
+                      completed: "",
+                      method: "",
+                      date: "",
+                    })
+                  }
+                  onNewGroup={() => setShowGroupForm(true)}
+                  onNewPermission={() => setShowPermissionModal(true)}
+                />
               )}
 
               {/* O Form só aparece se a aba for permissões E o modal estiver aberto */}
@@ -421,21 +426,27 @@ export default function Dashboard() {
                 )}
 
                 <div className="content-card">
-                  {activeTab === "users" && (
-                    <UserTable
-                      users={users}
-                      onViewDetail={(id) =>
-                        api
-                          .get(`/api/v1/admin/users/${id}`)
-                          .then((res) =>
-                            setSelectedUser(res.data.data || res.data),
-                          )
-                      }
-                      onDeleteUser={handleDeleteUser}
-                      onToggleAdmin={handleToggleAdmin}
-                      isGlobalAdmin={isGlobalAdmin}
-                    />
-                  )}
+                  {/* No Dashboard.js, dentro da área de conteúdo */}
+                  {activeTab === "users" &&
+                    (isGlobalAdmin ? (
+                      /* SE FOR ADMIN: Exibe a tabela de gestão */
+                      <UserTable
+                        users={users}
+                        onViewDetail={(id) =>
+                          api
+                            .get(`/api/v1/admin/users/${id}`)
+                            .then((res) =>
+                              setSelectedUser(res.data.data || res.data),
+                            )
+                        }
+                        onDeleteUser={handleDeleteUser}
+                        onToggleAdmin={handleToggleAdmin}
+                        isGlobalAdmin={isGlobalAdmin}
+                      />
+                    ) : (
+                      /* SE NÃO FOR ADMIN (COMUM): Exibe a tela de Operação/IA */
+                      <OperationView />
+                    ))}
                   {activeTab === "audit" && <AuditTable logs={auditLogs} />}
                   {activeTab === "groups" &&
                     (showGroupForm ? (
@@ -459,9 +470,9 @@ export default function Dashboard() {
                       permissions={permissions}
                       loading={loading}
                     />
-                  )}: (
-    <OperationView />
-  )
+                  )}
+                  : (
+                  <OperationView />)
                 </div>
               </div>
             </>

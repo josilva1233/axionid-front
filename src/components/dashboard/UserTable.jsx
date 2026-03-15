@@ -1,5 +1,12 @@
-// Adicionamos as props onDeleteUser e onToggleAdmin aqui
+// UserTable.js
+
 export default function UserTable({ users, onViewDetail, onDeleteUser, onToggleAdmin, isGlobalAdmin }) {
+  
+  // TRAVA DE SEGURANÇA: Se não for admin, não renderiza a tabela de jeito nenhum
+  if (!isGlobalAdmin) {
+    return null; 
+  }
+
   return (
     <div className="table-responsive animate-in">
       <table className="axion-table">
@@ -36,11 +43,10 @@ export default function UserTable({ users, onViewDetail, onDeleteUser, onToggleA
                     className={`badge ${u.is_admin ? "badge-success" : "badge-operacional"}`}
                     style={{ 
                       fontSize: "0.7rem", 
-                      cursor: isGlobalAdmin ? "pointer" : "default" 
+                      cursor: "pointer" 
                     }}
-                    // Chama a função de promover/rebaixar ao clicar na badge
-                    onClick={() => isGlobalAdmin && onToggleAdmin && onToggleAdmin(u.id, u.is_admin)}
-                    title={isGlobalAdmin ? "Clique para alterar nível" : ""}
+                    onClick={() => onToggleAdmin && onToggleAdmin(u.id, u.is_admin)}
+                    title="Clique para alterar nível"
                   >
                     {u.is_admin ? "ADMIN" : "USER"}
                   </span>
@@ -65,13 +71,12 @@ export default function UserTable({ users, onViewDetail, onDeleteUser, onToggleA
 
                 <td className="text-end">
                   <div className="d-flex justify-content-end gap-2">
-                    {/* Botão Detalhes */}
                     <button
                       className="btn-table-action"
                       onClick={() => onViewDetail(u.id)}
                       title="Visualizar Detalhes"
                     >
-                      <i className="bi bi-eye">Gerenciar</i>
+                      <i className="bi bi-eye"> Gerenciar</i>
                     </button>
                   </div>
                 </td>
