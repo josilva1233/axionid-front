@@ -109,7 +109,7 @@ export default function UserDetail({
 
   return (
     <div className="animate-in w-100">
-      {/* CABEÇALHO DE NAVEGAÇÃO */}
+{/* CABEÇALHO DE NAVEGAÇÃO */}
       <div
         className="d-flex justify-content-between align-items-center mb-4 pb-3"
         style={{ borderBottom: "1px solid var(--border-color)" }}
@@ -122,49 +122,48 @@ export default function UserDetail({
           <span>Voltar</span>
         </button>
         
+        {/* Container principal das ações e info */}
         <div className="d-flex align-items-center gap-3">
-          {!isEditing ? (
-            <button
-              className="btn-critical-primary px-4 py-2"
-              onClick={() => setIsEditing(true)}
-              style={{ fontSize: "0.85rem" }}
-            >
-              <i className="bi bi-pencil me-2"></i> Editar Usuário
-            </button>
-          ) : (
-            <div className="d-flex gap-2">
+          
+          {/* Botões Lado a Lado */}
+          <div className="d-flex gap-2">
+            {!isEditing ? (
               <button
-                className="btn-critical-secondary px-3 py-2"
-                onClick={() => setIsEditing(false)}
+                className="btn-critical-primary px-4 py-2"
+                onClick={() => setIsEditing(true)}
+                style={{ fontSize: "0.85rem" }}
               >
-                Cancelar
+                <i className="bi bi-pencil me-2"></i> Editar Usuário
               </button>
-              <button
-                className="btn-table-action w-100 px-3 py-2"
-                onClick={handleSave}
-                disabled={actionLoading}
-                style={{
-                  background: "var(--success)",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "6px",
-                }}
-              >
-                {actionLoading ? (
-                  "Salvando..."
-                ) : (
-                  <>
-                    <i className="bi bi-pencil me-2"></i> Salvar
-                  </>
-                )}
-              </button>
-            </div>
-          )}
-          <div className="text-dim small d-none d-md-block">
-            UUID:{" "}
-            <span className="mono-text" style={{ color: "var(--primary)" }}>
-              {user.id}
-            </span>
+            ) : (
+              <>
+                <button
+                  className="btn-critical-secondary px-3 py-2"
+                  onClick={() => setIsEditing(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className="btn-table-action px-3 py-2"
+                  onClick={handleSave}
+                  disabled={actionLoading}
+                  style={{
+                    background: "var(--success)",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "6px",
+                    minWidth: "100px"
+                  }}
+                >
+                  {actionLoading ? "Salvando..." : <><i className="bi bi-check-lg me-2"></i> Salvar</>}
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* UUID Separado por uma borda sutil ou apenas o gap */}
+          <div className="text-dim small d-none d-md-block border-start ps-3" style={{ borderColor: 'var(--border-color) !important' }}>
+            UUID: <span className="mono-text" style={{ color: "var(--primary)" }}>{user.id}</span>
           </div>
         </div>
       </div>
