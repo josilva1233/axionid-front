@@ -471,8 +471,6 @@ export default function Dashboard() {
                       loading={loading}
                     />
                   )}
-                  : (
-                  <OperationView />)
                 </div>
               </div>
             </>
