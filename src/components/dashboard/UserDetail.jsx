@@ -111,24 +111,30 @@ export default function UserDetail({
     <div className="animate-in w-100">
 {/* CABEÇALHO DE NAVEGAÇÃO */}
 {/* CABEÇALHO DE NAVEGAÇÃO */}
+{/* CABEÇALHO DE NAVEGAÇÃO */}
       <div
         className="d-flex justify-content-between align-items-center mb-4 pb-3"
-        style={{ borderBottom: "1px solid var(--border-color)" }}
+        style={{ 
+          borderBottom: "1px solid var(--border-color)",
+          minHeight: "60px" // Garante uma altura consistente
+        }}
       >
         {/* LADO ESQUERDO: BOTÃO VOLTAR */}
-        <button
-          className="btn-filter-clear d-flex align-items-center px-3 py-2"
-          onClick={onBack}
-        >
-          <i className="bi bi-arrow-left me-2"></i>
-          <span>Voltar</span>
-        </button>
+        <div className="d-flex align-items-center">
+          <button
+            className="btn-filter-clear d-flex align-items-center px-3 py-2"
+            onClick={onBack}
+            style={{ whiteSpace: "nowrap" }}
+          >
+            <i className="bi bi-arrow-left me-2"></i>
+            <span>Voltar</span>
+          </button>
+        </div>
         
-        {/* LADO DIREITO: GRUPO DE BOTÕES + UUID */}
+        {/* LADO DIREITO: GRUPO DE BOTÕES + ID (Tudo na mesma linha) */}
         <div className="d-flex align-items-center gap-3">
           
-          {/* BOTÕES LADO A LADO */}
-          <div className="d-flex gap-2">
+          <div className="d-flex align-items-center gap-2">
             {!isEditing ? (
               <button
                 className="btn-critical-primary px-4 py-2"
@@ -138,7 +144,7 @@ export default function UserDetail({
                 <i className="bi bi-pencil me-2"></i> Editar Usuário
               </button>
             ) : (
-              <>
+              <div className="d-flex gap-2">
                 <button
                   className="btn-critical-secondary px-3 py-2"
                   onClick={() => setIsEditing(false)}
@@ -161,16 +167,20 @@ export default function UserDetail({
                 >
                   {actionLoading ? "Salvando..." : <><i className="bi bi-check-lg me-2"></i> Salvar</>}
                 </button>
-              </>
+              </div>
             )}
           </div>
 
-          {/* UUID COM BORDA LATERAL PARA SEPARAR VISUALMENTE */}
+          {/* ID COM SEPARADOR VERTICAL */}
           <div 
-            className="text-dim small d-none d-md-block border-start ps-3" 
-            style={{ borderColor: 'var(--border-color)', lineHeight: '1' }}
+            className="text-dim small d-none d-md-flex align-items-center border-start ps-3" 
+            style={{ 
+              borderColor: 'rgba(255,255,255,0.1)', 
+              height: '24px', // Altura fixa para alinhar o separador
+              lineHeight: '1' 
+            }}
           >
-            <span style={{ opacity: 0.6 }}>ID:</span>{" "}
+            <span style={{ opacity: 0.6, marginRight: '5px' }}>ID:</span>
             <span className="mono-text" style={{ color: "var(--primary)" }}>
               {user.id}
             </span>
