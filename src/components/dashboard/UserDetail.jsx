@@ -170,7 +170,7 @@ export default function UserDetail({
             className="text-dim small d-none d-md-block border-start ps-3" 
             style={{ borderColor: 'var(--border-color)', lineHeight: '1' }}
           >
-            <span style={{ opacity: 0.6 }}>UUID:</span>{" "}
+            <span style={{ opacity: 0.6 }}>ID:</span>{" "}
             <span className="mono-text" style={{ color: "var(--primary)" }}>
               {user.id}
             </span>
