@@ -25,8 +25,6 @@ export default function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [isEditing, setIsEditing] = useState(false); // NOVO: Controle de edição
-  const [editFormData, setEditFormData] = useState({}); // NOVO: Dados do form
   const [selectedGroupId, setSelectedGroupId] = useState(null);
   const [showGroupForm, setShowGroupForm] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
