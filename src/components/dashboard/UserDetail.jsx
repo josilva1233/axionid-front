@@ -111,114 +111,97 @@ export default function UserDetail({
     <div className="animate-in w-100">
       {/* CABEÇALHO DE NAVEGAÇÃO */}
       <div className="animate-in w-100">
-        {/* CABEÇALHO DE NAVEGAÇÃO REESTRUTURADO */}
-        <div
-          className="d-flex justify-content-between align-items-center mb-4 pb-3"
-          style={{
-            borderBottom: "1px solid rgba(255, 255, 255, 0.08)", // Borda mais suave
-            background: "transparent",
-          }}
+        {/* CABEÇALHO EM FORMATO DE GRID (PADRÃO DOS FILTROS) */}
+        <Row
+          className="align-items-end mb-4 pb-3"
+          style={{ borderBottom: "1px solid var(--border-color)" }}
         >
-          {/* LADO ESQUERDO: AÇÃO DE VOLTAR */}
-          <div className="d-flex align-items-center gap-4">
-            <button
-              type="button"
-              className="btn-back-link d-flex align-items-center gap-2 text-decoration-none shadow-none"
-              onClick={onBack}
-              aria-label="Voltar para a lista de usuários"
-              style={{
-                background: "none",
-                border: "none",
-                color: "var(--text-dim)",
-                transition: "0.2s",
-                fontWeight: "500",
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.color = "var(--primary)")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.color = "var(--text-dim)")
-              }
-            >
-              <i
-                className="bi bi-arrow-left-circle"
-                style={{ fontSize: "1.2rem" }}
-              ></i>
-              <span className="d-none d-sm-inline">Painel de Usuários</span>
-            </button>
-
-            {/* UUID DISCRETO AO LADO DO VOLTAR */}
-            <div
-              className="text-dim small d-none d-lg-block border-start ps-4"
-              style={{ borderColor: "rgba(255,255,255,0.1) !important" }}
-            >
-              <span className="opacity-50">REF-ID:</span>{" "}
-              <span
-                className="mono-text"
-                style={{ color: "var(--primary)", fontSize: "0.8rem" }}
-              >
-                {user.id}
-              </span>
-            </div>
-          </div>
-
-          {/* LADO DIREITO: AÇÕES DINÂMICAS */}
-          <div className="d-flex align-items-center gap-3">
-            {!isEditing ? (
-              <button
-                className="btn-critical-primary px-4 py-2 d-flex align-items-center shadow-sm"
-                onClick={() => setIsEditing(true)}
-                style={{
-                  fontSize: "0.85rem",
-                  borderRadius: "8px",
-                  fontWeight: "600",
-                  letterSpacing: "0.3px",
-                }}
-              >
-                <i className="bi bi-pencil-square me-2"></i> Editar Perfil
-              </button>
-            ) : (
-              <div className="d-flex gap-2 animate-in">
+          {/* COLUNA: VOLTAR (Equivalente ao Col md={5}) */}
+          <Col md={5}>
+            <Form.Group>
+              <Form.Label className="filter-label">Navegação</Form.Label>
+              <div className="d-flex align-items-center h-100">
                 <button
-                  className="btn-critical-secondary px-3 py-2"
-                  onClick={() => setIsEditing(false)}
-                  style={{ borderRadius: "8px", fontSize: "0.85rem" }}
-                >
-                  Descartar
-                </button>
-
-                <button
-                  className="btn-table-action px-4 py-2 d-flex align-items-center"
-                  onClick={handleSave}
-                  disabled={actionLoading}
+                  type="button"
+                  className="btn-back-link d-flex align-items-center gap-2"
+                  onClick={onBack}
                   style={{
-                    background:
-                      "linear-gradient(135deg, #28a745 0%, #1e7e34 100%)",
-                    color: "#fff",
+                    background: "transparent",
                     border: "none",
-                    borderRadius: "8px",
-                    fontWeight: "600",
-                    fontSize: "0.85rem",
-                    minWidth: "120px",
-                    justifyContent: "center",
+                    padding: "0.5rem 0",
+                    color: "var(--text-main)",
                   }}
                 >
-                  {actionLoading ? (
-                    <span className="spinner-border spinner-border-sm me-2"></span>
-                  ) : (
-                    <>
-                      <i
-                        className="bi bi-check-lg me-2"
-                        style={{ fontSize: "1rem" }}
-                      ></i>{" "}
-                      Salvar Alterações
-                    </>
-                  )}
+                  <i className="bi bi-arrow-left"></i>
+                  <span>Voltar para a lista</span>
                 </button>
               </div>
-            )}
-          </div>
-        </div>
+            </Form.Group>
+          </Col>
+
+          {/* COLUNA: AÇÕES / STATUS (Equivalente ao Col md={4}) */}
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label className="filter-label">Ações de Perfil</Form.Label>
+              <div className="d-flex gap-2">
+                {!isEditing ? (
+                  <button
+                    className="btn-critical-primary w-100 py-2"
+                    onClick={() => setIsEditing(true)}
+                    style={{ fontSize: "0.85rem", borderRadius: "6px" }}
+                  >
+                    <i className="bi bi-pencil me-2"></i> Editar Usuário
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      className="btn-critical-secondary px-3 py-2"
+                      onClick={() => setIsEditing(false)}
+                      style={{ borderRadius: "6px" }}
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      className="btn-table-action w-100 py-2"
+                      onClick={handleSave}
+                      disabled={actionLoading}
+                      style={{
+                        background: "var(--success)",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "6px",
+                        fontWeight: "500",
+                      }}
+                    >
+                      {actionLoading ? (
+                        "Salvando..."
+                      ) : (
+                        <>
+                          <i className="bi bi-check-lg me-2"></i> Salvar
+                        </>
+                      )}
+                    </button>
+                  </>
+                )}
+              </div>
+            </Form.Group>
+          </Col>
+
+          {/* COLUNA: UUID (OPCIONAL - Para fechar o grid de 12 colunas ou deixar o resto livre) */}
+          <Col md={3} className="text-end d-none d-md-block">
+            <Form.Group>
+              <Form.Label className="filter-label opacity-50">
+                Identificador
+              </Form.Label>
+              <div
+                className="mono-text py-2"
+                style={{ fontSize: "0.75rem", color: "var(--primary)" }}
+              >
+                {user.id.substring(0, 18)}...
+              </div>
+            </Form.Group>
+          </Col>
+        </Row>
       </div>
 
       <div
