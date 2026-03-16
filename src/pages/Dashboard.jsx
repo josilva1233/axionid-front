@@ -350,7 +350,7 @@ export default function Dashboard() {
           {selectedUser ? (
             <UserDetail
               user={selectedUser}
-              formData={formData}      // Passe o estado
+              formData={formData} // Passe o estado
               setFormData={setFormData} // Passe o setter
               onBack={() => setSelectedUser(null)}
               actionLoading={actionLoading}
@@ -415,11 +415,7 @@ export default function Dashboard() {
                     setSelectedUser(null);
                     setIsEditing(false);
                   }}
-                  handleSave={() => {
-                    // Esta função dispara o clique no botão de salvar que está no UserDetail
-                    const saveBtn = document.getElementById("hidden-save-btn");
-                    if (saveBtn) saveBtn.click();
-                  }}
+                  handleSave={() => handleUpdateUser(selectedUser.id, formData)}
                   actionLoading={actionLoading}
                 />
               )}
