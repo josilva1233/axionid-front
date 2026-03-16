@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 
 export default function UserDetail({
   user,
+  isEditing,      // Recebido do Dashboard
+  setIsEditing,   // Recebido do Dashboard
   formData,      // Recebe do pai
   setFormData,   // Recebe do pai para atualizar o estado global
-  isEditing,     // Agora vem do Dashboard via props
   onAction,
   onUpdate,
   actionLoading,
