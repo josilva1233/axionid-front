@@ -28,6 +28,7 @@ export default function Dashboard() {
   const [selectedGroupId, setSelectedGroupId] = useState(null);
   const [showGroupForm, setShowGroupForm] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   // Estados para Permissões
   const [permissions, setPermissions] = useState([]);
@@ -404,6 +405,19 @@ export default function Dashboard() {
                   }
                   onNewGroup={() => setShowGroupForm(true)}
                   onNewPermission={() => setShowPermissionModal(true)}
+                  user={selectedUser}
+                  isEditing={isEditing}
+                  setIsEditing={setIsEditing}
+                  onBack={() => {
+                    setSelectedUser(null);
+                    setIsEditing(false);
+                  }}
+                  handleSave={() => {
+                    // Esta função dispara o clique no botão de salvar que está no UserDetail
+                    const saveBtn = document.getElementById("hidden-save-btn");
+                    if (saveBtn) saveBtn.click();
+                  }}
+                  actionLoading={actionLoading}
                 />
               )}
 

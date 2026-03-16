@@ -10,7 +10,7 @@ export default function UserDetail({
   actionLoading,
 }) {
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({});
+  
 
   // Sincroniza os dados do formulário sempre que o usuário mudar ou entrar em modo edição
   useEffect(() => {
