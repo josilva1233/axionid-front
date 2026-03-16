@@ -8,7 +8,6 @@ export default function DashboardFilters({
   onClear, 
   onNewGroup, 
   onNewPermission,
-  // Novas props para integração da tela de Edição
   isEditing,
   onBack,
   setIsEditing,
@@ -16,25 +15,30 @@ export default function DashboardFilters({
   actionLoading,
   user 
 }) {
-  const isUserTab = activeTab === "users" && role === "admin";
-  const isGroupTab = activeTab === "groups";
-  const isAuditTab = activeTab === "audit" && role === "admin";
-  const isPermissionTab = activeTab === "permissions";
-
-  // Verifica se estamos na sub-tela de detalhes do usuário (quando o objeto user existe)
-  const isUserDetailView = !!user;
+  // 1. Definição das visualizações
+  const isUserDetailView = !!user; // Se existe objeto user, estamos em detalhes
+  
+  // 2. Definição das abas (apenas se NÃO estiver em detalhes)
+  const isUserTab = !isUserDetailView && activeTab === "users" && role === "admin";
+  const isGroupTab = !isUserDetailView && activeTab === "groups";
+  const isAuditTab = !isUserDetailView && activeTab === "audit" && role === "admin";
+  const isPermissionTab = !isUserDetailView && activeTab === "permissions";
 
   return (
     <div className="filter-card mb-4 p-4 animate-in">
       <Row className="align-items-end g-3">
         
-        {/* MODO EDIÇÃO/DETALHES: Exibe controles de navegação e salvamento */}
+        {/* MODO DETALHES/EDIÇÃO - PRIORIDADE MÁXIMA */}
         {isUserDetailView ? (
           <>
             <Col md={5}>
               <Form.Group>
                 <Form.Label className="filter-label">Navegação</Form.Label>
-                <button className="btn-filter-clear w-100 d-flex align-items-center justify-content-center" style={{ height: "45px" }} onClick={onBack}>
+                <button 
+                  className="btn-filter-clear w-100 d-flex align-items-center justify-content-center" 
+                  style={{ height: "45px" }} 
+                  onClick={onBack}
+                >
                   <i className="bi bi-arrow-left me-2"></i> Voltar para a lista
                 </button>
               </Form.Group>
@@ -44,12 +48,20 @@ export default function DashboardFilters({
               <Form.Group>
                 <Form.Label className="filter-label">Ações de Registro</Form.Label>
                 {!isEditing ? (
-                  <button className="btn-critical-primary w-100" style={{ height: "45px" }} onClick={() => setIsEditing(true)}>
+                  <button 
+                    className="btn-critical-primary w-100" 
+                    style={{ height: "45px" }} 
+                    onClick={() => setIsEditing(true)}
+                  >
                     <i className="bi bi-pencil me-2"></i> Editar Usuário
                   </button>
                 ) : (
                   <div className="d-flex gap-2">
-                    <button className="btn-critical-secondary w-50" style={{ height: "45px" }} onClick={() => setIsEditing(false)}>
+                    <button 
+                      className="btn-critical-secondary w-50" 
+                      style={{ height: "45px" }} 
+                      onClick={() => setIsEditing(false)}
+                    >
                       Cancelar
                     </button>
                     <button 
@@ -68,16 +80,19 @@ export default function DashboardFilters({
             <Col md={3}>
               <Form.Group>
                 <Form.Label className="filter-label">ID do Sistema</Form.Label>
-                <div className="custom-input-dark d-flex align-items-center px-3 mono-text" style={{ height: "45px", fontSize: "0.75rem", color: "var(--primary)", opacity: 0.8 }}>
-                  {user.id.substring(0, 18)}...
+                <div 
+                  className="custom-input-dark d-flex align-items-center px-3 mono-text" 
+                  style={{ height: "45px", fontSize: "0.75rem", color: "var(--primary)", opacity: 0.8 }}
+                >
+                  {user.id ? `${user.id.substring(0, 18)}...` : "N/A"}
                 </div>
               </Form.Group>
             </Col>
           </>
         ) : (
-          /* MODO LISTAGEM: Filtros normais (seu código original abaixo) */
+          /* MODO LISTAGEM - FILTROS ORIGINAIS */
           <>
-            {isUserTab && (
+            {activeTab === "users" && role === "admin" && (
               <>
                 <Col md={5}>
                   <Form.Group>
