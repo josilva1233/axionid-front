@@ -29,6 +29,7 @@ export default function Dashboard() {
   const [showGroupForm, setShowGroupForm] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({});
 
   // Estados para Permissões
   const [permissions, setPermissions] = useState([]);
@@ -349,6 +350,8 @@ export default function Dashboard() {
           {selectedUser ? (
             <UserDetail
               user={selectedUser}
+              formData={formData}      // Passe o estado
+              setFormData={setFormData} // Passe o setter
               onBack={() => setSelectedUser(null)}
               actionLoading={actionLoading}
               onUpdate={handleUpdateUser}
