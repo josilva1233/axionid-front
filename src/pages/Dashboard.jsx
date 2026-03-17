@@ -417,16 +417,13 @@ export default function Dashboard() {
                   setIsEditing={setIsEditing}
                   actionLoading={actionLoading}
                   handleSave={() => {
-    console.log("Dados que serão salvos:", formData); // Para você debugar no console
-    handleUpdateUser(selectedUser.id, formData);
-  }}
+                    console.log("Dados que serão salvos:", formData); // Para você debugar no console
+                    handleUpdateUser(selectedUser.id, formData);
+                  }}
                   onBack={() => {
                     setSelectedUser(null);
                     setIsEditing(false);
                   }}
-  
-                  
-                  
                 />
               )}
 
