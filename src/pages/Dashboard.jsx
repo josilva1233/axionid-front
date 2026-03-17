@@ -100,6 +100,7 @@ export default function Dashboard() {
   // --- GESTÃO DE USUÁRIOS (CORREÇÕES SWEETALERT E PRIVILÉGIOS) ---
 
   const handleUpdateUser = async (userId, data) => {
+    if (!userId) return;
     setActionLoading(true);
     try {
       await api.put(`/api/v1/admin/users/${userId}/update-manual`, data);
@@ -113,6 +114,7 @@ export default function Dashboard() {
 
       const res = await api.get(`/api/v1/admin/users/${userId}`);
       setSelectedUser(res.data.data || res.data);
+      setIsEditing(false);
       loadUsers(currentPage);
     } catch (err) {
       AxionAlert.fire(
@@ -350,6 +352,8 @@ export default function Dashboard() {
           {selectedUser ? (
             <UserDetail
               user={selectedUser}
+              isEditing={isEditing}
+              setIsEditing={setIsEditing}
               formData={formData} // Passe o estado
               setFormData={setFormData} // Passe o setter
               onBack={() => setSelectedUser(null)}
