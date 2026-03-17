@@ -22,12 +22,15 @@ export default function DashboardFilters({
   const isPermissionTab = activeTab === "permissions";
 
   // Verifica se estamos na sub-tela de detalhes do usuário (quando o objeto user existe)
-  const isUserDetailView = user;
 
   return (
     <div className="filter-card mb-4 p-4 animate-in">
       <Row className="align-items-end g-3">
-                    <Col md={5}>
+        
+        {/* MODO EDIÇÃO/DETALHES: Exibe controles de navegação e salvamento */}
+        {isUserDetailView ? (
+          <>
+            <Col md={5}>
               <Form.Group>
                 <Form.Label className="filter-label">Navegação</Form.Label>
                 <button className="btn-filter-clear w-100 d-flex align-items-center justify-content-center" style={{ height: "45px" }} onClick={onBack}>
@@ -69,11 +72,6 @@ export default function DashboardFilters({
                 </div>
               </Form.Group>
             </Col>
-        
-        {/* MODO EDIÇÃO/DETALHES: Exibe controles de navegação e salvamento */}
-        {isUserDetailView ? (
-          <>
-
           </>
         ) : (
           /* MODO LISTAGEM: Filtros normais (seu código original abaixo) */
