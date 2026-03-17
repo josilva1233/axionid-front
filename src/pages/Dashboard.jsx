@@ -346,149 +346,141 @@ export default function Dashboard() {
           )}
         </header>
 
-        <main className="content-area p-4">
-          {selectedUser ? (
-            <UserDetail
-              user={selectedUser}
-              formData={formData} // Passe o estado
-              setFormData={setFormData} // Passe o setter
-              onBack={() => setSelectedUser(null)}
-              actionLoading={actionLoading}
-              onUpdate={handleUpdateUser}
-              onAction={async (type) => {
-                if (type === "promote")
-                  await handleToggleAdmin(selectedUser.id, false);
-                else if (type === "remove-admin")
-                  await handleToggleAdmin(selectedUser.id, true);
-                else if (type === "toggle-status")
-                  await handleToggleStatus(
-                    selectedUser.id,
-                    selectedUser.is_active,
-                  );
-                else if (type === "delete")
-                  await handleDeleteUser(selectedUser.id, selectedUser.name);
-              }}
-            />
-          ) : selectedGroupId ? (
-            <GroupDetail
-              group={groups.find((g) => g.id === selectedGroupId)}
-              onBack={() => setSelectedGroupId(null)}
-              isSystemAdmin={isGlobalAdmin}
-              currentUserId={currentUser?.id}
-              actionLoading={actionLoading}
-              onAddUser={handleAddUserToGroup}
-              onRemoveUser={handleRemoveUserFromGroup}
-              onPromoteUser={(uid) => handleGroupMemberRole(uid, "promote")}
-              onDemoteUser={(uid) => handleGroupMemberRole(uid, "demote")}
-              onDeleteGroup={(id) =>
-                api.delete(`/api/v1/groups/${id}`).then(() => {
-                  setSelectedGroupId(null);
+<main className="content-area p-4">
+  {/* --- PARTE FIXA: O FILTRO AGORA FICA FORA DE TODAS AS CONDICIONAIS --- */}
+  {(role === "admin" || activeTab !== "users") && (
+    <DashboardFilters
+      activeTab={activeTab}
+      role={role}
+      filters={filters}
+      onFilterChange={(e) =>
+        setFilters({ ...filters, [e.target.name]: e.target.value })
+      }
+      onClear={() =>
+        setFilters({
+          name: "",
+          completed: "",
+          method: "",
+          date: "",
+        })
+      }
+      onNewGroup={() => setShowGroupForm(true)}
+      onNewPermission={() => setShowPermissionModal(true)}
+      user={selectedUser}
+      isEditing={isEditing}
+      setIsEditing={setIsEditing}
+      onBack={() => {
+        setSelectedUser(null);
+        setSelectedGroupId(null); // Aproveita para limpar grupo também
+        setIsEditing(false);
+      }}
+      handleSave={() => handleUpdateUser(selectedUser.id, formData)}
+      actionLoading={actionLoading}
+    />
+  )}
+
+  {/* --- PARTE DINÂMICA: APENAS O CONTEÚDO MUDA --- */}
+  {selectedUser ? (
+    <UserDetail
+      user={selectedUser}
+      formData={formData}
+      setFormData={setFormData}
+      onBack={() => setSelectedUser(null)}
+      actionLoading={actionLoading}
+      onUpdate={handleUpdateUser}
+      onAction={async (type) => {
+        if (type === "promote")
+          await handleToggleAdmin(selectedUser.id, false);
+        else if (type === "remove-admin")
+          await handleToggleAdmin(selectedUser.id, true);
+        else if (type === "toggle-status")
+          await handleToggleStatus(selectedUser.id, selectedUser.is_active);
+        else if (type === "delete")
+          await handleDeleteUser(selectedUser.id, selectedUser.name);
+      }}
+    />
+  ) : selectedGroupId ? (
+    <GroupDetail
+      group={groups.find((g) => g.id === selectedGroupId)}
+      onBack={() => setSelectedGroupId(null)}
+      isSystemAdmin={isGlobalAdmin}
+      currentUserId={currentUser?.id}
+      actionLoading={actionLoading}
+      onAddUser={handleAddUserToGroup}
+      onRemoveUser={handleRemoveUserFromGroup}
+      onPromoteUser={(uid) => handleGroupMemberRole(uid, "promote")}
+      onDemoteUser={(uid) => handleGroupMemberRole(uid, "demote")}
+      onDeleteGroup={(id) =>
+        api.delete(`/api/v1/groups/${id}`).then(() => {
+          setSelectedGroupId(null);
+          loadGroups(1);
+        })
+      }
+    />
+  ) : (
+    <>
+      {/* O Form de permissões continua aqui pois é um overlay específico */}
+      {activeTab === "permissions" && showPermissionModal && (
+        <PermissionForm
+          loading={actionLoading}
+          onCancel={() => setShowPermissionModal(false)}
+          onSave={handleCreatePermission}
+        />
+      )}
+
+      <div className={`tab-wrapper position-relative ${loading || actionLoading ? "is-loading" : ""}`}>
+        {(loading || actionLoading) && (
+          <div className="loading-overlay">
+            <Spinner animation="border" variant="primary" />
+          </div>
+        )}
+
+        <div className="content-card">
+          {activeTab === "users" &&
+            (isGlobalAdmin ? (
+              <UserTable
+                users={users}
+                onViewDetail={(id) =>
+                  api.get(`/api/v1/admin/users/${id}`).then((res) =>
+                    setSelectedUser(res.data.data || res.data)
+                  )
+                }
+                onDeleteUser={handleDeleteUser}
+                onToggleAdmin={handleToggleAdmin}
+                isGlobalAdmin={isGlobalAdmin}
+              />
+            ) : (
+              <OperationView />
+            ))}
+          {activeTab === "audit" && <AuditTable logs={auditLogs} />}
+          {activeTab === "groups" &&
+            (showGroupForm ? (
+              <GroupForm
+                onCancel={() => setShowGroupForm(false)}
+                onUpdate={() => {
+                  setShowGroupForm(false);
                   loadGroups(1);
-                })
-              }
+                }}
+              />
+            ) : (
+              <GroupTable
+                groups={groups}
+                onViewDetail={setSelectedGroupId}
+                isGlobalAdmin={isGlobalAdmin}
+                currentUser={currentUser}
+              />
+            ))}
+          {activeTab === "permissions" && (
+            <PermissionTable
+              permissions={permissions}
+              loading={loading}
             />
-          ) : (
-            <>
-              {/* Remova a trava {activeTab !== "permissions" && ... } e deixe apenas o componente: */}
-              {(role === "admin" || activeTab !== "users") && (
-                <DashboardFilters
-                  activeTab={activeTab}
-                  role={role}
-                  filters={filters}
-                  onFilterChange={(e) =>
-                    setFilters({ ...filters, [e.target.name]: e.target.value })
-                  }
-                  onClear={() =>
-                    setFilters({
-                      name: "",
-                      completed: "",
-                      method: "",
-                      date: "",
-                    })
-                  }
-                  onNewGroup={() => setShowGroupForm(true)}
-                  onNewPermission={() => setShowPermissionModal(true)}
-                  user={selectedUser}
-                  isEditing={isEditing}
-                  setIsEditing={setIsEditing}
-                  onBack={() => {
-                    setSelectedUser(null);
-                    setIsEditing(false);
-                  }}
-                  handleSave={() => handleUpdateUser(selectedUser.id, formData)}
-                  actionLoading={actionLoading}
-                />
-              )}
-
-              {/* O Form só aparece se a aba for permissões E o modal estiver aberto */}
-              {activeTab === "permissions" && showPermissionModal && (
-                <PermissionForm
-                  loading={actionLoading}
-                  onCancel={() => setShowPermissionModal(false)}
-                  onSave={handleCreatePermission}
-                />
-              )}
-
-              <div
-                className={`tab-wrapper position-relative ${loading || actionLoading ? "is-loading" : ""}`}
-              >
-                {(loading || actionLoading) && (
-                  <div className="loading-overlay">
-                    <Spinner animation="border" variant="primary" />
-                  </div>
-                )}
-
-                <div className="content-card">
-                  {/* No Dashboard.js, dentro da área de conteúdo */}
-                  {activeTab === "users" &&
-                    (isGlobalAdmin ? (
-                      /* SE FOR ADMIN: Exibe a tabela de gestão */
-                      <UserTable
-                        users={users}
-                        onViewDetail={(id) =>
-                          api
-                            .get(`/api/v1/admin/users/${id}`)
-                            .then((res) =>
-                              setSelectedUser(res.data.data || res.data),
-                            )
-                        }
-                        onDeleteUser={handleDeleteUser}
-                        onToggleAdmin={handleToggleAdmin}
-                        isGlobalAdmin={isGlobalAdmin}
-                      />
-                    ) : (
-                      /* SE NÃO FOR ADMIN (COMUM): Exibe a tela de Operação/IA */
-                      <OperationView />
-                    ))}
-                  {activeTab === "audit" && <AuditTable logs={auditLogs} />}
-                  {activeTab === "groups" &&
-                    (showGroupForm ? (
-                      <GroupForm
-                        onCancel={() => setShowGroupForm(false)}
-                        onUpdate={() => {
-                          setShowGroupForm(false);
-                          loadGroups(1);
-                        }}
-                      />
-                    ) : (
-                      <GroupTable
-                        groups={groups}
-                        onViewDetail={setSelectedGroupId}
-                        isGlobalAdmin={isGlobalAdmin}
-                        currentUser={currentUser}
-                      />
-                    ))}
-                  {activeTab === "permissions" && (
-                    <PermissionTable
-                      permissions={permissions}
-                      loading={loading}
-                    />
-                  )}
-                </div>
-              </div>
-            </>
           )}
-        </main>
+        </div>
+      </div>
+    </>
+  )}
+</main>
       </div>
     </div>
   );
