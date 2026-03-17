@@ -7,6 +7,7 @@ export default function UserDetail({
   setFormData,    // Recebido do Dashboard (Pai)
   onAction,
   actionLoading,
+  isUserDetailView, // Nova prop para identificar se estamos na tela de detalhes do usuário (quando user existe) ou na lista (quando user é null)
 }) {
   
   useEffect(() => {
@@ -26,7 +27,7 @@ export default function UserDetail({
   }, [user, isEditing, setFormData]);
 
   if (!user) return null;
-
+ const isUserDetailView = !user;
   // --- FUNÇÃO: AUTO-COMPLETE CEP ---
   const handleCepBlur = async (e) => {
     const cep = e.target.value.replace(/\D/g, "");
