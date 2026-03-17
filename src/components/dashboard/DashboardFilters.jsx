@@ -8,27 +8,27 @@ export default function DashboardFilters({
   onClear, 
   onNewGroup, 
   onNewPermission,
-  // Novas props para integração da tela de Edição
-  isEditing,
-  onBack,
-  setIsEditing,
-  handleSave,
-  actionLoading,
-  user 
+  // Props com valores padrão
+  isEditing = false,
+  onBack = () => {},
+  setIsEditing = () => {},
+  handleSave = () => {},
+  actionLoading = false,
+  user = null
 }) {
   const isUserTab = activeTab === "users" && role === "admin";
   const isGroupTab = activeTab === "groups";
   const isAuditTab = activeTab === "audit" && role === "admin";
   const isPermissionTab = activeTab === "permissions";
 
-  // Verifica se estamos na sub-tela de detalhes do usuário (quando o objeto user existe)
   const isUserDetailView = !!user;
+
+  // ✅ CORREÇÃO: user.id pode ser número
+  const userIdDisplay = user?.id ? String(user.id).substring(0, 18) + "..." : "N/A";
 
   return (
     <div className="filter-card mb-4 p-4 animate-in">
       <Row className="align-items-end g-3">
-        
-        {/* MODO EDIÇÃO/DETALHES: Exibe controles de navegação e salvamento */}
         {isUserDetailView ? (
           <>
             <Col md={5}>
@@ -69,26 +69,26 @@ export default function DashboardFilters({
               <Form.Group>
                 <Form.Label className="filter-label">ID do Sistema</Form.Label>
                 <div className="custom-input-dark d-flex align-items-center px-3 mono-text" style={{ height: "45px", fontSize: "0.75rem", color: "var(--primary)", opacity: 0.8 }}>
-                  {user.id.substring(0, 18)}...
+                  {userIdDisplay} {/* ✅ CORRIGIDO */}
                 </div>
               </Form.Group>
             </Col>
           </>
         ) : (
-          /* MODO LISTAGEM: Filtros normais (seu código original abaixo) */
           <>
+            {/* RESTO DO CÓDIGO FICA EXATAMENTE IGUAL */}
             {isUserTab && (
               <>
                 <Col md={5}>
                   <Form.Group>
                     <Form.Label className="filter-label">Buscar por Nome</Form.Label>
-                    <Form.Control type="text" name="name" value={filters.name} onChange={onFilterChange} className="custom-input-dark" placeholder="Ex: João Silva..." />
+                    <Form.Control type="text" name="name" value={filters.name || ""} onChange={onFilterChange} className="custom-input-dark" placeholder="Ex: João Silva..." />
                   </Form.Group>
                 </Col>
                 <Col md={4}>
                   <Form.Group>
                     <Form.Label className="filter-label">Status Perfil</Form.Label>
-                    <Form.Select name="completed" value={filters.completed} onChange={onFilterChange} className="custom-input-dark">
+                    <Form.Select name="completed" value={filters.completed || ""} onChange={onFilterChange} className="custom-input-dark">
                       <option value="">Todos</option>
                       <option value="1">✅ Completo</option>
                       <option value="0">⚠️ Incompleto</option>
@@ -103,7 +103,7 @@ export default function DashboardFilters({
                 <Col md={6}>
                   <Form.Group>
                     <Form.Label className="filter-label">Buscar Grupos/Membros</Form.Label>
-                    <Form.Control type="text" name="name" value={filters.name} onChange={onFilterChange} className="custom-input-dark" />
+                    <Form.Control type="text" name="name" value={filters.name || ""} onChange={onFilterChange} className="custom-input-dark" />
                   </Form.Group>
                 </Col>
                 <Col md={3}>
@@ -119,7 +119,7 @@ export default function DashboardFilters({
                 <Col md={6}>
                   <Form.Group>
                     <Form.Label className="filter-label">Buscar Permissões</Form.Label>
-                    <Form.Control type="text" name="name" value={filters.name} onChange={onFilterChange} className="custom-input-dark" placeholder="Filtrar por slug..." />
+                    <Form.Control type="text" name="name" value={filters.name || ""} onChange={onFilterChange} className="custom-input-dark" placeholder="Filtrar por slug..." />
                   </Form.Group>
                 </Col>
                 <Col md={3}>
@@ -135,7 +135,7 @@ export default function DashboardFilters({
                 <Col md={5}>
                   <Form.Group>
                     <Form.Label className="filter-label">Método HTTP</Form.Label>
-                    <Form.Select name="method" value={filters.method} onChange={onFilterChange} className="custom-input-dark">
+                    <Form.Select name="method" value={filters.method || ""} onChange={onFilterChange} className="custom-input-dark">
                       <option value="">Todos</option>
                       <option value="GET">GET</option><option value="POST">POST</option>
                       <option value="PUT">PUT</option><option value="DELETE">DELETE</option>
@@ -145,7 +145,7 @@ export default function DashboardFilters({
                 <Col md={4}>
                   <Form.Group>
                     <Form.Label className="filter-label">Data</Form.Label>
-                    <Form.Control type="date" name="date" value={filters.date} onChange={onFilterChange} className="custom-input-dark" />
+                    <Form.Control type="date" name="date" value={filters.date || ""} onChange={onFilterChange} className="custom-input-dark" />
                   </Form.Group>
                 </Col>
               </>
