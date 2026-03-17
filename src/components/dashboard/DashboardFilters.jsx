@@ -22,7 +22,7 @@ export default function DashboardFilters({
   const isPermissionTab = activeTab === "permissions";
 
   // Verifica se estamos na sub-tela de detalhes do usuário (quando o objeto user existe)
-  const isUserDetailView = activeTab === "users" && role === "admin";
+  const isUserDetailView = !!user;
 
   return (
     <div className="filter-card mb-4 p-4 animate-in">
