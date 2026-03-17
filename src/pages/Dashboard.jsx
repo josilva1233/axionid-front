@@ -347,7 +347,6 @@ export default function Dashboard() {
         </header>
 
         <main className="content-area p-4">
-        
           {selectedUser ? (
             <UserDetail
               user={selectedUser}
@@ -391,7 +390,7 @@ export default function Dashboard() {
           ) : (
             <>
               {/* Remova a trava {activeTab !== "permissions" && ... } e deixe apenas o componente: */}
-{(role === "admin" || activeTab !== "users") && (
+              {(role === "admin" || activeTab !== "users") && (
                 <DashboardFilters
                   activeTab={activeTab}
                   user={selectedUser}
@@ -410,7 +409,6 @@ export default function Dashboard() {
                   }
                   onNewGroup={() => setShowGroupForm(true)}
                   onNewPermission={() => setShowPermissionModal(true)}
-                  
                   isEditing={isEditing}
                   setIsEditing={setIsEditing}
                   onBack={() => {
