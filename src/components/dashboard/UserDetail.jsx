@@ -1,21 +1,19 @@
 import { useEffect } from "react";
-import { Row, Col, Form } from "react-bootstrap";
 
 export default function UserDetail({
   user,
-  isEditing,        // Recebido do Dashboard (Pai)
-  formData,         // Recebido do Dashboard (Pai)
-  setFormData,      // Recebido do Dashboard (Pai)
-  onAction,
-  actionLoading,
-  // NOVAS PROPS - passe do Dashboard
-  onBack,
-  setIsEditing,
-  handleSave,
+  isEditing = false,
+  formData = {},
+  setFormData = () => {},
+  onAction = () => {},
+  actionLoading = false,
+  onBack = () => {},
+  setIsEditing = () => {},
+  handleSave = () => {},
 }) {
   
   useEffect(() => {
-    if (user) {
+    if (user && setFormData) {
       setFormData({
         name: user.name || "",
         email: user.email || "",
@@ -28,19 +26,16 @@ export default function UserDetail({
         complement: user.address?.complement || "",
       });
     }
-  }, [user, isEditing, setFormData]);
+  }, [user, setFormData]);
 
   if (!user) return null;
 
-  // --- FUNÇÃO: AUTO-COMPLETE CEP ---
   const handleCepBlur = async (e) => {
     const cep = e.target.value.replace(/\D/g, "");
-
     if (cep.length === 8) {
       try {
         const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
         const data = await response.json();
-
         if (!data.erro) {
           setFormData((prev) => ({
             ...prev,
@@ -49,16 +44,6 @@ export default function UserDetail({
             city: data.localidade,
             state: data.uf,
           }));
-
-          // Limpa estilos de erro se houver
-          const fields = ["zip_code", "street", "neighborhood", "city", "state"];
-          fields.forEach((name) => {
-            const el = document.getElementsByName(name)[0];
-            if (el) {
-              el.style.border = "1px solid var(--border-color)";
-              el.style.boxShadow = "none";
-            }
-          });
         }
       } catch (error) {
         console.error("Erro ao buscar CEP:", error);
@@ -69,14 +54,8 @@ export default function UserDetail({
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-
-    if (e.target.style.border.includes("rgb(220, 53, 69)")) {
-      e.target.style.border = "1px solid var(--primary)";
-      e.target.style.boxShadow = "none";
-    }
   };
 
-  // Estilo para inputs desabilitados
   const disabledInputStyle = {
     opacity: 0.8,
     cursor: "default",
@@ -84,105 +63,95 @@ export default function UserDetail({
     borderColor: "rgba(255,255,255,0.1)",
   };
 
+  // ✅ CORRIGIDO: user.id pode ser número
+  const userIdDisplay = user.id ? String(user.id).substring(0, 18) + "..." : "N/A";
+
   return (
     <div className="animate-in w-100">
       
-      {/* ✅ BARRA DE BOTÕES - VOLtar, EDITAR/SALVAR, ID */}
-      <div className="filter-card mb-4 p-4">
-        <Row className="align-items-end g-3">
-          {/* BOTÃO VOLTAR */}
-          <Col md={5}>
-            <Form.Group>
-              <Form.Label className="filter-label">Navegação</Form.Label>
+      {/* BARRA DE BOTÕES */}
+      <div className="mb-4 p-4" style={{ 
+        background: "var(--card-bg)", 
+        borderRadius: "12px",
+        border: "1px solid var(--border-color)"
+      }}>
+        <div className="d-flex gap-3 flex-wrap align-items-end">
+          {/* VOLTAR */}
+          <div style={{ minWidth: "160px" }}>
+            <label className="filter-label small d-block mb-1">Navegação</label>
+            <button 
+              className="btn-filter-clear w-100 d-flex align-items-center justify-content-center" 
+              style={{ height: "45px" }} 
+              onClick={onBack}
+            >
+              <i className="bi bi-arrow-left me-2"></i> Voltar para a lista
+            </button>
+          </div>
+
+          {/* EDITAR/SALVAR */}
+          <div style={{ minWidth: "200px", flex: "1" }}>
+            <label className="filter-label small d-block mb-1">Ações de Registro</label>
+            {!isEditing ? (
               <button 
-                className="btn-filter-clear w-100 d-flex align-items-center justify-content-center" 
+                className="btn-critical-primary w-100" 
                 style={{ height: "45px" }} 
-                onClick={onBack}
+                onClick={() => setIsEditing(true)}
               >
-                <i className="bi bi-arrow-left me-2"></i> Voltar para a lista
+                <i className="bi bi-pencil me-2"></i> Editar Usuário
               </button>
-            </Form.Group>
-          </Col>
-
-          {/* BOTÕES EDITAR/SALVAR/CANCELAR */}
-          <Col md={4}>
-            <Form.Group>
-              <Form.Label className="filter-label">Ações de Registro</Form.Label>
-              {!isEditing ? (
+            ) : (
+              <div className="d-flex gap-2">
                 <button 
-                  className="btn-critical-primary w-100" 
-                  style={{ height: "45px" }} 
-                  onClick={() => setIsEditing(true)}
+                  className="btn-critical-secondary" 
+                  style={{ height: "45px", flex: "1" }} 
+                  onClick={() => setIsEditing(false)}
                 >
-                  <i className="bi bi-pencil me-2"></i> Editar Usuário
+                  Cancelar
                 </button>
-              ) : (
-                <div className="d-flex gap-2">
-                  <button 
-                    className="btn-critical-secondary w-50" 
-                    style={{ height: "45px" }} 
-                    onClick={() => setIsEditing(false)}
-                  >
-                    Cancelar
-                  </button>
-                  <button 
-                    className="btn-table-action w-50" 
-                    style={{ height: "45px", background: "var(--success)", border: "none" }} 
-                    onClick={handleSave}
-                    disabled={actionLoading}
-                  >
-                    {actionLoading ? "..." : "Salvar"}
-                  </button>
-                </div>
-              )}
-            </Form.Group>
-          </Col>
-
-          {/* ID DO USUÁRIO */}
-          <Col md={3}>
-            <Form.Group>
-              <Form.Label className="filter-label">ID do Sistema</Form.Label>
-              <div 
-                className="custom-input-dark d-flex align-items-center px-3 mono-text" 
-                style={{ height: "45px", fontSize: "0.75rem", color: "var(--primary)", opacity: 0.8 }}
-              >
-                {user.id?.substring(0, 18)}...
+                <button 
+                  className="btn-table-action" 
+                  style={{ height: "45px", background: "var(--success)", border: "none", flex: "1" }} 
+                  onClick={handleSave}
+                  disabled={actionLoading}
+                >
+                  {actionLoading ? "..." : "Salvar"}
+                </button>
               </div>
-            </Form.Group>
-          </Col>
-        </Row>
+            )}
+          </div>
+
+          {/* ID DO USUÁRIO - CORRIGIDO */}
+          <div style={{ minWidth: "200px" }}>
+            <label className="filter-label small d-block mb-1">ID do Sistema</label>
+            <div className="custom-input-dark d-flex align-items-center px-3 mono-text" 
+                 style={{ height: "45px", fontSize: "0.75rem", color: "var(--primary)", opacity: 0.8 }}>
+              {userIdDisplay}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* CARDS DE DETALHES */}
-      <div
-        className="detail-grid"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-          gap: "20px",
-        }}
-      >
+      <div className="detail-grid" style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+        gap: "20px",
+      }}>
         {/* CARD: PERFIL */}
-        <section
-          className="info-card"
-          style={{
-            background: "var(--card-bg)",
-            padding: "24px",
-            borderRadius: "12px",
-            border: isEditing ? "1px solid var(--primary)" : "1px solid var(--border-color)",
-            transition: "all 0.3s ease",
-          }}
-        >
+        <section className="info-card" style={{
+          background: "var(--card-bg)",
+          padding: "24px",
+          borderRadius: "12px",
+          border: isEditing ? "1px solid var(--primary)" : "1px solid var(--border-color)",
+          transition: "all 0.3s ease",
+        }}>
           <div className="profile-header d-flex align-items-center gap-4 mb-4">
-            <div
-              className="avatar-large"
-              style={{
-                width: "64px", height: "64px", borderRadius: "50%",
-                background: "var(--primary)", color: "#fff",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "1.5rem", fontWeight: "bold",
-              }}
-            >
+            <div className="avatar-large" style={{
+              width: "64px", height: "64px", borderRadius: "50%",
+              background: "var(--primary)", color: "#fff",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: "1.5rem", fontWeight: "bold",
+            }}>
               {user.name?.charAt(0).toUpperCase()}
             </div>
             <div className="flex-grow-1">
@@ -206,7 +175,6 @@ export default function UserDetail({
               </div>
             </div>
           </div>
-
           <div className="info-list g-3 row">
             <div className="info-item col-12 mb-2">
               <label className="text-dim small d-block mb-1 text-uppercase fw-bold">E-mail Corporativo</label>
@@ -234,110 +202,102 @@ export default function UserDetail({
         </section>
 
         {/* CARD: LOCALIZAÇÃO */}
-        <section
-          className="info-card"
-          style={{
-            background: "var(--card-bg)",
-            padding: "24px",
-            borderRadius: "12px",
-            border: isEditing ? "1px solid var(--primary)" : "1px solid var(--border-color)",
-          }}
-        >
+        <section className="info-card" style={{
+          background: "var(--card-bg)",
+          padding: "24px",
+          borderRadius: "12px",
+          border: isEditing ? "1px solid var(--primary)" : "1px solid var(--border-color)",
+        }}>
           <h4 className="text-white mb-4" style={{ fontSize: "1rem", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "10px" }}>
             Endereço de Registro
           </h4>
-          <div className="info-list">
-            <div className="row g-3">
-              <div className="col-12 mb-2">
-                <label className="text-dim small d-block text-uppercase fw-bold mb-1">CEP</label>
-                <input
-                  type="text"
-                  name="zip_code"
-                  value={formData.zip_code || ""}
-                  onChange={handleChange}
-                  onBlur={handleCepBlur}
-                  disabled={!isEditing}
-                  className="custom-input-dark w-100 mono-text"
-                  style={!isEditing ? disabledInputStyle : {}}
-                />
-              </div>
-              <div className="col-md-9 mb-2">
-                <label className="text-dim small d-block text-uppercase fw-bold mb-1">Rua</label>
-                <input
-                  type="text"
-                  name="street"
-                  value={formData.street || ""}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  className="custom-input-dark w-100"
-                  style={!isEditing ? disabledInputStyle : {}}
-                />
-              </div>
-              <div className="col-md-3 mb-2">
-                <label className="text-dim small d-block text-uppercase fw-bold mb-1">Nº</label>
-                <input
-                  type="text"
-                  name="number"
-                  value={formData.number || ""}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  className="custom-input-dark w-100"
-                  style={!isEditing ? disabledInputStyle : {}}
-                />
-              </div>
-              <div className="col-12 mb-2">
-                <label className="text-dim small d-block text-uppercase fw-bold mb-1">Bairro</label>
-                <input
-                  type="text"
-                  name="neighborhood"
-                  value={formData.neighborhood || ""}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  className="custom-input-dark w-100"
-                  style={!isEditing ? disabledInputStyle : {}}
-                />
-              </div>
-              <div className="col-md-8">
-                <label className="text-dim small d-block text-uppercase fw-bold mb-1">Cidade</label>
-                <input
-                  type="text"
-                  name="city"
-                  value={formData.city || ""}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  className="custom-input-dark w-100"
-                  style={!isEditing ? disabledInputStyle : {}}
-                />
-              </div>
-              <div className="col-md-4">
-                <label className="text-dim small d-block text-uppercase fw-bold mb-1">UF</label>
-                <input
-                  type="text"
-                  name="state"
-                  value={formData.state || ""}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  className="custom-input-dark w-100"
-                  maxLength="2"
-                  style={!isEditing ? disabledInputStyle : {}}
-                />
-              </div>
+          <div className="row g-3">
+            <div className="col-12 mb-2">
+              <label className="text-dim small d-block text-uppercase fw-bold mb-1">CEP</label>
+              <input
+                type="text"
+                name="zip_code"
+                value={formData.zip_code || ""}
+                onChange={handleChange}
+                onBlur={handleCepBlur}
+                disabled={!isEditing}
+                className="custom-input-dark w-100 mono-text"
+                style={!isEditing ? disabledInputStyle : {}}
+              />
+            </div>
+            <div className="col-md-9 mb-2">
+              <label className="text-dim small d-block text-uppercase fw-bold mb-1">Rua</label>
+              <input
+                type="text"
+                name="street"
+                value={formData.street || ""}
+                onChange={handleChange}
+                disabled={!isEditing}
+                className="custom-input-dark w-100"
+                style={!isEditing ? disabledInputStyle : {}}
+              />
+            </div>
+            <div className="col-md-3 mb-2">
+              <label className="text-dim small d-block text-uppercase fw-bold mb-1">Nº</label>
+              <input
+                type="text"
+                name="number"
+                value={formData.number || ""}
+                onChange={handleChange}
+                disabled={!isEditing}
+                className="custom-input-dark w-100"
+                style={!isEditing ? disabledInputStyle : {}}
+              />
+            </div>
+            <div className="col-12 mb-2">
+              <label className="text-dim small d-block text-uppercase fw-bold mb-1">Bairro</label>
+              <input
+                type="text"
+                name="neighborhood"
+                value={formData.neighborhood || ""}
+                onChange={handleChange}
+                disabled={!isEditing}
+                className="custom-input-dark w-100"
+                style={!isEditing ? disabledInputStyle : {}}
+              />
+            </div>
+            <div className="col-md-8">
+              <label className="text-dim small d-block text-uppercase fw-bold mb-1">Cidade</label>
+              <input
+                type="text"
+                name="city"
+                value={formData.city || ""}
+                onChange={handleChange}
+                disabled={!isEditing}
+                className="custom-input-dark w-100"
+                style={!isEditing ? disabledInputStyle : {}}
+              />
+            </div>
+            <div className="col-md-4">
+              <label className="text-dim small d-block text-uppercase fw-bold mb-1">UF</label>
+              <input
+                type="text"
+                name="state"
+                value={formData.state || ""}
+                onChange={handleChange}
+                disabled={!isEditing}
+                className="custom-input-dark w-100"
+                maxLength="2"
+                style={!isEditing ? disabledInputStyle : {}}
+              />
             </div>
           </div>
         </section>
       </div>
 
-      {/* ✅ AÇÕES CRÍTICAS - SEMPRE VISÍVEIS */}
-      <section
-        className="actions-section mt-5 p-4"
-        style={{
-          background: "rgba(220, 53, 69, 0.05)",
-          borderRadius: "16px",
-          border: "1px solid rgba(220, 53, 69, 0.2)",
-          opacity: 1,  // ✅ CORRIGIDO
-          pointerEvents: "auto",  // ✅ CORRIGIDO
-        }}
-      >
+      {/* AÇÕES CRÍTICAS */}
+      <section className="actions-section mt-5 p-4" style={{
+        background: "rgba(220, 53, 69, 0.05)",
+        borderRadius: "16px",
+        border: "1px solid rgba(220, 53, 69, 0.2)",
+        opacity: 1,
+        pointerEvents: "auto",
+      }}>
         <h4 className="text-danger mb-4" style={{ fontSize: "0.75rem", fontWeight: "800", textTransform: "uppercase", letterSpacing: "1.5px" }}>
           Gestão de Acesso e Privilégios
         </h4>
