@@ -3,14 +3,15 @@ import { Row, Col, Form } from "react-bootstrap";
 
 export default function UserDetail({
   user,
-  isEditing = false,     // ✅ DEFAULT
-  formData = {},         // ✅ DEFAULT  
-  setFormData = () => {}, // ✅ DEFAULT
-  onAction = () => {},   // ✅ DEFAULT
-  actionLoading = false, // ✅ DEFAULT
-  onBack = () => {},     // ✅ DEFAULT
-  setIsEditing = () => {}, // ✅ DEFAULT
-  handleSave = () => {}, // ✅ DEFAULT
+  isEditing,        // Recebido do Dashboard (Pai)
+  formData,         // Recebido do Dashboard (Pai)
+  setFormData,      // Recebido do Dashboard (Pai)
+  onAction,
+  actionLoading,
+  // NOVAS PROPS - passe do Dashboard
+  onBack,
+  setIsEditing,
+  handleSave,
 }) {
   
   useEffect(() => {
