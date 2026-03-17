@@ -47,14 +47,14 @@ export default function GroupDetail({
     <div className="group-detail-container animate-in w-100">
       <div className="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom-theme">
         <div className="d-flex align-items-center gap-3">
-          <button
-            className="btn-filter-clear d-flex align-items-center px-3 py-2"
-            onClick={onBack}
-          >
-            <i className="bi bi-arrow-left me-2"></i>
-            <span>Voltar</span>
-          </button>
           <h2 className="mb-0 text-white fs-4 fw-bold">
+            <button
+              className="btn-filter-clear d-flex align-items-center px-3 py-2"
+              onClick={onBack}
+            >
+              <i className="bi bi-arrow-left me-2"></i>
+              <span>Voltar</span>
+            </button>
             Gerenciar Grupo:{" "}
             <span className="text-primary">{group.name?.toUpperCase()}</span>
           </h2>
