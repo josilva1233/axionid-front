@@ -347,36 +347,7 @@ export default function Dashboard() {
         </header>
 
         <main className="content-area p-4">
-                        {(role === "admin" || activeTab !== "users") && (
-                <DashboardFilters
-                  activeTab={activeTab}
-                  user={selectedUser}
-                  role={role}
-                  filters={filters}
-                  onFilterChange={(e) =>
-                    setFilters({ ...filters, [e.target.name]: e.target.value })
-                  }
-                  onClear={() =>
-                    setFilters({
-                      name: "",
-                      completed: "",
-                      method: "",
-                      date: "",
-                    })
-                  }
-                  onNewGroup={() => setShowGroupForm(true)}
-                  onNewPermission={() => setShowPermissionModal(true)}
-                  
-                  isEditing={isEditing}
-                  setIsEditing={setIsEditing}
-                  onBack={() => {
-                    setSelectedUser(null);
-                    setIsEditing(false);
-                  }}
-                  handleSave={() => handleUpdateUser(selectedUser.id, formData)}
-                  actionLoading={actionLoading}
-                />
-              )}
+        
           {selectedUser ? (
             <UserDetail
               user={selectedUser}
@@ -420,7 +391,36 @@ export default function Dashboard() {
           ) : (
             <>
               {/* Remova a trava {activeTab !== "permissions" && ... } e deixe apenas o componente: */}
-
+{(role === "admin" || activeTab !== "users") && (
+                <DashboardFilters
+                  activeTab={activeTab}
+                  user={selectedUser}
+                  role={role}
+                  filters={filters}
+                  onFilterChange={(e) =>
+                    setFilters({ ...filters, [e.target.name]: e.target.value })
+                  }
+                  onClear={() =>
+                    setFilters({
+                      name: "",
+                      completed: "",
+                      method: "",
+                      date: "",
+                    })
+                  }
+                  onNewGroup={() => setShowGroupForm(true)}
+                  onNewPermission={() => setShowPermissionModal(true)}
+                  
+                  isEditing={isEditing}
+                  setIsEditing={setIsEditing}
+                  onBack={() => {
+                    setSelectedUser(null);
+                    setIsEditing(false);
+                  }}
+                  handleSave={() => handleUpdateUser(selectedUser.id, formData)}
+                  actionLoading={actionLoading}
+                />
+              )}
 
               {/* O Form só aparece se a aba for permissões E o modal estiver aberto */}
               {activeTab === "permissions" && showPermissionModal && (
