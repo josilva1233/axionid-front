@@ -393,6 +393,7 @@ export default function Dashboard() {
               {(role === "admin" || activeTab !== "users") && (
                 <DashboardFilters
                   activeTab={activeTab}
+                  user={selectedUser}
                   role={role}
                   filters={filters}
                   onFilterChange={(e) =>
@@ -408,7 +409,7 @@ export default function Dashboard() {
                   }
                   onNewGroup={() => setShowGroupForm(true)}
                   onNewPermission={() => setShowPermissionModal(true)}
-                  user={selectedUser}
+                  
                   isEditing={isEditing}
                   setIsEditing={setIsEditing}
                   onBack={() => {
