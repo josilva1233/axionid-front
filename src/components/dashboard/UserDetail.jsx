@@ -3,18 +3,12 @@ import { useEffect } from "react";
 export default function UserDetail({
   user,
   isEditing,      // Recebido do Dashboard (Pai)
-  setIsEditing,   // Recebido do Dashboard (Pai)
   formData,       // Recebido do Dashboard (Pai)
   setFormData,    // Recebido do Dashboard (Pai)
   onAction,
-  onUpdate,
   actionLoading,
 }) {
   
-  // ⚠️ A LINHA "const [isEditing, setIsEditing] = useState(false);" FOI REMOVIDA
-  // Pois agora esses valores são controlados pelo componente pai (Dashboard).
-
-  // Sincroniza os dados do formulário sempre que o usuário mudar ou entrar em modo edição
   useEffect(() => {
     if (user) {
       setFormData({
