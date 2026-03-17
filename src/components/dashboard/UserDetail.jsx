@@ -2,19 +2,14 @@ import { useEffect } from "react";
 
 export default function UserDetail({
   user,
-  isEditing,      // Recebido do Dashboard (Pai)
-  setIsEditing,   // Recebido do Dashboard (Pai)
-  formData,       // Recebido do Dashboard (Pai)
-  setFormData,    // Recebido do Dashboard (Pai)
+  isEditing,
+  formData,
+  setFormData,
   onAction,
-  onUpdate,
   actionLoading,
 }) {
   
-  // ⚠️ A LINHA "const [isEditing, setIsEditing] = useState(false);" FOI REMOVIDA
-  // Pois agora esses valores são controlados pelo componente pai (Dashboard).
-
-  // Sincroniza os dados do formulário sempre que o usuário mudar ou entrar em modo edição
+  // Sincroniza os dados do formulário
   useEffect(() => {
     if (user) {
       setFormData({
@@ -33,15 +28,12 @@ export default function UserDetail({
 
   if (!user) return null;
 
-  // --- FUNÇÃO: AUTO-COMPLETE CEP ---
   const handleCepBlur = async (e) => {
     const cep = e.target.value.replace(/\D/g, "");
-
     if (cep.length === 8) {
       try {
         const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
         const data = await response.json();
-
         if (!data.erro) {
           setFormData((prev) => ({
             ...prev,
@@ -50,16 +42,6 @@ export default function UserDetail({
             city: data.localidade,
             state: data.uf,
           }));
-
-          // Limpa estilos de erro se houver
-          const fields = ["zip_code", "street", "neighborhood", "city", "state"];
-          fields.forEach((name) => {
-            const el = document.getElementsByName(name)[0];
-            if (el) {
-              el.style.border = "1px solid var(--border-color)";
-              el.style.boxShadow = "none";
-            }
-          });
         }
       } catch (error) {
         console.error("Erro ao buscar CEP:", error);
@@ -70,14 +52,8 @@ export default function UserDetail({
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-
-    if (e.target.style.border.includes("rgb(220, 53, 69)")) {
-      e.target.style.border = "1px solid var(--primary)";
-      e.target.style.boxShadow = "none";
-    }
   };
 
-  // Estilo para inputs desabilitados
   const disabledInputStyle = {
     opacity: 0.8,
     cursor: "default",
@@ -116,7 +92,6 @@ export default function UserDetail({
                 fontSize: "1.5rem", fontWeight: "bold",
               }}
             >
-              
               {user.name?.charAt(0).toUpperCase()}
             </div>
             <div className="flex-grow-1">
