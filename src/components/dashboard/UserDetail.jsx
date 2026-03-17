@@ -1,12 +1,17 @@
 import { useEffect } from "react";
+import { Row, Col, Form } from "react-bootstrap";
 
 export default function UserDetail({
   user,
-  isEditing,      // Recebido do Dashboard (Pai)
-  formData,       // Recebido do Dashboard (Pai)
-  setFormData,    // Recebido do Dashboard (Pai)
+  isEditing,        // Recebido do Dashboard (Pai)
+  formData,         // Recebido do Dashboard (Pai)
+  setFormData,      // Recebido do Dashboard (Pai)
   onAction,
   actionLoading,
+  // NOVAS PROPS - passe do Dashboard
+  onBack,
+  setIsEditing,
+  handleSave,
 }) {
   
   useEffect(() => {
@@ -81,6 +86,74 @@ export default function UserDetail({
 
   return (
     <div className="animate-in w-100">
+      
+      {/* ✅ BARRA DE BOTÕES - VOLtar, EDITAR/SALVAR, ID */}
+      <div className="filter-card mb-4 p-4">
+        <Row className="align-items-end g-3">
+          {/* BOTÃO VOLTAR */}
+          <Col md={5}>
+            <Form.Group>
+              <Form.Label className="filter-label">Navegação</Form.Label>
+              <button 
+                className="btn-filter-clear w-100 d-flex align-items-center justify-content-center" 
+                style={{ height: "45px" }} 
+                onClick={onBack}
+              >
+                <i className="bi bi-arrow-left me-2"></i> Voltar para a lista
+              </button>
+            </Form.Group>
+          </Col>
+
+          {/* BOTÕES EDITAR/SALVAR/CANCELAR */}
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label className="filter-label">Ações de Registro</Form.Label>
+              {!isEditing ? (
+                <button 
+                  className="btn-critical-primary w-100" 
+                  style={{ height: "45px" }} 
+                  onClick={() => setIsEditing(true)}
+                >
+                  <i className="bi bi-pencil me-2"></i> Editar Usuário
+                </button>
+              ) : (
+                <div className="d-flex gap-2">
+                  <button 
+                    className="btn-critical-secondary w-50" 
+                    style={{ height: "45px" }} 
+                    onClick={() => setIsEditing(false)}
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    className="btn-table-action w-50" 
+                    style={{ height: "45px", background: "var(--success)", border: "none" }} 
+                    onClick={handleSave}
+                    disabled={actionLoading}
+                  >
+                    {actionLoading ? "..." : "Salvar"}
+                  </button>
+                </div>
+              )}
+            </Form.Group>
+          </Col>
+
+          {/* ID DO USUÁRIO */}
+          <Col md={3}>
+            <Form.Group>
+              <Form.Label className="filter-label">ID do Sistema</Form.Label>
+              <div 
+                className="custom-input-dark d-flex align-items-center px-3 mono-text" 
+                style={{ height: "45px", fontSize: "0.75rem", color: "var(--primary)", opacity: 0.8 }}
+              >
+                {user.id?.substring(0, 18)}...
+              </div>
+            </Form.Group>
+          </Col>
+        </Row>
+      </div>
+
+      {/* CARDS DE DETALHES */}
       <div
         className="detail-grid"
         style={{
@@ -254,36 +327,36 @@ export default function UserDetail({
         </section>
       </div>
 
-      {/* SEÇÃO DE AÇÕES CRÍTICAS */}
+      {/* ✅ AÇÕES CRÍTICAS - SEMPRE VISÍVEIS */}
       <section
         className="actions-section mt-5 p-4"
         style={{
           background: "rgba(220, 53, 69, 0.05)",
           borderRadius: "16px",
           border: "1px solid rgba(220, 53, 69, 0.2)",
-          opacity: isEditing ? 0.5 : 1,
-          pointerEvents: isEditing ? "none" : "auto",
+          opacity: 1,  // ✅ CORRIGIDO
+          pointerEvents: "auto",  // ✅ CORRIGIDO
         }}
       >
         <h4 className="text-danger mb-4" style={{ fontSize: "0.75rem", fontWeight: "800", textTransform: "uppercase", letterSpacing: "1.5px" }}>
           Gestão de Acesso e Privilégios
         </h4>
-        <div className="critical-actions-grid d-flex gap-3">
-            {user.is_admin ? (
-              <button onClick={() => onAction("remove-admin")} disabled={actionLoading} className="btn-critical-secondary">
-                Revogar Privilégios Admin
-              </button>
-            ) : (
-              <button onClick={() => onAction("promote")} disabled={actionLoading} className="btn-critical-primary">
-                Promover a Administrador
-              </button>
-            )}
-            <button onClick={() => onAction("toggle-status")} disabled={actionLoading} className="btn-critical-secondary">
-              {user.is_active ? "Suspender Acesso" : "Reativar Acesso"}
+        <div className="critical-actions-grid d-flex gap-3 flex-wrap">
+          {user.is_admin ? (
+            <button onClick={() => onAction("remove-admin")} disabled={actionLoading} className="btn-critical-secondary">
+              Revogar Privilégios Admin
             </button>
-            <button onClick={() => onAction("delete")} disabled={actionLoading} className="btn-delete-permanent">
-              {actionLoading ? "Processando..." : "Excluir Identidade"}
+          ) : (
+            <button onClick={() => onAction("promote")} disabled={actionLoading} className="btn-critical-primary">
+              Promover a Administrador
             </button>
+          )}
+          <button onClick={() => onAction("toggle-status")} disabled={actionLoading} className="btn-critical-secondary">
+            {user.is_active ? "Suspender Acesso" : "Reativar Acesso"}
+          </button>
+          <button onClick={() => onAction("delete")} disabled={actionLoading} className="btn-delete-permanent">
+            {actionLoading ? "Processando..." : "Excluir Identidade"}
+          </button>
         </div>
       </section>
     </div>
