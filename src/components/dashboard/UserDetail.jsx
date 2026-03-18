@@ -96,7 +96,7 @@ export default function UserDetail({
           )}
         </div>
       </div>
-
+<br />
       {/* CARDS DE DETALHES */}
       <div className="detail-grid">
         {/* CARD: PERFIL */}
@@ -146,7 +146,7 @@ export default function UserDetail({
             </div>
           </div>
         </section>
-         <br />
+
         {/* CARD: LOCALIZAÇÃO */}
         <section className={`info-card ${isEditing ? "editing" : ""}`}>
           <h4 className="card-title">Endereço de Registro</h4>
