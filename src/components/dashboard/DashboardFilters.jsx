@@ -8,12 +8,12 @@ export default function DashboardFilters({
   onClear, 
   onNewGroup, 
   onNewPermission,
-  handleSave,
   // Props com valores padrão
   isEditing = false,
   onBack = () => {},
   setIsEditing = () => {},
   handleSave = () => {},
+   handleSave = () => {},
   actionLoading = false,
   user = null
 }) {
@@ -56,7 +56,7 @@ export default function DashboardFilters({
                     <button 
                       className="btn-table-action w-50" 
                       style={{ height: "45px", background: "var(--success)", border: "none" }} 
-                      onClick={handleSave}
+                      onClick={handleSave} // <--- Chama a função passada pelo pai
                       disabled={actionLoading}
                     >
                       {actionLoading ? "..." : "Salvar"}
