@@ -24,7 +24,9 @@ export default function DashboardFilters({
   const isUserDetailView = !!user;
 
   // Formata o ID para exibição
-  const userIdDisplay = user?.id ? String(user.id).substring(0, 18) + "..." : "N/A";
+  const userIdDisplay = user?.id
+    ? String(user.id).substring(0, 18) + "..."
+    : "N/A";
 
   return (
     <div className="filter-card mb-4 p-4 animate-in">
@@ -47,7 +49,9 @@ export default function DashboardFilters({
 
             <Col md={4}>
               <Form.Group>
-                <Form.Label className="filter-label">Ações de Registro</Form.Label>
+                <Form.Label className="filter-label">
+                  Ações de Registro
+                </Form.Label>
                 {!isEditing ? (
                   <button
                     className="btn-critical-primary w-100"
@@ -67,8 +71,17 @@ export default function DashboardFilters({
                     </button>
                     <button
                       className="btn-table-action w-50"
-                      style={{ height: "45px", background: "var(--success)", border: "none" }}
-                      onClick={handleSave}
+                      style={{
+                        height: "45px",
+                        background: "var(--success)",
+                        border: "none",
+                      }}
+                      onClick={() => {
+                        console.log(
+                          "Botão Salvar clicado no Componente Filho!",
+                        );
+                        handleSave(); // Esta é a prop que vem do pai
+                      }}
                       disabled={actionLoading}
                     >
                       {actionLoading ? "..." : "Salvar"}
@@ -83,7 +96,12 @@ export default function DashboardFilters({
                 <Form.Label className="filter-label">ID do Sistema</Form.Label>
                 <div
                   className="custom-input-dark d-flex align-items-center px-3 mono-text"
-                  style={{ height: "45px", fontSize: "0.75rem", color: "var(--primary)", opacity: 0.8 }}
+                  style={{
+                    height: "45px",
+                    fontSize: "0.75rem",
+                    color: "var(--primary)",
+                    opacity: 0.8,
+                  }}
                 >
                   {userIdDisplay}
                 </div>
@@ -97,7 +115,9 @@ export default function DashboardFilters({
               <>
                 <Col md={5}>
                   <Form.Group>
-                    <Form.Label className="filter-label">Buscar por Nome</Form.Label>
+                    <Form.Label className="filter-label">
+                      Buscar por Nome
+                    </Form.Label>
                     <Form.Control
                       type="text"
                       name="name"
@@ -110,7 +130,9 @@ export default function DashboardFilters({
                 </Col>
                 <Col md={4}>
                   <Form.Group>
-                    <Form.Label className="filter-label">Status Perfil</Form.Label>
+                    <Form.Label className="filter-label">
+                      Status Perfil
+                    </Form.Label>
                     <Form.Select
                       name="completed"
                       value={filters.completed || ""}
@@ -130,7 +152,9 @@ export default function DashboardFilters({
               <>
                 <Col md={6}>
                   <Form.Group>
-                    <Form.Label className="filter-label">Buscar Grupos/Membros</Form.Label>
+                    <Form.Label className="filter-label">
+                      Buscar Grupos/Membros
+                    </Form.Label>
                     <Form.Control
                       type="text"
                       name="name"
@@ -141,7 +165,11 @@ export default function DashboardFilters({
                   </Form.Group>
                 </Col>
                 <Col md={3}>
-                  <button className="btn-table-action w-100" style={{ height: "45px" }} onClick={onNewGroup}>
+                  <button
+                    className="btn-table-action w-100"
+                    style={{ height: "45px" }}
+                    onClick={onNewGroup}
+                  >
                     <i className="bi bi-plus-lg me-2"></i> Novo Grupo
                   </button>
                 </Col>
@@ -152,7 +180,9 @@ export default function DashboardFilters({
               <>
                 <Col md={6}>
                   <Form.Group>
-                    <Form.Label className="filter-label">Buscar Permissões</Form.Label>
+                    <Form.Label className="filter-label">
+                      Buscar Permissões
+                    </Form.Label>
                     <Form.Control
                       type="text"
                       name="name"
@@ -164,7 +194,11 @@ export default function DashboardFilters({
                   </Form.Group>
                 </Col>
                 <Col md={3}>
-                  <button className="btn-table-action w-100" style={{ height: "45px" }} onClick={onNewPermission}>
+                  <button
+                    className="btn-table-action w-100"
+                    style={{ height: "45px" }}
+                    onClick={onNewPermission}
+                  >
                     <i className="bi bi-plus-lg me-2"></i> Nova Permissão
                   </button>
                 </Col>
@@ -175,7 +209,9 @@ export default function DashboardFilters({
               <>
                 <Col md={5}>
                   <Form.Group>
-                    <Form.Label className="filter-label">Método HTTP</Form.Label>
+                    <Form.Label className="filter-label">
+                      Método HTTP
+                    </Form.Label>
                     <Form.Select
                       name="method"
                       value={filters.method || ""}
@@ -206,7 +242,11 @@ export default function DashboardFilters({
             )}
 
             <Col md={3}>
-              <button className="btn-filter-clear w-100" style={{ height: "45px" }} onClick={onClear}>
+              <button
+                className="btn-filter-clear w-100"
+                style={{ height: "45px" }}
+                onClick={onClear}
+              >
                 <i className="bi bi-eraser me-2"></i> Limpar Filtros
               </button>
             </Col>
