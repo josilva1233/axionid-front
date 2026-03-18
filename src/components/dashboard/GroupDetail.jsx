@@ -6,11 +6,16 @@ export default function GroupDetail({
   onAddUser,
   onRemoveUser,
   onPromoteUser,
-  onDemoteUser, // Nova prop necessária para remover a função admin
+  onDemoteUser, // Prop para remover a função admin
   onDeleteGroup,
   actionLoading,
-  currentUserId, // Adicione esta prop para identificar o usuário logado
-  isSystemAdmin, // Adicione esta prop para saber se é admin total
+  // --- NOVAS PROPS ---
+  onAddPermission,
+  onRemovePermission,
+  allAvailablePermissions = [],
+  // -------------------
+  currentUserId, // Identificar o usuário logado
+  isSystemAdmin, // Saber se é admin total
 }) {
   const [emailToAdd, setEmailToAdd] = useState("");
 
@@ -64,10 +69,24 @@ export default function GroupDetail({
           </div>
         </div>
 
-        <div className="header-actions"></div>
+        <div className="header-actions">
+          {/* Botão de Excluir no Topo para consistência com UserDetail */}
+          <button
+            className="btn-critical-primary btn-edit"
+            onClick={handleDelete}
+            disabled={actionLoading}
+            style={{ background: "var(--bs-danger)", border: "none" }}
+          >
+            <i className="bi bi-trash3 me-2"></i>
+            {actionLoading ? "..." : "Excluir Grupo"}
+          </button>
+        </div>
       </div>
+
       <br />
+
       <div className="row g-4">
+        {/* TABELA DE MEMBROS */}
         <div className="col-md-8">
           <div className="info-card p-4">
             <h5 className="text-white mb-4 fw-bold">Membros Atuais</h5>
@@ -93,7 +112,11 @@ export default function GroupDetail({
                         <td>
                           <div className="d-flex align-items-center">
                             <span
-                              className={`badge ms-2 ${user.pivot?.role === "admin" ? "bg-primary" : "bg-secondary"}`}
+                              className={`badge ms-2 ${
+                                user.pivot?.role === "admin"
+                                  ? "bg-primary"
+                                  : "bg-secondary"
+                              }`}
                               style={{ fontSize: "0.6rem" }}
                             >
                               {user.pivot?.role === "admin" ? "ADMIN" : "COMUM"}
@@ -154,7 +177,7 @@ export default function GroupDetail({
                   ) : (
                     <tr>
                       <td
-                        colSpan="3"
+                        colSpan="4"
                         className="text-center py-5 text-dim italic"
                       >
                         Nenhum membro vinculado.
@@ -166,7 +189,8 @@ export default function GroupDetail({
             </div>
           </div>
         </div>
-        <br />
+
+        {/* CARD ADICIONAR MEMBRO */}
         <div className="col-md-4">
           <div className="info-card p-4">
             <h5 className="text-white mb-3 fw-bold">Adicionar Membro</h5>
@@ -203,17 +227,19 @@ export default function GroupDetail({
             <div className="d-flex justify-content-between align-items-center mb-4">
               <h4 className="card-title mb-0">Chaves de Permissão (ACL)</h4>
               <div className="d-flex gap-2">
-                {/* Seletor Simples para adicionar nova permissão */}
                 <select
                   className="custom-input-dark py-1 px-2"
                   style={{ fontSize: "0.8rem", minWidth: "200px" }}
-                  onChange={(e) => onAddPermission(e.target.value)}
+                  onChange={(e) => {
+                    if (e.target.value) onAddPermission(e.target.value);
+                    e.target.value = ""; // Resetar o select após escolher
+                  }}
                   value=""
                 >
                   <option value="">+ Atribuir Nova Chave</option>
                   {allAvailablePermissions.map((p) => (
                     <option key={p.id} value={p.name}>
-                      {p.label}
+                      {p.label} ({p.name})
                     </option>
                   ))}
                 </select>
@@ -244,8 +270,7 @@ export default function GroupDetail({
                         </td>
                         <td>
                           <code className="text-primary-light bg-dark px-2 py-1 rounded">
-                            {perm.name}{" "}
-                            {/* No seu controller PHP o campo é 'name' */}
+                            {perm.name}
                           </code>
                         </td>
                         <td>
@@ -287,7 +312,8 @@ export default function GroupDetail({
       </div>
 
       <br />
-      {/* Nova linha para a Zona de Perigo (Excluir Grupo) */}
+
+      {/* ZONA DE PERIGO */}
       <div className="row mt-4">
         <div className="col-12">
           <div
@@ -302,12 +328,11 @@ export default function GroupDetail({
                   recuperados.
                 </p>
               </div>
-              {/* Botão de Excluir Grupo posicionado exatamente como o botão 'Editar' */}
               <button
                 className="btn-critical-primary btn-edit"
                 onClick={handleDelete}
                 disabled={actionLoading}
-                style={{ background: "var(--bs-danger)", border: "none" }} // Ajuste para tom de alerta
+                style={{ background: "var(--bs-danger)", border: "none" }}
               >
                 <i className="bi bi-trash3 me-2"></i>
                 {actionLoading ? "..." : "Excluir Grupo"}
