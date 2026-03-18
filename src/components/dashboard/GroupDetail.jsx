@@ -45,36 +45,38 @@ export default function GroupDetail({
 
   return (
     <div className="group-detail-container animate-in w-100">
-<div className="user-detail-header mb-4 p-3 d-flex align-items-center justify-content-between">
-  
-  {/* LADO ESQUERDO: Agrupa Botão + Divisor + Título */}
-  <div className="d-flex align-items-center gap-3">
-    <button 
-      className="btn-filter-clear btn-back d-flex align-items-center" 
-      onClick={onBack}
-      style={{ height: "40px" }}
-    >
-      <i className="bi bi-arrow-left me-2"></i>
-      <span className="fw-medium">Voltar</span>
-    </button>
+      {/* BARRA DE TOPO PADRONIZADA */}
+      <div className="user-detail-header mb-4 p-3 d-flex align-items-center justify-content-between">
+        <div className="header-left d-flex align-items-center">
+          <button className="btn-filter-clear btn-back" onClick={onBack}>
+            <i className="bi bi-arrow-left me-2"></i>
+            Voltar
+          </button>
 
-    {/* Divisor vertical que você usou no outro componente */}
-    <div className="vertical-divider" style={{ width: "1px", height: "25px", background: "rgba(255,255,255,0.1)" }}></div>
+          <div className="vertical-divider mx-3"></div>
 
-    <div className="d-flex align-items-center">
-      <h2 className="mb-0 text-white fs-5 fw-bold">
-        <span className="text-dim opacity-75 me-2">Gerenciar Grupo:</span>
-        <span className="text-primary">{group.name?.toUpperCase()}</span>
-      </h2>
-    </div>
-  </div>
+          <div className="user-title-block">
+            <span className="user-name-text">
+              Gerenciar Grupo:{" "}
+              <span className="text-primary">{group.name?.toUpperCase()}</span>
+            </span>
+            <span className="user-id-text">ID: {group.id}</span>
+          </div>
+        </div>
 
-  {/* LADO DIREITO: Espaço para botões de ação se necessário no futuro */}
-  <div className="header-actions">
-    {/* Se quiser colocar um botão de excluir ou editar aqui, ele ficará alinhado à direita */}
-  </div>
-
-</div>
+        <div className="header-actions">
+          {/* Botão de Excluir Grupo posicionado exatamente como o botão 'Editar' */}
+          <button
+            className="btn-critical-primary btn-edit"
+            onClick={handleDelete}
+            disabled={actionLoading}
+            style={{ background: "var(--bs-danger)", border: "none" }} // Ajuste para tom de alerta
+          >
+            <i className="bi bi-trash3 me-2"></i>
+            {actionLoading ? "..." : "Excluir Grupo"}
+          </button>
+        </div>
+      </div>
 
       <div className="row g-4">
         <div className="col-md-8">
