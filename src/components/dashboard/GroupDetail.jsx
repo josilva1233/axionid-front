@@ -66,7 +66,7 @@ export default function GroupDetail({
 
         <div className="header-actions"></div>
       </div>
-
+<br />
       <div className="row g-4">
         <div className="col-md-8">
           <div className="info-card p-4">
