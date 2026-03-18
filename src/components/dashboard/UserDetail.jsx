@@ -68,8 +68,7 @@ export default function UserDetail({
 
   return (
     <div className="animate-in w-100">
-      {/* BARRA DE BOTÕES */}
-{/* BARRA DE BOTÕES - PADRÃO GRID IGUAL FILTRO */}
+{/* BARRA DE TOPO UNIFICADA */}
 <div
   className="mb-4 p-4 animate-in"
   style={{
@@ -80,90 +79,84 @@ export default function UserDetail({
 >
   <div className="row g-3 align-items-center">
     
-    {/* ESQUERDA (VOLTA + INFO) */}
+    {/* ESQUERDA: VOLTAR + NOME/ID */}
     <div className="col-md-6 d-flex align-items-center gap-3">
       <button
-        className="btn-filter-clear d-flex align-items-center"
-        style={{ height: "45px" }}
+        className="btn-filter-clear d-flex align-items-center justify-content-center"
+        style={{ height: "45px", minWidth: "110px" }}
         onClick={onBack}
       >
         <i className="bi bi-arrow-left me-2"></i>
         Voltar
       </button>
 
-      <div>
-        <div style={{ fontWeight: 600 }}>
+      <div className="border-start ps-3" style={{ borderColor: "rgba(255,255,255,0.1) !important" }}>
+        <div style={{ fontWeight: 600, fontSize: "1.1rem", color: "#fff" }}>
           {user.name}
         </div>
         <div
           style={{
-            fontSize: "0.75rem",
-            opacity: 0.6,
+            fontSize: "0.7rem",
+            opacity: 0.5,
             fontFamily: "monospace",
+            letterSpacing: "0.5px"
           }}
         >
-          ID: {userIdDisplay}
+          SISTEMA ID: <span style={{ color: "var(--primary)" }}>{user.id}</span>
         </div>
       </div>
     </div>
 
-    {/* BOTÃO EDITAR */}
-    <div className="col-md-3">
-      {!isEditing ? (
-        <button
-          className="btn-critical-primary w-100"
-          style={{ height: "45px" }}
-          onClick={() => setIsEditing(true)}
-        >
-          <i className="bi bi-pencil me-2"></i>
-          Editar
-        </button>
-      ) : (
-        <button
-          className="btn-critical-secondary w-100"
-          style={{ height: "45px" }}
-          onClick={() => setIsEditing(false)}
-        >
-          Cancelar
-        </button>
-      )}
-    </div>
-
-    {/* BOTÃO SALVAR */}
-    <div className="col-md-3">
-      {isEditing && (
-        <button
-          className="btn-table-action w-100"
-          style={{
-            height: "45px",
-            background: "var(--success)",
-            border: "none",
-          }}
-          onClick={handleSave}
-          disabled={actionLoading}
-        >
-          {actionLoading ? "..." : "Salvar"}
-        </button>
-      )}
+    {/* DIREITA: AÇÕES EDITAR/SALVAR/CANCELAR */}
+    <div className="col-md-6">
+      <div className="d-flex gap-2 justify-content-md-end">
+        {!isEditing ? (
+          <button
+            className="btn-critical-primary"
+            style={{ height: "45px", minWidth: "140px" }}
+            onClick={() => setIsEditing(true)}
+          >
+            <i className="bi bi-pencil me-2"></i>
+            Editar Usuário
+          </button>
+        ) : (
+          <>
+            <button
+              className="btn-critical-secondary"
+              style={{ height: "45px", minWidth: "120px" }}
+              onClick={() => setIsEditing(false)}
+            >
+              Cancelar
+            </button>
+            <button
+              className="btn-table-action"
+              style={{
+                height: "45px",
+                minWidth: "120px",
+                background: "var(--success)",
+                border: "none",
+                fontWeight: "600"
+              }}
+              onClick={handleSave}
+              disabled={actionLoading}
+            >
+              {actionLoading ? (
+                <span className="spinner-border spinner-border-sm"></span>
+              ) : (
+                <>
+                  <i className="bi bi-check-lg me-2"></i>
+                  Salvar
+                </>
+              )}
+            </button>
+          </>
+        )}
+      </div>
     </div>
   </div>
 </div>
 
-{/* ID DO USUÁRIO (mantido, mas separado corretamente) */}
-<div className="mb-4">
-  <label className="filter-label small d-block mb-1">ID do Sistema</label>
-  <div
-    className="custom-input-dark d-flex align-items-center px-3 mono-text"
-    style={{
-      height: "45px",
-      fontSize: "0.75rem",
-      color: "var(--primary)",
-      opacity: 0.8,
-    }}
-  >
-    {userIdDisplay}
-  </div>
-</div>
+{/* REMOVI O BLOCO "ID DO SISTEMA" QUE ESTAVA SOBRANDO AQUI EMBAIXO */}
 
       {/* CARDS DE DETALHES */}
       <div className="detail-grid" style={{

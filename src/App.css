@@ -18,26 +18,24 @@
   --warning: #f59e0b;
   --shadow-lg:
     0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
-   
 }
 
 .auth-container {
-  display: flex;            /* Ativa o modo flexbox */
-  justify-content: center;   /* Centraliza horizontalmente */
-  align-items: center;       /* Centraliza verticalmente */
-  min-height: 100vh;        /* Faz o container ter no mínimo a altura da tela inteira */
-  width: 100%;              /* Garante que ocupe toda a largura */
+  display: flex; /* Ativa o modo flexbox */
+  justify-content: center; /* Centraliza horizontalmente */
+  align-items: center; /* Centraliza verticalmente */
+  min-height: 100vh; /* Faz o container ter no mínimo a altura da tela inteira */
+  width: 100%; /* Garante que ocupe toda a largura */
   background-color: #0a0a0a; /* Cor de fundo escura do AxionID */
-  padding: 20px;            /* Espaçamento interno para telas pequenas */
-  box-sizing: border-box;    /* Garante que o padding não quebre o tamanho */
+  padding: 20px; /* Espaçamento interno para telas pequenas */
+  box-sizing: border-box; /* Garante que o padding não quebre o tamanho */
 }
 
 /* Garante que o card dentro dele não estoure em telas pequenas */
 .auth-card {
   width: 100%;
-  max-width: 400px;         /* Ajuste conforme o tamanho desejado para o card */
+  max-width: 400px; /* Ajuste conforme o tamanho desejado para o card */
 }
-
 
 /* =========================================
 
@@ -117,20 +115,17 @@
 
 .alert-complete-profile .btn-complete:hover {
   background: #222 !important;
-
   transform: translateY(-2px);
-
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Responsividade para celular */
 
 @media (max-width: 768px) {
+  
   .alert-complete-profile {
     flex-direction: column;
-
     text-align: center;
-
     gap: 15px;
   }
 
