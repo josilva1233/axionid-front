@@ -97,6 +97,20 @@ export default function Dashboard() {
     loadPermissions,
   ]);
 
+  // Adicione isso logo abaixo dos seus outros UseEffects
+useEffect(() => {
+  if (selectedUser) {
+    // Pega os dados da raiz ou de .data
+    const userData = selectedUser.data || selectedUser;
+    setFormData({
+      name: userData.name,
+      email: userData.email,
+      cpf_cnpj: userData.cpf_cnpj,
+      // adicione outros campos que você permite editar
+    });
+  }
+}, [selectedUser]);
+
   // --- GESTÃO DE USUÁRIOS (CORREÇÕES SWEETALERT E PRIVILÉGIOS) ---
 
   const handleUpdateUser = async (userId, data) => {
@@ -417,22 +431,23 @@ export default function Dashboard() {
                   isEditing={isEditing}
                   setIsEditing={setIsEditing}
                   actionLoading={actionLoading}
+                  // COPIE E COLE ESTA PARTE:
                   handleSave={() => {
-                    // Tenta pegar o ID de qualquer uma das estruturas possíveis
+                    // Busca o ID independente da estrutura (seja selectedUser.id ou selectedUser.data.id)
                     const userId = selectedUser?.data?.id || selectedUser?.id;
 
-                    console.log("ID para salvar:", userId);
-                    console.log("Dados do formulário:", formData);
+                    console.log("🚀 Tentando salvar ID:", userId);
+                    console.log("📦 Dados do formulário:", formData);
 
                     if (!userId) {
-                      return Swal.fire(
+                      return AxionAlert.fire(
                         "Erro",
-                        "ID do usuário não encontrado.",
+                        "ID do usuário não identificado.",
                         "error",
                       );
                     }
 
-                    // Chama a função de atualização passando o ID correto e o estado formData
+                    // DISPARA A FUNÇÃO COM OS DADOS DO ESTADO
                     handleUpdateUser(userId, formData);
                   }}
                   onBack={() => {
