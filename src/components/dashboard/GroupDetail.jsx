@@ -289,7 +289,7 @@ export default function GroupDetail({
                             onClick={() => onRemovePermission(perm.id)}
                             disabled={actionLoading}
                           >
-                            <i className="bi bi-trash"></i>
+                            <i className="bi bi-trash">Deletar</i>
                           </button>
                         </td>
                       </tr>
