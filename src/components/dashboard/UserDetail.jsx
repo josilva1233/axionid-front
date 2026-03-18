@@ -75,7 +75,7 @@ export default function UserDetail({
         borderRadius: "12px",
         border: "1px solid var(--border-color)"
       }}>
-        <div className="d-flex gap-3 flex-wrap align-items-end">
+        <div style={{ minWidth: "200px" }}>
           {/* VOLTAR */}
 <div
   className="mb-4 p-4 d-flex justify-content-between align-items-center gap-3"
