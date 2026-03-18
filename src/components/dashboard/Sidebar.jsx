@@ -1,10 +1,8 @@
 export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
-  // Verifica se é admin para facilitar as condições abaixo
   const isAdmin = role === 'admin';
 
   return (
     <aside className="sidebar">
-      {/* BRAND DINÂMICA: AxionID Admin ou AxionID Comum */}
       <div className="sidebar-brand">
         <div className="brand">
           <h1>
@@ -23,8 +21,7 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
       </div>
       
       <nav className="sidebar-nav">
-
-        {/* SEÇÃO MANTIDA COMO PRINCIPAL PARA TODOS */}
+        {/* SEÇÃO PRINCIPAL */}
         <div className="nav-group">
           <p className="nav-section-title">Principal</p>
           
@@ -34,7 +31,6 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
           >
             <span className="nav-icon">👥</span>
             <span className="nav-label">
-              {/* CORREÇÃO: Gestão de Usuários para Admin, Operação para Comum */}
               {isAdmin ? 'Gestão de Usuários' : 'Operações'}
             </span>
           </button>
@@ -46,6 +42,21 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
             <span className="nav-icon">📁</span>
             <span className="nav-label">
                {isAdmin ? 'Gestão de Grupos' : 'Meus Grupos'}
+            </span>
+          </button>
+        </div>
+
+        {/* --- NOVA SEÇÃO: SUPORTE (ORDENS DE SERVIÇO) --- */}
+        <div className="nav-group animate-in" style={{ marginTop: '24px' }}>
+          <p className="nav-section-title">Atendimento</p>
+          
+          <button 
+            className={`nav-item ${activeTab === 'orders' ? 'active' : ''}`}
+            onClick={() => setActiveTab('orders')}
+          >
+            <span className="nav-icon">🎫</span>
+            <span className="nav-label">
+               {isAdmin ? 'Gestão de Chamados' : 'Meus Chamados'}
             </span>
           </button>
         </div>
@@ -74,7 +85,6 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
         )}
       </nav>
 
-      {/* FOOTER DA SIDEBAR */}
       <div className="sidebar-footer">
         <button 
           onClick={onLogout} 
