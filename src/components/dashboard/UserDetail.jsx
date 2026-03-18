@@ -68,17 +68,9 @@ export default function UserDetail({
 
   return (
     <div className="animate-in w-100">
-      
       {/* BARRA DE BOTÕES */}
-      <div className="mb-4 p-4" style={{ 
-        background: "var(--card-bg)", 
-        borderRadius: "12px",
-        border: "1px solid var(--border-color)"
-      }}>
-        <div style={{ minWidth: "200px" }}>
-          {/* VOLTAR */}
 <div
-  className="mb-4 p-4 d-flex justify-content-between align-items-center gap-3"
+  className="mb-4 p-4 d-flex align-items-center"
   style={{
     background: "var(--card-bg)",
     borderRadius: "12px",
@@ -86,7 +78,7 @@ export default function UserDetail({
   }}
 >
   {/* ESQUERDA */}
-  <div className="d-flex align-items-center gap-3" style={{ minWidth: 0 }}>
+  <div className="d-flex align-items-center gap-3">
     <button
       className="btn-filter-clear d-flex align-items-center"
       style={{ height: "40px" }}
@@ -100,7 +92,6 @@ export default function UserDetail({
       <div style={{ fontSize: "1.1rem", fontWeight: "600" }}>
         {user.name}
       </div>
-
       <div
         style={{
           fontSize: "0.75rem",
@@ -113,8 +104,8 @@ export default function UserDetail({
     </div>
   </div>
 
-  {/* DIREITA */}
-  <div className="d-flex gap-2">
+  {/* DIREITA (FORÇADA) */}
+  <div className="d-flex gap-2" style={{ marginLeft: "auto" }}>
     {!isEditing ? (
       <button
         className="btn-critical-primary"
@@ -151,16 +142,21 @@ export default function UserDetail({
   </div>
 </div>
 
-          {/* ID DO USUÁRIO - CORRIGIDO */}
-          <div style={{ minWidth: "200px" }}>
-            <label className="filter-label small d-block mb-1">ID do Sistema</label>
-            <div className="custom-input-dark d-flex align-items-center px-3 mono-text" 
-                 style={{ height: "45px", fontSize: "0.75rem", color: "var(--primary)", opacity: 0.8 }}>
-              {userIdDisplay}
-            </div>
-          </div>
-        </div>
-      </div>
+{/* ID DO USUÁRIO (mantido, mas separado corretamente) */}
+<div className="mb-4">
+  <label className="filter-label small d-block mb-1">ID do Sistema</label>
+  <div
+    className="custom-input-dark d-flex align-items-center px-3 mono-text"
+    style={{
+      height: "45px",
+      fontSize: "0.75rem",
+      color: "var(--primary)",
+      opacity: 0.8,
+    }}
+  >
+    {userIdDisplay}
+  </div>
+</div>
 
       {/* CARDS DE DETALHES */}
       <div className="detail-grid" style={{
