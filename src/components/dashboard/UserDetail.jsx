@@ -356,6 +356,20 @@ export default function UserDetail({
                 style={!isEditing ? disabledInputStyle : {}}
               />
             </div>
+                        <div className="col-md-8">
+              <label className="text-dim small d-block text-uppercase fw-bold mb-1">
+                Complemento
+              </label>
+              <input
+                type="text"
+                name="complement"
+                value={formData.complement || ""}
+                onChange={handleChange}
+                disabled={!isEditing}
+                className="custom-input-dark w-100"
+                style={!isEditing ? disabledInputStyle : {}}
+              />
+            </div>
           </div>
         </section>
       </div>
