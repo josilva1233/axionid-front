@@ -64,18 +64,7 @@ export default function GroupDetail({
           </div>
         </div>
 
-        <div className="header-actions">
-          {/* Botão de Excluir Grupo posicionado exatamente como o botão 'Editar' */}
-          <button
-            className="btn-critical-primary btn-edit"
-            onClick={handleDelete}
-            disabled={actionLoading}
-            style={{ background: "var(--bs-danger)", border: "none" }} // Ajuste para tom de alerta
-          >
-            <i className="bi bi-trash3 me-2"></i>
-            {actionLoading ? "..." : "Excluir Grupo"}
-          </button>
-        </div>
+        <div className="header-actions"></div>
       </div>
 
       <div className="row g-4">
@@ -223,13 +212,15 @@ export default function GroupDetail({
                   recuperados.
                 </p>
               </div>
+              {/* Botão de Excluir Grupo posicionado exatamente como o botão 'Editar' */}
               <button
-                className="btn btn-outline-danger"
-                onClick={() => onDeleteGroup(group.id)}
-                style={{ height: "42px", fontWeight: "bold" }}
+                className="btn-critical-primary btn-edit"
+                onClick={handleDelete}
+                disabled={actionLoading}
+                style={{ background: "var(--bs-danger)", border: "none" }} // Ajuste para tom de alerta
               >
                 <i className="bi bi-trash3 me-2"></i>
-                Excluir Grupo
+                {actionLoading ? "..." : "Excluir Grupo"}
               </button>
             </div>
           </div>
