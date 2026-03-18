@@ -69,66 +69,73 @@ export default function UserDetail({
   return (
     <div className="animate-in w-100">
       {/* BARRA DE BOTÕES */}
+{/* BARRA DE BOTÕES - PADRÃO GRID IGUAL FILTRO */}
 <div
-  className="mb-4 p-4 d-flex align-items-center"
+  className="mb-4 p-4 animate-in"
   style={{
     background: "var(--card-bg)",
     borderRadius: "12px",
     border: "1px solid var(--border-color)",
   }}
 >
-  {/* ESQUERDA */}
-  <div className="d-flex align-items-center gap-3">
-    <button
-      className="btn-filter-clear d-flex align-items-center"
-      style={{ height: "40px" }}
-      onClick={onBack}
-    >
-      <i className="bi bi-arrow-left me-2"></i>
-      Voltar
-    </button>
-
-    <div>
-      <div style={{ fontSize: "1.1rem", fontWeight: "600" }}>
-        {user.name}
-      </div>
-      <div
-        style={{
-          fontSize: "0.75rem",
-          opacity: 0.6,
-          fontFamily: "monospace",
-        }}
+  <div className="row g-3 align-items-center">
+    
+    {/* ESQUERDA (VOLTA + INFO) */}
+    <div className="col-md-6 d-flex align-items-center gap-3">
+      <button
+        className="btn-filter-clear d-flex align-items-center"
+        style={{ height: "45px" }}
+        onClick={onBack}
       >
-        ID: {userIdDisplay}
+        <i className="bi bi-arrow-left me-2"></i>
+        Voltar
+      </button>
+
+      <div>
+        <div style={{ fontWeight: 600 }}>
+          {user.name}
+        </div>
+        <div
+          style={{
+            fontSize: "0.75rem",
+            opacity: 0.6,
+            fontFamily: "monospace",
+          }}
+        >
+          ID: {userIdDisplay}
+        </div>
       </div>
     </div>
-  </div>
 
-  {/* DIREITA (FORÇADA) */}
-  <div className="d-flex gap-2" style={{ marginLeft: "auto" }}>
-    {!isEditing ? (
-      <button
-        className="btn-critical-primary"
-        style={{ height: "40px" }}
-        onClick={() => setIsEditing(true)}
-      >
-        <i className="bi bi-pencil me-2"></i>
-        Editar
-      </button>
-    ) : (
-      <>
+    {/* BOTÃO EDITAR */}
+    <div className="col-md-3">
+      {!isEditing ? (
         <button
-          className="btn-critical-secondary"
-          style={{ height: "40px" }}
+          className="btn-critical-primary w-100"
+          style={{ height: "45px" }}
+          onClick={() => setIsEditing(true)}
+        >
+          <i className="bi bi-pencil me-2"></i>
+          Editar
+        </button>
+      ) : (
+        <button
+          className="btn-critical-secondary w-100"
+          style={{ height: "45px" }}
           onClick={() => setIsEditing(false)}
         >
           Cancelar
         </button>
+      )}
+    </div>
 
+    {/* BOTÃO SALVAR */}
+    <div className="col-md-3">
+      {isEditing && (
         <button
-          className="btn-table-action"
+          className="btn-table-action w-100"
           style={{
-            height: "40px",
+            height: "45px",
             background: "var(--success)",
             border: "none",
           }}
@@ -137,8 +144,8 @@ export default function UserDetail({
         >
           {actionLoading ? "..." : "Salvar"}
         </button>
-      </>
-    )}
+      )}
+    </div>
   </div>
 </div>
 
