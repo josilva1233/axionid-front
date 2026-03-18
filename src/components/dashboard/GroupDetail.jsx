@@ -70,6 +70,7 @@ export default function GroupDetail({
                 <thead>
                   <tr>
                     <th>NOME</th>
+                    <th>Função</th>
                     <th>E-MAIL</th>
                     <th className="text-end">AÇÕES</th>
                   </tr>
@@ -81,12 +82,18 @@ export default function GroupDetail({
                         <td>
                           <div className="d-flex align-items-center">
                             <strong className="text-white">{user.name}</strong>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="d-flex align-items-center">
                             {user.pivot?.role === "admin" && (
                               <span
-                                className="badge bg-primary ms-2"
+                                className={`badge ms-2 ${user.pivot?.role === "admin" ? "bg-primary" : "bg-secondary"}`}
                                 style={{ fontSize: "0.6rem" }}
                               >
-                                ADMIN
+                                {user.pivot?.role === "admin"
+                                  ? "ADMIN"
+                                  : "COMUM"}
                               </span>
                             )}
                           </div>
