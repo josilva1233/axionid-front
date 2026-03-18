@@ -45,22 +45,36 @@ export default function GroupDetail({
 
   return (
     <div className="group-detail-container animate-in w-100">
-      <div className="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom-theme">
-                    <button
-              className="btn-filter-clear btn-back d-flex align-items-center"
-              onClick={onBack}
-            >
-              <i className="bi bi-arrow-left me-2"></i>
-              <span className="fw-medium">Voltar</span>
-            </button>
-        <div className="d-flex align-items-center gap-3">
-          <h2 className="mb-0 text-white fs-4 fw-bold">
+<div className="user-detail-header mb-4 p-3 d-flex align-items-center justify-content-between">
+  
+  {/* LADO ESQUERDO: Agrupa Botão + Divisor + Título */}
+  <div className="d-flex align-items-center gap-3">
+    <button 
+      className="btn-filter-clear btn-back d-flex align-items-center" 
+      onClick={onBack}
+      style={{ height: "40px" }}
+    >
+      <i className="bi bi-arrow-left me-2"></i>
+      <span className="fw-medium">Voltar</span>
+    </button>
 
-            Gerenciar Grupo:{" "}
-            <span className="text-primary">{group.name?.toUpperCase()}</span>
-          </h2>
-        </div>
-      </div>
+    {/* Divisor vertical que você usou no outro componente */}
+    <div className="vertical-divider" style={{ width: "1px", height: "25px", background: "rgba(255,255,255,0.1)" }}></div>
+
+    <div className="d-flex align-items-center">
+      <h2 className="mb-0 text-white fs-5 fw-bold">
+        <span className="text-dim opacity-75 me-2">Gerenciar Grupo:</span>
+        <span className="text-primary">{group.name?.toUpperCase()}</span>
+      </h2>
+    </div>
+  </div>
+
+  {/* LADO DIREITO: Espaço para botões de ação se necessário no futuro */}
+  <div className="header-actions">
+    {/* Se quiser colocar um botão de excluir ou editar aqui, ele ficará alinhado à direita */}
+  </div>
+
+</div>
 
       <div className="row g-4">
         <div className="col-md-8">
