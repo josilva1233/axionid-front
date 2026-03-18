@@ -66,7 +66,7 @@ export default function GroupDetail({
 
         <div className="header-actions"></div>
       </div>
-<br />
+      <br />
       <div className="row g-4">
         <div className="col-md-8">
           <div className="info-card p-4">
@@ -193,6 +193,96 @@ export default function GroupDetail({
               </button>
             </form>
           </div>
+        </div>
+      </div>
+
+      {/* SEÇÃO DE PERMISSÕES (ACL) */}
+      <div className="row mt-4">
+        <div className="col-12">
+          <section className="info-card p-4">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <h4 className="card-title mb-0">Chaves de Permissão (ACL)</h4>
+              <div className="d-flex gap-2">
+                {/* Seletor Simples para adicionar nova permissão */}
+                <select
+                  className="custom-input-dark py-1 px-2"
+                  style={{ fontSize: "0.8rem", minWidth: "200px" }}
+                  onChange={(e) => onAddPermission(e.target.value)}
+                  value=""
+                >
+                  <option value="">+ Atribuir Nova Chave</option>
+                  {allAvailablePermissions.map((p) => (
+                    <option key={p.id} value={p.name}>
+                      {p.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="table-responsive">
+              <table className="axion-table w-100">
+                <thead>
+                  <tr>
+                    <th style={{ width: "80px" }}>ID</th>
+                    <th>NOME DA PERMISSÃO</th>
+                    <th>CHAVE (SLUG)</th>
+                    <th>TIPO</th>
+                    <th>CRIADO EM</th>
+                    <th className="text-end">AÇÕES</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {group.permissions?.length > 0 ? (
+                    group.permissions.map((perm) => (
+                      <tr key={perm.id}>
+                        <td className="text-dim mono-text">#{perm.id}</td>
+                        <td>
+                          <strong className="text-white text-uppercase">
+                            {perm.label}
+                          </strong>
+                        </td>
+                        <td>
+                          <code className="text-primary-light bg-dark px-2 py-1 rounded">
+                            {perm.name}{" "}
+                            {/* No seu controller PHP o campo é 'name' */}
+                          </code>
+                        </td>
+                        <td>
+                          <span className="badge border border-secondary text-dim">
+                            IAM
+                          </span>
+                        </td>
+                        <td className="text-dim small">
+                          {new Date(perm.created_at).toLocaleDateString(
+                            "pt-BR",
+                          )}
+                        </td>
+                        <td className="text-end">
+                          <button
+                            className="btn btn-link text-danger p-0"
+                            onClick={() => onRemovePermission(perm.id)}
+                            disabled={actionLoading}
+                          >
+                            <i className="bi bi-trash"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan="6"
+                        className="text-center py-5 text-dim italic"
+                      >
+                        Nenhuma permissão especial atribuída a este grupo.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
         </div>
       </div>
 
