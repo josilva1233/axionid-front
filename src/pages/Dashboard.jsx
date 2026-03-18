@@ -417,7 +417,11 @@ export default function Dashboard() {
                   isEditing={isEditing}
                   setIsEditing={setIsEditing}
                   actionLoading={actionLoading}
-                  handleSave={() => handleUpdateUser(selectedUser?.id, formData)}
+                  // CORREÇÃO VITAL: 
+  handleSave={() => {
+    console.log("Clique detectado! Enviando ID:", selectedUser?.id);
+    handleUpdateUser(selectedUser?.id, formData);
+  }}
                   onBack={() => {
                     setSelectedUser(null);
                     setIsEditing(false);
