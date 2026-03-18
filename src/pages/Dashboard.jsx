@@ -417,11 +417,24 @@ export default function Dashboard() {
                   isEditing={isEditing}
                   setIsEditing={setIsEditing}
                   actionLoading={actionLoading}
-                  // CORREÇÃO VITAL: 
-  handleSave={() => {
-    console.log("Clique detectado! Enviando ID:", selectedUser?.id);
-    handleUpdateUser(selectedUser?.id, formData);
-  }}
+                  handleSave={() => {
+                    // Tenta pegar o ID de qualquer uma das estruturas possíveis
+                    const userId = selectedUser?.data?.id || selectedUser?.id;
+
+                    console.log("ID para salvar:", userId);
+                    console.log("Dados do formulário:", formData);
+
+                    if (!userId) {
+                      return Swal.fire(
+                        "Erro",
+                        "ID do usuário não encontrado.",
+                        "error",
+                      );
+                    }
+
+                    // Chama a função de atualização passando o ID correto e o estado formData
+                    handleUpdateUser(userId, formData);
+                  }}
                   onBack={() => {
                     setSelectedUser(null);
                     setIsEditing(false);
