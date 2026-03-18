@@ -16,6 +16,7 @@ export default function UserDetail({
       setFormData({
         name: user.name || "",
         email: user.email || "",
+        cpf_cnpj: user.cpf_cnpj || "",
         zip_code: user.address?.zip_code || "",
         street: user.address?.street || "",
         number: user.address?.number || "",
