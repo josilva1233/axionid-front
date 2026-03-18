@@ -86,16 +86,12 @@ export default function GroupDetail({
                         </td>
                         <td>
                           <div className="d-flex align-items-center">
-                            {user.pivot?.role === "admin" && (
-                              <span
-                                className={`badge ms-2 ${user.pivot?.role === "admin" ? "bg-primary" : "bg-secondary"}`}
-                                style={{ fontSize: "0.6rem" }}
-                              >
-                                {user.pivot?.role === "admin"
-                                  ? "ADMIN"
-                                  : "COMUM"}
-                              </span>
-                            )}
+                            <span
+                              className={`badge ms-2 ${user.pivot?.role === "admin" ? "bg-primary" : "bg-secondary"}`}
+                              style={{ fontSize: "0.6rem" }}
+                            >
+                              {user.pivot?.role === "admin" ? "ADMIN" : "COMUM"}
+                            </span>
                           </div>
                         </td>
                         <td className="text-dim">{user.email}</td>
