@@ -52,6 +52,182 @@
   /* justify-content: center; */
 }
 
+/* Container Principal */
+.user-detail-container {
+    max-width: 1200px;
+}
+
+/* Barra de Topo */
+.user-detail-header {
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header-left {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+}
+
+.btn-back {
+    height: 40px;
+    padding: 0 15px;
+    white-space: nowrap;
+}
+
+.vertical-divider {
+    width: 1px;
+    height: 25px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.user-title-block {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name-text {
+    font-weight: 600;
+    color: #fff;
+    font-size: 1.1rem;
+    white-space: nowrap;
+}
+
+.user-id-text {
+    opacity: 0.5;
+    font-family: "monospace";
+    font-size: 0.7rem;
+    color: var(--primary);
+}
+
+.header-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.btn-edit {
+    height: 40px;
+    padding: 0 20px;
+    white-space: nowrap;
+}
+
+.btn-save-changes {
+    height: 40px;
+    padding: 0 20px;
+    background: var(--success);
+    border: none;
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+/* Grid de Informações */
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* Cards */
+.info-card {
+    background: var(--card-bg);
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.info-card.editing {
+    border: 1px solid var(--primary);
+}
+
+.card-title {
+    color: #fff;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 10px;
+}
+
+/* Avatar e Inputs */
+.avatar-large {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.name-input {
+    font-size: 1.25rem !important;
+    width: 100%;
+    font-weight: 600;
+}
+
+.input-label {
+    color: var(--text-dim);
+    font-size: 0.75rem;
+    display: block;
+    margin-bottom: 0.25rem;
+    text-uppercase: uppercase;
+    font-weight: 700;
+}
+
+/* Estado Desabilitado dos Inputs */
+.custom-input-dark:disabled {
+    opacity: 0.8;
+    cursor: default;
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.1);
+    background-color: transparent;
+}
+
+.disabled-readonly {
+    cursor: not-allowed;
+}
+
+/* Seção Crítica */
+.critical-actions-section {
+    background: rgba(220, 53, 69, 0.05);
+    border-radius: 16px;
+    border: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+.critical-title {
+    color: var(--bs-danger);
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 1.5rem;
+}
+
+.btn-delete-permanent {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: opacity 0.2s;
+}
+
+.btn-delete-permanent:hover {
+    background: #c82333;
+}
+
 /* =========================================
 
    ALERTA DE PERFIL PREMIUM (AXION ID)
@@ -122,7 +298,7 @@
 /* Responsividade para celular */
 
 @media (max-width: 768px) {
-  
+
   .alert-complete-profile {
     flex-direction: column;
     text-align: center;

@@ -21,8 +21,8 @@ export default function UserDetail({
         street: user.address?.street || "",
         number: user.address?.number || "",
         neighborhood: user.address?.neighborhood || "",
-        city: user.address?.city || "",
-        state: user.address?.state || "",
+        city: user.localidade || user.address?.city || "",
+        state: user.uf || user.address?.state || "",
         complement: user.address?.complement || "",
       });
     }
@@ -56,138 +56,53 @@ export default function UserDetail({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const disabledInputStyle = {
-    opacity: 0.8,
-    cursor: "default",
-    color: "#fff",
-    borderColor: "rgba(255,255,255,0.1)",
-  };
-
-  // ✅ CORRIGIDO: user.id pode ser número
-  const userIdDisplay = user.id
-    ? String(user.id).substring(0, 18) + "..."
-    : "N/A";
-
   return (
-    <div className="animate-in w-100">
-{/* BARRA DE TOPO - FORÇANDO LINHA ÚNICA */}
-<div
-  className="mb-4 p-3 animate-in"
-  style={{
-    background: "var(--card-bg)",
-    borderRadius: "12px",
-    border: "1px solid var(--border-color)",
-    display: "flex",
-    flexDirection: "row", // Garante horizontal
-    alignItems: "center",
-    justifyContent: "space-between"
-  }}
->
-  {/* LADO ESQUERDO: Voltar + Nome + ID */}
-  <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "20px" }}>
-    
-    <button
-      className="btn-filter-clear"
-      style={{ height: "40px", padding: "0 15px", whiteSpace: "nowrap" }}
-      onClick={onBack}
-    >
-      <i className="bi bi-arrow-left me-2"></i>
-      Voltar
-    </button>
+    <div className="user-detail-container animate-in w-100">
+      {/* BARRA DE TOPO */}
+      <div className="user-detail-header mb-4 p-3">
+        <div className="header-left">
+          <button className="btn-filter-clear btn-back" onClick={onBack}>
+            <i className="bi bi-arrow-left me-2"></i>
+            Voltar
+          </button>
 
-    {/* Divisor Vertical */}
-    <div style={{ width: "1px", height: "25px", background: "rgba(255,255,255,0.1)" }}></div>
+          <div className="vertical-divider"></div>
 
-    {/* Container do Nome e ID - mantendo o ID pequeno abaixo do nome, mas o bloco em linha com o botão */}
-    <div style={{ display: "flex", flexDirection: "column" }}>
-      <span style={{ fontWeight: 600, color: "#fff", fontSize: "1.1rem", whiteSpace: "nowrap" }}>
-        {user.name}
-      </span>
-      <span style={{ opacity: 0.5, fontFamily: "monospace", fontSize: "0.7rem", color: "var(--primary)" }}>
-        ID: {user.id}
-      </span>
-    </div>
-  </div>
+          <div className="user-title-block">
+            <span className="user-name-text">{user.name}</span>
+            <span className="user-id-text">ID: {user.id}</span>
+          </div>
+        </div>
 
-  {/* LADO DIREITO: Botões de Ação */}
-  <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
-    {!isEditing ? (
-      <button
-        className="btn-critical-primary"
-        style={{ height: "40px", padding: "0 20px", whiteSpace: "nowrap" }}
-        onClick={() => setIsEditing(true)}
-      >
-        <i className="bi bi-pencil me-2"></i>
-        Editar
-      </button>
-    ) : (
-      <>
-        <button
-          className="btn-critical-secondary"
-          style={{ height: "40px", padding: "0 20px" }}
-          onClick={() => setIsEditing(false)}
-        >
-          Cancelar
-        </button>
-        <button
-          className="btn-table-action"
-          style={{
-            height: "40px",
-            padding: "0 20px",
-            background: "var(--success)",
-            border: "none",
-            color: "#fff"
-          }}
-          onClick={handleSave}
-          disabled={actionLoading}
-        >
-          {actionLoading ? "..." : "Salvar Alterações"}
-        </button>
-      </>
-    )}
-  </div>
-</div>
-
-      {/* REMOVI O BLOCO "ID DO SISTEMA" QUE ESTAVA SOBRANDO AQUI EMBAIXO */}
+        <div className="header-actions">
+          {!isEditing ? (
+            <button className="btn-critical-primary btn-edit" onClick={() => setIsEditing(true)}>
+              <i className="bi bi-pencil me-2"></i>
+              Editar
+            </button>
+          ) : (
+            <>
+              <button className="btn-critical-secondary" onClick={() => setIsEditing(false)}>
+                Cancelar
+              </button>
+              <button
+                className="btn-save-changes"
+                onClick={handleSave}
+                disabled={actionLoading}
+              >
+                {actionLoading ? "..." : "Salvar Alterações"}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
 
       {/* CARDS DE DETALHES */}
-      <div
-        className="detail-grid"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-          gap: "20px",
-        }}
-      >
+      <div className="detail-grid">
         {/* CARD: PERFIL */}
-        <section
-          className="info-card"
-          style={{
-            background: "var(--card-bg)",
-            padding: "24px",
-            borderRadius: "12px",
-            border: isEditing
-              ? "1px solid var(--primary)"
-              : "1px solid var(--border-color)",
-            transition: "all 0.3s ease",
-          }}
-        >
+        <section className={`info-card ${isEditing ? "editing" : ""}`}>
           <div className="profile-header d-flex align-items-center gap-4 mb-4">
-            <div
-              className="avatar-large"
-              style={{
-                width: "64px",
-                height: "64px",
-                borderRadius: "50%",
-                background: "var(--primary)",
-                color: "#fff",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "1.5rem",
-                fontWeight: "bold",
-              }}
-            >
+            <div className="avatar-large">
               {user.name?.charAt(0).toUpperCase()}
             </div>
             <div className="flex-grow-1">
@@ -197,31 +112,20 @@ export default function UserDetail({
                 value={formData.name || ""}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="custom-input-dark mb-2"
-                style={{
-                  fontSize: "1.25rem",
-                  width: "100%",
-                  fontWeight: "600",
-                  ...(!isEditing ? disabledInputStyle : {}),
-                }}
+                className="custom-input-dark name-input mb-2"
               />
               <div className="d-flex gap-2 align-items-center">
-                <span
-                  className={`badge ${user.is_admin ? "badge-success" : "badge-operacional"}`}
-                >
+                <span className={`badge ${user.is_admin ? "badge-success" : "badge-operacional"}`}>
                   {user.is_admin ? "Administrador" : "Operacional"}
                 </span>
-                {!user.is_active && (
-                  <span className="badge badge-danger">Suspenso</span>
-                )}
+                {!user.is_active && <span className="badge badge-danger">Suspenso</span>}
               </div>
             </div>
           </div>
+          
           <div className="info-list g-3 row">
             <div className="info-item col-12 mb-2">
-              <label className="text-dim small d-block mb-1 text-uppercase fw-bold">
-                E-mail Corporativo
-              </label>
+              <label className="input-label">E-mail Corporativo</label>
               <input
                 type="email"
                 name="email"
@@ -229,51 +133,26 @@ export default function UserDetail({
                 onChange={handleChange}
                 disabled={!isEditing}
                 className="custom-input-dark w-100"
-                style={!isEditing ? disabledInputStyle : {}}
               />
             </div>
             <div className="info-item col-12">
-              <label className="text-dim small d-block mb-1 text-uppercase fw-bold">
-                Documento
-              </label>
+              <label className="input-label">Documento</label>
               <input
                 type="text"
                 value={user.cpf_cnpj || "Não informado"}
                 disabled
-                className="custom-input-dark w-100 mono-text"
-                style={disabledInputStyle}
+                className="custom-input-dark w-100 mono-text disabled-readonly"
               />
             </div>
           </div>
         </section>
 
         {/* CARD: LOCALIZAÇÃO */}
-        <section
-          className="info-card"
-          style={{
-            background: "var(--card-bg)",
-            padding: "24px",
-            borderRadius: "12px",
-            border: isEditing
-              ? "1px solid var(--primary)"
-              : "1px solid var(--border-color)",
-          }}
-        >
-          <h4
-            className="text-white mb-4"
-            style={{
-              fontSize: "1rem",
-              borderBottom: "1px solid rgba(255,255,255,0.05)",
-              paddingBottom: "10px",
-            }}
-          >
-            Endereço de Registro
-          </h4>
+        <section className={`info-card ${isEditing ? "editing" : ""}`}>
+          <h4 className="card-title">Endereço de Registro</h4>
           <div className="row g-3">
             <div className="col-12 mb-2">
-              <label className="text-dim small d-block text-uppercase fw-bold mb-1">
-                CEP
-              </label>
+              <label className="input-label">CEP</label>
               <input
                 type="text"
                 name="zip_code"
@@ -282,13 +161,10 @@ export default function UserDetail({
                 onBlur={handleCepBlur}
                 disabled={!isEditing}
                 className="custom-input-dark w-100 mono-text"
-                style={!isEditing ? disabledInputStyle : {}}
               />
             </div>
             <div className="col-md-9 mb-2">
-              <label className="text-dim small d-block text-uppercase fw-bold mb-1">
-                Rua
-              </label>
+              <label className="input-label">Rua</label>
               <input
                 type="text"
                 name="street"
@@ -296,13 +172,10 @@ export default function UserDetail({
                 onChange={handleChange}
                 disabled={!isEditing}
                 className="custom-input-dark w-100"
-                style={!isEditing ? disabledInputStyle : {}}
               />
             </div>
             <div className="col-md-3 mb-2">
-              <label className="text-dim small d-block text-uppercase fw-bold mb-1">
-                Nº
-              </label>
+              <label className="input-label">Nº</label>
               <input
                 type="text"
                 name="number"
@@ -310,13 +183,10 @@ export default function UserDetail({
                 onChange={handleChange}
                 disabled={!isEditing}
                 className="custom-input-dark w-100"
-                style={!isEditing ? disabledInputStyle : {}}
               />
             </div>
             <div className="col-12 mb-2">
-              <label className="text-dim small d-block text-uppercase fw-bold mb-1">
-                Bairro
-              </label>
+              <label className="input-label">Bairro</label>
               <input
                 type="text"
                 name="neighborhood"
@@ -324,13 +194,10 @@ export default function UserDetail({
                 onChange={handleChange}
                 disabled={!isEditing}
                 className="custom-input-dark w-100"
-                style={!isEditing ? disabledInputStyle : {}}
               />
             </div>
             <div className="col-md-8">
-              <label className="text-dim small d-block text-uppercase fw-bold mb-1">
-                Cidade
-              </label>
+              <label className="input-label">Cidade</label>
               <input
                 type="text"
                 name="city"
@@ -338,13 +205,10 @@ export default function UserDetail({
                 onChange={handleChange}
                 disabled={!isEditing}
                 className="custom-input-dark w-100"
-                style={!isEditing ? disabledInputStyle : {}}
               />
             </div>
             <div className="col-md-4">
-              <label className="text-dim small d-block text-uppercase fw-bold mb-1">
-                UF
-              </label>
+              <label className="input-label">UF</label>
               <input
                 type="text"
                 name="state"
@@ -353,13 +217,10 @@ export default function UserDetail({
                 disabled={!isEditing}
                 className="custom-input-dark w-100"
                 maxLength="2"
-                style={!isEditing ? disabledInputStyle : {}}
               />
             </div>
-                        <div className="col-md-8">
-              <label className="text-dim small d-block text-uppercase fw-bold mb-1">
-                Complemento
-              </label>
+            <div className="col-12">
+              <label className="input-label">Complemento</label>
               <input
                 type="text"
                 name="complement"
@@ -367,7 +228,6 @@ export default function UserDetail({
                 onChange={handleChange}
                 disabled={!isEditing}
                 className="custom-input-dark w-100"
-                style={!isEditing ? disabledInputStyle : {}}
               />
             </div>
           </div>
@@ -375,27 +235,8 @@ export default function UserDetail({
       </div>
 
       {/* AÇÕES CRÍTICAS */}
-      <section
-        className="actions-section mt-5 p-4"
-        style={{
-          background: "rgba(220, 53, 69, 0.05)",
-          borderRadius: "16px",
-          border: "1px solid rgba(220, 53, 69, 0.2)",
-          opacity: 1,
-          pointerEvents: "auto",
-        }}
-      >
-        <h4
-          className="text-danger mb-4"
-          style={{
-            fontSize: "0.75rem",
-            fontWeight: "800",
-            textTransform: "uppercase",
-            letterSpacing: "1.5px",
-          }}
-        >
-          Gestão de Acesso e Privilégios
-        </h4>
+      <section className="critical-actions-section mt-5 p-4">
+        <h4 className="critical-title">Gestão de Acesso e Privilégios</h4>
         <div className="critical-actions-grid d-flex gap-3 flex-wrap">
           {user.is_admin ? (
             <button
