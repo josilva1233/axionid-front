@@ -319,40 +319,62 @@ export default function Dashboard() {
 
   // --- GESTÃO DE PERMISSÕES NOS GRUPOS (ACL) ---
 
-// No Dashboard.js, procure estas funções e deixe-as assim:
-
-const handleAddPermissionToGroup = async (permissionName) => {
+  const handleAddPermissionToGroup = async (permissionName) => {
     if (!selectedGroupId || !permissionName) return;
     setActionLoading(true);
     try {
-      // ✅ A URL precisa ter o /admin/ conforme seu route:list
+      // Chama o método attachPermissionToRole do seu Controller PHP
       await api.post(`/api/v1/admin/groups/${selectedGroupId}/permissions`, {
         permission_name: permissionName,
       });
-      
-      AxionAlert.fire({ icon: "success", title: "Permissão Atribuída", timer: 1500, showConfirmButton: false });
-      await loadGroups(currentPage);
-    } catch (err) {
-      AxionAlert.fire("Erro", "Falha ao vincular.", "error");
-    } finally {
-      setActionLoading(false);
-    }
-};
 
-const handleRemovePermissionFromGroup = async (permissionId) => {
-    if (!selectedGroupId) return;
-    // ... SweetAlert de confirmação ...
-    try {
-      // ✅ A URL precisa ter o /admin/ conforme seu route:list
-      await api.delete(`/api/v1/admin/groups/${selectedGroupId}/permissions/${permissionId}`);
-      AxionAlert.fire("Removido!", "Permissão desvinculada.", "success");
-      await loadGroups(currentPage);
+      AxionAlert.fire({
+        icon: "success",
+        title: "Permissão Atribuída",
+        text: "A chave foi vinculada ao grupo.",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      await loadGroups(currentPage); // Atualiza a lista para mostrar a nova chave na tabela
     } catch (err) {
-      AxionAlert.fire("Erro", "Falha ao remover.", "error");
+      AxionAlert.fire(
+        "Erro",
+        "Não foi possível vincular a permissão.",
+        "error",
+      );
     } finally {
       setActionLoading(false);
     }
-};
+  };
+
+  const handleRemovePermissionFromGroup = async (permissionId) => {
+    if (!selectedGroupId) return;
+
+    const result = await AxionAlert.fire({
+      title: "Remover Permissão?",
+      text: "O grupo perderá acesso a esta funcionalidade.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sim, remover",
+    });
+
+    if (result.isConfirmed) {
+      setActionLoading(true);
+      try {
+        // Chama o método detachPermissionFromRole do seu Controller PHP
+        await api.delete(
+          `/api/v1/admin/groups/${selectedGroupId}/permissions/${permissionId}`,
+        );
+        AxionAlert.fire("Removido!", "Permissão desvinculada.", "success");
+        await loadGroups(currentPage);
+      } catch (err) {
+        AxionAlert.fire("Erro", "Falha ao remover permissão.", "error");
+      } finally {
+        setActionLoading(false);
+      }
+    }
+  };
 
   return (
     <div className="dashboard-layout animate-in">
