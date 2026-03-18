@@ -105,6 +105,29 @@ export default function Dashboard() {
   ]);
 
   useEffect(() => {
+    // Função para carregar dados baseada na aba ativa
+    const loadTabContent = () => {
+      if (activeTab === "users") loadUsers(currentPage);
+      else if (activeTab === "audit") loadAuditLogs(currentPage);
+      else if (activeTab === "groups") {
+        loadGroups(currentPage);
+        loadPermissions(); // Carrega permissões para o select do grupo
+      } else if (activeTab === "permissions") loadPermissions();
+      else if (activeTab === "orders") loadServiceOrders(); // Certifique-se que esta função existe
+    };
+
+    loadTabContent();
+  }, [
+    activeTab,
+    currentPage,
+    loadUsers,
+    loadGroups,
+    loadAuditLogs,
+    loadPermissions,
+    loadServiceOrders,
+  ]);
+
+  useEffect(() => {
     const loadProfile = async () => {
       try {
         const res = await api.get("/api/v1/me");
@@ -668,13 +691,12 @@ export default function Dashboard() {
                     Nova Ordem de Serviço
                   </button>
                 </div>
-                <ServiceOrderTable
-                  orders={serviceOrders}
-                  onEdit={(os) => {
-                    // Aqui você pode abrir um modal de detalhes ou edição futura
-                    console.log("Ver detalhes da OS:", os.protocol);
-                  }}
-                />
+                {activeTab === "orders" && (
+                  <div className="p-4 text-white">
+                    <h4>Lista de Chamados</h4>
+                    <pre>{JSON.stringify(serviceOrders, null, 2)}</pre>
+                  </div>
+                )}
               </>
             ))}
         </main>
