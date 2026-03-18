@@ -100,6 +100,7 @@ export default function Dashboard() {
   // --- GESTÃO DE USUÁRIOS (CORREÇÕES SWEETALERT E PRIVILÉGIOS) ---
 
   const handleUpdateUser = async (userId, data) => {
+    console.log("Dados que estou enviando:", data);
     if (!userId) return;
     setActionLoading(true);
     try {
@@ -416,10 +417,7 @@ export default function Dashboard() {
                   isEditing={isEditing}
                   setIsEditing={setIsEditing}
                   actionLoading={actionLoading}
-                  handleSave={() => {
-                    console.log("Dados que serão salvos:", formData); // Para você debugar no console
-                    handleUpdateUser(selectedUser.id, formData);
-                  }}
+                  handleSave={() => handleUpdateUser(selectedUser?.id, formData)}
                   onBack={() => {
                     setSelectedUser(null);
                     setIsEditing(false);
