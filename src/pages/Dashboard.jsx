@@ -98,25 +98,25 @@ export default function Dashboard() {
   ]);
 
   // Adicione isso logo abaixo dos seus outros UseEffects
-useEffect(() => {
-  if (selectedUser) {
-    const userData = selectedUser.data || selectedUser;
-    
-    setFormData({
-      name: userData.name || "",
-      email: userData.email || "",
-      cpf_cnpj: userData.cpf_cnpj || "",
-      // ✅ ADICIONE ESTAS LINHAS ABAIXO:
-      zip_code: userData.address?.zip_code || "",
-      street: userData.address?.street || "",
-      number: userData.address?.number || "",
-      neighborhood: userData.address?.neighborhood || "",
-      city: userData.address?.city || "",
-      state: userData.address?.state || "",
-      complement: userData.address?.complement || "",
-    });
-  }
-}, [selectedUser]);
+  useEffect(() => {
+    if (selectedUser) {
+      const userData = selectedUser.data || selectedUser;
+
+      setFormData({
+        name: userData.name || "",
+        email: userData.email || "",
+        cpf_cnpj: userData.cpf_cnpj || "",
+        // ✅ ADICIONE ESTAS LINHAS ABAIXO:
+        zip_code: userData.address?.zip_code || "",
+        street: userData.address?.street || "",
+        number: userData.address?.number || "",
+        neighborhood: userData.address?.neighborhood || "",
+        city: userData.address?.city || "",
+        state: userData.address?.state || "",
+        complement: userData.address?.complement || "",
+      });
+    }
+  }, [selectedUser]);
   // --- GESTÃO DE USUÁRIOS (CORREÇÕES SWEETALERT E PRIVILÉGIOS) ---
 
   const handleUpdateUser = async (userId, data) => {
@@ -317,6 +317,65 @@ useEffect(() => {
     navigate("/login");
   };
 
+  // --- GESTÃO DE PERMISSÕES NOS GRUPOS (ACL) ---
+
+  const handleAddPermissionToGroup = async (permissionName) => {
+    if (!selectedGroupId || !permissionName) return;
+    setActionLoading(true);
+    try {
+      // Chama o método attachPermissionToRole do seu Controller PHP
+      await api.post(`/api/v1/admin/groups/${selectedGroupId}/permissions`, {
+        permission_name: permissionName,
+      });
+
+      AxionAlert.fire({
+        icon: "success",
+        title: "Permissão Atribuída",
+        text: "A chave foi vinculada ao grupo.",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      await loadGroups(currentPage); // Atualiza a lista para mostrar a nova chave na tabela
+    } catch (err) {
+      AxionAlert.fire(
+        "Erro",
+        "Não foi possível vincular a permissão.",
+        "error",
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleRemovePermissionFromGroup = async (permissionId) => {
+    if (!selectedGroupId) return;
+
+    const result = await AxionAlert.fire({
+      title: "Remover Permissão?",
+      text: "O grupo perderá acesso a esta funcionalidade.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sim, remover",
+    });
+
+    if (result.isConfirmed) {
+      setActionLoading(true);
+      try {
+        // Chama o método detachPermissionFromRole do seu Controller PHP
+        await api.delete(
+          `/api/v1/admin/groups/${selectedGroupId}/permissions/${permissionId}`,
+        );
+        AxionAlert.fire("Removido!", "Permissão desvinculada.", "success");
+        await loadGroups(currentPage);
+      } catch (err) {
+        AxionAlert.fire("Erro", "Falha ao remover permissão.", "error");
+      } finally {
+        setActionLoading(false);
+      }
+    }
+  };
+
   return (
     <div className="dashboard-layout animate-in">
       <Sidebar
@@ -379,22 +438,22 @@ useEffect(() => {
               setFormData={setFormData} // Passe o setter
               onBack={() => setSelectedUser(null)}
               actionLoading={actionLoading}
-                handleSave={() => {
-    const userId = selectedUser?.id;
+              handleSave={() => {
+                const userId = selectedUser?.id;
 
-    console.log("🚀 Salvando:", userId);
-    console.log("📦 Dados:", formData);
+                console.log("🚀 Salvando:", userId);
+                console.log("📦 Dados:", formData);
 
-    if (!userId) {
-      return AxionAlert.fire(
-        "Erro",
-        "ID do usuário não identificado.",
-        "error"
-      );
-    }
+                if (!userId) {
+                  return AxionAlert.fire(
+                    "Erro",
+                    "ID do usuário não identificado.",
+                    "error",
+                  );
+                }
 
-    handleUpdateUser(userId, formData);
-  }}
+                handleUpdateUser(userId, formData);
+              }}
               onAction={async (type) => {
                 if (type === "promote")
                   await handleToggleAdmin(selectedUser.id, false);
@@ -426,6 +485,10 @@ useEffect(() => {
                   loadGroups(1);
                 })
               }
+              // ✅ ADICIONE ESTAS 3 LINHAS ABAIXO:
+              allAvailablePermissions={permissions}
+              onAddPermission={handleAddPermissionToGroup}
+              onRemovePermission={handleRemovePermissionFromGroup}
             />
           ) : (
             <>
