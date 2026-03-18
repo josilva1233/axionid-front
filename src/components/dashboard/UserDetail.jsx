@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { Row, Col } from "react-bootstrap";
 
 export default function UserDetail({
   user,
@@ -12,6 +11,7 @@ export default function UserDetail({
   setIsEditing = () => {},
   handleSave = () => {},
 }) {
+  
   useEffect(() => {
     if (user && setFormData) {
       setFormData({
@@ -63,60 +63,296 @@ export default function UserDetail({
     borderColor: "rgba(255,255,255,0.1)",
   };
 
+  // ✅ CORRIGIDO: user.id pode ser número
   const userIdDisplay = user.id ? String(user.id).substring(0, 18) + "..." : "N/A";
 
   return (
-    <div className="mb-4 p-4 animate-in" style={{ background: "var(--card-bg)", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
-      <Row className="align-items-end g-3">
-        {/* Botão Voltar */}
-        <Col md={5}>
-          <button
-            className="btn-filter-clear w-100 d-flex align-items-center justify-content-center"
-            style={{ height: "45px" }}
-            onClick={onBack}
-          >
-            <i className="bi bi-arrow-left me-2"></i> Voltar
-          </button>
-        </Col>
+    <div className="animate-in w-100">
+      {/* BARRA DE BOTÕES */}
+{/* BARRA DE BOTÕES - PADRÃO GRID IGUAL FILTRO */}
+<div
+  className="mb-4 p-4 animate-in"
+  style={{
+    background: "var(--card-bg)",
+    borderRadius: "12px",
+    border: "1px solid var(--border-color)",
+  }}
+>
+  <div className="row g-3 align-items-center">
+    
+    {/* ESQUERDA (VOLTA + INFO) */}
+    <div className="col-md-6 d-flex align-items-center gap-3">
+      <button
+        className="btn-filter-clear d-flex align-items-center"
+        style={{ height: "45px" }}
+        onClick={onBack}
+      >
+        <i className="bi bi-arrow-left me-2"></i>
+        Voltar
+      </button>
 
-        {/* Botões Editar / Cancelar + Salvar */}
-        <Col md={4}>
-          {!isEditing ? (
-            <button
-              className="btn-critical-primary w-100"
-              style={{ height: "45px" }}
-              onClick={() => setIsEditing(true)}
-            >
-              <i className="bi bi-pencil me-2"></i> Editar
+      <div>
+        <div style={{ fontWeight: 600 }}>
+          {user.name}
+        </div>
+        <div
+          style={{
+            fontSize: "0.75rem",
+            opacity: 0.6,
+            fontFamily: "monospace",
+          }}
+        >
+          ID: {userIdDisplay}
+        </div>
+      </div>
+    </div>
+
+    {/* BOTÃO EDITAR */}
+    <div className="col-md-3">
+      {!isEditing ? (
+        <button
+          className="btn-critical-primary w-100"
+          style={{ height: "45px" }}
+          onClick={() => setIsEditing(true)}
+        >
+          <i className="bi bi-pencil me-2"></i>
+          Editar
+        </button>
+      ) : (
+        <button
+          className="btn-critical-secondary w-100"
+          style={{ height: "45px" }}
+          onClick={() => setIsEditing(false)}
+        >
+          Cancelar
+        </button>
+      )}
+    </div>
+
+    {/* BOTÃO SALVAR */}
+    <div className="col-md-3">
+      {isEditing && (
+        <button
+          className="btn-table-action w-100"
+          style={{
+            height: "45px",
+            background: "var(--success)",
+            border: "none",
+          }}
+          onClick={handleSave}
+          disabled={actionLoading}
+        >
+          {actionLoading ? "..." : "Salvar"}
+        </button>
+      )}
+    </div>
+  </div>
+</div>
+
+{/* ID DO USUÁRIO (mantido, mas separado corretamente) */}
+<div className="mb-4">
+  <label className="filter-label small d-block mb-1">ID do Sistema</label>
+  <div
+    className="custom-input-dark d-flex align-items-center px-3 mono-text"
+    style={{
+      height: "45px",
+      fontSize: "0.75rem",
+      color: "var(--primary)",
+      opacity: 0.8,
+    }}
+  >
+    {userIdDisplay}
+  </div>
+</div>
+
+      {/* CARDS DE DETALHES */}
+      <div className="detail-grid" style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+        gap: "20px",
+      }}>
+        {/* CARD: PERFIL */}
+        <section className="info-card" style={{
+          background: "var(--card-bg)",
+          padding: "24px",
+          borderRadius: "12px",
+          border: isEditing ? "1px solid var(--primary)" : "1px solid var(--border-color)",
+          transition: "all 0.3s ease",
+        }}>
+          <div className="profile-header d-flex align-items-center gap-4 mb-4">
+            <div className="avatar-large" style={{
+              width: "64px", height: "64px", borderRadius: "50%",
+              background: "var(--primary)", color: "#fff",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: "1.5rem", fontWeight: "bold",
+            }}>
+              {user.name?.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-grow-1">
+              <input
+                type="text"
+                name="name"
+                value={formData.name || ""}
+                onChange={handleChange}
+                disabled={!isEditing}
+                className="custom-input-dark mb-2"
+                style={{
+                  fontSize: "1.25rem", width: "100%", fontWeight: "600",
+                  ...(!isEditing ? disabledInputStyle : {}),
+                }}
+              />
+              <div className="d-flex gap-2 align-items-center">
+                <span className={`badge ${user.is_admin ? "badge-success" : "badge-operacional"}`}>
+                  {user.is_admin ? "Administrador" : "Operacional"}
+                </span>
+                {!user.is_active && <span className="badge badge-danger">Suspenso</span>}
+              </div>
+            </div>
+          </div>
+          <div className="info-list g-3 row">
+            <div className="info-item col-12 mb-2">
+              <label className="text-dim small d-block mb-1 text-uppercase fw-bold">E-mail Corporativo</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email || ""}
+                onChange={handleChange}
+                disabled={!isEditing}
+                className="custom-input-dark w-100"
+                style={!isEditing ? disabledInputStyle : {}}
+              />
+            </div>
+            <div className="info-item col-12">
+              <label className="text-dim small d-block mb-1 text-uppercase fw-bold">Documento</label>
+              <input
+                type="text"
+                value={user.cpf_cnpj || "Não informado"}
+                disabled
+                className="custom-input-dark w-100 mono-text"
+                style={disabledInputStyle}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* CARD: LOCALIZAÇÃO */}
+        <section className="info-card" style={{
+          background: "var(--card-bg)",
+          padding: "24px",
+          borderRadius: "12px",
+          border: isEditing ? "1px solid var(--primary)" : "1px solid var(--border-color)",
+        }}>
+          <h4 className="text-white mb-4" style={{ fontSize: "1rem", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "10px" }}>
+            Endereço de Registro
+          </h4>
+          <div className="row g-3">
+            <div className="col-12 mb-2">
+              <label className="text-dim small d-block text-uppercase fw-bold mb-1">CEP</label>
+              <input
+                type="text"
+                name="zip_code"
+                value={formData.zip_code || ""}
+                onChange={handleChange}
+                onBlur={handleCepBlur}
+                disabled={!isEditing}
+                className="custom-input-dark w-100 mono-text"
+                style={!isEditing ? disabledInputStyle : {}}
+              />
+            </div>
+            <div className="col-md-9 mb-2">
+              <label className="text-dim small d-block text-uppercase fw-bold mb-1">Rua</label>
+              <input
+                type="text"
+                name="street"
+                value={formData.street || ""}
+                onChange={handleChange}
+                disabled={!isEditing}
+                className="custom-input-dark w-100"
+                style={!isEditing ? disabledInputStyle : {}}
+              />
+            </div>
+            <div className="col-md-3 mb-2">
+              <label className="text-dim small d-block text-uppercase fw-bold mb-1">Nº</label>
+              <input
+                type="text"
+                name="number"
+                value={formData.number || ""}
+                onChange={handleChange}
+                disabled={!isEditing}
+                className="custom-input-dark w-100"
+                style={!isEditing ? disabledInputStyle : {}}
+              />
+            </div>
+            <div className="col-12 mb-2">
+              <label className="text-dim small d-block text-uppercase fw-bold mb-1">Bairro</label>
+              <input
+                type="text"
+                name="neighborhood"
+                value={formData.neighborhood || ""}
+                onChange={handleChange}
+                disabled={!isEditing}
+                className="custom-input-dark w-100"
+                style={!isEditing ? disabledInputStyle : {}}
+              />
+            </div>
+            <div className="col-md-8">
+              <label className="text-dim small d-block text-uppercase fw-bold mb-1">Cidade</label>
+              <input
+                type="text"
+                name="city"
+                value={formData.city || ""}
+                onChange={handleChange}
+                disabled={!isEditing}
+                className="custom-input-dark w-100"
+                style={!isEditing ? disabledInputStyle : {}}
+              />
+            </div>
+            <div className="col-md-4">
+              <label className="text-dim small d-block text-uppercase fw-bold mb-1">UF</label>
+              <input
+                type="text"
+                name="state"
+                value={formData.state || ""}
+                onChange={handleChange}
+                disabled={!isEditing}
+                className="custom-input-dark w-100"
+                maxLength="2"
+                style={!isEditing ? disabledInputStyle : {}}
+              />
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {/* AÇÕES CRÍTICAS */}
+      <section className="actions-section mt-5 p-4" style={{
+        background: "rgba(220, 53, 69, 0.05)",
+        borderRadius: "16px",
+        border: "1px solid rgba(220, 53, 69, 0.2)",
+        opacity: 1,
+        pointerEvents: "auto",
+      }}>
+        <h4 className="text-danger mb-4" style={{ fontSize: "0.75rem", fontWeight: "800", textTransform: "uppercase", letterSpacing: "1.5px" }}>
+          Gestão de Acesso e Privilégios
+        </h4>
+        <div className="critical-actions-grid d-flex gap-3 flex-wrap">
+          {user.is_admin ? (
+            <button onClick={() => onAction("remove-admin")} disabled={actionLoading} className="btn-critical-secondary">
+              Revogar Privilégios Admin
             </button>
           ) : (
-            <div className="d-flex gap-2">
-              <button
-                className="btn-critical-secondary w-50"
-                style={{ height: "45px" }}
-                onClick={() => setIsEditing(false)}
-              >
-                Cancelar
-              </button>
-              <button
-                className="btn-table-action w-50"
-                style={{ height: "45px", background: "var(--success)", border: "none" }}
-                onClick={handleSave}
-                disabled={actionLoading}
-              >
-                {actionLoading ? "..." : "Salvar"}
-              </button>
-            </div>
+            <button onClick={() => onAction("promote")} disabled={actionLoading} className="btn-critical-primary">
+              Promover a Administrador
+            </button>
           )}
-        </Col>
-
-        {/* ID do Usuário */}
-        <Col md={3}>
-          <div className="custom-input-dark d-flex align-items-center px-3 mono-text" style={{ height: "45px", fontSize: "0.75rem", color: "var(--primary)", opacity: 0.8 }}>
-            ID: {userIdDisplay}
-          </div>
-        </Col>
-      </Row>
+          <button onClick={() => onAction("toggle-status")} disabled={actionLoading} className="btn-critical-secondary">
+            {user.is_active ? "Suspender Acesso" : "Reativar Acesso"}
+          </button>
+          <button onClick={() => onAction("delete")} disabled={actionLoading} className="btn-delete-permanent">
+            {actionLoading ? "Processando..." : "Excluir Identidade"}
+          </button>
+        </div>
+      </section>
     </div>
   );
 }
