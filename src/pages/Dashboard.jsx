@@ -530,6 +530,7 @@ export default function Dashboard() {
               {(role === "admin" || activeTab !== "users") && (
                 <DashboardFilters
                   activeTab={activeTab}
+                  onNewOrder={() => setShowOrderForm(true)}
                   user={selectedUser}
                   role={role}
                   filters={filters}
