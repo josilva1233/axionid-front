@@ -373,7 +373,22 @@ useEffect(() => {
               setFormData={setFormData} // Passe o setter
               onBack={() => setSelectedUser(null)}
               actionLoading={actionLoading}
-              onUpdate={handleUpdateUser}
+                handleSave={() => {
+    const userId = selectedUser?.id;
+
+    console.log("🚀 Salvando:", userId);
+    console.log("📦 Dados:", formData);
+
+    if (!userId) {
+      return AxionAlert.fire(
+        "Erro",
+        "ID do usuário não identificado.",
+        "error"
+      );
+    }
+
+    handleUpdateUser(userId, formData);
+  }}
               onAction={async (type) => {
                 if (type === "promote")
                   await handleToggleAdmin(selectedUser.id, false);
