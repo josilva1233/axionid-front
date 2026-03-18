@@ -160,7 +160,7 @@ export default function GroupDetail({
             </div>
           </div>
         </div>
-
+        <br />
         <div className="col-md-4">
           <div className="info-card p-4">
             <h5 className="text-white mb-3 fw-bold">Adicionar Membro</h5>
@@ -189,6 +189,8 @@ export default function GroupDetail({
           </div>
         </div>
       </div>
+
+      <br />
       {/* Nova linha para a Zona de Perigo (Excluir Grupo) */}
       <div className="row mt-4">
         <div className="col-12">
