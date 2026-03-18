@@ -8,6 +8,7 @@ export default function DashboardFilters({
   onClear, 
   onNewGroup, 
   onNewPermission,
+  handleSave,
   // Props com valores padrão
   isEditing = false,
   onBack = () => {},
