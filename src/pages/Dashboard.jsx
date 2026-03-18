@@ -88,6 +88,9 @@ export default function Dashboard() {
     else if (activeTab === "audit") loadAuditLogs(currentPage);
     else if (activeTab === "groups") loadGroups(currentPage);
     else if (activeTab === "permissions") loadPermissions();
+    if (activeTab === "groups") {
+    loadPermissions();
+  }
   }, [
     activeTab,
     currentPage,
@@ -486,7 +489,7 @@ export default function Dashboard() {
                 })
               }
               // ✅ ADICIONE ESTAS 3 LINHAS ABAIXO:
-              allAvailablePermissions={permissions}
+              allAvailablePermissions={permissions || []}
               onAddPermission={handleAddPermissionToGroup}
               onRemovePermission={handleRemovePermissionFromGroup}
             />
