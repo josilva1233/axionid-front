@@ -77,48 +77,79 @@ export default function UserDetail({
       }}>
         <div className="d-flex gap-3 flex-wrap align-items-end">
           {/* VOLTAR */}
-          <div style={{ minWidth: "160px" }}>
-            <label className="filter-label small d-block mb-1">Navegação</label>
-            <button 
-              className="btn-filter-clear w-100 d-flex align-items-center justify-content-center" 
-              style={{ height: "45px" }} 
-              onClick={onBack}
-            >
-              <i className="bi bi-arrow-left me-2"></i> Voltar para a lista
-            </button>
-          </div>
+<div
+  className="mb-4 p-4 d-flex justify-content-between align-items-center flex-wrap gap-3"
+  style={{
+    background: "var(--card-bg)",
+    borderRadius: "12px",
+    border: "1px solid var(--border-color)",
+  }}
+>
+  {/* ESQUERDA */}
+  <div className="d-flex align-items-center gap-3">
+    <button
+      className="btn-filter-clear d-flex align-items-center"
+      style={{ height: "40px" }}
+      onClick={onBack}
+    >
+      <i className="bi bi-arrow-left me-2"></i>
+      Voltar
+    </button>
 
-          {/* EDITAR/SALVAR */}
-          <div style={{ minWidth: "200px", flex: "1" }}>
-            <label className="filter-label small d-block mb-1">Ações de Registro</label>
-            {!isEditing ? (
-              <button 
-                className="btn-critical-primary w-100" 
-                style={{ height: "45px" }} 
-                onClick={() => setIsEditing(true)}
-              >
-                <i className="bi bi-pencil me-2"></i> Editar Usuário
-              </button>
-            ) : (
-              <div className="d-flex gap-2">
-                <button 
-                  className="btn-critical-secondary" 
-                  style={{ height: "45px", flex: "1" }} 
-                  onClick={() => setIsEditing(false)}
-                >
-                  Cancelar
-                </button>
-                <button 
-                  className="btn-table-action" 
-                  style={{ height: "45px", background: "var(--success)", border: "none", flex: "1" }} 
-                  onClick={handleSave}
-                  disabled={actionLoading}
-                >
-                  {actionLoading ? "..." : "Salvar"}
-                </button>
-              </div>
-            )}
-          </div>
+    <div>
+      <div style={{ fontSize: "1.1rem", fontWeight: "600" }}>
+        {user.name}
+      </div>
+
+      <div
+        style={{
+          fontSize: "0.75rem",
+          opacity: 0.6,
+          fontFamily: "monospace",
+        }}
+      >
+        ID: {userIdDisplay}
+      </div>
+    </div>
+  </div>
+
+  {/* DIREITA */}
+  <div className="d-flex gap-2">
+    {!isEditing ? (
+      <button
+        className="btn-critical-primary"
+        style={{ height: "40px" }}
+        onClick={() => setIsEditing(true)}
+      >
+        <i className="bi bi-pencil me-2"></i>
+        Editar
+      </button>
+    ) : (
+      <>
+        <button
+          className="btn-critical-secondary"
+          style={{ height: "40px" }}
+          onClick={() => setIsEditing(false)}
+        >
+          Cancelar
+        </button>
+
+        <button
+          className="btn-table-action"
+          style={{
+            height: "40px",
+            background: "var(--success)",
+            border: "none",
+          }}
+          onClick={handleSave}
+          disabled={actionLoading}
+        >
+          {actionLoading ? "..." : "Salvar"}
+        </button>
+      </>
+    )}
+  </div>
+</div>
 
           {/* ID DO USUÁRIO - CORRIGIDO */}
           <div style={{ minWidth: "200px" }}>
