@@ -76,13 +76,19 @@ export default function UserDetail({
 
         <div className="header-actions">
           {!isEditing ? (
-            <button className="btn-critical-primary btn-edit" onClick={() => setIsEditing(true)}>
+            <button
+              className="btn-critical-primary btn-edit"
+              onClick={() => setIsEditing(true)}
+            >
               <i className="bi bi-pencil me-2"></i>
               Editar
             </button>
           ) : (
             <>
-              <button className="btn-critical-secondary" onClick={() => setIsEditing(false)}>
+              <button
+                className="btn-critical-secondary"
+                onClick={() => setIsEditing(false)}
+              >
                 Cancelar
               </button>
               <button
@@ -96,7 +102,7 @@ export default function UserDetail({
           )}
         </div>
       </div>
-<br />
+      <br />
       {/* CARDS DE DETALHES */}
       <div className="detail-grid">
         {/* CARD: PERFIL */}
@@ -115,14 +121,18 @@ export default function UserDetail({
                 className="custom-input-dark name-input mb-2"
               />
               <div className="d-flex gap-2 align-items-center">
-                <span className={`badge ${user.is_admin ? "badge-success" : "badge-operacional"}`}>
+                <span
+                  className={`badge ${user.is_admin ? "badge-success" : "badge-operacional"}`}
+                >
                   {user.is_admin ? "Administrador" : "Operacional"}
                 </span>
-                {!user.is_active && <span className="badge badge-danger">Suspenso</span>}
+                {!user.is_active && (
+                  <span className="badge badge-danger">Suspenso</span>
+                )}
               </div>
             </div>
           </div>
-          
+
           <div className="info-list g-3 row">
             <div className="info-item col-12 mb-2">
               <label className="input-label">E-mail Corporativo</label>
@@ -233,7 +243,7 @@ export default function UserDetail({
           </div>
         </section>
       </div>
-
+      <br />
       {/* AÇÕES CRÍTICAS */}
       <section className="critical-actions-section mt-5 p-4">
         <h4 className="critical-title">Gestão de Acesso e Privilégios</h4>
