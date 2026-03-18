@@ -78,7 +78,7 @@ export default function UserDetail({
         <div className="d-flex gap-3 flex-wrap align-items-end">
           {/* VOLTAR */}
 <div
-  className="mb-4 p-4 d-flex justify-content-between align-items-center flex-wrap gap-3"
+  className="mb-4 p-4 d-flex justify-content-between align-items-center gap-3"
   style={{
     background: "var(--card-bg)",
     borderRadius: "12px",
@@ -86,7 +86,7 @@ export default function UserDetail({
   }}
 >
   {/* ESQUERDA */}
-  <div className="d-flex align-items-center gap-3">
+  <div className="d-flex align-items-center gap-3" style={{ minWidth: 0 }}>
     <button
       className="btn-filter-clear d-flex align-items-center"
       style={{ height: "40px" }}
