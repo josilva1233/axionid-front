@@ -34,43 +34,27 @@ export default function GroupDetail({
 
   return (
     <div className="group-detail-container animate-in w-100">
+      
       {/* BARRA DE TOPO PADRONIZADA */}
       <div className="user-detail-header mb-4 p-3">
-        <div className="header-left d-flex align-items-center gap-3">
-          {/* Botão de Voltar mais discreto e elegante */}
-          <button
-            className="btn-filter-clear btn-back d-flex align-items-center"
-            onClick={onBack}
-          >
+        <div className="header-left">
+          <button className="btn-filter-clear btn-back" onClick={onBack}>
             <i className="bi bi-arrow-left me-2"></i>
-            <span className="fw-medium">Voltar</span>
+            Voltar
           </button>
 
           <div className="vertical-divider"></div>
 
-          <div className="user-title-block d-flex flex-column">
-            {/* Label pequeno em cima para contexto */}
-            <span
-              className="user-id-text text-uppercase tracking-wider mb-1"
-              style={{ fontSize: "0.65rem", opacity: 0.6 }}
-            >
-              Painel de Controle / Grupos
+          <div className="user-title-block">
+            <span className="user-name-text">
+              Gerenciar Grupo: <span className="text-primary">{group.name?.toUpperCase()}</span>
             </span>
-
-            {/* Título principal com destaque no nome do grupo */}
-            <h1
-              className="user-name-text m-0 d-flex align-items-center"
-              style={{ fontSize: "1.2rem", fontWeight: 500 }}
-            >
-              <span className="text-dim me-2">Gerenciar Grupo:</span>
-              <span className="text-primary fw-bold">
-                {group.name?.toUpperCase()}
-              </span>
-            </h1>
+            <span className="user-id-text">SISTEMA AXION ID</span>
           </div>
         </div>
+
         <div className="header-actions">
-          <span className="badge badge-operacional">Informativo</span>
+           <span className="badge badge-operacional">Informativo</span>
         </div>
       </div>
 
@@ -109,14 +93,8 @@ export default function GroupDetail({
                             {user.pivot?.role === "admin" ? (
                               <button
                                 className="btn btn-outline-warning btn-sm px-3"
-                                style={{
-                                  fontSize: "0.75rem",
-                                  height: "32px",
-                                  minWidth: "120px",
-                                }}
-                                onClick={() =>
-                                  onDemoteUser && onDemoteUser(user.id)
-                                }
+                                style={{ fontSize: "0.75rem", height: "32px", minWidth: "120px" }}
+                                onClick={() => onDemoteUser && onDemoteUser(user.id)}
                                 disabled={actionLoading}
                               >
                                 <i className="bi bi-shield-minus me-1"></i>
@@ -125,14 +103,8 @@ export default function GroupDetail({
                             ) : (
                               <button
                                 className="btn btn-outline-success btn-sm px-3"
-                                style={{
-                                  fontSize: "0.75rem",
-                                  height: "32px",
-                                  minWidth: "120px",
-                                }}
-                                onClick={() =>
-                                  onPromoteUser && onPromoteUser(user.id)
-                                }
+                                style={{ fontSize: "0.75rem", height: "32px", minWidth: "120px" }}
+                                onClick={() => onPromoteUser && onPromoteUser(user.id)}
                                 disabled={actionLoading}
                               >
                                 <i className="bi bi-shield-check me-1"></i>
@@ -154,10 +126,7 @@ export default function GroupDetail({
                     ))
                   ) : (
                     <tr>
-                      <td
-                        colSpan="4"
-                        className="text-center py-5 text-dim italic"
-                      >
+                      <td colSpan="4" className="text-center py-5 text-dim italic">
                         Nenhum membro vinculado.
                       </td>
                     </tr>
@@ -203,8 +172,7 @@ export default function GroupDetail({
               <div>
                 <h5 className="text-danger fw-bold mb-1">Zona de Perigo</h5>
                 <p className="text-dim small mb-0">
-                  Uma vez excluído, o grupo e seus vínculos não podem ser
-                  recuperados.
+                  Uma vez excluído, o grupo e seus vínculos não podem ser recuperados.
                 </p>
               </div>
               <button
