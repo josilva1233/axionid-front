@@ -17,6 +17,8 @@ import DashboardFilters from "../components/dashboard/DashboardFilters";
 import PermissionTable from "../components/dashboard/PermissionTable";
 import PermissionForm from "../components/dashboard/PermissionForm";
 import OperationView from "../components/dashboard/OperationView";
+import ServiceOrderTable from "../components/dashboard/ServiceOrderTable";
+import ServiceOrderForm from "../components/dashboard/ServiceOrderForm";
 
 export default function Dashboard() {
   const navigate = useNavigate();
