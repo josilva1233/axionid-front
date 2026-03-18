@@ -69,78 +69,81 @@ export default function UserDetail({
 
   return (
     <div className="animate-in w-100">
- {/* BARRA DE TOPO CORRIGIDA - TUDO EM LINHA */}
+{/* BARRA DE TOPO - FORÇANDO LINHA ÚNICA */}
 <div
   className="mb-4 p-3 animate-in"
   style={{
     background: "var(--card-bg)",
     borderRadius: "12px",
     border: "1px solid var(--border-color)",
+    display: "flex",
+    flexDirection: "row", // Garante horizontal
+    alignItems: "center",
+    justifyContent: "space-between"
   }}
 >
-  <div className="d-flex align-items-center justify-content-between w-100">
+  {/* LADO ESQUERDO: Voltar + Nome + ID */}
+  <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "20px" }}>
     
-    {/* GRUPO DA ESQUERDA: VOLTAR + INFO (EM LINHA) */}
-    <div className="d-flex align-items-center gap-3">
+    <button
+      className="btn-filter-clear"
+      style={{ height: "40px", padding: "0 15px", whiteSpace: "nowrap" }}
+      onClick={onBack}
+    >
+      <i className="bi bi-arrow-left me-2"></i>
+      Voltar
+    </button>
+
+    {/* Divisor Vertical */}
+    <div style={{ width: "1px", height: "25px", background: "rgba(255,255,255,0.1)" }}></div>
+
+    {/* Container do Nome e ID - mantendo o ID pequeno abaixo do nome, mas o bloco em linha com o botão */}
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <span style={{ fontWeight: 600, color: "#fff", fontSize: "1.1rem", whiteSpace: "nowrap" }}>
+        {user.name}
+      </span>
+      <span style={{ opacity: 0.5, fontFamily: "monospace", fontSize: "0.7rem", color: "var(--primary)" }}>
+        ID: {user.id}
+      </span>
+    </div>
+  </div>
+
+  {/* LADO DIREITO: Botões de Ação */}
+  <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
+    {!isEditing ? (
       <button
-        className="btn-filter-clear d-flex align-items-center justify-content-center"
-        style={{ height: "45px", minWidth: "100px", whiteSpace: "nowrap" }}
-        onClick={onBack}
+        className="btn-critical-primary"
+        style={{ height: "40px", padding: "0 20px", whiteSpace: "nowrap" }}
+        onClick={() => setIsEditing(true)}
       >
-        <i className="bi bi-arrow-left me-2"></i>
-        Voltar
+        <i className="bi bi-pencil me-2"></i>
+        Editar
       </button>
-
-      {/* LINHA DIVISORA VERTICAL */}
-      <div style={{ width: "1px", height: "30px", background: "rgba(255,255,255,0.1)" }}></div>
-
-      {/* TEXTOS: NOME E ID LADO A LADO OU EMPILHADOS CURTOS */}
-      <div className="d-flex flex-column justify-content-center">
-        <h5 className="mb-0" style={{ fontWeight: 600, color: "#fff", fontSize: "1.1rem", lineHeight: "1.2" }}>
-          {user.name}
-        </h5>
-        <small style={{ opacity: 0.5, fontFamily: "monospace", fontSize: "0.7rem" }}>
-          SISTEMA ID: <span style={{ color: "var(--primary)" }}>{user.id}</span>
-        </small>
-      </div>
-    </div>
-
-    {/* GRUPO DA DIREITA: BOTÕES DE AÇÃO */}
-    <div className="d-flex gap-2">
-      {!isEditing ? (
+    ) : (
+      <>
         <button
-          className="btn-critical-primary d-flex align-items-center"
-          style={{ height: "45px", padding: "0 20px" }}
-          onClick={() => setIsEditing(true)}
+          className="btn-critical-secondary"
+          style={{ height: "40px", padding: "0 20px" }}
+          onClick={() => setIsEditing(false)}
         >
-          <i className="bi bi-pencil me-2"></i>
-          <span style={{ whiteSpace: "nowrap" }}>Editar Usuário</span>
+          Cancelar
         </button>
-      ) : (
-        <>
-          <button
-            className="btn-critical-secondary"
-            style={{ height: "45px", padding: "0 20px" }}
-            onClick={() => setIsEditing(false)}
-          >
-            Cancelar
-          </button>
-          <button
-            className="btn-table-action"
-            style={{
-              height: "45px",
-              padding: "0 25px",
-              background: "var(--success)",
-              border: "none",
-            }}
-            onClick={handleSave}
-            disabled={actionLoading}
-          >
-            {actionLoading ? "..." : "Salvar Alterações"}
-          </button>
-        </>
-      )}
-    </div>
+        <button
+          className="btn-table-action"
+          style={{
+            height: "40px",
+            padding: "0 20px",
+            background: "var(--success)",
+            border: "none",
+            color: "#fff"
+          }}
+          onClick={handleSave}
+          disabled={actionLoading}
+        >
+          {actionLoading ? "..." : "Salvar Alterações"}
+        </button>
+      </>
+    )}
   </div>
 </div>
 
