@@ -100,17 +100,23 @@ export default function Dashboard() {
   // Adicione isso logo abaixo dos seus outros UseEffects
 useEffect(() => {
   if (selectedUser) {
-    // Pega os dados da raiz ou de .data
     const userData = selectedUser.data || selectedUser;
+    
     setFormData({
-      name: userData.name,
-      email: userData.email,
-      cpf_cnpj: userData.cpf_cnpj,
-      // adicione outros campos que você permite editar
+      name: userData.name || "",
+      email: userData.email || "",
+      cpf_cnpj: userData.cpf_cnpj || "",
+      // ✅ ADICIONE ESTAS LINHAS ABAIXO:
+      zip_code: userData.address?.zip_code || "",
+      street: userData.address?.street || "",
+      number: userData.address?.number || "",
+      neighborhood: userData.address?.neighborhood || "",
+      city: userData.address?.city || "",
+      state: userData.address?.state || "",
+      complement: userData.address?.complement || "",
     });
   }
 }, [selectedUser]);
-
   // --- GESTÃO DE USUÁRIOS (CORREÇÕES SWEETALERT E PRIVILÉGIOS) ---
 
   const handleUpdateUser = async (userId, data) => {
