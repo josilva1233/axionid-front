@@ -30,6 +30,20 @@ export default function Dashboard() {
   const [actionLoading, setActionLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({});
+  const [serviceOrders, setServiceOrders] = useState([]);
+  const [showOrderForm, setShowOrderForm] = useState(false);
+
+  const loadServiceOrders = useCallback(async () => {
+    setActionLoading(true);
+    try {
+      const res = await api.get("/api/v1/service-orders");
+      setServiceOrders(res.data.data || res.data || []);
+    } catch (err) {
+      setServiceOrders([]);
+    } finally {
+      setActionLoading(false);
+    }
+  }, []);
 
   // Estados para Permissões
   const [permissions, setPermissions] = useState([]);
@@ -72,6 +86,23 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
+    if (activeTab === "users") loadUsers(currentPage);
+    else if (activeTab === "audit") loadAuditLogs(currentPage);
+    else if (activeTab === "groups") loadGroups(currentPage);
+    else if (activeTab === "permissions") loadPermissions();
+    // ADICIONE ESTA LINHA:
+    else if (activeTab === "orders") loadServiceOrders();
+  }, [
+    activeTab,
+    currentPage,
+    loadUsers,
+    loadGroups,
+    loadAuditLogs,
+    loadPermissions,
+    loadServiceOrders,
+  ]);
+
+  useEffect(() => {
     const loadProfile = async () => {
       try {
         const res = await api.get("/api/v1/me");
@@ -89,8 +120,8 @@ export default function Dashboard() {
     else if (activeTab === "groups") loadGroups(currentPage);
     else if (activeTab === "permissions") loadPermissions();
     if (activeTab === "groups") {
-    loadPermissions();
-  }
+      loadPermissions();
+    }
   }, [
     activeTab,
     currentPage,
@@ -612,6 +643,37 @@ export default function Dashboard() {
               </div>
             </>
           )}
+          {/* Dentro do content-card, abaixo de permissions */}
+          {activeTab === "orders" &&
+            (showOrderForm ? (
+              <ServiceOrderForm
+                groups={groups}
+                onSuccess={() => {
+                  setShowOrderForm(false);
+                  loadServiceOrders();
+                }}
+                onCancel={() => setShowOrderForm(false)}
+              />
+            ) : (
+              <>
+                <div className="d-flex justify-content-between mb-3">
+                  <h4 className="text-white">Gerenciamento de Chamados</h4>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => setShowOrderForm(true)}
+                  >
+                    Nova Ordem de Serviço
+                  </button>
+                </div>
+                <ServiceOrderTable
+                  orders={serviceOrders}
+                  onEdit={(os) => {
+                    // Aqui você pode abrir um modal de detalhes ou edição futura
+                    console.log("Ver detalhes da OS:", os.protocol);
+                  }}
+                />
+              </>
+            ))}
         </main>
       </div>
     </div>
