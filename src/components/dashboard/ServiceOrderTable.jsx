@@ -1,63 +1,118 @@
-import React from 'react';
+import React from "react";
 
-const ServiceOrderTable = ({ orders, onEdit }) => {
+export default function ServiceOrderTable({ orders, loading, onViewDetail }) {
+  // Função para definir a cor do badge de status
+  const getStatusBadge = (status) => {
+    const styles = {
+      open: { bg: "#e9ecef", color: "#495057", label: "Aberto" },
+      in_progress: { bg: "#fff3cd", color: "#856404", label: "Em Atendimento" },
+      resolved: { bg: "#d4edda", color: "#155724", label: "Resolvido" },
+      closed: { bg: "#f8d7da", color: "#721c24", label: "Fechado" },
+    };
+    const current = styles[status] || styles.open;
     return (
-        <div className="overflow-x-auto bg-white rounded-lg shadow">
-            <table className="min-w-full leading-normal">
-                <thead>
-                    <tr>
-                        <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Protocolo / Título
-                        </th>
-                        <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Prioridade
-                        </th>
-                        <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Status
-                        </th>
-                        <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Ações
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {orders.map((os) => (
-                        <tr key={os.id}>
-                            <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                <div className="flex flex-col">
-                                    <p className="text-blue-600 font-mono font-bold">{os.protocol}</p>
-                                    <p className="text-gray-900 whitespace-no-wrap">{os.title}</p>
-                                </div>
-                            </td>
-                            <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center">
-                                <span className={`font-bold ${os.priority === 'high' ? 'text-red-500' : 'text-gray-500'}`}>
-                                    {os.priority.toUpperCase()}
-                                </span>
-                            </td>
-                            <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center">
-                                <span className={`relative inline-block px-3 py-1 font-semibold leading-tight ${
-                                    os.status === 'completed' ? 'text-green-900' : 'text-orange-900'
-                                }`}>
-                                    <span aria-hidden className={`absolute inset-0 opacity-50 rounded-full ${
-                                        os.status === 'completed' ? 'bg-green-200' : 'bg-orange-200'
-                                    }`}></span>
-                                    <span className="relative text-xs">{os.status}</span>
-                                </span>
-                            </td>
-                            <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm text-right">
-                                <button 
-                                    onClick={() => onEdit(os)}
-                                    className="text-indigo-600 hover:text-indigo-900 font-semibold"
-                                >
-                                    Ver Detalhes
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+      <span 
+        className="badge" 
+        style={{ backgroundColor: current.bg, color: current.color, fontSize: '0.75rem' }}
+      >
+        {current.label.toUpperCase()}
+      </span>
     );
-};
+  };
 
-export default ServiceOrderTable;
+  // Função para definir a cor da prioridade
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'high': return '#ffc107';
+      case 'urgent': return '#dc3545';
+      default: return 'var(--primary)';
+    }
+  };
+
+  return (
+    <div className="table-responsive animate-in">
+      <table className="axion-table w-100">
+        <thead>
+          <tr>
+            <th>PROTOCOLO</th>
+            <th>TÍTULO / ASSUNTO</th>
+            <th>SOLICITANTE</th>
+            <th className="text-center">PRIORIDADE</th>
+            <th className="text-center">STATUS</th>
+            <th className="text-end">AÇÕES</th>
+          </tr>
+        </thead>
+        <tbody>
+          {orders.length > 0 ? (
+            orders.map((os) => (
+              <tr key={os.id}>
+                {/* PROTOCOLO COM ESTILO MONO */}
+                <td className="mono-text" style={{ fontSize: "0.85rem", color: 'var(--text-dim)' }}>
+                  {os.protocol}
+                </td>
+
+                {/* TÍTULO EM DESTAQUE */}
+                <td>
+                  <div className="d-flex flex-column">
+                    <strong style={{ color: "var(--primary)", letterSpacing: "0.5px" }}>
+                      {os.title.toUpperCase()}
+                    </strong>
+                    <small className="text-dim" style={{ fontSize: '0.7rem' }}>
+                      Criado em: {new Date(os.created_at).toLocaleDateString('pt-BR')}
+                    </small>
+                  </div>
+                </td>
+
+                {/* USUÁRIO QUE ABRIU */}
+                <td className="text-dim" style={{ fontSize: "0.9rem" }}>
+                  <i className="bi bi-person me-1"></i>
+                  {os.user?.name || "Usuário Externo"}
+                </td>
+
+                {/* PRIORIDADE COM INDICADOR DE COR */}
+                <td className="text-center">
+                   <div className="d-flex align-items-center justify-content-center gap-2">
+                      <span
+                        className="status-indicator"
+                        style={{
+                          width: "8px",
+                          height: "8px",
+                          borderRadius: "50%",
+                          backgroundColor: getPriorityColor(os.priority),
+                        }}
+                      />
+                      <span className="text-dim" style={{ fontSize: "0.85rem" }}>
+                        {os.priority.toUpperCase()}
+                      </span>
+                    </div>
+                </td>
+
+                {/* STATUS COM BADGE */}
+                <td className="text-center">
+                  {getStatusBadge(os.status)}
+                </td>
+
+                {/* AÇÕES */}
+                <td className="text-end">
+                  <button
+                    className="btn-table-action"
+                    onClick={() => onViewDetail(os.id)}
+                  >
+                    <i className="bi bi-eye-fill me-1"></i>
+                    Detalhes
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="6" className="text-center py-5 text-dim">
+                {loading ? "Carregando chamados..." : "Nenhuma Ordem de Serviço encontrada."}
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
