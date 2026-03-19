@@ -166,16 +166,20 @@ export default function ServiceOrderForm({ onSuccess, onCancel, groups = [] }) {
           {/* ANEXO */}
           <Col md={6}>
             <Form.Group>
-              <Form.Label className="filter-label">
-                Anexo (Imagem ou PDF)
-              </Form.Label>
+              <Form.Label className="filter-label">Anexo (Opcional)</Form.Label>
               <Form.Control
                 type="file"
                 className="custom-input-dark"
-                onChange={(e) =>
-                  setFormData({ ...formData, attachment: e.target.files[0] })
-                }
+                // CORREÇÃO: Pegar o arquivo real da lista de arquivos do input
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    setFormData({ ...formData, attachment: e.target.files[0] });
+                  }
+                }}
               />
+              <small className="text-muted" style={{ fontSize: "0.7rem" }}>
+                PDF, JPG ou PNG (Máx. 2MB)
+              </small>
             </Form.Group>
           </Col>
           {/* BOTÕES DE AÇÃO - Alinhados conforme o padrão do GroupForm */}
