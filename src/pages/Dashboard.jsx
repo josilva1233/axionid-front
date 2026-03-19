@@ -669,7 +669,7 @@ export default function Dashboard() {
               </div>
             </>
           )}
-          {/* Dentro do content-card, abaixo de permissions */}
+          {/* --- ABA DE ORDENS DE SERVIÇO UNIFICADA --- */}
           {activeTab === "orders" &&
             (showOrderForm ? (
               <ServiceOrderForm
@@ -681,23 +681,32 @@ export default function Dashboard() {
                 onCancel={() => setShowOrderForm(false)}
               />
             ) : (
-              <>
-                <div className="d-flex justify-content-between mb-3">
-                  <h4 className="text-white">Gerenciamento de Chamados</h4>
+              <div className="animate-in">
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                  <div>
+                    <h4 className="text-white mb-0">Ordens de Serviço</h4>
+                    <p className="text-dim small mb-0">
+                      Gerencie chamados técnicos e solicitações
+                    </p>
+                  </div>
                   <button
-                    className="btn btn-primary"
+                    className="bw-btn-table-action px-4"
+                    style={{ height: "45px" }}
                     onClick={() => setShowOrderForm(true)}
                   >
-                    Nova Ordem de Serviço
+                    <i className="bi bi-plus-lg me-2"></i> Nova OS
                   </button>
                 </div>
-                {activeTab === "orders" && (
-                  <div className="p-4 text-white">
-                    <h4>Lista de Chamados</h4>
-                    <pre>{JSON.stringify(serviceOrders, null, 2)}</pre>
-                  </div>
-                )}
-              </>
+
+                <ServiceOrderTable
+                  orders={serviceOrders}
+                  loading={actionLoading}
+                  onViewDetail={(id) => {
+                    // Aqui você pode abrir um modal ou navegar para o detalhe
+                    console.log("Visualizar OS:", id);
+                  }}
+                />
+              </div>
             ))}
         </main>
       </div>
