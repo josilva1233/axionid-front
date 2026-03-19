@@ -609,9 +609,9 @@ export default function Dashboard() {
                   onSave={handleCreatePermission}
                 />
               )}
-
-              {/* MOVA O BLOCO ABAIXO PARA CÁ (DENTRO DO CONTENT-CARD) */}
-  {activeTab === "orders" && (
+              
+              
+              {activeTab === "orders" && (
     showOrderForm ? (
       <ServiceOrderForm
         groups={groups}
@@ -641,7 +641,7 @@ export default function Dashboard() {
       </div>
     )
   )}
-</div></main>
+              
 
               <div
                 className={`tab-wrapper position-relative ${loading || actionLoading ? "is-loading" : ""}`}
