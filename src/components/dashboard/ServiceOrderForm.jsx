@@ -170,10 +170,12 @@ export default function ServiceOrderForm({ onSuccess, onCancel, groups = [] }) {
               <Form.Control
                 type="file"
                 className="custom-input-dark"
-                // CORREÇÃO: Pegar o arquivo real da lista de arquivos do input
                 onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    setFormData({ ...formData, attachment: e.target.files[0] });
+                  const file = e.target.files[0]; // Pega o primeiro arquivo
+                  if (file) {
+                    setFormData({ ...formData, attachment: file });
+                  } else {
+                    setFormData({ ...formData, attachment: null });
                   }
                 }}
               />
