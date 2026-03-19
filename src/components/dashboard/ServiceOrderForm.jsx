@@ -1,6 +1,20 @@
 import { useState } from "react";
 import { Form, Spinner, Row, Col, Alert } from "react-bootstrap";
 import api from "../../services/api"; // Importando sua instância configurada do Axios
+import Swal from "sweetalert2"; // 1. Certifique-se de importar
+
+// 2. Cole a configuração que você já usa no Dashboard aqui também
+const AxionAlert = Swal.mixin({
+  background: "#111214",
+  color: "#ffffff",
+  confirmButtonColor: "#6f42c1",
+  cancelButtonColor: "#343a40",
+  customClass: {
+    popup: "border border-secondary rounded-4",
+    confirmButton: "px-4 py-2 rounded-3 fw-bold mx-2",
+    cancelButton: "px-4 py-2 rounded-3 fw-bold mx-2",
+  },
+});
 
 export default function ServiceOrderForm({ onSuccess, onCancel, groups = [] }) {
   const [formData, setFormData] = useState({
