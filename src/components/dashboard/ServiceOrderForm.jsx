@@ -1,131 +1,169 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useState } from "react";
+import { Form, Spinner, Row, Col, Alert } from "react-bootstrap";
+import api from "../../services/api"; // Importando sua instância configurada do Axios
 
-const ServiceOrderForm = ({ onSuccess, groups = [] }) => {
-    const [formData, setFormData] = useState({
-        title: '',
-        description: '',
-        priority: 'low',
-        group_id: '',
-        attachment: null
-    });
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState(null);
+export default function ServiceOrderForm({ onSuccess, onCancel, groups = [] }) {
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    priority: "low",
+    group_id: "",
+    attachment: null,
+  });
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState(null); // { type: 'success' | 'danger', text: string }
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setStatus(null);
 
-    const handleFileChange = (e) => {
-        setFormData(prev => ({ ...prev, attachment: e.target.files[0] }));
-    };
+    const data = new FormData();
+    data.append("title", formData.title);
+    data.append("description", formData.description);
+    data.append("priority", formData.priority);
+    if (formData.group_id) data.append("group_id", formData.group_id);
+    if (formData.attachment) data.append("attachment", formData.attachment);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setMessage(null);
+    try {
+      // Usando o interceptor de API para garantir o Token e a baseURL correta
+      await api.post("/service-orders", data);
+      
+      setStatus({ type: "success", text: "Chamado aberto com sucesso!" });
+      setFormData({ title: "", description: "", priority: "low", group_id: "", attachment: null });
+      
+      if (onSuccess) setTimeout(() => onSuccess(), 1500);
+    } catch (err) {
+      setStatus({ 
+        type: "danger", 
+        text: err.response?.data?.message || "Erro ao abrir chamado. Verifique os dados." 
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        // Usamos FormData para suportar o envio de arquivos
-        const data = new FormData();
-        data.append('title', formData.title);
-        data.append('description', formData.description);
-        data.append('priority', formData.priority);
-        if (formData.group_id) data.append('group_id', formData.group_id);
-        if (formData.attachment) data.append('attachment', formData.attachment);
+  return (
+    <div className="filter-card mb-4 p-4 animate-in">
+      <h4 className="text-white mb-4">Novo Chamado (OS)</h4>
 
-        try {
-            await axios.post('/api/v1/service-orders', data, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            setMessage({ type: 'success', text: 'Chamado aberto com sucesso!' });
-            setFormData({ title: '', description: '', priority: 'low', group_id: '', attachment: null });
-            if (onSuccess) onSuccess();
-        } catch (err) {
-            setMessage({ type: 'error', text: 'Erro ao abrir chamado. Verifique os dados.' });
-        } finally {
-            setLoading(false);
-        }
-    };
+      {status && (
+        <Alert variant={status.type} className="mb-4" onClose={() => setStatus(null)} dismissible>
+          {status.text}
+        </Alert>
+      )}
 
-    return (
-        <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-            <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Novo Chamado (OS)</h3>
-            
-            {message && (
-                <div className={`p-3 mb-4 rounded text-sm ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                    {message.text}
-                </div>
-            )}
+      <Form onSubmit={handleSubmit}>
+        <Row className="g-3">
+          {/* TÍTULO DO PROBLEMA */}
+          <Col md={8}>
+            <Form.Group>
+              <Form.Label className="filter-label">Título do Problema</Form.Label>
+              <Form.Control
+                type="text"
+                className="custom-input-dark"
+                placeholder="Ex: Impressora não liga"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                required
+              />
+            </Form.Group>
+          </Col>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Título do Problema</label>
-                    <input
-                        type="text" name="title" required
-                        value={formData.title} onChange={handleChange}
-                        className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Ex: Impressora não liga"
-                    />
-                </div>
+          {/* PRIORIDADE */}
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label className="filter-label">Prioridade</Form.Label>
+              <Form.Select
+                className="custom-input-dark"
+                value={formData.priority}
+                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+              >
+                <option value="low">Baixa</option>
+                <option value="medium">Média</option>
+                <option value="high">Alta</option>
+                <option value="urgent">Urgente</option>
+              </Form.Select>
+            </Form.Group>
+          </Col>
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Descrição Detalhada</label>
-                    <textarea
-                        name="description" required rows="3"
-                        value={formData.description} onChange={handleChange}
-                        className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Descreva o que está acontecendo..."
-                    />
-                </div>
+          {/* DESCRIÇÃO DETALHADA */}
+          <Col md={12}>
+            <Form.Group>
+              <Form.Label className="filter-label">Descrição Detalhada</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                className="custom-input-dark"
+                placeholder="Descreva o que está acontecendo..."
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                required
+              />
+            </Form.Group>
+          </Col>
 
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Prioridade</label>
-                        <select
-                            name="priority" value={formData.priority} onChange={handleChange}
-                            className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm"
-                        >
-                            <option value="low">Baixa</option>
-                            <option value="medium">Média</option>
-                            <option value="high">Alta</option>
-                            <option value="urgent">Urgente</option>
-                        </select>
-                    </div>
+          {/* VÍNCULO A GRUPO */}
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label className="filter-label">Vincular a Grupo (Opcional)</Form.Label>
+              <Form.Select
+                className="custom-input-dark"
+                value={formData.group_id}
+                onChange={(e) => setFormData({ ...formData, group_id: e.target.value })}
+              >
+                <option value="">Somente eu (Privado)</option>
+                {groups.map((g) => (
+                  <option key={g.id} value={g.id}>{g.name}</option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Col>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Vincular a Grupo (Opcional)</label>
-                        <select
-                            name="group_id" value={formData.group_id} onChange={handleChange}
-                            className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm"
-                        >
-                            <option value="">Somente eu (Privado)</option>
-                            {groups.map(g => (
-                                <option key={g.id} value={g.id}>{g.name}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
+          {/* ANEXO */}
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label className="filter-label">Anexo (Imagem ou PDF)</Form.Label>
+              <Form.Control
+                type="file"
+                className="custom-input-dark"
+                onChange={(e) => setFormData({ ...formData, attachment: e.target.files[0] })}
+              />
+            </Form.Group>
+          </Col>
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Anexo (Imagem ou PDF)</label>
-                    <input
-                        type="file" onChange={handleFileChange}
-                        className="mt-1 block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                    />
-                </div>
+          {/* BOTÕES DE AÇÃO - Alinhados conforme o padrão do GroupForm */}
+          <Col md={6}></Col> {/* Espaçador */}
+          <Col md={3}>
+            <button
+              type="submit"
+              className="bw-btn-table-action w-100 px-3 py-2 fw-bold"
+              style={{ height: "45px" }}
+              disabled={loading}
+            >
+              {loading ? (
+                <Spinner animation="border" size="sm" />
+              ) : (
+                <>
+                  <i className="bi bi-send me-2"></i> Abrir Chamado
+                </>
+              )}
+            </button>
+          </Col>
 
-                <div className="pt-2">
-                    <button
-                        type="submit" disabled={loading}
-                        className={`w-full py-2 px-4 rounded-md text-white font-bold transition-colors ${loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'}`}
-                    >
-                        {loading ? 'Enviando...' : 'Abrir Ordem de Serviço'}
-                    </button>
-                </div>
-            </form>
-        </div>
-    );
-};
-
-export default ServiceOrderForm;
+          <Col md={3}>
+            <button
+              type="button"
+              className="btn-filter-clear w-100"
+              style={{ height: "45px" }}
+              onClick={onCancel}
+              disabled={loading}
+            >
+              <i className="bi bi-x-lg me-2"></i> Cancelar
+            </button>
+          </Col>
+        </Row>
+      </Form>
+    </div>
+  );
+}
