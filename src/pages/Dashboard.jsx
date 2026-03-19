@@ -702,45 +702,6 @@ export default function Dashboard() {
               </div>
             </>
           )}
-          {/* --- ABA DE ORDENS DE SERVIÇO UNIFICADA --- */}
-          {activeTab === "orders" &&
-            (showOrderForm ? (
-              <ServiceOrderForm
-                groups={groups}
-                onSuccess={() => {
-                  setShowOrderForm(false);
-                  loadServiceOrders();
-                }}
-                onCancel={() => setShowOrderForm(false)}
-              />
-            ) : (
-              <div className="animate-in">
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                  <div>
-                    <h4 className="text-white mb-0">Ordens de Serviço</h4>
-                    <p className="text-dim small mb-0">
-                      Gerencie chamados técnicos e solicitações
-                    </p>
-                  </div>
-                  <button
-                    className="bw-btn-table-action px-4"
-                    style={{ height: "45px" }}
-                    onClick={() => setShowOrderForm(true)}
-                  >
-                    <i className="bi bi-plus-lg me-2"></i> Nova OS
-                  </button>
-                </div>
-
-                <ServiceOrderTable
-                  orders={serviceOrders}
-                  loading={actionLoading}
-                  onViewDetail={(id) => {
-                    // Aqui você pode abrir um modal ou navegar para o detalhe
-                    console.log("Visualizar OS:", id);
-                  }}
-                />
-              </div>
-            ))}
         </main>
       </div>
     </div>
