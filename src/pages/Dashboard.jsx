@@ -610,6 +610,39 @@ export default function Dashboard() {
                 />
               )}
 
+              {/* MOVA O BLOCO ABAIXO PARA CÁ (DENTRO DO CONTENT-CARD) */}
+  {activeTab === "orders" && (
+    showOrderForm ? (
+      <ServiceOrderForm
+        groups={groups}
+        onSuccess={() => {
+          setShowOrderForm(false);
+          loadServiceOrders();
+        }}
+        onCancel={() => setShowOrderForm(false)}
+      />
+    ) : (
+      <div className="animate-in">
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h4 className="text-white mb-0">Gestão de Chamados</h4>
+          <button
+            className="bw-btn-table-action px-3"
+            onClick={() => setShowOrderForm(true)}
+          >
+            <i className="bi bi-plus-lg me-2"></i> Nova OS
+          </button>
+        </div>
+        
+        {/* Substitua o <pre> pela tabela que criamos */}
+        <ServiceOrderTable 
+          orders={serviceOrders} 
+          loading={actionLoading} 
+        />
+      </div>
+    )
+  )}
+</div></main>
+
               <div
                 className={`tab-wrapper position-relative ${loading || actionLoading ? "is-loading" : ""}`}
               >
