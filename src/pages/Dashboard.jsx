@@ -34,6 +34,7 @@ export default function Dashboard() {
   const [formData, setFormData] = useState({});
   const [serviceOrders, setServiceOrders] = useState([]);
   const [showOrderForm, setShowOrderForm] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   const loadServiceOrders = useCallback(async () => {
     setActionLoading(true);
@@ -609,39 +610,61 @@ export default function Dashboard() {
                   onSave={handleCreatePermission}
                 />
               )}
-              
-              
-              {activeTab === "orders" && (
-    showOrderForm ? (
-      <ServiceOrderForm
-        groups={groups}
-        onSuccess={() => {
-          setShowOrderForm(false);
-          loadServiceOrders();
-        }}
-        onCancel={() => setShowOrderForm(false)}
-      />
-    ) : (
-      <div className="animate-in">
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h4 className="text-white mb-0">Gestão de Chamados</h4>
-          <button
-            className="bw-btn-table-action px-3"
-            onClick={() => setShowOrderForm(true)}
-          >
-            <i className="bi bi-plus-lg me-2"></i> Nova OS
-          </button>
-        </div>
-        
-        {/* Substitua o <pre> pela tabela que criamos */}
-        <ServiceOrderTable 
-          orders={serviceOrders} 
-          loading={actionLoading} 
-        />
-      </div>
-    )
-  )}
-              
+
+              {activeTab === "orders" &&
+                (showOrderForm ? (
+                  <ServiceOrderForm
+                    groups={groups}
+                    onSuccess={() => {
+                      setShowOrderForm(false);
+                      loadServiceOrders();
+                    }}
+                    onCancel={() => setShowOrderForm(false)}
+                  />
+                ) : selectedOrder ? (
+                  /* ✅ NOVA TELA DE DETALHE INCLUÍDA AQUI */
+                  <ServiceOrderDetail
+                    order={selectedOrder}
+                    onBack={() => setSelectedOrder(null)}
+                    onUpdateStatus={async (id, newStatus) => {
+                      // Exemplo de lógica de atualização rápida
+                      try {
+                        await api.patch(`/api/v1/service-orders/${id}`, {
+                          status: newStatus,
+                        });
+                        loadServiceOrders();
+                        setSelectedOrder(null);
+                        AxionAlert.fire(
+                          "Sucesso",
+                          "Status atualizado",
+                          "success",
+                        );
+                      } catch (err) {
+                        AxionAlert.fire("Erro", "Falha ao atualizar", "error");
+                      }
+                    }}
+                    isSystemAdmin={isGlobalAdmin}
+                  />
+                ) : (
+                  <div className="animate-in">
+                    <div className="d-flex justify-content-between align-items-center mb-4">
+                      <h4 className="text-white mb-0">Gestão de Chamados</h4>
+                      <button
+                        className="bw-btn-table-action px-3"
+                        onClick={() => setShowOrderForm(true)}
+                      >
+                        <i className="bi bi-plus-lg me-2"></i> Nova OS
+                      </button>
+                    </div>
+
+                    <ServiceOrderTable
+                      orders={serviceOrders}
+                      loading={actionLoading}
+                      /* ✅ FUNÇÃO PARA SELECIONAR A OS NA TABELA */
+                      onViewDetail={(order) => setSelectedOrder(order)}
+                    />
+                  </div>
+                ))}
 
               <div
                 className={`tab-wrapper position-relative ${loading || actionLoading ? "is-loading" : ""}`}
