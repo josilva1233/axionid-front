@@ -14,7 +14,7 @@ api.interceptors.request.use((config) => {
   }
   
   config.headers.Accept = 'application/json';
-  config.headers['Content-Type'] = 'application/json';
+  //config.headers['Content-Type'] = 'application/json';
   
   return config;
 }, (error) => {
