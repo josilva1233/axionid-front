@@ -284,9 +284,6 @@ export default function ServiceOrderDetail({
                 value={order.status}
                 onChange={(e) => {
                   const newStatus = e.target.value;
-
-                  // Se 'order' for um número ou string (como o log mostrou '20'), usamos ele direto.
-                  // Caso contrário, tentamos pegar o .id do objeto.
                   const actualId =
                     typeof order === "object" ? order.id || order._id : order;
 
