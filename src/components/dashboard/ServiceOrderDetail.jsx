@@ -282,21 +282,20 @@ export default function ServiceOrderDetail({
               <select
                 className="custom-input-dark w-100 py-2 mb-3"
                 value={order.status}
-                /* ✅ CORREÇÃO AQUI: era oonChange, mude para onChange */
                 onChange={(e) => {
                   const newStatus = e.target.value;
-                  // Tenta pegar o ID de todas as formas possíveis que o Laravel pode ter enviado
-                  const actualId = order.id || order.data?.id;
 
-                  if (!actualId) {
-                    console.error("Objeto da OS recebido:", order);
-                    return AxionAlert.fire(
-                      "Erro",
-                      "ID da OS não encontrado no objeto.",
-                      "error",
-                    );
-                  }
+                  // Se 'order' for um número ou string (como o log mostrou '20'), usamos ele direto.
+                  // Caso contrário, tentamos pegar o .id do objeto.
+                  const actualId =
+                    typeof order === "object" ? order.id || order._id : order;
 
+                  console.log("Status da OS para envio:", {
+                    id: actualId,
+                    status: newStatus,
+                  });
+
+                  // Chamamos a função do pai
                   onUpdateStatus(actualId, newStatus);
                 }}
                 disabled={actionLoading}
