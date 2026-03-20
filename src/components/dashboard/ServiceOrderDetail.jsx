@@ -274,7 +274,6 @@ export default function ServiceOrderDetail({
             </div>
 
             <hr className="border-secondary opacity-25" />
-
             {/* Ações Rápidas (Selects de Mudança) */}
             <div className="mt-4">
               <label className="text-dim small text-uppercase fw-bold mb-2 d-block">
@@ -283,11 +282,17 @@ export default function ServiceOrderDetail({
               <select
                 className="custom-input-dark w-100 py-2 mb-3"
                 value={order.status}
-                oonChange={(e) => {
-  const newStatus = e.target.value;
-  console.log("Componente enviando ID:", order.id, "Novo Status:", newStatus);
-  onUpdateStatus(order.id, newStatus);
-}}
+                /* ✅ CORREÇÃO AQUI: era oonChange, mude para onChange */
+                onChange={(e) => {
+                  const newStatus = e.target.value;
+                  console.log(
+                    "Componente enviando ID:",
+                    order.id,
+                    "Novo Status:",
+                    newStatus,
+                  );
+                  onUpdateStatus(order.id, newStatus);
+                }}
                 disabled={actionLoading}
               >
                 <option value="pending">Pendente</option>
