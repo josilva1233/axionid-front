@@ -285,13 +285,19 @@ export default function ServiceOrderDetail({
                 /* ✅ CORREÇÃO AQUI: era oonChange, mude para onChange */
                 onChange={(e) => {
                   const newStatus = e.target.value;
-                  console.log(
-                    "Componente enviando ID:",
-                    order.id,
-                    "Novo Status:",
-                    newStatus,
-                  );
-                  onUpdateStatus(order.id, newStatus);
+                  // Tenta pegar o ID de todas as formas possíveis que o Laravel pode ter enviado
+                  const actualId = order.id || order.data?.id;
+
+                  if (!actualId) {
+                    console.error("Objeto da OS recebido:", order);
+                    return AxionAlert.fire(
+                      "Erro",
+                      "ID da OS não encontrado no objeto.",
+                      "error",
+                    );
+                  }
+
+                  onUpdateStatus(actualId, newStatus);
                 }}
                 disabled={actionLoading}
               >
