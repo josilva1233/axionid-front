@@ -283,7 +283,11 @@ export default function ServiceOrderDetail({
               <select
                 className="custom-input-dark w-100 py-2 mb-3"
                 value={order.status}
-                onChange={(e) => onUpdateStatus(order.id, e.target.value)}
+                oonChange={(e) => {
+  const newStatus = e.target.value;
+  console.log("Componente enviando ID:", order.id, "Novo Status:", newStatus);
+  onUpdateStatus(order.id, newStatus);
+}}
                 disabled={actionLoading}
               >
                 <option value="pending">Pendente</option>
