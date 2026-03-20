@@ -628,20 +628,39 @@ export default function Dashboard() {
                     order={selectedOrder}
                     onBack={() => setSelectedOrder(null)}
                     onUpdateStatus={async (id, newStatus) => {
-                      // Exemplo de lógica de atualização rápida
+                      // Tenta pegar o ID passado pelo botão, se não houver, pega o da OS aberta
+                      const orderId = id || selectedOrder?.id;
+
+                      if (!orderId) {
+                        return AxionAlert.fire(
+                          "Erro",
+                          "Não foi possível identificar a OS.",
+                          "error",
+                        );
+                      }
+
                       try {
-                        await api.patch(`/api/v1/service-orders/${id}`, {
+                        setActionLoading(true);
+                        // ✅ Usamos PATCH para bater com a rota criada acima
+                        await api.patch(`/api/v1/service-orders/${orderId}`, {
                           status: newStatus,
                         });
-                        loadServiceOrders();
-                        setSelectedOrder(null);
+
                         AxionAlert.fire(
                           "Sucesso",
-                          "Status atualizado",
+                          "Atendimento iniciado!",
                           "success",
                         );
+                        loadServiceOrders(); // Recarrega a lista
+                        setSelectedOrder(null); // Fecha o modal/detalhe
                       } catch (err) {
-                        AxionAlert.fire("Erro", "Falha ao atualizar", "error");
+                        AxionAlert.fire(
+                          "Erro",
+                          "Falha ao atualizar status.",
+                          "error",
+                        );
+                      } finally {
+                        setActionLoading(false);
                       }
                     }}
                     isSystemAdmin={isGlobalAdmin}
