@@ -12,13 +12,14 @@ export default function ServiceOrderDetail({
 }) {
   // Função para traduzir e colorir os badges de status
   const getStatusBadge = (status) => {
-    const config = {
-      pending: { color: "bg-warning text-dark", label: "PENDENTE" },
-      open: { color: "bg-info text-white", label: "EM ABERTO" },
-      in_progress: { color: "bg-primary", label: "EM ATENDIMENTO" },
-      resolved: { color: "bg-success", label: "RESOLVIDO" },
-      closed: { color: "bg-secondary", label: "FECHADO" },
-    };
+const config = {
+  pending: { color: "bg-warning text-dark", label: "PENDENTE" },
+  open: { color: "bg-info text-white", label: "EM ABERTO" },
+  in_progress: { color: "bg-primary", label: "EM ATENDIMENTO" },
+  completed: { color: "bg-success", label: "RESOLVIDO" },
+  canceled: { color: "bg-secondary", label: "CANCELADO" },
+};
+
     const item = config[status] || config.pending;
     return <Badge className={item.color}>{item.label}</Badge>;
   };
@@ -99,10 +100,13 @@ export default function ServiceOrderDetail({
             <div className="d-flex justify-content-between align-items-start mb-4">
               <div>
                 <h3 className="text-white mb-1 fw-bold">{order.title}</h3>
-                <p className="text-dim">
-                  Aberto em:{" "}
-                  {new Date(order.created_at).toLocaleString("pt-BR")}
-                </p>
+<p className="text-dim">
+  Aberto em:{" "}
+  {order.created_at
+    ? new Date(order.created_at).toLocaleString("pt-BR")
+    : "Data inválida"}
+</p>
+
               </div>
               <div className="text-end">
                 <div className="mb-2">{getStatusBadge(order.status)}</div>
@@ -284,8 +288,8 @@ export default function ServiceOrderDetail({
                 value={order.status}
                 onChange={(e) => {
                   const newStatus = e.target.value;
-                  const actualId =
-                    typeof order === "object" ? order.id || order._id : order;
+                 const actualId = order?.id;
+
 
                   console.log("Status da OS para envio:", {
                     id: actualId,
@@ -300,8 +304,9 @@ export default function ServiceOrderDetail({
                 <option value="pending">Pendente</option>
                 <option value="open">Abrir OS</option>
                 <option value="in_progress">Iniciar Atendimento</option>
-                <option value="resolved">Marcar como Resolvido</option>
-                <option value="closed">Encerrar Definitivamente</option>
+                <option value="completed">Marcar como Resolvido</option>
+<option value="canceled">Encerrar Definitivamente</option>
+
               </select>
             </div>
           </div>
