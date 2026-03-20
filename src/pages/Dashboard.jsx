@@ -49,6 +49,44 @@ export default function Dashboard() {
     }
   }, []);
 
+  const onUpdateStatus = async (idFromChild, newStatus) => {
+  // Prioridade 1: ID que veio do clique (idFromChild)
+  // Prioridade 2: ID que está no estado do objeto selecionado
+  const orderId = idFromChild || selectedOrder?.id;
+
+  if (!orderId) {
+    console.error("Estado atual do selectedOrder:", selectedOrder);
+    return AxionAlert.fire("Erro", "Não foi possível identificar a OS.", "error");
+  }
+
+  try {
+    setActionLoading(true);
+    // Note que usamos PATCH /api/v1/service-orders/{id}
+    await api.patch(`/api/v1/service-orders/${orderId}`, { 
+      status: newStatus 
+    });
+
+    AxionAlert.fire({
+      icon: "success",
+      title: "Status Atualizado!",
+      timer: 1500,
+      showConfirmButton: false
+    });
+
+    // ⚠️ IMPORTANTE: Atualize a lista local para refletir a mudança
+    loadServiceOrders(); 
+    
+    // Atualiza o objeto no detalhe para o novo status sem precisar fechar a tela
+    setSelectedOrder(prev => ({ ...prev, status: newStatus }));
+
+  } catch (err) {
+    console.error("Erro na atualização:", err);
+    AxionAlert.fire("Erro", "Falha ao atualizar no servidor.", "error");
+  } finally {
+    setActionLoading(false);
+  }
+};
+
   // Estados para Permissões
   const [permissions, setPermissions] = useState([]);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
