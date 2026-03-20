@@ -12,14 +12,13 @@ export default function ServiceOrderDetail({
 }) {
   // Função para traduzir e colorir os badges de status
   const getStatusBadge = (status) => {
-const config = {
-  pending: { color: "bg-warning text-dark", label: "PENDENTE" },
-  open: { color: "bg-info text-white", label: "EM ABERTO" },
-  in_progress: { color: "bg-primary", label: "EM ATENDIMENTO" },
-  completed: { color: "bg-success", label: "RESOLVIDO" },
-  canceled: { color: "bg-secondary", label: "CANCELADO" },
-};
-
+    const config = {
+      pending: { color: "bg-warning text-dark", label: "PENDENTE" },
+      open: { color: "bg-info text-white", label: "EM ABERTO" },
+      in_progress: { color: "bg-primary", label: "EM ATENDIMENTO" },
+      resolved: { color: "bg-success", label: "RESOLVIDO" },
+      closed: { color: "bg-secondary", label: "FECHADO" },
+    };
     const item = config[status] || config.pending;
     return <Badge className={item.color}>{item.label}</Badge>;
   };
@@ -288,8 +287,8 @@ const config = {
                 value={order.status}
                 onChange={(e) => {
                   const newStatus = e.target.value;
-                 const actualId = order?.id;
-
+                  const actualId =
+                    typeof order === "object" ? order.id || order._id : order;
 
                   console.log("Status da OS para envio:", {
                     id: actualId,
@@ -304,9 +303,8 @@ const config = {
                 <option value="pending">Pendente</option>
                 <option value="open">Abrir OS</option>
                 <option value="in_progress">Iniciar Atendimento</option>
-                <option value="completed">Marcar como Resolvido</option>
-<option value="canceled">Encerrar Definitivamente</option>
-
+                <option value="resolved">Marcar como Resolvido</option>
+                <option value="closed">Encerrar Definitivamente</option>
               </select>
             </div>
           </div>
