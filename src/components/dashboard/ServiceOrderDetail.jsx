@@ -5,21 +5,22 @@ export default function ServiceOrderDetail({
   order,
   onBack,
   onUpdateStatus,
+  onAssignTechnician,
   onDeleteOrder,
   actionLoading,
   isSystemAdmin,
 }) {
-  // --- HELPERS DE INTERFACE ---
+  // Função para traduzir e colorir os badges de status
   const getStatusBadge = (status) => {
     const config = {
       pending: { color: "bg-warning text-dark", label: "PENDENTE" },
       open: { color: "bg-info text-white", label: "EM ABERTO" },
-      in_progress: { color: "bg-primary text-white", label: "EM ATENDIMENTO" },
-      resolved: { color: "bg-success text-white", label: "RESOLVIDO" },
-      closed: { color: "bg-secondary text-white", label: "FECHADO" },
+      in_progress: { color: "bg-primary", label: "EM ATENDIMENTO" },
+      resolved: { color: "bg-success", label: "RESOLVIDO" },
+      closed: { color: "bg-secondary", label: "FECHADO" },
     };
     const item = config[status] || config.pending;
-    return <Badge className={`${item.color} px-3 py-2 shadow-sm border-0`}>{item.label}</Badge>;
+    return <Badge className={item.color}>{item.label}</Badge>;
   };
 
   const getPriorityBadge = (priority) => {
@@ -31,74 +32,76 @@ export default function ServiceOrderDetail({
     };
     const item = config[priority] || config.low;
     return (
-      <span className={`badge border ${item.color}`} style={{ fontSize: "0.75rem", padding: '5px 10px' }}>
+      <span
+        className={`badge border ${item.color}`}
+        style={{ fontSize: "0.7rem" }}
+      >
         {item.label.toUpperCase()}
       </span>
     );
   };
 
-  // --- VALIDAÇÃO DE SEGURANÇA ---
-  // Se 'order' for apenas o ID (número) ou nulo, exibe o spinner de carregamento padronizado
-  if (!order || typeof order !== "object") {
+  if (!order) {
     return (
-      <div className="text-center py-5 animate-in" style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '15px' }}>
-        <div className="spinner-border text-primary mb-3" role="status" style={{ width: '3rem', height: '3rem' }}></div>
-        <h5 className="text-white">Sincronizando dados da OS #{order || ""}</h5>
-        <p className="text-dim small">Aguardando resposta do servidor...</p>
-        <button className="btn btn-outline-secondary mt-3 rounded-pill" onClick={onBack}>
-          <i className="bi bi-arrow-left me-2"></i>Voltar para Lista
+      <div className="text-center py-5">
+        <p className="text-dim">Carregando detalhes da OS...</p>
+        <button className="btn-filter-clear" onClick={onBack}>
+          Voltar
         </button>
       </div>
     );
   }
 
-  const actualId = order.id || order._id;
-
   return (
-    <div className="group-detail-container animate-in w-100 p-1">
-      
-      {/* HEADER DE AÇÕES */}
-      <div className="user-detail-header mb-4 p-3 d-flex align-items-center justify-content-between rounded-4 shadow-sm" 
-           style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}>
+    <div className="group-detail-container animate-in w-100">
+      {/* BARRA DE TOPO PADRONIZADA (Igual ao GroupDetail) */}
+      <div className="user-detail-header mb-4 p-3 d-flex align-items-center justify-content-between">
         <div className="header-left d-flex align-items-center">
-          <button className="btn-filter-clear btn-back d-flex align-items-center" onClick={onBack}>
-            <i className="bi bi-arrow-left fs-5 me-2"></i>Voltar
+          <button className="btn-filter-clear btn-back" onClick={onBack}>
+            <i className="bi bi-arrow-left me-2"></i>
+            Voltar
           </button>
-          <div className="vertical-divider mx-3" style={{ height: "30px", width: "1px", background: "rgba(255,255,255,0.1)" }}></div>
+
+          <div className="vertical-divider mx-3"></div>
+
           <div className="user-title-block">
-            <span className="user-name-text fw-bold text-white fs-5">
-              Protocolo: <span className="text-primary">{order.protocol || "S/P"}</span>
+            <span className="user-name-text">
+              Protocolo: <span className="text-primary">{order.protocol}</span>
             </span>
-            <span className="user-id-text d-block text-dim small">OS ID: #{actualId}</span>
+            <span className="user-id-text">OS ID: {order.id}</span>
           </div>
         </div>
 
-        <div className="header-actions">
+        <div className="header-actions d-flex gap-2">
           {isSystemAdmin && (
             <button
-              className="btn btn-sm btn-outline-danger border-0 px-3 py-2"
-              onClick={() => onDeleteOrder(actualId)}
+              className="btn-critical-primary"
+              onClick={() => onDeleteOrder(order.id)}
               disabled={actionLoading}
-              style={{ background: "rgba(220, 53, 69, 0.1)", borderRadius: "10px" }}
+              style={{
+                background: "var(--bs-danger)",
+                border: "none",
+                padding: "8px 15px",
+                borderRadius: "8px",
+              }}
             >
-              <i className="bi bi-trash3 me-2"></i>Excluir Chamado
+              <i className="bi bi-trash3 me-2"></i>
+              Excluir OS
             </button>
           )}
         </div>
       </div>
 
       <Row className="g-4">
-        {/* COLUNA ESQUERDA: CONTEÚDO */}
-        <Col lg={8}>
-          <div className="info-card p-4 h-100 shadow-sm rounded-4" 
-               style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
-            
+        {/* COLUNA DA ESQUERDA: INFORMAÇÕES PRINCIPAIS */}
+        <Col md={8}>
+          <div className="info-card p-4 h-100">
             <div className="d-flex justify-content-between align-items-start mb-4">
               <div>
-                <h3 className="text-white mb-2 fw-bold">{order.title || "Ordem de Serviço"}</h3>
-                <p className="text-dim small d-flex align-items-center">
-                  <i className="bi bi-calendar3 text-primary me-2"></i>
-                  Aberto em: {order.created_at ? new Date(order.created_at).toLocaleString("pt-BR") : "---"}
+                <h3 className="text-white mb-1 fw-bold">{order.title}</h3>
+                <p className="text-dim">
+                  Aberto em:{" "}
+                  {new Date(order.created_at).toLocaleString("pt-BR")}
                 </p>
               </div>
               <div className="text-end">
@@ -107,109 +110,199 @@ export default function ServiceOrderDetail({
               </div>
             </div>
 
-            <h6 className="text-primary-light text-uppercase fw-bold small mb-3" style={{ letterSpacing: '1px' }}>
-              Descrição do Problema
+            <h6 className="text-primary-light text-uppercase fw-bold small mb-2">
+              Descrição da Solicitação
             </h6>
-            <div className="description-box p-4 rounded-4 mb-4" 
-                 style={{ background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.08)" }}>
-              <p className="text-white mb-0" style={{ whiteSpace: "pre-line", lineHeight: "1.7", fontSize: "0.95rem" }}>
-                {order.description || "O solicitante não forneceu uma descrição detalhada."}
+            <div
+              className="description-box p-3 rounded-3 mb-4"
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
+            >
+              <p
+                className="text-white mb-0"
+                style={{ whiteSpace: "pre-line", lineHeight: "1.6" }}
+              >
+                {order.description}
               </p>
             </div>
 
-            {/* SEÇÃO DE ANEXO OTIMIZADA */}
-            <h6 className="text-primary-light text-uppercase fw-bold small mb-3" style={{ letterSpacing: '1px' }}>
-              Anexos e Evidências
-            </h6>
-            {order.attachment_path ? (
-              <div className="p-3 rounded-4 d-flex align-items-center justify-content-between shadow-sm" 
-                   style={{ background: "rgba(13, 110, 253, 0.05)", border: "1px solid rgba(13, 110, 253, 0.15)" }}>
-                <div className="d-flex align-items-center gap-3">
-                  <div className="bg-primary bg-opacity-20 p-3 rounded-3 border border-primary border-opacity-25">
-                    <i className="bi bi-file-earmark-image-fill text-primary fs-3"></i>
-                  </div>
-                  <div className="overflow-hidden">
-                    <span className="text-white d-block fw-bold mb-0 text-truncate" style={{ maxWidth: '250px' }}>
-                      {order.attachment_path.split('/').pop()}
-                    </span>
-                    <small className="text-dim">Clique para visualizar o arquivo original</small>
+            {/* SEÇÃO DE ANEXO */}
+            {order.attachment_path && (
+              <div
+                className="mt-4 p-3 rounded-4"
+                style={{
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                }}
+              >
+                <h6
+                  className="text-white-50 mb-3"
+                  style={{
+                    fontSize: "0.75rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "1px",
+                  }}
+                >
+                  <i className="bi bi-paperclip me-2"></i>Anexo do Chamado
+                </h6>
+
+                <div className="d-flex flex-column flex-md-row align-items-start gap-3">
+                  {/* PREVIEW DA IMAGEM (Se for jpg, png, etc) */}
+                  {["jpg", "jpeg", "png", "webp"].some((ext) =>
+                    order.attachment_path.toLowerCase().endsWith(ext),
+                  ) ? (
+                    <div
+                      className="rounded-3 overflow-hidden border border-secondary"
+                      style={{
+                        width: "120px",
+                        height: "120px",
+                        cursor: "pointer",
+                      }}
+                      onClick={() =>
+                        window.open(
+                          `${import.meta.env.VITE_API_URL}/storage/${order.attachment_path}`,
+                          "_blank",
+                        )
+                      }
+                    >
+                      <img
+                        src={`${import.meta.env.VITE_API_URL}/storage/${order.attachment_path}`}
+                        alt="Preview"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    /* ÍCONE PARA ARQUIVOS QUE NÃO SÃO IMAGEM (PDF, ETC) */
+                    <div
+                      className="d-flex align-items-center justify-content-center bg-dark rounded-3 border border-secondary"
+                      style={{ width: "120px", height: "120px" }}
+                    >
+                      <i
+                        className="bi bi-file-earmark-pdf text-primary"
+                        style={{ fontSize: "2rem" }}
+                      ></i>
+                    </div>
+                  )}
+
+                  <div className="d-flex flex-column justify-content-between h-100 py-1">
+                    <div>
+                      <span className="text-white d-block fw-bold mb-1">
+                        Documentação/Evidência
+                      </span>
+                      <small className="text-white-50 d-block mb-3">
+                        {order.attachment_path.split("/").pop()}
+                      </small>
+                    </div>
+
+                    <a
+                      href={`${import.meta.env.VITE_API_URL}/storage/${order.attachment_path}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bw-btn-table-action btn-sm text-decoration-none text-center"
+                      style={{ width: "fit-content" }}
+                    >
+                      <i className="bi bi-box-arrow-up-right me-2"></i>Abrir em
+                      tela cheia
+                    </a>
                   </div>
                 </div>
-                <a 
-                  href={`${import.meta.env.VITE_API_URL}/storage/${order.attachment_path}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-primary btn-sm px-4 rounded-pill shadow-sm d-flex align-items-center"
-                >
-                  <i className="bi bi-box-arrow-up-right me-2"></i>Abrir Anexo
-                </a>
-              </div>
-            ) : (
-              <div className="p-4 rounded-4 text-center border border-secondary border-dashed border-opacity-25 bg-white bg-opacity-5">
-                <p className="text-dim mb-0 small">
-                  <i className="bi bi-info-circle me-2"></i>Nenhum arquivo anexado a esta solicitação.
-                </p>
               </div>
             )}
           </div>
         </Col>
 
-        {/* COLUNA DIREITA: GESTÃO */}
-        <Col lg={4}>
-          <div className="info-card p-4 shadow-sm rounded-4" 
-               style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
-            <h5 className="text-white mb-4 fw-bold pb-2 border-bottom border-secondary border-opacity-25">Gestão de Atendimento</h5>
+        {/* COLUNA DA DIREITA: STATUS E RESPONSÁVEIS */}
+        <Col md={4}>
+          <div className="info-card p-4 mb-4">
+            <h5 className="text-white mb-4 fw-bold">Gestão da Ordem</h5>
 
             <div className="mb-4">
-              <label className="text-dim small text-uppercase fw-bold mb-2 d-block">Solicitante</label>
-              <div className="d-flex align-items-center p-3 rounded-4 bg-dark bg-opacity-50 border border-secondary border-opacity-50">
-                <div className="avatar-circle me-3 shadow-sm" 
-                     style={{ width: "45px", height: "45px", background: "linear-gradient(45deg, var(--bs-primary), #00d2ff)", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", color: "white" }}>
-                  {order.user?.name?.charAt(0).toUpperCase() || "U"}
+              <label className="text-dim small text-uppercase fw-bold mb-2 d-block">
+                Solicitante
+              </label>
+              <div className="d-flex align-items-center p-2 rounded bg-dark border border-secondary">
+                <div
+                  className="avatar-circle me-2"
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    background: "#343a40",
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "0.8rem",
+                  }}
+                >
+                  {order.user?.name?.charAt(0)}
                 </div>
-                <div className="overflow-hidden">
-                  <div className="text-white small fw-bold text-truncate">{order.user?.name || "Usuário não identificado"}</div>
-                  <div className="text-dim text-truncate" style={{ fontSize: "0.75rem" }}>{order.user?.email || "Email indisponível"}</div>
+                <div>
+                  <div className="text-white small fw-bold">
+                    {order.user?.name}
+                  </div>
+                  <div className="text-dim" style={{ fontSize: "0.7rem" }}>
+                    {order.user?.email}
+                  </div>
                 </div>
-              </div>
-            </div>
-
-            <div className="mb-3">
-              <label className="text-dim small text-uppercase fw-bold mb-2 d-block">Grupo Responsável</label>
-              <div className="text-white small bg-light bg-opacity-5 p-3 rounded-3 border border-white border-opacity-10">
-                <i className="bi bi-people-fill text-primary me-2"></i>{order.group?.name || "Sem grupo vinculado"}
               </div>
             </div>
 
             <div className="mb-4">
-              <label className="text-dim small text-uppercase fw-bold mb-2 d-block">Técnico Designado</label>
-              <div className="text-info small fw-bold bg-light bg-opacity-5 p-3 rounded-3 border border-white border-opacity-10">
-                <i className="bi bi-person-badge-fill me-2"></i>{order.technician?.name || "Aguardando Atribuição..."}
+              <label className="text-dim small text-uppercase fw-bold mb-2 d-block">
+                Grupo Responsável
+              </label>
+              <div className="text-white">
+                <i className="bi bi-people me-2"></i>
+                {order.group?.name || "Sem grupo vinculado"}
               </div>
             </div>
 
-            <hr className="border-secondary opacity-25 my-4" />
+            <div className="mb-4">
+              <label className="text-dim small text-uppercase fw-bold mb-2 d-block">
+                Técnico Designado
+              </label>
+              <div className="text-primary">
+                <i className="bi bi-person-badge me-2"></i>
+                {order.technician?.name || "Aguardando Técnico..."}
+              </div>
+            </div>
 
-            <div className="mt-2">
-              <label className="text-warning small text-uppercase fw-bold mb-2 d-block">Atualizar Status</label>
+            <hr className="border-secondary opacity-25" />
+            {/* Ações Rápidas (Selects de Mudança) */}
+            <div className="mt-4">
+              <label className="text-dim small text-uppercase fw-bold mb-2 d-block">
+                Alterar Status
+              </label>
               <select
-                className="form-select bg-dark text-white border-secondary border-opacity-50 shadow-none py-2 px-3 rounded-3"
-                value={order.status || "pending"}
-                onChange={(e) => onUpdateStatus(actualId, e.target.value)}
+                className="custom-input-dark w-100 py-2 mb-3"
+                value={order.status}
+                onChange={(e) => {
+                  const newStatus = e.target.value;
+                  const actualId =
+                    typeof order === "object" ? order.id || order._id : order;
+
+                  console.log("Status da OS para envio:", {
+                    id: actualId,
+                    status: newStatus,
+                  });
+
+                  // Chamamos a função do pai
+                  onUpdateStatus(actualId, newStatus);
+                }}
                 disabled={actionLoading}
               >
                 <option value="pending">Pendente</option>
-                <option value="open">Em Aberto</option>
-                <option value="in_progress">Em Atendimento</option>
-                <option value="resolved">Resolvido</option>
-                <option value="closed">Encerrado</option>
+                <option value="open">Abrir OS</option>
+                <option value="in_progress">Iniciar Atendimento</option>
+                <option value="resolved">Marcar como Resolvido</option>
+                <option value="closed">Encerrar Definitivamente</option>
               </select>
-              {actionLoading && (
-                <div className="text-primary small mt-2 d-flex align-items-center">
-                  <div className="spinner-border spinner-border-sm me-2"></div>
-                  Salvando alterações...
-                </div>
-              )}
             </div>
           </div>
         </Col>
