@@ -71,10 +71,9 @@ export default function Dashboard() {
     try {
       setActionLoading(true);
       // Note que usamos PATCH /api/v1/service-orders/{id}
-await api.put(`/api/v1/service-orders/${orderId}`, {
-  status: newStatus,
-});
-
+      await api.patch(`/api/v1/service-orders/${orderId}`, {
+        status: newStatus,
+      });
 
       AxionAlert.fire({
         icon: "success",
