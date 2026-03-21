@@ -130,7 +130,7 @@ export default function ServiceOrderDetail({
               </p>
             </div>
 
-            {/* SEÇÃO DE ANEXO */}
+            {/* SEÇÃO DE ANEXO ATUALIZADA */}
             {order.attachment_path && (
               <div
                 className="mt-4 p-3 rounded-4"
@@ -151,67 +151,68 @@ export default function ServiceOrderDetail({
                 </h6>
 
                 <div className="d-flex flex-column flex-md-row align-items-start gap-3">
-                  {/* PREVIEW DA IMAGEM (Se for jpg, png, etc) */}
-                  {["jpg", "jpeg", "png", "webp"].some((ext) =>
-                    order.attachment_path.toLowerCase().endsWith(ext),
-                  ) ? (
-                    <div
-                      className="rounded-3 overflow-hidden border border-secondary"
+                  {/* USAMOS UMA TAG <img> PARA FORÇAR A RENDERIZAÇÃO. 
+         Se o arquivo for um PDF, o navegador simplesmente não mostrará a imagem e o link abaixo resolve.
+      */}
+                  <div
+                    className="rounded-3 overflow-hidden border border-secondary bg-dark d-flex align-items-center justify-content-center"
+                    style={{
+                      width: "150px",
+                      height: "150px",
+                      cursor: "pointer",
+                    }}
+                    onClick={() =>
+                      window.open(
+                        `${import.meta.env.VITE_API_URL}/storage/${order.attachment_path}`,
+                        "_blank",
+                      )
+                    }
+                  >
+                    <img
+                      src={`${import.meta.env.VITE_API_URL}/storage/${order.attachment_path}`}
+                      alt="Preview"
+                      className="img-fluid"
                       style={{
-                        width: "120px",
-                        height: "120px",
-                        cursor: "pointer",
+                        objectFit: "contain",
+                        width: "100%",
+                        height: "100%",
                       }}
-                      onClick={() =>
-                        window.open(
-                          `${import.meta.env.VITE_API_URL}/storage/${order.attachment_path}`,
-                          "_blank",
-                        )
-                      }
-                    >
-                      <img
-                        src={`${import.meta.env.VITE_API_URL}/storage/${order.attachment_path}`}
-                        alt="Preview"
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    /* ÍCONE PARA ARQUIVOS QUE NÃO SÃO IMAGEM (PDF, ETC) */
-                    <div
-                      className="d-flex align-items-center justify-content-center bg-dark rounded-3 border border-secondary"
-                      style={{ width: "120px", height: "120px" }}
-                    >
-                      <i
-                        className="bi bi-file-earmark-pdf text-primary"
-                        style={{ fontSize: "2rem" }}
-                      ></i>
-                    </div>
-                  )}
+                      onError={(e) => {
+                        // Se falhar (ex: for um PDF), mostra um ícone de arquivo
+                        e.target.onerror = null;
+                        e.target.parentElement.innerHTML =
+                          '<i class="bi bi-file-earmark-text text-primary" style="font-size: 2rem;"></i>';
+                      }}
+                    />
+                  </div>
 
-                  <div className="d-flex flex-column justify-content-between h-100 py-1">
-                    <div>
-                      <span className="text-white d-block fw-bold mb-1">
-                        Documentação/Evidência
-                      </span>
-                      <small className="text-white-50 d-block mb-3">
-                        {order.attachment_path.split("/").pop()}
-                      </small>
-                    </div>
+                  <div className="d-flex flex-column justify-content-center h-100 py-1">
+                    <span className="text-white d-block fw-bold mb-1">
+                      Evidência anexada
+                    </span>
+                    <small className="text-white-50 d-block mb-3">
+                      {order.attachment_path.split("/").pop()}
+                    </small>
 
-                    <a
-                      href={`${import.meta.env.VITE_API_URL}/storage/${order.attachment_path}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bw-btn-table-action btn-sm text-decoration-none text-center"
-                      style={{ width: "fit-content" }}
-                    >
-                      <i className="bi bi-box-arrow-up-right me-2"></i>Abrir em
-                      tela cheia
-                    </a>
+                    <div className="d-flex gap-2">
+                      <a
+                        href={`${import.meta.env.VITE_API_URL}/storage/${order.attachment_path}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bw-btn-table-action btn-sm text-decoration-none"
+                      >
+                        <i className="bi bi-eye me-2"></i>Ver Original
+                      </a>
+
+                      {/* LINK DE DOWNLOAD FORÇADO */}
+                      <a
+                        href={`${import.meta.env.VITE_API_URL}/storage/${order.attachment_path}`}
+                        download
+                        className="btn btn-sm btn-outline-secondary"
+                      >
+                        <i className="bi bi-download"></i>
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -363,7 +364,9 @@ export default function ServiceOrderDetail({
                   <button
                     className="btn btn-sm btn-outline-primary w-100 mt-2"
                     style={{ fontSize: "0.75rem" }}
-                    onClick={() => onUpdateStatus(order?.id || order?._id, "in_progress")}
+                    onClick={() =>
+                      onUpdateStatus(order?.id || order?._id, "in_progress")
+                    }
                     disabled={actionLoading}
                   >
                     Assumir este chamado
