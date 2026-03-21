@@ -3,12 +3,12 @@ import React from "react";
 export default function ServiceOrderTable({ orders, loading, onViewDetail }) {
   // Função para definir a cor do badge de status
   const getStatusBadge = (status) => {
-    const styles = {
-      open: { bg: "#e9ecef", color: "#495057", label: "Aberto" },
-      in_progress: { bg: "#fff3cd", color: "#856404", label: "Em Atendimento" },
-      resolved: { bg: "#d4edda", color: "#155724", label: "Resolvido" },
-      closed: { bg: "#f8d7da", color: "#721c24", label: "Fechado" },
-    };
+const styles = {
+    open: { bg: "rgba(0, 255, 255, 0.1)", color: "#00ffff", label: "Aberto" },
+    in_progress: { bg: "rgba(255, 193, 7, 0.1)", color: "#ffc107", label: "Em Atendimento" },
+    resolved: { bg: "rgba(40, 167, 69, 0.1)", color: "#28a745", label: "Resolvido" },
+    closed: { bg: "rgba(108, 117, 125, 0.1)", color: "#6c757d", label: "Fechado" },
+  };
     const current = styles[status] || styles.open;
     return (
       <span 
