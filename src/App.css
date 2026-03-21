@@ -513,7 +513,6 @@
   }
 }
 
-
 /* ============================================
    COMPONENTES ADICIONAIS
    ============================================ */
@@ -746,4 +745,200 @@
 }
 
 .operation-header {
-  display
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.operation-badges {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  background: #0d0e10;
+}
+
+.message {
+  display: flex;
+  margin-bottom: 1rem;
+}
+
+.user-message {
+  justify-content: flex-end;
+}
+
+.ai-message {
+  justify-content: flex-start;
+}
+
+.message-bubble {
+  max-width: 75%;
+  padding: 1rem;
+  border-radius: var(--radius-lg);
+  background: #1e1f24;
+  color: #fff;
+  border: 1px solid #2d2e35;
+}
+
+.user-message .message-bubble {
+  background: var(--primary);
+  border: none;
+}
+
+.message-sender {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.message-icon {
+  font-size: 1.2rem;
+}
+
+.message-sender-name {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  font-weight: bold;
+}
+
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--info);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.chat-footer {
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  padding: 1rem;
+}
+
+.chat-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.send-button {
+  border-radius: var(--radius-lg);
+  padding: 0.5rem 1.5rem;
+}
+
+/* ----- MODAL CUSTOM ----- */
+.custom-modal .modal-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+}
+
+.custom-modal-header {
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 1.5rem;
+}
+
+.custom-modal-header .btn-close {
+  filter: invert(1);
+}
+
+.custom-modal-body {
+  padding: 1.5rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* ----- RESPONSIVIDADE ADICIONAL ----- */
+@media (max-width: 768px) {
+  .filter-row {
+    flex-direction: column;
+  }
+  
+  .filter-col {
+    width: 100%;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .danger-zone-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .form-row {
+    flex-direction: column;
+  }
+  
+  .form-col-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .form-actions button {
+    width: 100%;
+  }
+  
+  .message-bubble {
+    max-width: 90%;
+  }
+  
+  .chat-form {
+    flex-direction: column;
+  }
+  
+  .send-button {
+    width: 100%;
+  }
+  
+  .orders-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .btn-primary-sm {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-id-display {
+    font-size: 0.7rem;
+  }
+  
+  .permission-code {
+    font-size: 0.7rem;
+  }
+  
+  .badge-custom {
+    font-size: 0.6rem;
+  }
+}
