@@ -363,7 +363,7 @@ export default function ServiceOrderDetail({
                   <button
                     className="btn btn-sm btn-outline-primary w-100 mt-2"
                     style={{ fontSize: "0.75rem" }}
-                    onClick={() => onUpdateStatus(order.id, "in_progress")}
+                    onClick={() => onUpdateStatus(order?.id || order?._id, "in_progress")}
                     disabled={actionLoading}
                   >
                     Assumir este chamado
