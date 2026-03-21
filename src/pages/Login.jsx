@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
 import api from "../services/api";
-import "../Login.css"; // Vamos criar um arquivo CSS separado
+import "../Login.css";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -10,7 +10,6 @@ export default function Login() {
   const [captchaToken, setCaptchaToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const recaptchaRef = useRef(null);
 
@@ -81,123 +80,79 @@ export default function Login() {
     window.location.href = `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
   return (
-    <div className="login-page-container">
-      <div className="login-background">
-        <div className="bg-gradient"></div>
-        <div className="bg-pattern"></div>
-      </div>
-
-      <div className="login-card animate-in">
-        {/* Header */}
-        <div className="login-header">
-          <div className="brand">
-            <h1>
-              Axion<span>ID</span>
-            </h1>
-          </div>
-          <div className="auth-header">
-            <h2>Acessar Conta</h2>
-            <p>Identifique-se para gerenciar seus serviços.</p>
-          </div>
+    <div className="auth-container">
+      <div className="auth-card animate-in">
+        {/* Header com a mesma identidade da tela de recuperar senha */}
+        <div className="brand">
+          <h1>
+            Axion<span>ID</span>
+          </h1>
         </div>
 
-        {/* Error Message */}
+        <div className="auth-header">
+          <h2>Acessar Conta</h2>
+          <p>Identifique-se para gerenciar seus serviços.</p>
+        </div>
+
+        {/* Mensagem de erro com o mesmo estilo */}
         {error && (
-          <div className="error-message" role="alert">
+          <div className="error-message">
             <i className="bi bi-exclamation-triangle-fill"></i>
             <span>{error}</span>
           </div>
         )}
 
-        {/* Form */}
-        <form onSubmit={handleLogin} className="login-form">
-          {/* Campo Identificação */}
-          <div className="form-group">
-            <label htmlFor="username">Identificação</label>
-            <div className="input-wrapper">
-              <i className="bi bi-person input-icon"></i>
-              <input
-                id="username"
-                type="text"
-                placeholder="CPF, CNPJ ou e-mail"
-                value={username}
-                autoComplete="username"
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                autoFocus
-                disabled={loading}
-              />
-            </div>
+        <form onSubmit={handleLogin} className="auth-form">
+          {/* Campo IDENTIFICAÇÃO - mesmo estilo da tela de recuperar senha */}
+          <div className="input-group">
+            <label>IDENTIFICAÇÃO</label>
+            <input
+              type="text"
+              placeholder="seu@email.com"
+              value={username}
+              autoComplete="username"
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              autoFocus
+            />
           </div>
 
-          {/* Campo Senha */}
-          <div className="form-group">
+          {/* Campo SENHA com link "Esqueceu a senha?" */}
+          <div className="input-group">
             <div className="label-row">
-              <label htmlFor="password">Senha</label>
+              <label>SENHA</label>
               <Link to="/forgot-password" className="forgot-link">
                 Esqueceu a senha?
               </Link>
             </div>
-            <div className="input-wrapper">
-              <i className="bi bi-lock input-icon"></i>
-              <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Digite sua senha"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                required
-                disabled={loading}
-              />
-              <button
-                type="button"
-                className="password-toggle"
-                onClick={togglePasswordVisibility}
-                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-              >
-                <i className={`bi bi-eye${showPassword ? "-slash" : ""}`}></i>
-              </button>
-            </div>
+            <input
+              type="password"
+              placeholder="Sua senha"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              required
+            />
           </div>
 
-          {/* reCAPTCHA */}
-          <div className="captcha-wrapper">
+          {/* CAPTCHA */}
+          <div className="captcha-container">
             <ReCAPTCHA
               ref={recaptchaRef}
               sitekey="6Lc5n4ksAAAAAEXLVSyq519dGet20T0gaQ2LXzPY"
               onChange={(token) => setCaptchaToken(token)}
               onExpired={() => setCaptchaToken(null)}
               theme="dark"
-              size="normal"
             />
           </div>
 
-          {/* Botão Login */}
-          <button 
-            type="submit" 
-            className="btn-login" 
-            disabled={loading || !captchaToken}
-          >
-            {loading ? (
-              <>
-                <i className="bi bi-hourglass-split spinning"></i>
-                <span>Autenticando...</span>
-              </>
-            ) : (
-              <>
-                <i className="bi bi-box-arrow-in-right"></i>
-                <span>Acessar Painel</span>
-              </>
-            )}
+          {/* Botão principal */}
+          <button type="submit" className="btn-primary" disabled={loading}>
+            {loading ? "Autenticando..." : "Acessar Painel"}
           </button>
 
-          {/* Divisor */}
+          {/* Divisor "ou continue com" */}
           <div className="divider">
             <span>ou continue com</span>
           </div>
@@ -205,24 +160,21 @@ export default function Login() {
           {/* Botão Google Workspace */}
           <button
             type="button"
-            className="btn-google"
+            className="btn-google-workspace"
             onClick={handleGoogleLogin}
-            disabled={loading}
-            aria-label="Fazer login com Google Workspace"
           >
-            <div className="google-icon">
+            <div className="google-icon-wrapper">
               <img
                 src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
                 alt=""
-                aria-hidden="true"
               />
             </div>
-            <span>Continuar com Google Workspace</span>
+            <span className="btn-text">Continuar com Google Workspace</span>
           </button>
         </form>
 
-        {/* Footer */}
-        <div className="login-footer">
+        {/* Footer com link para cadastro */}
+        <div className="auth-footer">
           <p>
             Ainda não tem acesso? <Link to="/register">Criar Conta AxionID</Link>
           </p>
