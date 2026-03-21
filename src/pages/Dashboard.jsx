@@ -93,6 +93,67 @@ const onUpdateStatus = async (idFromChild, newStatus) => {
   }
 };
 
+
+
+
+// No seu Dashboard.jsx
+
+// 1. Função para abrir o detalhe buscando dados frescos da API
+const handleOpenOrderDetail = async (orderId) => {
+  setActionLoading(true);
+  try {
+    // Busca a OS específica com os relacionamentos (certifique-se que o backend retorna with(['user', 'technician', 'group']))
+    const res = await api.get(`/api/v1/service-orders/${orderId}`);
+    setSelectedOrder(res.data.data || res.data);
+  } catch (err) {
+    AxionAlert.fire("Erro", "Não foi possível carregar os detalhes desta OS.", "error");
+  } finally {
+    setActionLoading(false);
+  }
+};
+
+// 2. No seu retorno (JSX) do Dashboard, onde você renderiza o conteúdo:
+{activeTab === "orders" && (
+  selectedOrder ? (
+    <ServiceOrderDetail
+      order={selectedOrder}
+      onBack={() => setSelectedOrder(null)}
+      onUpdateStatus={onUpdateStatus}
+      isSystemAdmin={isGlobalAdmin}
+      actionLoading={actionLoading}
+      onDeleteOrder={async (id) => {
+        const result = await AxionAlert.fire({
+          title: 'Excluir OS?',
+          text: "Esta ação não pode ser desfeita!",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Sim, excluir!'
+        });
+        if (result.isConfirmed) {
+          try {
+            await api.delete(`/api/v1/service-orders/${id}`);
+            setSelectedOrder(null);
+            loadServiceOrders();
+            AxionAlert.fire('Deletado!', 'Ordem de serviço removida.', 'success');
+          } catch (e) {
+             AxionAlert.fire('Erro', 'Falha ao excluir.', 'error');
+          }
+        }
+      }}
+    />
+  ) : (
+    <ServiceOrderTable 
+      orders={serviceOrders} 
+      onViewDetail={(id) => handleOpenOrderDetail(id)} // Use a nova função aqui!
+      loading={actionLoading}
+    />
+  )
+)}
+
+
+
+
+
   // Estados para Permissões
   const [permissions, setPermissions] = useState([]);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
