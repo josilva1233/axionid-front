@@ -2,8 +2,8 @@ import React from "react";
 
 export default function PermissionTable({ permissions, loading, currentUser, onEdit }) {
   return (
-    <div className="table-responsive animate-in">
-      <table className="axion-table w-100">
+    <div className="table-responsive">
+      <table className="axion-table">
         <thead>
           <tr>
             <th>ID</th>
@@ -17,74 +17,34 @@ export default function PermissionTable({ permissions, loading, currentUser, onE
         <tbody>
           {permissions.length > 0 ? (
             permissions.map((perm) => {
-              // Verifica se o usuário logado é Admin Global do Sistema
               const isSystemAdmin = currentUser?.is_admin === 1 || currentUser?.is_admin === true;
 
               return (
                 <tr key={perm.id}>
-                  {/* ID técnico com estilo Monos */}
-                  <td
-                    className="mono-text"
-                    style={{ fontSize: "0.8rem", opacity: 0.7 }}
-                  >
+                  <td className="mono-text">
                     #{perm.id}
                   </td>
-
-                  {/* Nome da Permissão (Label) em destaque */}
                   <td>
-                    <strong
-                      style={{
-                        color: "var(--primary)",
-                        letterSpacing: "0.5px",
-                      }}
-                    >
+                    <strong className="text-primary">
                       {perm.label ? perm.label.toUpperCase() : "SEM NOME"}
                     </strong>
                   </td>
-
-                  {/* Slug do sistema com estilo de código discreto */}
                   <td>
-                    <code 
-                      className="bg-dark px-2 py-1 rounded text-info" 
-                      style={{ 
-                        fontSize: '0.82rem', 
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        fontFamily: 'monospace' 
-                      }}
-                    >
+                    <code className="permission-code">
                       {perm.name}
                     </code>
                   </td>
-
-                  {/* Badge Operacional (IAM) */}
                   <td className="text-center">
-                    <span
-                      className="badge badge-operacional"
-                      style={{ fontSize: "0.7rem", minWidth: "55px" }}
-                    >
+                    <span className="badge-operacional">
                       IAM
                     </span>
                   </td>
-
-                  {/* Status do Registro */}
                   <td className="text-center">
-                    <div className="d-flex align-items-center justify-content-center gap-2">
-                      <span
-                        className="status-indicator"
-                        style={{
-                          width: "8px",
-                          height: "8px",
-                          borderRadius: "50%",
-                          backgroundColor: "#28a745", // Verde para ativo
-                        }}
-                      />
-                      <span className="text-dim" style={{ fontSize: "0.85rem" }}>
-                        Ativo
-                      </span>
+                    <div className="status-indicator-wrapper">
+                      <span className="status-indicator success" />
+                      <span className="status-text">Ativo</span>
                     </div>
                   </td>
-
-                  {/* Ações: Editar para Admins, Cadeado para outros */}
                   <td className="text-end">
                     {isSystemAdmin ? (
                       <button
@@ -96,10 +56,7 @@ export default function PermissionTable({ permissions, loading, currentUser, onE
                         Editar
                       </button>
                     ) : (
-                      <span
-                        className="text-dim small"
-                        style={{ fontStyle: "italic", opacity: 0.7 }}
-                      >
+                      <span className="readonly-badge">
                         <i className="bi bi-lock-fill me-1"></i> Read-only
                       </span>
                     )}
@@ -110,10 +67,8 @@ export default function PermissionTable({ permissions, loading, currentUser, onE
           ) : (
             <tr>
               <td colSpan="6" className="text-center py-5 text-dim">
-                <div className="d-flex flex-column align-items-center">
-                  <span style={{ fontSize: "1.5rem" }}>
-                    {loading ? "⏳" : "🛡️"}
-                  </span>
+                <div className="empty-state">
+                  <span className="empty-icon">{loading ? "⏳" : "🛡️"}</span>
                   <p className="mt-2 mb-0">
                     {loading ? "Carregando permissões..." : "Nenhuma permissão identificada no sistema."}
                   </p>

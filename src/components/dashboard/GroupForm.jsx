@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Form, Spinner, Row, Col } from "react-bootstrap";
+import { Form, Spinner } from "react-bootstrap";
 
 export default function GroupForm({ onSave, onCancel, loading }) {
   const [name, setName] = useState("");
@@ -11,14 +11,12 @@ export default function GroupForm({ onSave, onCancel, loading }) {
   };
 
   return (
-    <div className="filter-card mb-4 p-4 animate-in">
-      {/* Título fora da Row para manter o padrão */}
-      <h4 className="text-white mb-4">Criar Novo Grupo</h4>
+    <div className="filter-card">
+      <h4 className="card-title">Criar Novo Grupo</h4>
 
       <Form onSubmit={handleSubmit}>
-        <Row className="align-items-end g-3">
-          {/* CAMPO DE NOME - Ocupa 6 colunas (mesmo tamanho do busca por nome) */}
-          <Col md={6}>
+        <div className="form-row">
+          <div className="form-col">
             <Form.Group>
               <Form.Label className="filter-label">Nome do Grupo</Form.Label>
               <Form.Control
@@ -30,14 +28,12 @@ export default function GroupForm({ onSave, onCancel, loading }) {
                 required
               />
             </Form.Group>
-          </Col>
+          </div>
 
-          {/* BOTÃO SALVAR - Ocupa 3 colunas */}
-          <Col md={3}>
+          <div className="form-col-actions">
             <button
               type="submit"
-              className="bw-btn-table-action w-100 px-3 py-2 fw-bold"
-              style={{ height: "45px" }} // Garante a mesma altura do input
+              className="btn-primary"
               disabled={loading}
             >
               {loading ? (
@@ -48,21 +44,17 @@ export default function GroupForm({ onSave, onCancel, loading }) {
                 </>
               )}
             </button>
-          </Col>
 
-          {/* BOTÃO CANCELAR - Ocupa 3 colunas */}
-          <Col md={3}>
             <button
               type="button"
-              className="btn-filter-clear w-100"
-              style={{ height: "45px" }} // Garante a mesma altura do input
+              className="btn-secondary"
               onClick={onCancel}
               disabled={loading}
             >
               <i className="bi bi-x-lg me-2"></i> Cancelar
             </button>
-          </Col>
-        </Row>
+          </div>
+        </div>
       </Form>
     </div>
   );

@@ -1,220 +1,247 @@
 import { useState } from "react";
-import { Form, Spinner, Row, Col, Alert } from "react-bootstrap";
-import api from "../../services/api"; // Importando sua instância configurada do Axios
-import Swal from "sweetalert2"; // 1. Certifique-se de importar
+import { Badge, OverlayTrigger, Tooltip, Spinner } from "react-bootstrap";
+import "./ServiceOrderDetail.css";
 
-// 2. Cole a configuração que você já usa no Dashboard aqui também
-const AxionAlert = Swal.mixin({
-  background: "#111214",
-  color: "#ffffff",
-  confirmButtonColor: "#6f42c1",
-  cancelButtonColor: "#343a40",
-  customClass: {
-    popup: "border border-secondary rounded-4",
-    confirmButton: "px-4 py-2 rounded-3 fw-bold mx-2",
-    cancelButton: "px-4 py-2 rounded-3 fw-bold mx-2",
-  },
-});
+const STATUS_CONFIG = {
+  pending: { color: "bg-warning text-dark", label: "PENDENTE" },
+  open: { color: "bg-info text-white", label: "EM ABERTO" },
+  in_progress: { color: "bg-primary", label: "EM ATENDIMENTO" },
+  resolved: { color: "bg-success", label: "RESOLVIDO" },
+  closed: { color: "bg-secondary", label: "FECHADO" },
+};
 
-export default function ServiceOrderForm({ onSuccess, onCancel, groups = [] }) {
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    priority: "low",
-    group_id: "",
-    attachment: null,
-  });
-  const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState(null); // { type: 'success' | 'danger', text: string }
+const PRIORITY_CONFIG = {
+  low: { color: "bg-success-subtle text-success", label: "Baixa" },
+  medium: { color: "bg-info-subtle text-info", label: "Média" },
+  high: { color: "bg-warning-subtle text-warning", label: "Alta" },
+  urgent: { color: "bg-danger-subtle text-danger", label: "URGENTE!" },
+};
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setStatus(null);
+const StatusBadge = ({ status }) => {
+  const item = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
+  return <Badge pill className={item.color}>{item.label}</Badge>;
+};
 
-    // Criamos o FormData para suportar o anexo (arquivo)
-    const data = new FormData();
-    data.append("title", formData.title);
-    data.append("description", formData.description);
-    data.append("priority", formData.priority);
+const PriorityBadge = ({ priority }) => {
+  const item = PRIORITY_CONFIG[priority] || PRIORITY_CONFIG.low;
+  return <Badge pill className={`border fw-bold ${item.color}`}>{item.label}</Badge>;
+};
 
-    if (formData.group_id) data.append("group_id", formData.group_id);
-    if (formData.attachment) data.append("attachment", formData.attachment);
+const AttachmentPreview = ({ order, baseUrl }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const fileName = order.attachment_path?.split("/").pop() || "anexo";
+  const fullUrl = `${baseUrl}/storage/${order.attachment_path}`;
 
-    try {
-      // CORREÇÃO: Adicionado /api/v1/ para bater na rota correta do Laravel
-      await api.post("/api/v1/service-orders", data, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+  if (!order.attachment_path) return null;
 
-      AxionAlert.fire({
-        icon: "success",
-        title: "Chamado Aberto!",
-        text: "Sua solicitação foi registrada com sucesso.",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-
-      if (onSuccess) onSuccess();
-    } catch (err) {
-      console.error(err);
-      setStatus({
-        type: "danger",
-        text: err.response?.data?.message || "Erro ao conectar com o servidor.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(order.attachment_path);
 
   return (
-    <div className="filter-card mb-4 p-4 animate-in">
-      <h4 className="text-white mb-4">Novo Chamado (OS)</h4>
+    <div className="attachment-section">
+      <h6 className="attachment-title">
+        <i className="bi bi-paperclip text-warning me-2"></i>
+        Evidência Anexada
+      </h6>
+      
+      <div className="attachment-container">
+        <div className="attachment-preview" onClick={() => window.open(fullUrl, "_blank")}>
+          {!imageLoaded && !imageError && (
+            <div className="loading-overlay-img">
+              <Spinner animation="grow" variant="primary" size="sm" />
+              <span className="text-white fw-bold small">Carregando...</span>
+            </div>
+          )}
+          
+          {isImage && !imageError ? (
+            <img 
+              src={fullUrl}
+              alt="Preview da evidência"
+              className="attachment-img"
+              style={{ opacity: imageLoaded ? 1 : 0 }}
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <div className="attachment-placeholder">
+              <i className="bi bi-file-earmark-fill"></i>
+              <div className="attachment-info">
+                <div className="fw-bold">{fileName}</div>
+                <small>Clique para visualizar</small>
+              </div>
+            </div>
+          )}
+          
+          <div className="attachment-overlay">
+            <i className="bi bi-zoom-in"></i>
+          </div>
+        </div>
+        
+        <div className="attachment-actions">
+          <h5 className="attachment-name">📎 {fileName}</h5>
+          <span className="badge-light">Evidência do chamado</span>
+          <div className="attachment-buttons">
+            <a href={fullUrl} target="_blank" rel="noopener noreferrer" className="btn-outline-light">
+              <i className="bi bi-eye-fill me-2"></i> Visualizar
+            </a>
+            <a href={fullUrl} download={fileName} className="btn-primary">
+              <i className="bi bi-download me-2"></i> Download
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
-      {status && (
-        <Alert
-          variant={status.type}
-          className="mb-4"
-          onClose={() => setStatus(null)}
-          dismissible
-        >
-          {status.text}
-        </Alert>
-      )}
+export default function ServiceOrderDetail({
+  order,
+  onBack,
+  onUpdateStatus,
+  onDeleteOrder,
+  actionLoading,
+  isSystemAdmin,
+}) {
+  const baseUrl = import.meta.env.VITE_API_URL || process.env.REACT_APP_API_URL || "http://163.176.168.224";
 
-      <Form onSubmit={handleSubmit}>
-        <Row className="g-3">
-          {/* TÍTULO DO PROBLEMA */}
-          <Col md={8}>
-            <Form.Group>
-              <Form.Label className="filter-label">
-                Título do Problema
-              </Form.Label>
-              <Form.Control
-                type="text"
-                className="custom-input-dark"
-                placeholder="Ex: Impressora não liga"
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-                required
-              />
-            </Form.Group>
-          </Col>
-          {/* PRIORIDADE */}
-          <Col md={4}>
-            <Form.Group>
-              <Form.Label className="filter-label">Prioridade</Form.Label>
-              <Form.Select
-                className="custom-input-dark"
-                value={formData.priority}
-                onChange={(e) =>
-                  setFormData({ ...formData, priority: e.target.value })
-                }
-              >
-                <option value="low">Baixa</option>
-                <option value="medium">Média</option>
-                <option value="high">Alta</option>
-                <option value="urgent">Urgente</option>
-              </Form.Select>
-            </Form.Group>
-          </Col>
-          {/* DESCRIÇÃO DETALHADA */}
-          <Col md={12}>
-            <Form.Group>
-              <Form.Label className="filter-label">
-                Descrição Detalhada
-              </Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                className="custom-input-dark"
-                placeholder="Descreva o que está acontecendo..."
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                required
-              />
-            </Form.Group>
-          </Col>
-          {/* VÍNCULO A GRUPO */}
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label className="filter-label">
-                Vincular a Grupo (Opcional)
-              </Form.Label>
-              <Form.Select
-                className="custom-input-dark"
-                value={formData.group_id}
-                onChange={(e) =>
-                  setFormData({ ...formData, group_id: e.target.value })
-                }
-              >
-                <option value="">Somente eu (Privado)</option>
-                {groups.map((g) => (
-                  <option key={g.id} value={g.id}>
-                    {g.name}
-                  </option>
-                ))}
-              </Form.Select>
-            </Form.Group>
-          </Col>
-          {/* ANEXO */}
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label className="filter-label">Anexo (Opcional)</Form.Label>
-              <Form.Control
-                type="file"
-                className="custom-input-dark"
-                onChange={(e) => {
-                  const file = e.target.files[0]; // Pega o primeiro arquivo
-                  if (file) {
-                    setFormData({ ...formData, attachment: file });
-                  } else {
-                    setFormData({ ...formData, attachment: null });
-                  }
-                }}
-              />
-              <small className="text-muted" style={{ fontSize: "0.7rem" }}>
-                PDF, JPG ou PNG (Máx. 2MB)
-              </small>
-            </Form.Group>
-          </Col>
-          {/* BOTÕES DE AÇÃO - Alinhados conforme o padrão do GroupForm */}
-          <Col md={6}></Col> {/* Espaçador */}
-          <Col md={3}>
-            <button
-              type="submit"
-              className="bw-btn-table-action w-100 px-3 py-2 fw-bold"
-              style={{ height: "45px" }}
-              disabled={loading}
-            >
-              {loading ? (
-                <Spinner animation="border" size="sm" />
+  if (!order) {
+    return (
+      <div className="detail-loading">
+        <Spinner animation="border" variant="primary" />
+        <h5>Carregando detalhes da OS...</h5>
+        <button className="btn-secondary" onClick={onBack}>Voltar</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="service-order-detail-container">
+      <div className="detail-header">
+        <div className="detail-header-content">
+          <div className="header-left">
+            <button className="btn-back" onClick={onBack}>
+              <i className="bi bi-arrow-left me-2"></i> Voltar
+            </button>
+            <div className="protocol-badge">
+              <strong>#{order.protocol || order.id}</strong>
+            </div>
+            <div className="order-info">
+              <h2 className="order-title">{order.title}</h2>
+              <div className="order-meta">
+                <span><i className="bi bi-calendar3 me-1"></i>{new Date(order.created_at).toLocaleString("pt-BR")}</span>
+                <span><i className="bi bi-hash me-1"></i>ID: {order.id}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="header-actions">
+            {isSystemAdmin && (
+              <OverlayTrigger placement="bottom" overlay={<Tooltip>Excluir permanentemente</Tooltip>}>
+                <button className="btn-delete-permanent" onClick={() => onDeleteOrder(order.id)} disabled={actionLoading}>
+                  <i className="bi bi-trash3-fill me-2"></i> Excluir
+                </button>
+              </OverlayTrigger>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="detail-content">
+        <div className="detail-main">
+          <div className="info-card">
+            <div className="info-card-content">
+              <div className="status-priority-badges">
+                <StatusBadge status={order.status} />
+                <PriorityBadge priority={order.priority} />
+              </div>
+
+              <div className="description-section">
+                <h6 className="section-title">
+                  <i className="bi bi-chat-square-text-fill me-2"></i>
+                  Descrição da Solicitação
+                </h6>
+                <div className="description-card">
+                  <p>{order.description || "Sem descrição fornecida."}</p>
+                </div>
+              </div>
+
+              <AttachmentPreview order={order} baseUrl={baseUrl} />
+            </div>
+          </div>
+        </div>
+
+        <div className="detail-sidebar">
+          <div className="info-card">
+            <h3 className="sidebar-title">
+              <i className="bi bi-gear-fill text-primary me-2"></i>
+              Gestão da Ordem
+            </h3>
+
+            <div className="user-card">
+              <div className="avatar-circle-lg">
+                {order.user?.name?.charAt(0)?.toUpperCase() || "?"}
+              </div>
+              <div className="user-info">
+                <h6 className="user-name">{order.user?.name || "Usuário não identificado"}</h6>
+                <small className="user-email">{order.user?.email || "Email não disponível"}</small>
+              </div>
+            </div>
+
+            <div className="group-card">
+              <div className="group-icon">
+                <i className="bi bi-people-fill"></i>
+              </div>
+              <div>
+                <h6 className="group-title">Grupo Responsável</h6>
+                <p className="group-name">{order.group?.name || "Sem grupo vinculado"}</p>
+              </div>
+            </div>
+
+            <div className="technician-section">
+              <label className="section-label">Técnico Designado</label>
+              {order.technician ? (
+                <div className="technician-card">
+                  <div className="avatar-circle-sm">
+                    {order.technician.name?.charAt(0)?.toUpperCase()}
+                  </div>
+                  <div>
+                    <h6 className="technician-name">{order.technician.name}</h6>
+                    <small>Responsável pelo atendimento</small>
+                  </div>
+                </div>
               ) : (
-                <>
-                  <i className="bi bi-send me-2"></i> Abrir Chamado
-                </>
+                <div className="no-technician-card">
+                  <i className="bi bi-person-plus-fill"></i>
+                  <h6>Aguardando Técnico</h6>
+                  <button
+                    className="btn-primary"
+                    onClick={() => onUpdateStatus(order.id, "in_progress")}
+                    disabled={actionLoading}
+                  >
+                    <i className="bi bi-person-check me-2"></i> Assumir este chamado
+                  </button>
+                </div>
               )}
-            </button>
-          </Col>
-          <Col md={3}>
-            <button
-              type="button"
-              className="btn-filter-clear w-100"
-              style={{ height: "45px" }}
-              onClick={onCancel}
-              disabled={loading}
-            >
-              <i className="bi bi-x-lg me-2"></i> Cancelar
-            </button>
-          </Col>
-        </Row>
-      </Form>
+            </div>
+
+            <div className="status-section">
+              <label className="section-label">Alterar Status</label>
+              <select
+                className="status-select"
+                value={order.status}
+                onChange={(e) => onUpdateStatus(order.id, e.target.value)}
+                disabled={actionLoading}
+              >
+                <option value="pending">⏳ Pendente</option>
+                <option value="open">📂 Abrir OS</option>
+                <option value="in_progress">🔧 Iniciar Atendimento</option>
+                <option value="resolved">✅ Marcar como Resolvido</option>
+                <option value="closed">🔒 Encerrar Definitivamente</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
