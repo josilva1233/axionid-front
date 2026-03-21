@@ -1,14 +1,10 @@
-// UserTable.js
-
 export default function UserTable({ users, onViewDetail, onDeleteUser, onToggleAdmin, isGlobalAdmin }) {
-  
-  // TRAVA DE SEGURANÇA: Se não for admin, não renderiza a tabela de jeito nenhum
   if (!isGlobalAdmin) {
-    return null; 
+    return null;
   }
 
   return (
-    <div className="table-responsive animate-in">
+    <div className="table-responsive">
       <table className="axion-table">
         <thead>
           <tr>
@@ -24,59 +20,47 @@ export default function UserTable({ users, onViewDetail, onDeleteUser, onToggleA
           {users.length > 0 ? (
             users.map((u) => (
               <tr key={u.id}>
-                <td className="mono-text" style={{ fontSize: "0.8rem", opacity: 0.7 }}>
+                <td className="mono-text">
                   #{u.id}
                 </td>
-
                 <td>
-                  <strong style={{ color: "var(--text-main)" }}>
+                  <strong className="text-white">
                     {u.name}
                   </strong>
                 </td>
-
-                <td className="text-dim" style={{ fontSize: "0.9rem" }}>
+                <td className="text-dim">
                   {u.email}
                 </td>
-
                 <td className="text-center">
                   <span
-                    className={`badge ${u.is_admin ? "badge-success" : "badge-operacional"}`}
-                    style={{ 
-                      fontSize: "0.7rem", 
-                      cursor: "pointer" 
-                    }}
+                    className={`badge ${u.is_admin ? "badge-success" : "badge-operacional"} clickable`}
                     onClick={() => onToggleAdmin && onToggleAdmin(u.id, u.is_admin)}
                     title="Clique para alterar nível"
                   >
                     {u.is_admin ? "ADMIN" : "USER"}
                   </span>
                 </td>
-
                 <td className="text-center">
-                  <div className="d-flex align-items-center justify-content-center gap-2">
+                  <div className="status-indicator-wrapper">
                     <span
                       className="status-indicator"
                       style={{
-                        width: "8px",
-                        height: "8px",
-                        borderRadius: "50%",
-                        backgroundColor: u.is_active ? "var(--success)" : "var(--danger)",
+                        backgroundColor: u.is_active ? "var(--success)" : "var(--error)",
                       }}
                     />
-                    <span style={{ fontSize: "0.85rem", color: u.is_active ? "var(--success)" : "var(--danger)" }}>
+                    <span className="status-text" style={{ color: u.is_active ? "var(--success)" : "var(--error)" }}>
                       {u.is_active ? "Ativo" : "Inativo"}
                     </span>
                   </div>
                 </td>
-
                 <td className="text-end">
-                  <div className="d-flex justify-content-end gap-2">
+                  <div className="actions-wrapper">
                     <button
                       className="btn-table-action"
                       onClick={() => onViewDetail(u.id)}
                       title="Visualizar Detalhes"
                     >
-                      <i className="bi bi-eye"> Gerenciar</i>
+                      <i className="bi bi-eye"></i> Gerenciar
                     </button>
                   </div>
                 </td>
@@ -85,8 +69,8 @@ export default function UserTable({ users, onViewDetail, onDeleteUser, onToggleA
           ) : (
             <tr>
               <td colSpan="6" className="text-center py-5 text-dim">
-                <div className="d-flex flex-column align-items-center">
-                  <span style={{ fontSize: "1.5rem" }}>🔍</span>
+                <div className="empty-state">
+                  <span className="empty-icon">🔍</span>
                   <p className="mt-2 mb-0">Nenhum usuário encontrado.</p>
                 </div>
               </td>

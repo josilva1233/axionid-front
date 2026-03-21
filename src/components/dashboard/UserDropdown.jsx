@@ -6,7 +6,6 @@ const UserDropdown = ({ user, onLogout }) => {
   const dropdownRef = useRef(null);
   const detailsRef = useRef(null);
 
-  // Fecha ao clicar fora de ambos os painéis
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -22,7 +21,6 @@ const UserDropdown = ({ user, onLogout }) => {
 
   return (
     <div className="user-dropdown-container" ref={dropdownRef}>
-      {/* Gatilho do Avatar - Estilo AxionID */}
       <button 
         className={`avatar-trigger ${isOpen ? 'active' : ''}`} 
         onClick={() => setIsOpen(!isOpen)}
@@ -32,13 +30,12 @@ const UserDropdown = ({ user, onLogout }) => {
         {user?.name?.charAt(0).toUpperCase() || 'U'}
       </button>
 
-      {/* 1. MENU FLUTUANTE DE OPÇÕES */}
       {isOpen && (
-        <div className="dropdown-floating-menu animate-in">
+        <div className="dropdown-floating-menu">
           <div className="menu-header">
-            <span className="info-label text-dim">Sessão ativa:</span>
+            <span className="info-label">Sessão ativa:</span>
             <span className="info-name text-truncate">{user?.name}</span>
-            <span className="info-email text-truncate text-dim small">{user?.email}</span>
+            <span className="info-email text-truncate">{user?.email}</span>
           </div>
           
           <div className="menu-divider"></div>
@@ -55,12 +52,11 @@ const UserDropdown = ({ user, onLogout }) => {
         </div>
       )}
 
-      {/* 2. PAINEL DE DETALHES (MINI-PERFIL) */}
       {showDetails && (
-        <div className="dropdown-floating-menu details-panel animate-in" ref={detailsRef}>
-          <div className="menu-header mb-3">
+        <div className="dropdown-floating-menu details-panel" ref={detailsRef}>
+          <div className="menu-header">
             <h5 className="text-white fw-bold mb-0">Minha Identidade</h5>
-            <span className="badge-operacional small">Verificada</span>
+            <span className="badge-operacional">Verificada</span>
           </div>
 
           <div className="details-content custom-scrollbar">
@@ -81,7 +77,7 @@ const UserDropdown = ({ user, onLogout }) => {
               <span className="mono-text">{user?.cpf_cnpj || 'Não informado'}</span>
             </div>
 
-            <div className="menu-divider my-3"></div>
+            <div className="menu-divider"></div>
 
             <p className="section-subtitle">ENDEREÇO REGISTRADO</p>
             {user?.address ? (

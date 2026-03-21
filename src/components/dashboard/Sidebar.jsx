@@ -6,14 +6,8 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
       <div className="sidebar-brand">
         <div className="brand">
           <h1>
-            Axion<span>ID</span> 
-            <small style={{ 
-              fontSize: '0.5em', 
-              display: 'block', 
-              opacity: 0.7,
-              fontWeight: '300',
-              marginTop: '-5px'
-            }}>
+            Axion<span>ID</span>
+            <small className="role-badge-sidebar">
               {isAdmin ? 'Admin' : 'Comum'}
             </small>
           </h1>
@@ -21,7 +15,6 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
       </div>
       
       <nav className="sidebar-nav">
-        {/* SEÇÃO PRINCIPAL */}
         <div className="nav-group">
           <p className="nav-section-title">Principal</p>
           
@@ -41,13 +34,12 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
           >
             <span className="nav-icon">📁</span>
             <span className="nav-label">
-               {isAdmin ? 'Gestão de Grupos' : 'Meus Grupos'}
+              {isAdmin ? 'Gestão de Grupos' : 'Meus Grupos'}
             </span>
           </button>
         </div>
 
-        {/* --- NOVA SEÇÃO: SUPORTE (ORDENS DE SERVIÇO) --- */}
-        <div className="nav-group animate-in" style={{ marginTop: '24px' }}>
+        <div className="nav-group">
           <p className="nav-section-title">Atendimento</p>
           
           <button 
@@ -56,14 +48,13 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
           >
             <span className="nav-icon">🎫</span>
             <span className="nav-label">
-               {isAdmin ? 'Gestão de Chamados' : 'Meus Chamados'}
+              {isAdmin ? 'Gestão de Chamados' : 'Meus Chamados'}
             </span>
           </button>
         </div>
 
-        {/* SEÇÃO DE SEGURANÇA - EXCLUSIVA PARA ADMIN */}
         {isAdmin && (
-          <div className="nav-group animate-in" style={{ marginTop: '24px' }}>
+          <div className="nav-group">
             <p className="nav-section-title">Segurança</p>
             
             <button 

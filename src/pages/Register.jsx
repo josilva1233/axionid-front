@@ -1,18 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
+import './Login.css';
 
 export default function Register() {
   const navigate = useNavigate();
 
-  // 1️⃣ Extração dos parâmetros da URL
   const params = new URLSearchParams(window.location.search);
   const nameFromUrl = params.get('name') || '';
   const emailFromUrl = params.get('email') || '';
   const tokenFromUrl = params.get('token') || '';
   const isSocial = !!tokenFromUrl;
 
-  // 2️⃣ Estados (Padronizados com os outros componentes)
   const [step, setStep] = useState(isSocial ? 2 : 1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -24,7 +23,6 @@ export default function Register() {
     password_confirmation: '',
   });
 
-  // 3️⃣ Configuração inicial (Social Login)
   useEffect(() => {
     if (isSocial) {
       localStorage.setItem('@AxionID:token', tokenFromUrl);
@@ -32,7 +30,6 @@ export default function Register() {
     }
   }, [isSocial, tokenFromUrl]);
 
-  // 4️⃣ Handlers
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -50,7 +47,6 @@ export default function Register() {
 
     try {
       if (isSocial) {
-        // ROTA PARA QUEM VEM DO GOOGLE
         await api.post('/api/v1/complete-profile', {
           cpf_cnpj: formData.cpf_cnpj,
           password: formData.password,
@@ -58,7 +54,6 @@ export default function Register() {
           from_google: isSocial
         });
       } else {
-        // ROTA PARA CADASTRO MANUAL
         const response = await api.post('/api/v1/register', formData);
         localStorage.setItem('@AxionID:token', response.data.token);
       }
@@ -72,33 +67,28 @@ export default function Register() {
 
   return (
     <div className="auth-container">
-      <div className="auth-card animate-in">
-        {/* LOGO PADRONIZADA */}
+      <div className="auth-card">
         <div className="brand">
           <h1>Axion<span>ID</span></h1>
         </div>
 
-        {/* INDICADOR DE ETAPAS (STEPPER) */}
-        <div className="stepper-container" style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '24px' }}>
+        <div className="stepper-container">
           {[1, 2, 3].map(i => (
-            <div key={i} style={{ 
-              width: '33%', 
-              height: '4px', 
-              borderRadius: '2px',
-              background: step >= i ? 'var(--primary)' : 'var(--border-color)',
-              transition: '0.3s'
-            }} />
+            <div 
+              key={i} 
+              className={`step-indicator ${step >= i ? 'active' : 'inactive'}`}
+              style={{ width: '33%' }}
+            />
           ))}
         </div>
 
-        {error && <div className="error-message" style={{ marginBottom: '15px' }}>{error}</div>}
+        {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleRegister} className="auth-form">
 
-          {/* STEP 1: DADOS BÁSICOS (Apenas para cadastro manual) */}
           {step === 1 && !isSocial && (
-            <div className="step-content animate-in">
-              <div className="auth-header" style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <div className="step-content">
+              <div className="auth-header">
                 <h2>Crie sua conta</h2>
                 <p>Comece informando seus dados básicos para acesso.</p>
               </div>
@@ -133,10 +123,9 @@ export default function Register() {
             </div>
           )}
 
-          {/* STEP 2: DOCUMENTAÇÃO */}
           {step === 2 && (
-            <div className="step-content animate-in">
-              <div className="auth-header" style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <div className="step-content">
+              <div className="auth-header">
                 <h2>Olá, {formData.name ? formData.name.split(' ')[0] : 'Bem-vindo'}!</h2>
                 <p>Para sua segurança, informe seu CPF ou CNPJ para validarmos sua ID.</p>
               </div>
@@ -172,10 +161,9 @@ export default function Register() {
             </div>
           )}
 
-          {/* STEP 3: SEGURANÇA */}
           {step === 3 && (
-            <div className="step-content animate-in">
-              <div className="auth-header" style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <div className="step-content">
+              <div className="auth-header">
                 <h2>Segurança</h2>
                 <p>Crie uma senha forte para proteger seu acesso.</p>
               </div>
@@ -218,8 +206,8 @@ export default function Register() {
 
         </form>
 
-        <div className="auth-footer" style={{ marginTop: '25px', textAlign: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '20px' }}>
-          <p>Já possui uma conta? <Link to="/login" style={{ color: 'var(--primary)', fontWeight: '600', textDecoration: 'none' }}>Fazer Login</Link></p>
+        <div className="auth-footer">
+          <p>Já possui uma conta? <Link to="/login">Fazer Login</Link></p>
         </div>
       </div>
     </div>

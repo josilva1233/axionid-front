@@ -57,11 +57,10 @@ export default function UserDetail({
   };
 
   return (
-    <div className="user-detail-container animate-in w-100">
-      {/* BARRA DE TOPO */}
-      <div className="user-detail-header mb-4 p-3">
+    <div className="user-detail-container">
+      <div className="user-detail-header">
         <div className="header-left">
-          <button className="btn-filter-clear btn-back" onClick={onBack}>
+          <button className="btn-back" onClick={onBack}>
             <i className="bi bi-arrow-left me-2"></i>
             Voltar
           </button>
@@ -77,7 +76,7 @@ export default function UserDetail({
         <div className="header-actions">
           {!isEditing ? (
             <button
-              className="btn-critical-primary btn-edit"
+              className="btn-edit"
               onClick={() => setIsEditing(true)}
             >
               <i className="bi bi-pencil me-2"></i>
@@ -86,7 +85,7 @@ export default function UserDetail({
           ) : (
             <>
               <button
-                className="btn-critical-secondary"
+                className="btn-secondary"
                 onClick={() => setIsEditing(false)}
               >
                 Cancelar
@@ -102,25 +101,23 @@ export default function UserDetail({
           )}
         </div>
       </div>
-      <br />
-      {/* CARDS DE DETALHES */}
+
       <div className="detail-grid">
-        {/* CARD: PERFIL */}
         <section className={`info-card ${isEditing ? "editing" : ""}`}>
-          <div className="profile-header d-flex align-items-center gap-4 mb-4">
+          <div className="profile-header">
             <div className="avatar-large">
               {user.name?.charAt(0).toUpperCase()}
             </div>
-            <div className="flex-grow-1">
+            <div className="profile-info">
               <input
                 type="text"
                 name="name"
                 value={formData.name || ""}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="custom-input-dark name-input mb-2"
+                className="custom-input-dark name-input"
               />
-              <div className="d-flex gap-2 align-items-center">
+              <div className="profile-badges">
                 <span
                   className={`badge ${user.is_admin ? "badge-success" : "badge-operacional"}`}
                 >
@@ -133,8 +130,8 @@ export default function UserDetail({
             </div>
           </div>
 
-          <div className="info-list g-3 row">
-            <div className="info-item col-12 mb-2">
+          <div className="info-list">
+            <div className="info-item">
               <label className="input-label">E-mail Corporativo</label>
               <input
                 type="email"
@@ -142,26 +139,25 @@ export default function UserDetail({
                 value={formData.email || ""}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="custom-input-dark w-100"
+                className="custom-input-dark"
               />
             </div>
-            <div className="info-item col-12">
+            <div className="info-item">
               <label className="input-label">Documento</label>
               <input
                 type="text"
                 value={user.cpf_cnpj || "Não informado"}
                 disabled
-                className="custom-input-dark w-100 mono-text disabled-readonly"
+                className="custom-input-dark disabled-readonly"
               />
             </div>
           </div>
         </section>
 
-        {/* CARD: LOCALIZAÇÃO */}
         <section className={`info-card ${isEditing ? "editing" : ""}`}>
           <h4 className="card-title">Endereço de Registro</h4>
-          <div className="row g-3">
-            <div className="col-12 mb-2">
+          <div className="address-grid">
+            <div className="address-field">
               <label className="input-label">CEP</label>
               <input
                 type="text"
@@ -170,10 +166,10 @@ export default function UserDetail({
                 onChange={handleChange}
                 onBlur={handleCepBlur}
                 disabled={!isEditing}
-                className="custom-input-dark w-100 mono-text"
+                className="custom-input-dark mono-text"
               />
             </div>
-            <div className="col-md-9 mb-2">
+            <div className="address-field street-field">
               <label className="input-label">Rua</label>
               <input
                 type="text"
@@ -181,10 +177,10 @@ export default function UserDetail({
                 value={formData.street || ""}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="custom-input-dark w-100"
+                className="custom-input-dark"
               />
             </div>
-            <div className="col-md-3 mb-2">
+            <div className="address-field number-field">
               <label className="input-label">Nº</label>
               <input
                 type="text"
@@ -192,10 +188,10 @@ export default function UserDetail({
                 value={formData.number || ""}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="custom-input-dark w-100"
+                className="custom-input-dark"
               />
             </div>
-            <div className="col-12 mb-2">
+            <div className="address-field full-width">
               <label className="input-label">Bairro</label>
               <input
                 type="text"
@@ -203,10 +199,10 @@ export default function UserDetail({
                 value={formData.neighborhood || ""}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="custom-input-dark w-100"
+                className="custom-input-dark"
               />
             </div>
-            <div className="col-md-8">
+            <div className="address-field city-field">
               <label className="input-label">Cidade</label>
               <input
                 type="text"
@@ -214,10 +210,10 @@ export default function UserDetail({
                 value={formData.city || ""}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="custom-input-dark w-100"
+                className="custom-input-dark"
               />
             </div>
-            <div className="col-md-4">
+            <div className="address-field state-field">
               <label className="input-label">UF</label>
               <input
                 type="text"
@@ -225,11 +221,11 @@ export default function UserDetail({
                 value={formData.state || ""}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="custom-input-dark w-100"
+                className="custom-input-dark"
                 maxLength="2"
               />
             </div>
-            <div className="col-12">
+            <div className="address-field full-width">
               <label className="input-label">Complemento</label>
               <input
                 type="text"
@@ -237,17 +233,16 @@ export default function UserDetail({
                 value={formData.complement || ""}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="custom-input-dark w-100"
+                className="custom-input-dark"
               />
             </div>
           </div>
         </section>
       </div>
-      <br />
-      {/* AÇÕES CRÍTICAS */}
-      <section className="critical-actions-section mt-5 p-4">
+
+      <section className="critical-actions-section">
         <h4 className="critical-title">Gestão de Acesso e Privilégios</h4>
-        <div className="critical-actions-grid d-flex gap-3 flex-wrap">
+        <div className="critical-actions-grid">
           {user.is_admin ? (
             <button
               onClick={() => onAction("remove-admin")}

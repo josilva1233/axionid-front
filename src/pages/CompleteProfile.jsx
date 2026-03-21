@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import './Login.css';
 
 export default function CompleteProfile() {
   const navigate = useNavigate();
@@ -82,25 +83,23 @@ export default function CompleteProfile() {
 
   return (
     <div className="auth-container">
-      <div className="auth-card animate-in">
+      <div className="auth-card">
         <div className="brand"><h1>Axion<span>ID</span></h1></div>
         
-        <div className="stepper-container" style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '24px' }}>
+        <div className="stepper-container">
           {[1, 2, 3].map(i => (
-            <div key={i} style={{ 
-              width: '33%', 
-              height: '4px', 
-              borderRadius: '2px',
-              background: step >= i ? 'var(--primary)' : 'var(--border-color)',
-              transition: '0.3s'
-            }} />
+            <div 
+              key={i} 
+              className={`step-indicator ${step >= i ? 'active' : 'inactive'}`}
+              style={{ width: '33%' }}
+            />
           ))}
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
           {step === 1 && (
-            <div className="step-content animate-in">
-              <div className="auth-header" style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <div className="step-content">
+              <div className="auth-header">
                 <h2>Identificação</h2>
                 <p>Precisamos validar seu documento para ativar sua ID.</p>
               </div>
@@ -115,7 +114,7 @@ export default function CompleteProfile() {
                   required 
                   autoFocus
                 />
-                {errors.cpf_cnpj && <span className="error-message" style={{position:'static', fontSize: '0.75rem'}}>{errors.cpf_cnpj[0]}</span>}
+                {errors.cpf_cnpj && <span className="error-message" style={{ marginTop: '5px', marginBottom: '0', padding: '8px', fontSize: '0.75rem' }}>{errors.cpf_cnpj[0]}</span>}
               </div>
 
               <button 
@@ -130,8 +129,8 @@ export default function CompleteProfile() {
           )}
 
           {step === 2 && (
-            <div className="step-content animate-in">
-              <div className="auth-header" style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <div className="step-content">
+              <div className="auth-header">
                 <h2>Onde você reside?</h2>
                 <p>Esses dados são usados para faturamento e segurança.</p>
               </div>
@@ -148,7 +147,7 @@ export default function CompleteProfile() {
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '10px' }}>
+              <div className="row-group" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                 <div className="input-group" style={{ flex: 3 }}>
                   <label>Rua</label>
                   <input name="street" value={formData.street} onChange={handleChange} required />
@@ -159,7 +158,7 @@ export default function CompleteProfile() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '10px' }}>
+              <div className="row-group" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                 <div className="input-group" style={{ flex: 2 }}>
                   <label>Bairro</label>
                   <input name="neighborhood" value={formData.neighborhood} onChange={handleChange} required />
@@ -175,7 +174,7 @@ export default function CompleteProfile() {
                 <input name="city" value={formData.city} onChange={handleChange} required />
               </div>
 
-              <div className="btn-group" style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+              <div className="btn-group" style={{ display: 'flex', gap: '10px', marginTop: '10px', flexWrap: 'wrap' }}>
                 <button type="button" className="btn-secondary" style={{ flex: 1 }} onClick={() => setStep(1)}>Voltar</button>
                 <button type="button" className="btn-primary" style={{ flex: 2 }} onClick={() => setStep(3)}>Próximo: Segurança</button>
               </div>
@@ -183,8 +182,8 @@ export default function CompleteProfile() {
           )}
 
           {step === 3 && (
-            <div className="step-content animate-in">
-              <div className="auth-header" style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <div className="step-content">
+              <div className="auth-header">
                 <h2>Segurança</h2>
                 <p>Finalize criando sua senha de acesso.</p>
               </div>
@@ -196,7 +195,7 @@ export default function CompleteProfile() {
                   placeholder="Mínimo 6 caracteres" 
                   onChange={handleChange} required 
                 />
-                {errors.password && <span className="error-message" style={{position:'static', fontSize: '0.75rem'}}>{errors.password[0]}</span>}
+                {errors.password && <span className="error-message" style={{ marginTop: '5px', marginBottom: '0', padding: '8px', fontSize: '0.75rem' }}>{errors.password[0]}</span>}
               </div>
 
               <div className="input-group">
@@ -208,7 +207,7 @@ export default function CompleteProfile() {
                 />
               </div>
 
-              <div className="btn-group" style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+              <div className="btn-group" style={{ display: 'flex', gap: '10px', marginTop: '10px', flexWrap: 'wrap' }}>
                 <button type="button" className="btn-secondary" style={{ flex: 1 }} onClick={() => setStep(2)}>Voltar</button>
                 <button type="submit" className="btn-primary" style={{ flex: 2 }} disabled={loading}>
                   {loading ? 'Finalizando...' : 'Concluir Cadastro'}

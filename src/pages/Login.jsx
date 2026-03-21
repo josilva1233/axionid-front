@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
 import api from "../services/api";
-import "../Login.css";
+import "./Login.css";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -82,8 +82,7 @@ export default function Login() {
 
   return (
     <div className="auth-container">
-      <div className="auth-card animate-in">
-        {/* Header com a mesma identidade da tela de recuperar senha */}
+      <div className="auth-card">
         <div className="brand">
           <h1>
             Axion<span>ID</span>
@@ -95,7 +94,6 @@ export default function Login() {
           <p>Identifique-se para gerenciar seus serviços.</p>
         </div>
 
-        {/* Mensagem de erro com o mesmo estilo */}
         {error && (
           <div className="error-message">
             <i className="bi bi-exclamation-triangle-fill"></i>
@@ -104,7 +102,6 @@ export default function Login() {
         )}
 
         <form onSubmit={handleLogin} className="auth-form">
-          {/* Campo IDENTIFICAÇÃO - mesmo estilo da tela de recuperar senha */}
           <div className="input-group">
             <label>IDENTIFICAÇÃO</label>
             <input
@@ -118,7 +115,6 @@ export default function Login() {
             />
           </div>
 
-          {/* Campo SENHA com link "Esqueceu a senha?" */}
           <div className="input-group">
             <div className="label-row">
               <label>SENHA</label>
@@ -136,7 +132,6 @@ export default function Login() {
             />
           </div>
 
-          {/* CAPTCHA */}
           <div className="captcha-container">
             <ReCAPTCHA
               ref={recaptchaRef}
@@ -147,17 +142,14 @@ export default function Login() {
             />
           </div>
 
-          {/* Botão principal */}
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? "Autenticando..." : "Acessar Painel"}
           </button>
 
-          {/* Divisor "ou continue com" */}
           <div className="divider">
             <span>ou continue com</span>
           </div>
 
-          {/* Botão Google Workspace */}
           <button
             type="button"
             className="btn-google-workspace"
@@ -173,7 +165,6 @@ export default function Login() {
           </button>
         </form>
 
-        {/* Footer com link para cadastro */}
         <div className="auth-footer">
           <p>
             Ainda não tem acesso? <Link to="/register">Criar Conta AxionID</Link>
