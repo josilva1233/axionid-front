@@ -752,7 +752,8 @@ const handleOpenOrderDetail = async (orderId) => {
                       orders={serviceOrders}
                       loading={actionLoading}
                       /* ✅ FUNÇÃO PARA SELECIONAR A OS NA TABELA */
-                      onViewDetail={(order) => setSelectedOrder(order)}
+                      onViewDetail={(id) => handleOpenOrderDetail(id)}
+
                     />
                   </div>
                 ))}
