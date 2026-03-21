@@ -54,7 +54,7 @@ export default function ServiceOrderDetail({
 
   return (
     <div className="group-detail-container animate-in w-100">
-      {/* BARRA DE TOPO PADRONIZADA (Igual ao GroupDetail) */}
+      {/* BARRA DE TOPO PADRONIZADA */}
       <div className="user-detail-header mb-4 p-3 d-flex align-items-center justify-content-between">
         <div className="header-left d-flex align-items-center">
           <button className="btn-filter-clear btn-back" onClick={onBack}>
@@ -130,7 +130,7 @@ export default function ServiceOrderDetail({
               </p>
             </div>
 
-            {/* SEÇÃO DE ANEXO ATUALIZADA */}
+            {/* ✅ SEÇÃO DE ANEXO CORRIGIDA */}
             {order.attachment_path && (
               <div
                 className="mt-4 p-3 rounded-4"
@@ -151,37 +151,43 @@ export default function ServiceOrderDetail({
                 </h6>
 
                 <div className="d-flex flex-column flex-md-row align-items-start gap-3">
-                  {/* USAMOS UMA TAG <img> PARA FORÇAR A RENDERIZAÇÃO. 
-         Se o arquivo for um PDF, o navegador simplesmente não mostrará a imagem e o link abaixo resolve.
-      */}
-                  <div
-                    className="rounded-3 overflow-hidden border border-secondary bg-dark d-flex align-items-center justify-content-center"
-                    style={{
-                      width: "150px",
-                      height: "150px",
-                      cursor: "pointer",
-                    }}
-                    onClick={() =>
-                      window.open(
-                        `${import.meta.env.VITE_API_URL}/storage/${order.attachment_path}`,
-                        "_blank",
-                      )
-                    }
+                  {/* ✅ CONTAINER DA IMAGEM COM LOADING E FALLBACK */}
+                  <div 
+                    className="rounded-3 overflow-hidden border border-secondary bg-dark d-flex align-items-center justify-content-center position-relative"
+                    style={{ width: "150px", height: "150px", cursor: "pointer" }}
+                    onClick={() => window.open(`http://163.176.168.224/storage/${order.attachment_path}`, "_blank")}
                   >
-                    <img
-                      src={`${import.meta.env.VITE_API_URL}/storage/${order.attachment_path}`}
-                      alt="Preview"
+                    {/* Spinner de loading */}
+                    <div id={`img-loading-${order.id}`} className="position-absolute d-flex align-items-center justify-content-center w-100 h-100 bg-dark bg-opacity-75 rounded-3" style={{ zIndex: 10 }}>
+                      <div className="spinner-border spinner-border-sm text-primary" role="status">
+                        <span className="visually-hidden">Carregando preview...</span>
+                      </div>
+                    </div>
+
+                    <img 
+                      id={`preview-img-${order.id}`}
+                      src={`http://163.176.168.224/storage/${order.attachment_path}`}
+                      alt="Preview da evidência"
                       className="img-fluid"
-                      style={{
-                        objectFit: "contain",
-                        width: "100%",
+                      style={{ 
+                        objectFit: "contain", 
+                        width: "100%", 
                         height: "100%",
+                        opacity: 0,
+                        transition: "opacity 0.3s ease-in-out"
+                      }}
+                      onLoad={() => {
+                        document.getElementById(`img-loading-${order.id}`).style.display = "none";
+                        document.getElementById(`preview-img-${order.id}`).style.opacity = "1";
                       }}
                       onError={(e) => {
-                        // Se falhar (ex: for um PDF), mostra um ícone de arquivo
-                        e.target.onerror = null;
-                        e.target.parentElement.innerHTML =
-                          '<i class="bi bi-file-earmark-text text-primary" style="font-size: 2rem;"></i>';
+                        const container = e.target.parentElement;
+                        container.innerHTML = `
+                          <div class="d-flex flex-column align-items-center justify-content-center h-100 p-3 text-center">
+                            <i class="bi bi-file-earmark-image text-primary mb-2" style="font-size: 2.5rem; opacity: 0.7;"></i>
+                            <small class="text-white-50 fw-medium">Clique para abrir</small>
+                          </div>
+                        `;
                       }}
                     />
                   </div>
@@ -196,7 +202,7 @@ export default function ServiceOrderDetail({
 
                     <div className="d-flex gap-2">
                       <a
-                        href={`${import.meta.env.VITE_API_URL}/storage/${order.attachment_path}`}
+                        href={`http://163.176.168.224/storage/${order.attachment_path}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="bw-btn-table-action btn-sm text-decoration-none"
@@ -204,10 +210,10 @@ export default function ServiceOrderDetail({
                         <i className="bi bi-eye me-2"></i>Ver Original
                       </a>
 
-                      {/* LINK DE DOWNLOAD FORÇADO */}
+                      {/* ✅ DOWNLOAD DIRETO FUNCIONANDO */}
                       <a
-                        href={`${import.meta.env.VITE_API_URL}/storage/${order.attachment_path}`}
-                        download
+                        href={`http://163.176.168.224/storage/${order.attachment_path}`}
+                        download={order.attachment_path.split("/").pop()}
                         className="btn btn-sm btn-outline-secondary"
                       >
                         <i className="bi bi-download"></i>
@@ -277,7 +283,7 @@ export default function ServiceOrderDetail({
             </div>
 
             <hr className="border-secondary opacity-25" />
-            {/* Ações Rápidas (Selects de Mudança) */}
+            {/* Ações Rápidas */}
             <div className="mt-4">
               <label className="text-dim small text-uppercase fw-bold mb-2 d-block">
                 Alterar Status
@@ -295,7 +301,6 @@ export default function ServiceOrderDetail({
                     status: newStatus,
                   });
 
-                  // Chamamos a função do pai
                   onUpdateStatus(actualId, newStatus);
                 }}
                 disabled={actionLoading}
@@ -315,7 +320,6 @@ export default function ServiceOrderDetail({
               </label>
 
               {order.technician ? (
-                /* ESTADO: COM TÉCNICO */
                 <div className="d-flex align-items-center p-2 rounded bg-dark border border-primary-subtle shadow-sm">
                   <div
                     className="avatar-circle me-2"
@@ -344,7 +348,6 @@ export default function ServiceOrderDetail({
                   </div>
                 </div>
               ) : (
-                /* ESTADO: SEM TÉCNICO (O que sua API entende como pendente) */
                 <div
                   className="p-3 rounded border border-secondary border-dashed text-center"
                   style={{
@@ -360,7 +363,6 @@ export default function ServiceOrderDetail({
                     Aguardando Técnico assumir
                   </span>
 
-                  {/* Botão de Atalho usando a API existente */}
                   <button
                     className="btn btn-sm btn-outline-primary w-100 mt-2"
                     style={{ fontSize: "0.75rem" }}
