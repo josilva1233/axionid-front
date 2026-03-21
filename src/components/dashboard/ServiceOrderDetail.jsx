@@ -99,13 +99,12 @@ export default function ServiceOrderDetail({
             <div className="d-flex justify-content-between align-items-start mb-4">
               <div>
                 <h3 className="text-white mb-1 fw-bold">{order.title}</h3>
-<p className="text-dim">
-  Aberto em:{" "}
-  {order.created_at
-    ? new Date(order.created_at).toLocaleString("pt-BR")
-    : "Data inválida"}
-</p>
-
+                <p className="text-dim">
+                  Aberto em:{" "}
+                  {order.created_at
+                    ? new Date(order.created_at).toLocaleString("pt-BR")
+                    : "Data inválida"}
+                </p>
               </div>
               <div className="text-end">
                 <div className="mb-2">{getStatusBadge(order.status)}</div>
@@ -306,6 +305,71 @@ export default function ServiceOrderDetail({
                 <option value="resolved">Marcar como Resolvido</option>
                 <option value="closed">Encerrar Definitivamente</option>
               </select>
+            </div>
+
+            {/* SEÇÃO: TÉCNICO DESIGNADO */}
+            <div className="mb-4">
+              <label className="text-dim small text-uppercase fw-bold mb-2 d-block">
+                Técnico Designado
+              </label>
+
+              {order.technician ? (
+                /* ESTADO: COM TÉCNICO */
+                <div className="d-flex align-items-center p-2 rounded bg-dark border border-primary-subtle shadow-sm">
+                  <div
+                    className="avatar-circle me-2"
+                    style={{
+                      width: "36px",
+                      height: "36px",
+                      background: "linear-gradient(45deg, #6f42c1, #a155ff)",
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "0.9rem",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
+                  >
+                    {order.technician.name?.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <div className="text-primary small fw-bold">
+                      {order.technician.name}
+                    </div>
+                    <div className="text-dim" style={{ fontSize: "0.7rem" }}>
+                      Responsável pelo atendimento
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* ESTADO: SEM TÉCNICO (O que sua API entende como pendente) */
+                <div
+                  className="p-3 rounded border border-secondary border-dashed text-center"
+                  style={{
+                    borderStyle: "dashed",
+                    backgroundColor: "rgba(255,255,255,0.02)",
+                  }}
+                >
+                  <i
+                    className="bi bi-person-dash text-dim d-block mb-1"
+                    style={{ fontSize: "1.2rem" }}
+                  ></i>
+                  <span className="text-dim small">
+                    Aguardando Técnico assumir
+                  </span>
+
+                  {/* Botão de Atalho usando a API existente */}
+                  <button
+                    className="btn btn-sm btn-outline-primary w-100 mt-2"
+                    style={{ fontSize: "0.75rem" }}
+                    onClick={() => onUpdateStatus(order.id, "in_progress")}
+                    disabled={actionLoading}
+                  >
+                    Assumir este chamado
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </Col>

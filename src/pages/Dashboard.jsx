@@ -54,38 +54,35 @@ const handleOpenDetail = (fullOrderObject) => {
     }
   }, []);
 
-  const onUpdateStatus = async (idFromChild, newStatus) => {
-  // Prioridade 1: ID que veio do clique (idFromChild)
-  // Prioridade 2: ID que está no estado do objeto selecionado
+const onUpdateStatus = async (idFromChild, newStatus) => {
   const orderId = idFromChild || selectedOrder?.id;
-
-  if (!orderId) {
-    console.error("Estado atual do selectedOrder:", selectedOrder);
-    return AxionAlert.fire("Erro", "Não foi possível identificar a OS.", "error");
-  }
+  if (!orderId) return;
 
   try {
     setActionLoading(true);
-    // Note que usamos PATCH /api/v1/service-orders/{id}
-    await api.patch(`/api/v1/service-orders/${orderId}`, { 
+    
+    // 1. Faz o Patch
+    const res = await api.patch(`/api/v1/service-orders/${orderId}`, { 
       status: newStatus 
     });
+
+    // 2. A API retorna o objeto OS. Vamos atualizar o selectedOrder 
+    // com os novos dados (incluindo o technician que o Laravel injetou)
+    const updatedOrder = res.data.data || res.data;
+    setSelectedOrder(updatedOrder);
+
+    // 3. Atualiza a lista geral para a tabela atrás não ficar desatualizada
+    loadServiceOrders();
 
     AxionAlert.fire({
       icon: "success",
       title: "Status Atualizado!",
-      timer: 1500,
+      timer: 1000,
       showConfirmButton: false
     });
 
-    // ⚠️ IMPORTANTE: Atualize a lista local para refletir a mudança
-    loadServiceOrders(); 
-    
-    // Atualiza o objeto no detalhe para o novo status sem precisar fechar a tela
-    setSelectedOrder(prev => ({ ...prev, status: newStatus }));
-
   } catch (err) {
-    console.error("Erro na atualização:", err);
+    console.error(err);
     AxionAlert.fire("Erro", "Falha ao atualizar no servidor.", "error");
   } finally {
     setActionLoading(false);
