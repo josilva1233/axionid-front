@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
 import api from "../services/api";
-import "./../Login.css";
+import "../Login.css";
 
 export default function Login() {
   const [username, setUsername] = useState("");
