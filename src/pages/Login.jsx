@@ -2,13 +2,15 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
 import api from "../services/api";
+import "../../Login.css"; // Vamos criar um arquivo CSS separado
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [captchaToken, setCaptchaToken] = useState(null); // Estado para o captcha
+  const [captchaToken, setCaptchaToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const recaptchaRef = useRef(null);
 
@@ -40,7 +42,6 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    // Validação do Captcha antes de prosseguir
     if (!captchaToken) {
       setError("Por favor, confirme que você não é um robô.");
       return;
@@ -53,7 +54,7 @@ export default function Login() {
       const response = await api.post("/api/v1/login", {
         username,
         password,
-        captcha_token: captchaToken, // Enviando o token para o Laravel
+        captcha_token: captchaToken,
       });
 
       const { token, user } = response.data;
@@ -68,7 +69,6 @@ export default function Login() {
     } catch (err) {
       setError(err.response?.data?.message || "Usuário ou senha incorretos.");
       console.error("Erro no login manual", err);
-      // Reseta o captcha em caso de erro para nova tentativa
       setCaptchaToken(null);
       recaptchaRef.current?.reset();
     } finally {
@@ -81,123 +81,150 @@ export default function Login() {
     window.location.href = `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
-    <div className="auth-container">
-      <div className="auth-card animate-in">
-        <div className="brand">
-          <h1>
-            Axion<span>ID</span>
-          </h1>
+    <div className="login-page-container">
+      <div className="login-background">
+        <div className="bg-gradient"></div>
+        <div className="bg-pattern"></div>
+      </div>
+
+      <div className="login-card animate-in">
+        {/* Header */}
+        <div className="login-header">
+          <div className="brand">
+            <h1>
+              Axion<span>ID</span>
+            </h1>
+          </div>
+          <div className="auth-header">
+            <h2>Acessar Conta</h2>
+            <p>Identifique-se para gerenciar seus serviços.</p>
+          </div>
         </div>
 
-        <div
-          className="auth-header"
-          style={{ textAlign: "center", marginBottom: "20px" }}
-        >
-          <h2>Acessar Conta</h2>
-          <p>Identifique-se para gerenciar seus serviços.</p>
-        </div>
-
+        {/* Error Message */}
         {error && (
-          <div className="error-message" style={{ marginBottom: "15px" }}>
-            {error}
+          <div className="error-message" role="alert">
+            <i className="bi bi-exclamation-triangle-fill"></i>
+            <span>{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="auth-form">
-          <div className="input-group">
-            <label>Identificação</label>
-            <input
-              type="text"
-              placeholder="CPF ou CNPJ"
-              value={username}
-              autoComplete="username"
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              autoFocus
-            />
+        {/* Form */}
+        <form onSubmit={handleLogin} className="login-form">
+          {/* Campo Identificação */}
+          <div className="form-group">
+            <label htmlFor="username">Identificação</label>
+            <div className="input-wrapper">
+              <i className="bi bi-person input-icon"></i>
+              <input
+                id="username"
+                type="text"
+                placeholder="CPF, CNPJ ou e-mail"
+                value={username}
+                autoComplete="username"
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                autoFocus
+                disabled={loading}
+              />
+            </div>
           </div>
 
-          <div className="input-group">
-            <div
-              className="label-row"
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <label>Senha</label>
-              <Link
-                to="/forgot-password"
-                style={{
-                  fontSize: "0.8rem",
-                  color: "var(--primary)",
-                  textDecoration: "none",
-                }}
-              >
+          {/* Campo Senha */}
+          <div className="form-group">
+            <div className="label-row">
+              <label htmlFor="password">Senha</label>
+              <Link to="/forgot-password" className="forgot-link">
                 Esqueceu a senha?
               </Link>
             </div>
-            <input
-              type="password"
-              placeholder="Sua senha"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              required
-            />
+            <div className="input-wrapper">
+              <i className="bi bi-lock input-icon"></i>
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Digite sua senha"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                required
+                disabled={loading}
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={togglePasswordVisibility}
+                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+              >
+                <i className={`bi bi-eye${showPassword ? "-slash" : ""}`}></i>
+              </button>
+            </div>
           </div>
 
-          {/* RECAPTCHA CENTRALIZADO */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              margin: "20px 0",
-            }}
-          >
+          {/* reCAPTCHA */}
+          <div className="captcha-wrapper">
             <ReCAPTCHA
               ref={recaptchaRef}
               sitekey="6Lc5n4ksAAAAAEXLVSyq519dGet20T0gaQ2LXzPY"
               onChange={(token) => setCaptchaToken(token)}
               onExpired={() => setCaptchaToken(null)}
               theme="dark"
+              size="normal"
             />
           </div>
 
-          <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? "Autenticando..." : "Acessar Painel"}
+          {/* Botão Login */}
+          <button 
+            type="submit" 
+            className="btn-login" 
+            disabled={loading || !captchaToken}
+          >
+            {loading ? (
+              <>
+                <i className="bi bi-hourglass-split spinning"></i>
+                <span>Autenticando...</span>
+              </>
+            ) : (
+              <>
+                <i className="bi bi-box-arrow-in-right"></i>
+                <span>Acessar Painel</span>
+              </>
+            )}
           </button>
 
+          {/* Divisor */}
           <div className="divider">
             <span>ou continue com</span>
           </div>
 
+          {/* Botão Google Workspace */}
           <button
             type="button"
-            className="btn-google-workspace"
+            className="btn-google"
             onClick={handleGoogleLogin}
+            disabled={loading}
             aria-label="Fazer login com Google Workspace"
           >
-            <div className="google-icon-wrapper">
+            <div className="google-icon">
               <img
                 src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
                 alt=""
                 aria-hidden="true"
               />
             </div>
-            <span className="btn-text">Continuar com Google Workspace</span>
+            <span>Continuar com Google Workspace</span>
           </button>
         </form>
 
-        <div
-          className="auth-footer"
-          style={{ marginTop: "20px", textAlign: "center" }}
-        >
+        {/* Footer */}
+        <div className="login-footer">
           <p>
-            Ainda não tem acesso?{" "}
-            <Link to="/register">Criar Conta AxionID</Link>
+            Ainda não tem acesso? <Link to="/register">Criar Conta AxionID</Link>
           </p>
         </div>
       </div>
