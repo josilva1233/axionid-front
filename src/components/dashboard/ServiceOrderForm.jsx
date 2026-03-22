@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Badge, OverlayTrigger, Tooltip, Spinner } from "react-bootstrap";
-import "../ServiceOrderDetail.css";
+import "./ServiceOrderDetail.css";
 
 const STATUS_CONFIG = {
   pending: { color: "bg-warning text-dark", label: "PENDENTE" },
