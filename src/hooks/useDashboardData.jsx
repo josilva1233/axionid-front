@@ -10,11 +10,11 @@ export function useDashboardData(role) {
   const [filters, setFilters] = useState({ name: "", completed: "", method: "", date: "" });
   
   // Paginação separada para cada tipo
-  const [usersPagination, setUsersPagination] = useState({ current: 1, last: 1, total: 0 });
-  const [groupsPagination, setGroupsPagination] = useState({ current: 1, last: 1, total: 0 });
-  const [auditPagination, setAuditPagination] = useState({ current: 1, last: 1, total: 0 });
+  const [usersPagination, setUsersPagination] = useState({ current: 1, last: 1, total: 0, perPage: 10 });
+  const [groupsPagination, setGroupsPagination] = useState({ current: 1, last: 1, total: 0, perPage: 10 });
+  const [auditPagination, setAuditPagination] = useState({ current: 1, last: 1, total: 0, perPage: 20 }); // ← 20 para audit
 
-  // Listar Usuários
+  // Listar Usuários (10 por página)
   const loadUsers = useCallback(async (page = 1) => {
     if (role !== "admin") return;
     setLoading(true);
@@ -24,19 +24,19 @@ export function useDashboardData(role) {
       if (filters.completed !== "") params.append("completed", filters.completed);
       
       const res = await api.get(`/api/v1/admin/users?${params.toString()}`);
-      const data = res.data.data || res.data;
+      const responseData = res.data;
       
-      // Se for resposta paginada
-      if (data.data && Array.isArray(data.data)) {
-        setUsers(data.data);
+      if (responseData.data && Array.isArray(responseData.data)) {
+        setUsers(responseData.data);
         setUsersPagination({
-          current: data.current_page,
-          last: data.last_page,
-          total: data.total
+          current: responseData.current_page || 1,
+          last: responseData.last_page || 1,
+          total: responseData.total || 0,
+          perPage: responseData.per_page || 10
         });
       } else {
-        setUsers(Array.isArray(data) ? data : []);
-        setUsersPagination({ current: page, last: 1, total: data.length || 0 });
+        setUsers([]);
+        setUsersPagination({ current: 1, last: 1, total: 0, perPage: 10 });
       }
     } catch (err) { 
       console.error(err); 
@@ -46,7 +46,7 @@ export function useDashboardData(role) {
     }
   }, [role, filters.name, filters.completed]);
 
-  // Listar Grupos
+  // Listar Grupos (10 por página)
   const loadGroups = useCallback(async (page = 1) => {
     setLoading(true);
     try {
@@ -54,18 +54,19 @@ export function useDashboardData(role) {
       if (filters.name) params.append("name", filters.name);
       
       const res = await api.get(`/api/v1/groups?${params.toString()}`);
-      const data = res.data.data || res.data;
+      const responseData = res.data;
       
-      if (data.data && Array.isArray(data.data)) {
-        setGroups(data.data);
+      if (responseData.data && Array.isArray(responseData.data)) {
+        setGroups(responseData.data);
         setGroupsPagination({
-          current: data.current_page,
-          last: data.last_page,
-          total: data.total
+          current: responseData.current_page || 1,
+          last: responseData.last_page || 1,
+          total: responseData.total || 0,
+          perPage: responseData.per_page || 10
         });
       } else {
-        setGroups(Array.isArray(data) ? data : []);
-        setGroupsPagination({ current: page, last: 1, total: data.length || 0 });
+        setGroups([]);
+        setGroupsPagination({ current: 1, last: 1, total: 0, perPage: 10 });
       }
     } catch (err) { 
       console.error(err); 
@@ -75,31 +76,40 @@ export function useDashboardData(role) {
     }
   }, [filters.name]);
 
-  // Listar Logs de Auditoria
+  // Listar Logs de Auditoria (20 por página - como a API retorna)
   const loadAuditLogs = useCallback(async (page = 1) => {
     if (role !== "admin") return;
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page: page.toString(), per_page: 10 });
+      const params = new URLSearchParams({ page: page.toString() });
       if (filters.method) params.append("method", filters.method);
       if (filters.date) params.append("date", filters.date);
       
       const res = await api.get(`/api/v1/admin/audit-logs?${params.toString()}`);
-      const data = res.data.data || res.data;
+      const responseData = res.data;
       
-      if (data.data && Array.isArray(data.data)) {
-        setAuditLogs(data.data);
+      console.log("Audit Logs Response:", {
+        current_page: responseData.current_page,
+        last_page: responseData.last_page,
+        total: responseData.total,
+        per_page: responseData.per_page,
+        data_count: responseData.data?.length
+      });
+      
+      if (responseData.data && Array.isArray(responseData.data)) {
+        setAuditLogs(responseData.data);
         setAuditPagination({
-          current: data.current_page,
-          last: data.last_page,
-          total: data.total
+          current: responseData.current_page || 1,
+          last: responseData.last_page || 1,
+          total: responseData.total || 0,
+          perPage: responseData.per_page || 20 // ← usa o valor da API (20)
         });
       } else {
-        setAuditLogs(Array.isArray(data) ? data : []);
-        setAuditPagination({ current: page, last: 1, total: data.length || 0 });
+        setAuditLogs([]);
+        setAuditPagination({ current: 1, last: 1, total: 0, perPage: 20 });
       }
     } catch (err) { 
-      console.error(err); 
+      console.error("Erro ao carregar logs:", err); 
       setAuditLogs([]);
     } finally { 
       setLoading(false); 
