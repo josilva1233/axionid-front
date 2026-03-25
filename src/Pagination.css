@@ -1,0 +1,122 @@
+
+
+/* Pagination Container */
+.pagination-wrapper {
+  border-top: 1px solid var(--border);
+  padding-top: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.pagination-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.pagination-text {
+  color: var(--text-dim);
+  font-size: 0.875rem;
+}
+
+/* Pagination Navigation */
+.pagination-nav {
+  display: flex;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pagination-item {
+  display: inline-block;
+}
+
+.pagination-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 0.75rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-dim);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.pagination-link:hover:not(:disabled) {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.pagination-item.active .pagination-link {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.pagination-item.disabled .pagination-link {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.pagination-item.ellipsis .pagination-link {
+  cursor: default;
+  background: transparent;
+  border-color: transparent;
+}
+
+.pagination-item.ellipsis .pagination-link:hover {
+  background: transparent;
+  transform: none;
+}
+
+/* Pagination Icons */
+.pagination-icon {
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .pagination-info {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .pagination-link {
+    min-width: 32px;
+    height: 32px;
+    font-size: 0.75rem;
+    padding: 0 0.5rem;
+  }
+  
+  .pagination-nav {
+    gap: 0.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pagination-link {
+    min-width: 28px;
+    height: 28px;
+    font-size: 0.7rem;
+    padding: 0 0.4rem;
+  }
+  
+  .pagination-text {
+    font-size: 0.75rem;
+  }
+}
