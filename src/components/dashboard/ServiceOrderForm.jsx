@@ -11,6 +11,7 @@ export default function ServiceOrderForm({ groups, onSuccess, onCancel }) {
     description: "",
     priority: "medium",
     group_id: "",
+    attachment: null,
   });
 
   const AxionAlert = Swal.mixin({
@@ -27,21 +28,33 @@ export default function ServiceOrderForm({ groups, onSuccess, onCancel }) {
       return;
     }
     
-    if (!formData.group_id) {
-      AxionAlert.fire("Erro", "Selecione um grupo responsável.", "error");
+    if (!formData.description.trim()) {
+      AxionAlert.fire("Erro", "A descrição é obrigatória.", "error");
       return;
     }
 
     setLoading(true);
     
     try {
-      await api.post("/api/v1/service-orders", formData);
+      // Criar FormData para enviar arquivo
+      const data = new FormData();
+      data.append("title", formData.title);
+      data.append("description", formData.description);
+      data.append("priority", formData.priority);
+      if (formData.group_id) data.append("group_id", formData.group_id);
+      if (formData.attachment) data.append("attachment", formData.attachment);
+      
+      const response = await api.post("/api/v1/service-orders", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       
       AxionAlert.fire({
         icon: "success",
         title: "Chamado criado!",
-        text: "Ordem de serviço registrada com sucesso.",
-        timer: 1500,
+        text: `Protocolo: ${response.data.protocol}`,
+        timer: 2000,
         showConfirmButton: false,
       });
       
@@ -56,6 +69,28 @@ export default function ServiceOrderForm({ groups, onSuccess, onCancel }) {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validar tamanho (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        AxionAlert.fire("Erro", "Arquivo muito grande. Máximo 5MB.", "error");
+        e.target.value = "";
+        return;
+      }
+      
+      // Validar tipo
+      const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+      if (!allowedTypes.includes(file.type)) {
+        AxionAlert.fire("Erro", "Apenas arquivos PDF, JPG ou PNG são permitidos.", "error");
+        e.target.value = "";
+        return;
+      }
+      
+      setFormData({ ...formData, attachment: file });
     }
   };
 
@@ -80,7 +115,7 @@ export default function ServiceOrderForm({ groups, onSuccess, onCancel }) {
           <Col xs={12}>
             <Form.Group>
               <Form.Label className="filter-label">
-                <i className="bi bi-tag-fill me-1"></i> Título do Chamado
+                <i className="bi bi-tag-fill me-1"></i> Título do Chamado *
               </Form.Label>
               <Form.Control
                 type="text"
@@ -96,7 +131,7 @@ export default function ServiceOrderForm({ groups, onSuccess, onCancel }) {
           <Col xs={12}>
             <Form.Group>
               <Form.Label className="filter-label">
-                <i className="bi bi-chat-text-fill me-1"></i> Descrição
+                <i className="bi bi-chat-text-fill me-1"></i> Descrição *
               </Form.Label>
               <Form.Control
                 as="textarea"
@@ -105,6 +140,7 @@ export default function ServiceOrderForm({ groups, onSuccess, onCancel }) {
                 placeholder="Descreva detalhadamente o problema ou solicitação..."
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                required
               />
             </Form.Group>
           </Col>
@@ -136,15 +172,34 @@ export default function ServiceOrderForm({ groups, onSuccess, onCancel }) {
                 className="custom-input-dark"
                 value={formData.group_id}
                 onChange={(e) => setFormData({ ...formData, group_id: e.target.value })}
-                required
               >
-                <option value="">Selecione um grupo...</option>
+                <option value="">Selecionar grupo (opcional)</option>
                 {groups && groups.map((group) => (
                   <option key={group.id} value={group.id}>
                     {group.name}
                   </option>
                 ))}
               </Form.Select>
+            </Form.Group>
+          </Col>
+
+          <Col xs={12}>
+            <Form.Group>
+              <Form.Label className="filter-label">
+                <i className="bi bi-paperclip me-1"></i> Anexo (PDF, JPG, PNG - máx 5MB)
+              </Form.Label>
+              <Form.Control
+                type="file"
+                className="custom-input-dark"
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={handleFileChange}
+              />
+              {formData.attachment && (
+                <div className="mt-2 text-success small">
+                  <i className="bi bi-check-circle-fill me-1"></i>
+                  Arquivo selecionado: {formData.attachment.name}
+                </div>
+              )}
             </Form.Group>
           </Col>
 
