@@ -20,12 +20,12 @@ import OperationView from "../components/dashboard/OperationView";
 import ServiceOrderTable from "../components/dashboard/ServiceOrderTable";
 import ServiceOrderForm from "../components/dashboard/ServiceOrderForm";
 import ServiceOrderDetail from "../components/dashboard/ServiceOrderDetail";
+import Pagination from "../components/dashboard/Pagination";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [role] = useState(localStorage.getItem("@AxionID:role"));
   const [activeTab, setActiveTab] = useState("users");
-  const [currentPage, setCurrentPage] = useState(1);
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
@@ -39,6 +39,11 @@ export default function Dashboard() {
 
   const [permissions, setPermissions] = useState([]);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
+
+  // Estados para paginação - ADICIONE ESTES STATES
+  const [usersCurrentPage, setUsersCurrentPage] = useState(1);
+  const [groupsCurrentPage, setGroupsCurrentPage] = useState(1);
+  const [auditCurrentPage, setAuditCurrentPage] = useState(1);
 
   const AxionAlert = Swal.mixin({
     background: "#111214",
@@ -57,6 +62,9 @@ export default function Dashboard() {
     users,
     groups,
     auditLogs,
+    usersPagination,    // ← ADICIONE
+    groupsPagination,   // ← ADICIONE
+    auditPagination,    // ← ADICIONE
     filters,
     setFilters,
     loadUsers,
@@ -135,15 +143,18 @@ export default function Dashboard() {
     }
   };
 
+  // ATUALIZE O useEffect com as páginas corretas
   useEffect(() => {
-    if (activeTab === "users") loadUsers(currentPage);
-    else if (activeTab === "audit") loadAuditLogs(currentPage);
-    else if (activeTab === "groups") loadGroups(currentPage);
+    if (activeTab === "users") loadUsers(usersCurrentPage);
+    else if (activeTab === "audit") loadAuditLogs(auditCurrentPage);
+    else if (activeTab === "groups") loadGroups(groupsCurrentPage);
     else if (activeTab === "permissions") loadPermissions();
     else if (activeTab === "orders") loadServiceOrders();
   }, [
     activeTab,
-    currentPage,
+    usersCurrentPage,
+    groupsCurrentPage,
+    auditCurrentPage,
     loadUsers,
     loadGroups,
     loadAuditLogs,
@@ -181,6 +192,19 @@ export default function Dashboard() {
     }
   }, [selectedUser]);
 
+  // Funções para mudar de página - ADICIONE ESTAS FUNÇÕES
+  const handleUsersPageChange = (page) => {
+    setUsersCurrentPage(page);
+  };
+
+  const handleGroupsPageChange = (page) => {
+    setGroupsCurrentPage(page);
+  };
+
+  const handleAuditPageChange = (page) => {
+    setAuditCurrentPage(page);
+  };
+
   const handleUpdateUser = async (userId, data) => {
     if (!userId) return;
     setActionLoading(true);
@@ -196,7 +220,7 @@ export default function Dashboard() {
       const res = await api.get(`/api/v1/admin/users/${userId}`);
       setSelectedUser(res.data.data || res.data);
       setIsEditing(false);
-      loadUsers(currentPage);
+      loadUsers(usersCurrentPage);
     } catch (err) {
       AxionAlert.fire(
         "Erro!",
@@ -224,7 +248,7 @@ export default function Dashboard() {
         await api.delete(`/api/v1/admin/users/${userId}`);
         AxionAlert.fire("Removido!", "Usuário deletado do sistema.", "success");
         setSelectedUser(null);
-        loadUsers(currentPage);
+        loadUsers(usersCurrentPage);
       } catch (err) {
         AxionAlert.fire("Erro!", "Falha ao excluir usuário.", "error");
       } finally {
@@ -253,7 +277,7 @@ export default function Dashboard() {
         AxionAlert.fire("Sucesso!", "Nível de acesso alterado.", "success");
         const res = await api.get(`/api/v1/admin/users/${userId}`);
         setSelectedUser(res.data.data || res.data);
-        loadUsers(currentPage);
+        loadUsers(usersCurrentPage);
       } catch (err) {
         AxionAlert.fire("Erro!", "Não foi possível alterar o cargo.", "error");
       } finally {
@@ -283,7 +307,7 @@ export default function Dashboard() {
         );
         const res = await api.get(`/api/v1/admin/users/${userId}`);
         setSelectedUser(res.data.data || res.data);
-        loadUsers(currentPage);
+        loadUsers(usersCurrentPage);
       } catch (err) {
         AxionAlert.fire("Erro!", "Falha ao atualizar status.", "error");
       } finally {
@@ -319,7 +343,7 @@ export default function Dashboard() {
         `/api/v1/groups/${selectedGroupId}/members/${userId}/${type}`,
       );
       AxionAlert.fire("Sucesso!", "Cargo no grupo atualizado.", "success");
-      await loadGroups(currentPage);
+      await loadGroups(groupsCurrentPage);
     } catch (err) {
       AxionAlert.fire("Erro", "Erro ao alterar cargo no grupo.", "error");
     } finally {
@@ -339,7 +363,7 @@ export default function Dashboard() {
       await api.post(`/api/v1/groups/${selectedGroupId}/members`, {
         user_id: userToInvite.id,
       });
-      await loadGroups(currentPage);
+      await loadGroups(groupsCurrentPage);
     } catch (err) {
       AxionAlert.fire("Erro", "Erro ao adicionar.", "error");
     } finally {
@@ -359,7 +383,7 @@ export default function Dashboard() {
       setActionLoading(true);
       try {
         await api.delete(`/api/v1/groups/${selectedGroupId}/members/${userId}`);
-        await loadGroups(currentPage);
+        await loadGroups(groupsCurrentPage);
         AxionAlert.fire("Removido!", "", "success");
       } catch (err) {
         AxionAlert.fire("Erro", "Erro ao remover.", "error");
@@ -383,7 +407,7 @@ export default function Dashboard() {
         timer: 1500,
         showConfirmButton: false,
       });
-      await loadGroups(currentPage);
+      await loadGroups(groupsCurrentPage);
     } catch (err) {
       AxionAlert.fire(
         "Erro",
@@ -413,7 +437,7 @@ export default function Dashboard() {
           `/api/v1/admin/groups/${selectedGroupId}/permissions/${permissionId}`,
         );
         AxionAlert.fire("Removido!", "Permissão desvinculada.", "success");
-        await loadGroups(currentPage);
+        await loadGroups(groupsCurrentPage);
       } catch (err) {
         AxionAlert.fire("Erro", "Falha ao remover permissão.", "error");
       } finally {
@@ -440,6 +464,10 @@ export default function Dashboard() {
           setShowPermissionModal(false);
           setShowGroupForm(false);
           setSelectedOrder(null);
+          // Resetar páginas ao trocar de aba
+          setUsersCurrentPage(1);
+          setGroupsCurrentPage(1);
+          setAuditCurrentPage(1);
         }}
       />
 
@@ -508,6 +536,7 @@ export default function Dashboard() {
                 api.delete(`/api/v1/groups/${id}`).then(() => {
                   setSelectedGroupId(null);
                   loadGroups(1);
+                  setGroupsCurrentPage(1);
                 })
               }
               allAvailablePermissions={permissions || []}
@@ -525,9 +554,13 @@ export default function Dashboard() {
                 onFilterChange={(e) =>
                   setFilters({ ...filters, [e.target.name]: e.target.value })
                 }
-                onClear={() =>
-                  setFilters({ name: "", completed: "", method: "", date: "" })
-                }
+                onClear={() => {
+                  setFilters({ name: "", completed: "", method: "", date: "" });
+                  // Resetar páginas ao limpar filtros
+                  setUsersCurrentPage(1);
+                  setGroupsCurrentPage(1);
+                  setAuditCurrentPage(1);
+                }}
                 onNewGroup={() => setShowGroupForm(true)}
                 onNewPermission={() => setShowPermissionModal(true)}
                 isEditing={isEditing}
@@ -629,39 +662,57 @@ export default function Dashboard() {
                 <div className="content-card">
                   {activeTab === "users" &&
                     (isGlobalAdmin ? (
-                      <UserTable
-                        users={users}
-                        onViewDetail={(id) =>
-                          api
-                            .get(`/api/v1/admin/users/${id}`)
-                            .then((res) =>
-                              setSelectedUser(res.data.data || res.data),
-                            )
-                        }
-                        onDeleteUser={handleDeleteUser}
-                        onToggleAdmin={handleToggleAdmin}
-                        isGlobalAdmin={isGlobalAdmin}
-                      />
+                      <>
+                        <UserTable
+                          users={users}
+                          onViewDetail={(id) =>
+                            api
+                              .get(`/api/v1/admin/users/${id}`)
+                              .then((res) =>
+                                setSelectedUser(res.data.data || res.data),
+                              )
+                          }
+                          onDeleteUser={handleDeleteUser}
+                          onToggleAdmin={handleToggleAdmin}
+                          isGlobalAdmin={isGlobalAdmin}
+                        />
+                        {/* ADICIONE A PAGINAÇÃO AQUI */}
+                        <Pagination
+                          currentPage={usersPagination.current}
+                          lastPage={usersPagination.last}
+                          total={usersPagination.total}
+                          onPageChange={handleUsersPageChange}
+                          loading={loading}
+                        />
+                      </>
                     ) : (
                       <OperationView />
                     ))}
-                  {activeTab === "audit" && <AuditTable logs={auditLogs} />}
+                  
+                  {activeTab === "audit" && (
+                    <>
+                      <AuditTable logs={auditLogs} />
+                      {/* ADICIONE A PAGINAÇÃO AQUI */}
+                      <Pagination
+                        currentPage={auditPagination.current}
+                        lastPage={auditPagination.last}
+                        total={auditPagination.total}
+                        onPageChange={handleAuditPageChange}
+                        loading={loading}
+                      />
+                    </>
+                  )}
+                  
                   {activeTab === "groups" &&
                     (showGroupForm ? (
                       <GroupForm
                         onCancel={() => setShowGroupForm(false)}
                         onSave={async (data) => {
-                          // ← ADICIONE async e receba os dados
                           try {
-                            setActionLoading(true); // ← ADICIONE para mostrar loading
-
-                            // ← ADICIONE a chamada à API
+                            setActionLoading(true);
                             await api.post("/api/v1/groups", data);
-
                             setShowGroupForm(false);
-                            await loadGroups(1); // ← ADICIONE await para garantir que recarregue
-
-                            // ← ADICIONE feedback de sucesso
+                            await loadGroups(groupsCurrentPage);
                             AxionAlert.fire({
                               icon: "success",
                               title: "Grupo Criado!",
@@ -670,7 +721,6 @@ export default function Dashboard() {
                               showConfirmButton: false,
                             });
                           } catch (err) {
-                            // ← ADICIONE tratamento de erro
                             console.error("Erro ao criar grupo:", err);
                             AxionAlert.fire(
                               "Erro",
@@ -679,19 +729,30 @@ export default function Dashboard() {
                               "error",
                             );
                           } finally {
-                            setActionLoading(false); // ← ADICIONE para finalizar loading
+                            setActionLoading(false);
                           }
                         }}
-                        loading={actionLoading} // ← ADICIONE para desabilitar botão durante loading
+                        loading={actionLoading}
                       />
                     ) : (
-                      <GroupTable
-                        groups={groups}
-                        onViewDetail={setSelectedGroupId}
-                        isGlobalAdmin={isGlobalAdmin}
-                        currentUser={currentUser}
-                      />
+                      <>
+                        <GroupTable
+                          groups={groups}
+                          onViewDetail={setSelectedGroupId}
+                          isGlobalAdmin={isGlobalAdmin}
+                          currentUser={currentUser}
+                        />
+                        {/* ADICIONE A PAGINAÇÃO AQUI */}
+                        <Pagination
+                          currentPage={groupsPagination.current}
+                          lastPage={groupsPagination.last}
+                          total={groupsPagination.total}
+                          onPageChange={handleGroupsPageChange}
+                          loading={loading}
+                        />
+                      </>
                     ))}
+                  
                   {activeTab === "permissions" && (
                     <PermissionTable
                       permissions={permissions}
