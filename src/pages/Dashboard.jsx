@@ -557,7 +557,7 @@ export default function Dashboard() {
                     showGroupForm ? (
                       <GroupForm
                         onCancel={() => setShowGroupForm(false)}
-                        onUpdate={() => {
+                        onSave={() => {
                           setShowGroupForm(false);
                           loadGroups(1);
                         }}
