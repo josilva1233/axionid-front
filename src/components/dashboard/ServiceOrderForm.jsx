@@ -1,247 +1,181 @@
+// components/dashboard/ServiceOrderForm.jsx
 import { useState } from "react";
-import { Badge, OverlayTrigger, Tooltip, Spinner } from "react-bootstrap";
-import "../../ServiceOrderDetail.css";
+import { Form, Spinner, Row, Col } from "react-bootstrap";
+import api from "../../services/api";
+import Swal from "sweetalert2";
 
-const STATUS_CONFIG = {
-  pending: { color: "bg-warning text-dark", label: "PENDENTE" },
-  open: { color: "bg-info text-white", label: "EM ABERTO" },
-  in_progress: { color: "bg-primary", label: "EM ATENDIMENTO" },
-  resolved: { color: "bg-success", label: "RESOLVIDO" },
-  closed: { color: "bg-secondary", label: "FECHADO" },
-};
+export default function ServiceOrderForm({ groups, onSuccess, onCancel }) {
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    priority: "medium",
+    group_id: "",
+  });
 
-const PRIORITY_CONFIG = {
-  low: { color: "bg-success-subtle text-success", label: "Baixa" },
-  medium: { color: "bg-info-subtle text-info", label: "Média" },
-  high: { color: "bg-warning-subtle text-warning", label: "Alta" },
-  urgent: { color: "bg-danger-subtle text-danger", label: "URGENTE!" },
-};
+  const AxionAlert = Swal.mixin({
+    background: "#111214",
+    color: "#ffffff",
+    confirmButtonColor: "#6366f1",
+  });
 
-const StatusBadge = ({ status }) => {
-  const item = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
-  return <Badge pill className={item.color}>{item.label}</Badge>;
-};
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!formData.title.trim()) {
+      AxionAlert.fire("Erro", "O título é obrigatório.", "error");
+      return;
+    }
+    
+    if (!formData.group_id) {
+      AxionAlert.fire("Erro", "Selecione um grupo responsável.", "error");
+      return;
+    }
 
-const PriorityBadge = ({ priority }) => {
-  const item = PRIORITY_CONFIG[priority] || PRIORITY_CONFIG.low;
-  return <Badge pill className={`border fw-bold ${item.color}`}>{item.label}</Badge>;
-};
-
-const AttachmentPreview = ({ order, baseUrl }) => {
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
-  const fileName = order.attachment_path?.split("/").pop() || "anexo";
-  const fullUrl = `${baseUrl}/storage/${order.attachment_path}`;
-
-  if (!order.attachment_path) return null;
-
-  const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(order.attachment_path);
-
-  return (
-    <div className="attachment-section">
-      <h6 className="attachment-title">
-        <i className="bi bi-paperclip text-warning me-2"></i>
-        Evidência Anexada
-      </h6>
+    setLoading(true);
+    
+    try {
+      await api.post("/api/v1/service-orders", formData);
       
-      <div className="attachment-container">
-        <div className="attachment-preview" onClick={() => window.open(fullUrl, "_blank")}>
-          {!imageLoaded && !imageError && (
-            <div className="loading-overlay-img">
-              <Spinner animation="grow" variant="primary" size="sm" />
-              <span className="text-white fw-bold small">Carregando...</span>
-            </div>
-          )}
-          
-          {isImage && !imageError ? (
-            <img 
-              src={fullUrl}
-              alt="Preview da evidência"
-              className="attachment-img"
-              style={{ opacity: imageLoaded ? 1 : 0 }}
-              onLoad={() => setImageLoaded(true)}
-              onError={() => setImageError(true)}
-            />
-          ) : (
-            <div className="attachment-placeholder">
-              <i className="bi bi-file-earmark-fill"></i>
-              <div className="attachment-info">
-                <div className="fw-bold">{fileName}</div>
-                <small>Clique para visualizar</small>
-              </div>
-            </div>
-          )}
-          
-          <div className="attachment-overlay">
-            <i className="bi bi-zoom-in"></i>
-          </div>
-        </div>
-        
-        <div className="attachment-actions">
-          <h5 className="attachment-name">📎 {fileName}</h5>
-          <span className="badge-light">Evidência do chamado</span>
-          <div className="attachment-buttons">
-            <a href={fullUrl} target="_blank" rel="noopener noreferrer" className="btn-outline-light">
-              <i className="bi bi-eye-fill me-2"></i> Visualizar
-            </a>
-            <a href={fullUrl} download={fileName} className="btn-primary">
-              <i className="bi bi-download me-2"></i> Download
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default function ServiceOrderDetail({
-  order,
-  onBack,
-  onUpdateStatus,
-  onDeleteOrder,
-  actionLoading,
-  isSystemAdmin,
-}) {
-  const baseUrl = import.meta.env.VITE_API_URL || process.env.REACT_APP_API_URL || "http://163.176.168.224";
-
-  if (!order) {
-    return (
-      <div className="detail-loading">
-        <Spinner animation="border" variant="primary" />
-        <h5>Carregando detalhes da OS...</h5>
-        <button className="btn-secondary" onClick={onBack}>Voltar</button>
-      </div>
-    );
-  }
+      AxionAlert.fire({
+        icon: "success",
+        title: "Chamado criado!",
+        text: "Ordem de serviço registrada com sucesso.",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      
+      if (onSuccess) onSuccess();
+      
+    } catch (err) {
+      console.error("Erro ao criar OS:", err);
+      AxionAlert.fire(
+        "Erro",
+        err.response?.data?.message || "Não foi possível criar o chamado.",
+        "error"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="service-order-detail-container">
-      <div className="detail-header">
-        <div className="detail-header-content">
-          <div className="header-left">
-            <button className="btn-back" onClick={onBack}>
-              <i className="bi bi-arrow-left me-2"></i> Voltar
-            </button>
-            <div className="protocol-badge">
-              <strong>#{order.protocol || order.id}</strong>
-            </div>
-            <div className="order-info">
-              <h2 className="order-title">{order.title}</h2>
-              <div className="order-meta">
-                <span><i className="bi bi-calendar3 me-1"></i>{new Date(order.created_at).toLocaleString("pt-BR")}</span>
-                <span><i className="bi bi-hash me-1"></i>ID: {order.id}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="header-actions">
-            {isSystemAdmin && (
-              <OverlayTrigger placement="bottom" overlay={<Tooltip>Excluir permanentemente</Tooltip>}>
-                <button className="btn-delete-permanent" onClick={() => onDeleteOrder(order.id)} disabled={actionLoading}>
-                  <i className="bi bi-trash3-fill me-2"></i> Excluir
-                </button>
-              </OverlayTrigger>
-            )}
-          </div>
-        </div>
+    <div className="filter-card">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h4 className="card-title mb-0">
+          <i className="bi bi-plus-circle-fill text-primary me-2"></i>
+          Abrir Novo Chamado
+        </h4>
+        <button 
+          className="btn btn-outline-light btn-sm rounded-pill px-3"
+          onClick={onCancel}
+          disabled={loading}
+        >
+          <i className="bi bi-x-lg me-1"></i> Fechar
+        </button>
       </div>
+      
+      <Form onSubmit={handleSubmit}>
+        <Row className="g-3">
+          <Col xs={12}>
+            <Form.Group>
+              <Form.Label className="filter-label">
+                <i className="bi bi-tag-fill me-1"></i> Título do Chamado
+              </Form.Label>
+              <Form.Control
+                type="text"
+                className="custom-input-dark"
+                placeholder="Ex: Problema com acesso ao sistema, Solicitação de equipamento..."
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                required
+              />
+            </Form.Group>
+          </Col>
 
-      <div className="detail-content">
-        <div className="detail-main">
-          <div className="info-card">
-            <div className="info-card-content">
-              <div className="status-priority-badges">
-                <StatusBadge status={order.status} />
-                <PriorityBadge priority={order.priority} />
-              </div>
+          <Col xs={12}>
+            <Form.Group>
+              <Form.Label className="filter-label">
+                <i className="bi bi-chat-text-fill me-1"></i> Descrição
+              </Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={5}
+                className="custom-input-dark"
+                placeholder="Descreva detalhadamente o problema ou solicitação..."
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              />
+            </Form.Group>
+          </Col>
 
-              <div className="description-section">
-                <h6 className="section-title">
-                  <i className="bi bi-chat-square-text-fill me-2"></i>
-                  Descrição da Solicitação
-                </h6>
-                <div className="description-card">
-                  <p>{order.description || "Sem descrição fornecida."}</p>
-                </div>
-              </div>
-
-              <AttachmentPreview order={order} baseUrl={baseUrl} />
-            </div>
-          </div>
-        </div>
-
-        <div className="detail-sidebar">
-          <div className="info-card">
-            <h3 className="sidebar-title">
-              <i className="bi bi-gear-fill text-primary me-2"></i>
-              Gestão da Ordem
-            </h3>
-
-            <div className="user-card">
-              <div className="avatar-circle-lg">
-                {order.user?.name?.charAt(0)?.toUpperCase() || "?"}
-              </div>
-              <div className="user-info">
-                <h6 className="user-name">{order.user?.name || "Usuário não identificado"}</h6>
-                <small className="user-email">{order.user?.email || "Email não disponível"}</small>
-              </div>
-            </div>
-
-            <div className="group-card">
-              <div className="group-icon">
-                <i className="bi bi-people-fill"></i>
-              </div>
-              <div>
-                <h6 className="group-title">Grupo Responsável</h6>
-                <p className="group-name">{order.group?.name || "Sem grupo vinculado"}</p>
-              </div>
-            </div>
-
-            <div className="technician-section">
-              <label className="section-label">Técnico Designado</label>
-              {order.technician ? (
-                <div className="technician-card">
-                  <div className="avatar-circle-sm">
-                    {order.technician.name?.charAt(0)?.toUpperCase()}
-                  </div>
-                  <div>
-                    <h6 className="technician-name">{order.technician.name}</h6>
-                    <small>Responsável pelo atendimento</small>
-                  </div>
-                </div>
-              ) : (
-                <div className="no-technician-card">
-                  <i className="bi bi-person-plus-fill"></i>
-                  <h6>Aguardando Técnico</h6>
-                  <button
-                    className="btn-primary"
-                    onClick={() => onUpdateStatus(order.id, "in_progress")}
-                    disabled={actionLoading}
-                  >
-                    <i className="bi bi-person-check me-2"></i> Assumir este chamado
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div className="status-section">
-              <label className="section-label">Alterar Status</label>
-              <select
-                className="status-select"
-                value={order.status}
-                onChange={(e) => onUpdateStatus(order.id, e.target.value)}
-                disabled={actionLoading}
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label className="filter-label">
+                <i className="bi bi-flag-fill me-1"></i> Prioridade
+              </Form.Label>
+              <Form.Select
+                className="custom-input-dark"
+                value={formData.priority}
+                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
               >
-                <option value="pending">⏳ Pendente</option>
-                <option value="open">📂 Abrir OS</option>
-                <option value="in_progress">🔧 Iniciar Atendimento</option>
-                <option value="resolved">✅ Marcar como Resolvido</option>
-                <option value="closed">🔒 Encerrar Definitivamente</option>
-              </select>
+                <option value="low">🔵 Baixa</option>
+                <option value="medium">🟡 Média</option>
+                <option value="high">🟠 Alta</option>
+                <option value="urgent">🔴 Urgente</option>
+              </Form.Select>
+            </Form.Group>
+          </Col>
+
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label className="filter-label">
+                <i className="bi bi-people-fill me-1"></i> Grupo Responsável
+              </Form.Label>
+              <Form.Select
+                className="custom-input-dark"
+                value={formData.group_id}
+                onChange={(e) => setFormData({ ...formData, group_id: e.target.value })}
+                required
+              >
+                <option value="">Selecione um grupo...</option>
+                {groups && groups.map((group) => (
+                  <option key={group.id} value={group.id}>
+                    {group.name}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Col>
+
+          <Col xs={12}>
+            <div className="d-flex gap-3 justify-content-end mt-4">
+              <button
+                type="button"
+                className="btn btn-outline-light btn-lg px-5 rounded-pill"
+                onClick={onCancel}
+                disabled={loading}
+              >
+                <i className="bi bi-x-lg me-2"></i> Cancelar
+              </button>
+              
+              <button
+                type="submit"
+                className="btn btn-primary btn-lg px-5 rounded-pill"
+                disabled={loading}
+              >
+                {loading ? (
+                  <Spinner animation="border" size="sm" />
+                ) : (
+                  <>
+                    <i className="bi bi-check-lg me-2"></i> Criar Chamado
+                  </>
+                )}
+              </button>
             </div>
-          </div>
-        </div>
-      </div>
+          </Col>
+        </Row>
+      </Form>
     </div>
   );
 }
