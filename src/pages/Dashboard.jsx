@@ -62,9 +62,9 @@ export default function Dashboard() {
     users,
     groups,
     auditLogs,
-    usersPagination,    // ← ADICIONE
-    groupsPagination,   // ← ADICIONE
-    auditPagination,    // ← ADICIONE
+    usersPagination, // ← ADICIONE
+    groupsPagination, // ← ADICIONE
+    auditPagination, // ← ADICIONE
     filters,
     setFilters,
     loadUsers,
@@ -590,65 +590,88 @@ export default function Dashboard() {
                 />
               )}
 
-              {activeTab === "orders" &&
-                (showOrderForm ? (
-                  <ServiceOrderForm
-                    groups={groups}
-                    onSuccess={() => {
-                      setShowOrderForm(false);
-                      loadServiceOrders();
-                    }}
-                    onCancel={() => setShowOrderForm(false)}
-                  />
-                ) : selectedOrder && selectedOrder.id ?(
-                  <ServiceOrderDetail
-                    order={selectedOrder}
-                    onBack={() => setSelectedOrder(null)}
-                    onUpdateStatus={onUpdateStatus}
-                    isSystemAdmin={isGlobalAdmin}
-                    onDeleteOrder={async (id) => {
-                      const result = await AxionAlert.fire({
-                        title: "Excluir OS?",
-                        text: "Esta ação não pode ser desfeita!",
-                        icon: "warning",
-                        showCancelButton: true,
-                        confirmButtonText: "Sim, excluir!",
-                      });
-                      if (result.isConfirmed) {
-                        try {
-                          await api.delete(`/api/v1/service-orders/${id}`);
-                          setSelectedOrder(null);
-                          loadServiceOrders();
-                          AxionAlert.fire(
-                            "Deletado!",
-                            "Ordem de serviço removida.",
-                            "success",
-                          );
-                        } catch (e) {
-                          AxionAlert.fire("Erro", "Falha ao excluir.", "error");
-                        }
-                      }
-                    }}
-                  />
-                ) : (
-                  <div className="animate-in">
-                    <div className="orders-header">
-                      <h4 className="text-white mb-0">Gestão de Chamados</h4>
-                      <button
-                        className="btn-primary-sm"
-                        onClick={() => setShowOrderForm(true)}
-                      >
-                        <i className="bi bi-plus-lg me-2"></i> Nova OS
-                      </button>
-                    </div>
-
-                    <ServiceOrderTable
-                      orders={serviceOrders}
-                      loading={actionLoading}
-                      onViewDetail={(id) => handleOpenOrderDetail(id)}
+              {activeTab === "orders" && (
+                <>
+                  {/* Formulário de criação */}
+                  {showOrderForm && (
+                    <ServiceOrderForm
+                      groups={groups}
+                      onSuccess={() => {
+                        setShowOrderForm(false);
+                        loadServiceOrders();
+                      }}
+                      onCancel={() => setShowOrderForm(false)}
                     />
-                  </div>
-                ))}
+                  )}
+
+                  {/* Detalhes da OS */}
+                  {!showOrderForm && selectedOrder && selectedOrder.id && (
+                    <ServiceOrderDetail
+                      order={selectedOrder}
+                      onBack={() => {
+                        setSelectedOrder(null);
+                        // Não precisa resetar showOrderForm aqui, pois já é false
+                      }}
+                      onUpdateStatus={onUpdateStatus}
+                      isSystemAdmin={isGlobalAdmin}
+                      onDeleteOrder={async (id) => {
+                        const result = await AxionAlert.fire({
+                          title: "Excluir OS?",
+                          text: "Esta ação não pode ser desfeita!",
+                          icon: "warning",
+                          showCancelButton: true,
+                          confirmButtonText: "Sim, excluir!",
+                        });
+                        if (result.isConfirmed) {
+                          try {
+                            await api.delete(`/api/v1/service-orders/${id}`);
+                            setSelectedOrder(null);
+                            loadServiceOrders();
+                            AxionAlert.fire(
+                              "Deletado!",
+                              "Ordem de serviço removida.",
+                              "success",
+                            );
+                          } catch (e) {
+                            AxionAlert.fire(
+                              "Erro",
+                              "Falha ao excluir.",
+                              "error",
+                            );
+                          }
+                        }
+                      }}
+                    />
+                  )}
+
+                  {/* Lista de chamados */}
+                  {!showOrderForm && !selectedOrder && (
+                    <div className="animate-in">
+                      <div className="orders-header">
+                        <h4 className="text-white mb-0">Gestão de Chamados</h4>
+                        <button
+                          className="btn-primary-sm"
+                          onClick={() => {
+                            setShowOrderForm(true);
+                            setSelectedOrder(null); // Garante que selectedOrder é null
+                          }}
+                        >
+                          <i className="bi bi-plus-lg me-2"></i> Nova OS
+                        </button>
+                      </div>
+
+                      <ServiceOrderTable
+                        orders={serviceOrders}
+                        loading={actionLoading}
+                        onViewDetail={(id) => {
+                          setShowOrderForm(false); // Fecha formulário se estiver aberto
+                          handleOpenOrderDetail(id);
+                        }}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
 
               <div
                 className={`tab-wrapper ${loading || actionLoading ? "is-loading" : ""}`}
@@ -688,7 +711,7 @@ export default function Dashboard() {
                     ) : (
                       <OperationView />
                     ))}
-                  
+
                   {activeTab === "audit" && (
                     <>
                       <AuditTable logs={auditLogs} />
@@ -702,7 +725,7 @@ export default function Dashboard() {
                       />
                     </>
                   )}
-                  
+
                   {activeTab === "groups" &&
                     (showGroupForm ? (
                       <GroupForm
@@ -752,7 +775,7 @@ export default function Dashboard() {
                         />
                       </>
                     ))}
-                  
+
                   {activeTab === "permissions" && (
                     <PermissionTable
                       permissions={permissions}
