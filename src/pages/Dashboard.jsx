@@ -600,7 +600,7 @@ export default function Dashboard() {
                     }}
                     onCancel={() => setShowOrderForm(false)}
                   />
-                ) : selectedOrder ? (
+                ) : selectedOrder && selectedOrder.id ?(
                   <ServiceOrderDetail
                     order={selectedOrder}
                     onBack={() => setSelectedOrder(null)}
