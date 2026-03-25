@@ -93,7 +93,11 @@ export default function Dashboard() {
       const res = await api.get(`/api/v1/service-orders/${orderId}`);
       setSelectedOrder(res.data.data || res.data);
     } catch (err) {
-      AxionAlert.fire("Erro", "Não foi possível carregar os detalhes desta OS.", "error");
+      AxionAlert.fire(
+        "Erro",
+        "Não foi possível carregar os detalhes desta OS.",
+        "error",
+      );
     } finally {
       setActionLoading(false);
     }
@@ -101,12 +105,18 @@ export default function Dashboard() {
 
   const onUpdateStatus = async (orderId, newStatus) => {
     if (!orderId) {
-      return AxionAlert.fire("Erro", "Não foi possível identificar o ID da OS.", "error");
+      return AxionAlert.fire(
+        "Erro",
+        "Não foi possível identificar o ID da OS.",
+        "error",
+      );
     }
 
     try {
       setActionLoading(true);
-      const res = await api.patch(`/api/v1/service-orders/${orderId}`, { status: newStatus });
+      const res = await api.patch(`/api/v1/service-orders/${orderId}`, {
+        status: newStatus,
+      });
       const updatedOrder = res.data.data || res.data;
       setSelectedOrder(updatedOrder);
       loadServiceOrders();
@@ -115,7 +125,7 @@ export default function Dashboard() {
         icon: "success",
         title: "Status Atualizado!",
         timer: 1500,
-        showConfirmButton: false
+        showConfirmButton: false,
       });
     } catch (err) {
       console.error("Erro na API:", err);
@@ -131,7 +141,15 @@ export default function Dashboard() {
     else if (activeTab === "groups") loadGroups(currentPage);
     else if (activeTab === "permissions") loadPermissions();
     else if (activeTab === "orders") loadServiceOrders();
-  }, [activeTab, currentPage, loadUsers, loadGroups, loadAuditLogs, loadPermissions, loadServiceOrders]);
+  }, [
+    activeTab,
+    currentPage,
+    loadUsers,
+    loadGroups,
+    loadAuditLogs,
+    loadPermissions,
+    loadServiceOrders,
+  ]);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -168,13 +186,23 @@ export default function Dashboard() {
     setActionLoading(true);
     try {
       await api.put(`/api/v1/admin/users/${userId}/update-manual`, data);
-      AxionAlert.fire({ icon: "success", title: "Sucesso!", text: "Perfil atualizado.", timer: 1500, showConfirmButton: false });
+      AxionAlert.fire({
+        icon: "success",
+        title: "Sucesso!",
+        text: "Perfil atualizado.",
+        timer: 1500,
+        showConfirmButton: false,
+      });
       const res = await api.get(`/api/v1/admin/users/${userId}`);
       setSelectedUser(res.data.data || res.data);
       setIsEditing(false);
       loadUsers(currentPage);
     } catch (err) {
-      AxionAlert.fire("Erro!", "Não foi possível salvar as alterações.", "error");
+      AxionAlert.fire(
+        "Erro!",
+        "Não foi possível salvar as alterações.",
+        "error",
+      );
     } finally {
       setActionLoading(false);
     }
@@ -207,7 +235,9 @@ export default function Dashboard() {
 
   const handleToggleAdmin = async (userId, currentStatus) => {
     const endpoint = currentStatus ? "remove-admin" : "promote";
-    const actionText = currentStatus ? "rebaixar para usuário comum" : "promover a administrador";
+    const actionText = currentStatus
+      ? "rebaixar para usuário comum"
+      : "promover a administrador";
 
     const result = await AxionAlert.fire({
       title: "Alterar Privilégios?",
@@ -246,7 +276,11 @@ export default function Dashboard() {
       setActionLoading(true);
       try {
         await api.patch(`/api/v1/admin/users/${userId}/toggle-status`);
-        AxionAlert.fire("Concluído!", `Usuário agora está ${currentStatus ? "inativo" : "ativo"}.`, "success");
+        AxionAlert.fire(
+          "Concluído!",
+          `Usuário agora está ${currentStatus ? "inativo" : "ativo"}.`,
+          "success",
+        );
         const res = await api.get(`/api/v1/admin/users/${userId}`);
         setSelectedUser(res.data.data || res.data);
         loadUsers(currentPage);
@@ -262,7 +296,13 @@ export default function Dashboard() {
     setActionLoading(true);
     try {
       await api.post("/api/v1/admin/permissions", data);
-      AxionAlert.fire({ icon: "success", title: "Criada!", text: "Permissão registrada.", timer: 2000, showConfirmButton: false });
+      AxionAlert.fire({
+        icon: "success",
+        title: "Criada!",
+        text: "Permissão registrada.",
+        timer: 2000,
+        showConfirmButton: false,
+      });
       setShowPermissionModal(false);
       loadPermissions();
     } catch (err) {
@@ -275,7 +315,9 @@ export default function Dashboard() {
   const handleGroupMemberRole = async (userId, type) => {
     setActionLoading(true);
     try {
-      await api.patch(`/api/v1/groups/${selectedGroupId}/members/${userId}/${type}`);
+      await api.patch(
+        `/api/v1/groups/${selectedGroupId}/members/${userId}/${type}`,
+      );
       AxionAlert.fire("Sucesso!", "Cargo no grupo atualizado.", "success");
       await loadGroups(currentPage);
     } catch (err) {
@@ -289,9 +331,14 @@ export default function Dashboard() {
     if (!selectedGroupId) return;
     setActionLoading(true);
     try {
-      const userToInvite = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-      if (!userToInvite) return AxionAlert.fire("Aviso", "Usuário não encontrado.", "info");
-      await api.post(`/api/v1/groups/${selectedGroupId}/members`, { user_id: userToInvite.id });
+      const userToInvite = users.find(
+        (u) => u.email.toLowerCase() === email.toLowerCase(),
+      );
+      if (!userToInvite)
+        return AxionAlert.fire("Aviso", "Usuário não encontrado.", "info");
+      await api.post(`/api/v1/groups/${selectedGroupId}/members`, {
+        user_id: userToInvite.id,
+      });
       await loadGroups(currentPage);
     } catch (err) {
       AxionAlert.fire("Erro", "Erro ao adicionar.", "error");
@@ -326,11 +373,23 @@ export default function Dashboard() {
     if (!selectedGroupId || !permissionName) return;
     setActionLoading(true);
     try {
-      await api.post(`/api/v1/admin/groups/${selectedGroupId}/permissions`, { permission_name: permissionName });
-      AxionAlert.fire({ icon: "success", title: "Permissão Atribuída", text: "A chave foi vinculada ao grupo.", timer: 1500, showConfirmButton: false });
+      await api.post(`/api/v1/admin/groups/${selectedGroupId}/permissions`, {
+        permission_name: permissionName,
+      });
+      AxionAlert.fire({
+        icon: "success",
+        title: "Permissão Atribuída",
+        text: "A chave foi vinculada ao grupo.",
+        timer: 1500,
+        showConfirmButton: false,
+      });
       await loadGroups(currentPage);
     } catch (err) {
-      AxionAlert.fire("Erro", "Não foi possível vincular a permissão.", "error");
+      AxionAlert.fire(
+        "Erro",
+        "Não foi possível vincular a permissão.",
+        "error",
+      );
     } finally {
       setActionLoading(false);
     }
@@ -350,7 +409,9 @@ export default function Dashboard() {
     if (result.isConfirmed) {
       setActionLoading(true);
       try {
-        await api.delete(`/api/v1/admin/groups/${selectedGroupId}/permissions/${permissionId}`);
+        await api.delete(
+          `/api/v1/admin/groups/${selectedGroupId}/permissions/${permissionId}`,
+        );
         AxionAlert.fire("Removido!", "Permissão desvinculada.", "success");
         await loadGroups(currentPage);
       } catch (err) {
@@ -386,7 +447,9 @@ export default function Dashboard() {
         <header className="main-header">
           <h2 className="brand mb-0">
             AxionID
-            <span className={`role-badge ${role === "admin" ? "admin" : "user"}`}>
+            <span
+              className={`role-badge ${role === "admin" ? "admin" : "user"}`}
+            >
               {role === "admin" ? "Admin" : "Comum"}
             </span>
           </h2>
@@ -408,14 +471,26 @@ export default function Dashboard() {
               actionLoading={actionLoading}
               handleSave={() => {
                 const userId = selectedUser?.id;
-                if (!userId) return AxionAlert.fire("Erro", "ID do usuário não identificado.", "error");
+                if (!userId)
+                  return AxionAlert.fire(
+                    "Erro",
+                    "ID do usuário não identificado.",
+                    "error",
+                  );
                 handleUpdateUser(userId, formData);
               }}
               onAction={async (type) => {
-                if (type === "promote") await handleToggleAdmin(selectedUser.id, false);
-                else if (type === "remove-admin") await handleToggleAdmin(selectedUser.id, true);
-                else if (type === "toggle-status") await handleToggleStatus(selectedUser.id, selectedUser.is_active);
-                else if (type === "delete") await handleDeleteUser(selectedUser.id, selectedUser.name);
+                if (type === "promote")
+                  await handleToggleAdmin(selectedUser.id, false);
+                else if (type === "remove-admin")
+                  await handleToggleAdmin(selectedUser.id, true);
+                else if (type === "toggle-status")
+                  await handleToggleStatus(
+                    selectedUser.id,
+                    selectedUser.is_active,
+                  );
+                else if (type === "delete")
+                  await handleDeleteUser(selectedUser.id, selectedUser.name);
               }}
             />
           ) : selectedGroupId ? (
@@ -447,8 +522,12 @@ export default function Dashboard() {
                 user={selectedUser}
                 role={role}
                 filters={filters}
-                onFilterChange={(e) => setFilters({ ...filters, [e.target.name]: e.target.value })}
-                onClear={() => setFilters({ name: "", completed: "", method: "", date: "" })}
+                onFilterChange={(e) =>
+                  setFilters({ ...filters, [e.target.name]: e.target.value })
+                }
+                onClear={() =>
+                  setFilters({ name: "", completed: "", method: "", date: "" })
+                }
                 onNewGroup={() => setShowGroupForm(true)}
                 onNewPermission={() => setShowPermissionModal(true)}
                 isEditing={isEditing}
@@ -456,7 +535,12 @@ export default function Dashboard() {
                 actionLoading={actionLoading}
                 handleSave={() => {
                   const userId = selectedUser?.data?.id || selectedUser?.id;
-                  if (!userId) return AxionAlert.fire("Erro", "ID do usuário não identificado.", "error");
+                  if (!userId)
+                    return AxionAlert.fire(
+                      "Erro",
+                      "ID do usuário não identificado.",
+                      "error",
+                    );
                   handleUpdateUser(userId, formData);
                 }}
                 onBack={() => {
@@ -473,8 +557,8 @@ export default function Dashboard() {
                 />
               )}
 
-              {activeTab === "orders" && (
-                showOrderForm ? (
+              {activeTab === "orders" &&
+                (showOrderForm ? (
                   <ServiceOrderForm
                     groups={groups}
                     onSuccess={() => {
@@ -491,20 +575,24 @@ export default function Dashboard() {
                     isSystemAdmin={isGlobalAdmin}
                     onDeleteOrder={async (id) => {
                       const result = await AxionAlert.fire({
-                        title: 'Excluir OS?',
+                        title: "Excluir OS?",
                         text: "Esta ação não pode ser desfeita!",
-                        icon: 'warning',
+                        icon: "warning",
                         showCancelButton: true,
-                        confirmButtonText: 'Sim, excluir!'
+                        confirmButtonText: "Sim, excluir!",
                       });
                       if (result.isConfirmed) {
                         try {
                           await api.delete(`/api/v1/service-orders/${id}`);
                           setSelectedOrder(null);
                           loadServiceOrders();
-                          AxionAlert.fire('Deletado!', 'Ordem de serviço removida.', 'success');
+                          AxionAlert.fire(
+                            "Deletado!",
+                            "Ordem de serviço removida.",
+                            "success",
+                          );
                         } catch (e) {
-                          AxionAlert.fire('Erro', 'Falha ao excluir.', 'error');
+                          AxionAlert.fire("Erro", "Falha ao excluir.", "error");
                         }
                       }
                     }}
@@ -513,7 +601,10 @@ export default function Dashboard() {
                   <div className="animate-in">
                     <div className="orders-header">
                       <h4 className="text-white mb-0">Gestão de Chamados</h4>
-                      <button className="btn-primary-sm" onClick={() => setShowOrderForm(true)}>
+                      <button
+                        className="btn-primary-sm"
+                        onClick={() => setShowOrderForm(true)}
+                      >
                         <i className="bi bi-plus-lg me-2"></i> Nova OS
                       </button>
                     </div>
@@ -524,10 +615,11 @@ export default function Dashboard() {
                       onViewDetail={(id) => handleOpenOrderDetail(id)}
                     />
                   </div>
-                )
-              )}
+                ))}
 
-              <div className={`tab-wrapper ${loading || actionLoading ? "is-loading" : ""}`}>
+              <div
+                className={`tab-wrapper ${loading || actionLoading ? "is-loading" : ""}`}
+              >
                 {(loading || actionLoading) && (
                   <div className="loading-overlay">
                     <Spinner animation="border" variant="primary" />
@@ -535,14 +627,16 @@ export default function Dashboard() {
                 )}
 
                 <div className="content-card">
-                  {activeTab === "users" && (
-                    isGlobalAdmin ? (
+                  {activeTab === "users" &&
+                    (isGlobalAdmin ? (
                       <UserTable
                         users={users}
                         onViewDetail={(id) =>
-                          api.get(`/api/v1/admin/users/${id}`).then((res) =>
-                            setSelectedUser(res.data.data || res.data)
-                          )
+                          api
+                            .get(`/api/v1/admin/users/${id}`)
+                            .then((res) =>
+                              setSelectedUser(res.data.data || res.data),
+                            )
                         }
                         onDeleteUser={handleDeleteUser}
                         onToggleAdmin={handleToggleAdmin}
@@ -550,17 +644,45 @@ export default function Dashboard() {
                       />
                     ) : (
                       <OperationView />
-                    )
-                  )}
+                    ))}
                   {activeTab === "audit" && <AuditTable logs={auditLogs} />}
-                  {activeTab === "groups" && (
-                    showGroupForm ? (
+                  {activeTab === "groups" &&
+                    (showGroupForm ? (
                       <GroupForm
                         onCancel={() => setShowGroupForm(false)}
-                        onSave={() => {
-                          setShowGroupForm(false);
-                          loadGroups(1);
+                        onSave={async (data) => {
+                          // ← ADICIONE async e receba os dados
+                          try {
+                            setActionLoading(true); // ← ADICIONE para mostrar loading
+
+                            // ← ADICIONE a chamada à API
+                            await api.post("/api/v1/groups", data);
+
+                            setShowGroupForm(false);
+                            await loadGroups(1); // ← ADICIONE await para garantir que recarregue
+
+                            // ← ADICIONE feedback de sucesso
+                            AxionAlert.fire({
+                              icon: "success",
+                              title: "Grupo Criado!",
+                              text: `O grupo "${data.name}" foi criado com sucesso.`,
+                              timer: 1500,
+                              showConfirmButton: false,
+                            });
+                          } catch (err) {
+                            // ← ADICIONE tratamento de erro
+                            console.error("Erro ao criar grupo:", err);
+                            AxionAlert.fire(
+                              "Erro",
+                              err.response?.data?.message ||
+                                "Não foi possível criar o grupo.",
+                              "error",
+                            );
+                          } finally {
+                            setActionLoading(false); // ← ADICIONE para finalizar loading
+                          }
                         }}
+                        loading={actionLoading} // ← ADICIONE para desabilitar botão durante loading
                       />
                     ) : (
                       <GroupTable
@@ -569,8 +691,7 @@ export default function Dashboard() {
                         isGlobalAdmin={isGlobalAdmin}
                         currentUser={currentUser}
                       />
-                    )
-                  )}
+                    ))}
                   {activeTab === "permissions" && (
                     <PermissionTable
                       permissions={permissions}
