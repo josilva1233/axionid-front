@@ -40,10 +40,12 @@ export default function Dashboard() {
   const [permissions, setPermissions] = useState([]);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
 
-  // Estados para paginação - ADICIONE ESTES STATES
+  // Estados para paginação
   const [usersCurrentPage, setUsersCurrentPage] = useState(1);
   const [groupsCurrentPage, setGroupsCurrentPage] = useState(1);
   const [auditCurrentPage, setAuditCurrentPage] = useState(1);
+  const [ordersCurrentPage, setOrdersCurrentPage] = useState(1); // ← ADICIONAR
+  const [ordersPerPage] = useState(10); // ← ADICIONAR
 
   const AxionAlert = Swal.mixin({
     background: "#111214",
@@ -62,9 +64,9 @@ export default function Dashboard() {
     users,
     groups,
     auditLogs,
-    usersPagination, // ← ADICIONE
-    groupsPagination, // ← ADICIONE
-    auditPagination, // ← ADICIONE
+    usersPagination,
+    groupsPagination,
+    auditPagination,
     filters,
     setFilters,
     loadUsers,
@@ -73,6 +75,12 @@ export default function Dashboard() {
   } = useDashboardData(role);
 
   const isGlobalAdmin = role === "admin" || currentUser?.is_admin === true;
+
+  // Calcular chamados paginados
+  const indexOfLastOrder = ordersCurrentPage * ordersPerPage;
+  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
+  const currentOrders = serviceOrders.slice(indexOfFirstOrder, indexOfLastOrder);
+  const totalOrdersPages = Math.ceil(serviceOrders.length / ordersPerPage);
 
   const loadPermissions = useCallback(async () => {
     try {
@@ -87,8 +95,11 @@ export default function Dashboard() {
     setActionLoading(true);
     try {
       const res = await api.get("/api/v1/service-orders");
-      setServiceOrders(res.data.data || res.data || []);
+      const orders = res.data.data || res.data || [];
+      setServiceOrders(orders);
+      setOrdersCurrentPage(1); // Resetar para página 1
     } catch (err) {
+      console.error("Erro ao carregar OS:", err);
       setServiceOrders([]);
     } finally {
       setActionLoading(false);
@@ -97,6 +108,7 @@ export default function Dashboard() {
 
   const handleOpenOrderDetail = async (orderId) => {
     setActionLoading(true);
+    setShowOrderForm(false);
     try {
       const res = await api.get(`/api/v1/service-orders/${orderId}`);
       setSelectedOrder(res.data.data || res.data);
@@ -122,12 +134,13 @@ export default function Dashboard() {
 
     try {
       setActionLoading(true);
-      const res = await api.patch(`/api/v1/service-orders/${orderId}`, {
+      const res = await api.put(`/api/v1/service-orders/${orderId}`, {
         status: newStatus,
       });
       const updatedOrder = res.data.data || res.data;
       setSelectedOrder(updatedOrder);
-      loadServiceOrders();
+      await loadServiceOrders();
+      setOrdersCurrentPage(1); // Resetar para página 1
 
       AxionAlert.fire({
         icon: "success",
@@ -137,13 +150,12 @@ export default function Dashboard() {
       });
     } catch (err) {
       console.error("Erro na API:", err);
-      AxionAlert.fire("Erro", "Falha ao atualizar no servidor.", "error");
+      AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao atualizar no servidor.", "error");
     } finally {
       setActionLoading(false);
     }
   };
 
-  // ATUALIZE O useEffect com as páginas corretas
   useEffect(() => {
     if (activeTab === "users") loadUsers(usersCurrentPage);
     else if (activeTab === "audit") loadAuditLogs(auditCurrentPage);
@@ -192,7 +204,6 @@ export default function Dashboard() {
     }
   }, [selectedUser]);
 
-  // Funções para mudar de página - ADICIONE ESTAS FUNÇÕES
   const handleUsersPageChange = (page) => {
     setUsersCurrentPage(page);
   };
@@ -203,6 +214,10 @@ export default function Dashboard() {
 
   const handleAuditPageChange = (page) => {
     setAuditCurrentPage(page);
+  };
+
+  const handleOrdersPageChange = (page) => {
+    setOrdersCurrentPage(page);
   };
 
   const handleUpdateUser = async (userId, data) => {
@@ -464,10 +479,10 @@ export default function Dashboard() {
           setShowPermissionModal(false);
           setShowGroupForm(false);
           setSelectedOrder(null);
-          // Resetar páginas ao trocar de aba
           setUsersCurrentPage(1);
           setGroupsCurrentPage(1);
           setAuditCurrentPage(1);
+          setOrdersCurrentPage(1); // ← ADICIONAR
         }}
       />
 
@@ -556,10 +571,10 @@ export default function Dashboard() {
                 }
                 onClear={() => {
                   setFilters({ name: "", completed: "", method: "", date: "" });
-                  // Resetar páginas ao limpar filtros
                   setUsersCurrentPage(1);
                   setGroupsCurrentPage(1);
                   setAuditCurrentPage(1);
+                  setOrdersCurrentPage(1); // ← ADICIONAR
                 }}
                 onNewGroup={() => setShowGroupForm(true)}
                 onNewPermission={() => setShowPermissionModal(true)}
@@ -590,97 +605,90 @@ export default function Dashboard() {
                 />
               )}
 
-{activeTab === "orders" && (
-  <>
-    {console.log("RENDERIZANDO ORDERS - showOrderForm:", showOrderForm, "selectedOrder:", selectedOrder)}
-    
-    {/* Formulário de criação */}
-    {showOrderForm && (
-      <>
-        {console.log("RENDERIZANDO FORMULÁRIO")}
-        <ServiceOrderForm
-          groups={groups}
-          onSuccess={() => {
-            console.log("onSuccess chamado");
-            setShowOrderForm(false);
-            loadServiceOrders();
-          }}
-          onCancel={() => {
-            console.log("onCancel chamado");
-            setShowOrderForm(false);
-          }}
-        />
-      </>
-    )}
+              {activeTab === "orders" && (
+                <>
+                  {/* Formulário de criação */}
+                  {showOrderForm && (
+                    <ServiceOrderForm
+                      groups={groups}
+                      onSuccess={() => {
+                        setShowOrderForm(false);
+                        loadServiceOrders();
+                        setOrdersCurrentPage(1);
+                      }}
+                      onCancel={() => setShowOrderForm(false)}
+                    />
+                  )}
 
-    {/* Detalhes da OS */}
-    {!showOrderForm && selectedOrder && selectedOrder.id && (
-      <>
-        {console.log("RENDERIZANDO DETALHES")}
-        <ServiceOrderDetail
-          order={selectedOrder}
-          onBack={() => {
-            console.log("onBack chamado");
-            setSelectedOrder(null);
-          }}
-          onUpdateStatus={onUpdateStatus}
-          isSystemAdmin={isGlobalAdmin}
-          onDeleteOrder={async (id) => {
-            const result = await AxionAlert.fire({
-              title: "Excluir OS?",
-              text: "Esta ação não pode ser desfeita!",
-              icon: "warning",
-              showCancelButton: true,
-              confirmButtonText: "Sim, excluir!",
-            });
-            if (result.isConfirmed) {
-              try {
-                await api.delete(`/api/v1/service-orders/${id}`);
-                setSelectedOrder(null);
-                loadServiceOrders();
-                AxionAlert.fire("Deletado!", "Ordem de serviço removida.", "success");
-              } catch (e) {
-                AxionAlert.fire("Erro", "Falha ao excluir.", "error");
-              }
-            }
-          }}
-        />
-      </>
-    )}
+                  {/* Detalhes da OS */}
+                  {!showOrderForm && selectedOrder && selectedOrder.id && (
+                    <ServiceOrderDetail
+                      order={selectedOrder}
+                      onBack={() => setSelectedOrder(null)}
+                      onUpdateStatus={onUpdateStatus}
+                      isSystemAdmin={isGlobalAdmin}
+                      onDeleteOrder={async (id) => {
+                        const result = await AxionAlert.fire({
+                          title: "Excluir OS?",
+                          text: "Esta ação não pode ser desfeita!",
+                          icon: "warning",
+                          showCancelButton: true,
+                          confirmButtonText: "Sim, excluir!",
+                        });
+                        if (result.isConfirmed) {
+                          try {
+                            await api.delete(`/api/v1/service-orders/${id}`);
+                            setSelectedOrder(null);
+                            loadServiceOrders();
+                            setOrdersCurrentPage(1);
+                            AxionAlert.fire("Deletado!", "Ordem de serviço removida.", "success");
+                          } catch (e) {
+                            AxionAlert.fire("Erro", "Falha ao excluir.", "error");
+                          }
+                        }
+                      }}
+                    />
+                  )}
 
-    {/* Lista de chamados */}
-    {!showOrderForm && !selectedOrder && (
-      <>
-        {console.log("RENDERIZANDO LISTA")}
-        <div className="animate-in">
-          <div className="orders-header">
-            <h4 className="text-white mb-0">Gestão de Chamados</h4>
-            <button
-              className="btn-primary-sm"
-              onClick={() => {
-                console.log("Botão Nova OS clicado");
-                setShowOrderForm(true);
-                setSelectedOrder(null);
-              }}
-            >
-              <i className="bi bi-plus-lg me-2"></i> Nova OS
-            </button>
-          </div>
+                  {/* Lista de chamados */}
+                  {!showOrderForm && !selectedOrder && (
+                    <div className="animate-in">
+                      <div className="orders-header">
+                        <h4 className="text-white mb-0">Gestão de Chamados</h4>
+                        <button
+                          className="btn-primary-sm"
+                          onClick={() => {
+                            setShowOrderForm(true);
+                            setSelectedOrder(null);
+                          }}
+                        >
+                          <i className="bi bi-plus-lg me-2"></i> Nova OS
+                        </button>
+                      </div>
 
-          <ServiceOrderTable
-            orders={serviceOrders}
-            loading={actionLoading}
-            onViewDetail={(id) => {
-              console.log("onViewDetail chamado para ID:", id);
-              setShowOrderForm(false);
-              handleOpenOrderDetail(id);
-            }}
-          />
-        </div>
-      </>
-    )}
-  </>
-)}
+                      <ServiceOrderTable
+                        orders={currentOrders}
+                        loading={actionLoading}
+                        onViewDetail={(id) => {
+                          setShowOrderForm(false);
+                          handleOpenOrderDetail(id);
+                        }}
+                      />
+
+                      {/* Paginação dos chamados */}
+                      {serviceOrders.length > ordersPerPage && (
+                        <Pagination
+                          currentPage={ordersCurrentPage}
+                          lastPage={totalOrdersPages}
+                          total={serviceOrders.length}
+                          onPageChange={handleOrdersPageChange}
+                          loading={actionLoading}
+                        />
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
 
               <div
                 className={`tab-wrapper ${loading || actionLoading ? "is-loading" : ""}`}
@@ -708,7 +716,6 @@ export default function Dashboard() {
                           onToggleAdmin={handleToggleAdmin}
                           isGlobalAdmin={isGlobalAdmin}
                         />
-                        {/* ADICIONE A PAGINAÇÃO AQUI */}
                         <Pagination
                           currentPage={usersPagination.current}
                           lastPage={usersPagination.last}
@@ -724,7 +731,6 @@ export default function Dashboard() {
                   {activeTab === "audit" && (
                     <>
                       <AuditTable logs={auditLogs} />
-                      {/* ADICIONE A PAGINAÇÃO AQUI */}
                       <Pagination
                         currentPage={auditPagination.current}
                         lastPage={auditPagination.last}
@@ -774,7 +780,6 @@ export default function Dashboard() {
                           isGlobalAdmin={isGlobalAdmin}
                           currentUser={currentUser}
                         />
-                        {/* ADICIONE A PAGINAÇÃO AQUI */}
                         <Pagination
                           currentPage={groupsPagination.current}
                           lastPage={groupsPagination.last}
