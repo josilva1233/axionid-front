@@ -33,10 +33,8 @@ export default function Dashboard() {
   const [actionLoading, setActionLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({});
-  const [serviceOrders, setServiceOrders] = useState([]);
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
-
   const [permissions, setPermissions] = useState([]);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
 
@@ -44,8 +42,7 @@ export default function Dashboard() {
   const [usersCurrentPage, setUsersCurrentPage] = useState(1);
   const [groupsCurrentPage, setGroupsCurrentPage] = useState(1);
   const [auditCurrentPage, setAuditCurrentPage] = useState(1);
-  const [ordersCurrentPage, setOrdersCurrentPage] = useState(1); // ← ADICIONAR
-  const [ordersPerPage] = useState(10); // ← ADICIONAR
+  const [ordersCurrentPage, setOrdersCurrentPage] = useState(1);
 
   const AxionAlert = Swal.mixin({
     background: "#111214",
@@ -64,23 +61,20 @@ export default function Dashboard() {
     users,
     groups,
     auditLogs,
+    serviceOrders,        // ← DO HOOK
     usersPagination,
     groupsPagination,
     auditPagination,
+    ordersPagination,     // ← DO HOOK
     filters,
     setFilters,
     loadUsers,
     loadGroups,
     loadAuditLogs,
+    loadServiceOrders,    // ← DO HOOK
   } = useDashboardData(role);
 
   const isGlobalAdmin = role === "admin" || currentUser?.is_admin === true;
-
-  // Calcular chamados paginados
-  const indexOfLastOrder = ordersCurrentPage * ordersPerPage;
-  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = serviceOrders.slice(indexOfFirstOrder, indexOfLastOrder);
-  const totalOrdersPages = Math.ceil(serviceOrders.length / ordersPerPage);
 
   const loadPermissions = useCallback(async () => {
     try {
@@ -88,21 +82,6 @@ export default function Dashboard() {
       setPermissions(res.data.data || res.data || []);
     } catch (err) {
       setPermissions([]);
-    }
-  }, []);
-
-  const loadServiceOrders = useCallback(async () => {
-    setActionLoading(true);
-    try {
-      const res = await api.get("/api/v1/service-orders");
-      const orders = res.data.data || res.data || [];
-      setServiceOrders(orders);
-      setOrdersCurrentPage(1); // Resetar para página 1
-    } catch (err) {
-      console.error("Erro ao carregar OS:", err);
-      setServiceOrders([]);
-    } finally {
-      setActionLoading(false);
     }
   }, []);
 
@@ -139,9 +118,8 @@ export default function Dashboard() {
       });
       const updatedOrder = res.data.data || res.data;
       setSelectedOrder(updatedOrder);
-      await loadServiceOrders();
-      setOrdersCurrentPage(1); // Resetar para página 1
-
+      await loadServiceOrders(ordersCurrentPage); // ← CARREGA A PÁGINA ATUAL
+      
       AxionAlert.fire({
         icon: "success",
         title: "Status Atualizado!",
@@ -161,12 +139,13 @@ export default function Dashboard() {
     else if (activeTab === "audit") loadAuditLogs(auditCurrentPage);
     else if (activeTab === "groups") loadGroups(groupsCurrentPage);
     else if (activeTab === "permissions") loadPermissions();
-    else if (activeTab === "orders") loadServiceOrders();
+    else if (activeTab === "orders") loadServiceOrders(ordersCurrentPage);
   }, [
     activeTab,
     usersCurrentPage,
     groupsCurrentPage,
     auditCurrentPage,
+    ordersCurrentPage,   // ← ADICIONADO
     loadUsers,
     loadGroups,
     loadAuditLogs,
@@ -218,6 +197,7 @@ export default function Dashboard() {
 
   const handleOrdersPageChange = (page) => {
     setOrdersCurrentPage(page);
+    loadServiceOrders(page); // ← CARREGA A PÁGINA SELECIONADA
   };
 
   const handleUpdateUser = async (userId, data) => {
@@ -466,6 +446,10 @@ export default function Dashboard() {
     navigate("/login");
   };
 
+  // Log para debug
+  console.log("Dashboard render - ordersPagination:", ordersPagination);
+  console.log("serviceOrders length:", serviceOrders?.length);
+
   return (
     <div className="dashboard-layout">
       <Sidebar
@@ -482,7 +466,7 @@ export default function Dashboard() {
           setUsersCurrentPage(1);
           setGroupsCurrentPage(1);
           setAuditCurrentPage(1);
-          setOrdersCurrentPage(1); // ← ADICIONAR
+          setOrdersCurrentPage(1);
         }}
       />
 
@@ -574,7 +558,7 @@ export default function Dashboard() {
                   setUsersCurrentPage(1);
                   setGroupsCurrentPage(1);
                   setAuditCurrentPage(1);
-                  setOrdersCurrentPage(1); // ← ADICIONAR
+                  setOrdersCurrentPage(1);
                 }}
                 onNewGroup={() => setShowGroupForm(true)}
                 onNewPermission={() => setShowPermissionModal(true)}
@@ -613,8 +597,7 @@ export default function Dashboard() {
                       groups={groups}
                       onSuccess={() => {
                         setShowOrderForm(false);
-                        loadServiceOrders();
-                        setOrdersCurrentPage(1);
+                        loadServiceOrders(ordersCurrentPage);
                       }}
                       onCancel={() => setShowOrderForm(false)}
                     />
@@ -639,8 +622,7 @@ export default function Dashboard() {
                           try {
                             await api.delete(`/api/v1/service-orders/${id}`);
                             setSelectedOrder(null);
-                            loadServiceOrders();
-                            setOrdersCurrentPage(1);
+                            loadServiceOrders(ordersCurrentPage);
                             AxionAlert.fire("Deletado!", "Ordem de serviço removida.", "success");
                           } catch (e) {
                             AxionAlert.fire("Erro", "Falha ao excluir.", "error");
@@ -667,8 +649,8 @@ export default function Dashboard() {
                       </div>
 
                       <ServiceOrderTable
-                        orders={currentOrders}
-                        loading={actionLoading}
+                        orders={serviceOrders}
+                        loading={actionLoading || loading}
                         onViewDetail={(id) => {
                           setShowOrderForm(false);
                           handleOpenOrderDetail(id);
@@ -676,13 +658,13 @@ export default function Dashboard() {
                       />
 
                       {/* Paginação dos chamados */}
-                      {serviceOrders.length > ordersPerPage && (
+                      {ordersPagination.last > 1 && (
                         <Pagination
-                          currentPage={ordersCurrentPage}
-                          lastPage={totalOrdersPages}
-                          total={serviceOrders.length}
+                          currentPage={ordersPagination.current}
+                          lastPage={ordersPagination.last}
+                          total={ordersPagination.total}
                           onPageChange={handleOrdersPageChange}
-                          loading={actionLoading}
+                          loading={loading}
                         />
                       )}
                     </div>
