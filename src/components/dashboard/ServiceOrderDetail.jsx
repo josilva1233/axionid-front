@@ -36,16 +36,10 @@ const PriorityBadge = ({ priority }) => {
 };
 
 const AttachmentPreview = ({ order, baseUrl }) => {
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
   const fileName = order.attachment_path?.split("/").pop() || "anexo";
   const fullUrl = `${baseUrl}/storage/${order.attachment_path}`;
-  const fileExtension = fileName.split('.').pop()?.toLowerCase();
 
   if (!order.attachment_path) return null;
-
-  const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(fileExtension);
-  const isPDF = fileExtension === 'pdf';
 
   return (
     <div className="mt-4 pt-3 border-top border-secondary">
@@ -55,84 +49,25 @@ const AttachmentPreview = ({ order, baseUrl }) => {
       </h6>
       
       <div className="bg-dark bg-opacity-25 rounded-4 p-4">
-        <div className="row g-4 align-items-center">
-          <Col md={4}>
-            <div 
-              className="attachment-preview rounded-3 overflow-hidden shadow-lg"
-              style={{ 
-                width: "100%", 
-                height: "180px", 
-                background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
-                cursor: "pointer",
-                position: "relative"
-              }}
-              onClick={() => window.open(fullUrl, "_blank")}
-            >
-              {!imageLoaded && !imageError && (
-                <div className="position-absolute inset-0 d-flex align-items-center justify-content-center bg-dark bg-opacity-75">
-                  <Spinner animation="border" variant="primary" size="sm" className="me-2" />
-                  <span className="text-white small">Carregando...</span>
-                </div>
-              )}
-              
-              {isImage && !imageError ? (
-                <img 
-                  src={fullUrl}
-                  alt="Preview"
-                  className="w-100 h-100 object-fit-cover"
-                  style={{ opacity: imageLoaded ? 1 : 0 }}
-                  onLoad={() => setImageLoaded(true)}
-                  onError={() => setImageError(true)}
-                />
-              ) : (
-                <div className="d-flex flex-column align-items-center justify-content-center h-100">
-                  <i className={`bi bi-file-${isPDF ? 'pdf' : 'image'} text-white-50`} style={{ fontSize: "3rem" }}></i>
-                  <div className="text-white-75 small text-center mt-2">
-                    <div className="fw-bold">{fileName}</div>
-                    <small className="text-white-50">Clique para visualizar</small>
-                  </div>
-                </div>
-              )}
-              
-              <div className="position-absolute inset-0 bg-black bg-opacity-0 hover-bg-opacity-50 d-flex align-items-center justify-content-center transition-all">
-                <i className="bi bi-zoom-in text-white fs-2 opacity-0 hover-opacity-100"></i>
-              </div>
+        <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
+          <div className="d-flex align-items-center gap-3">
+            <i className="bi bi-file-earmark-text text-primary fs-1"></i>
+            <div>
+              <h6 className="text-white mb-1 fw-bold">{fileName}</h6>
+              <small className="text-white-50">
+                {order.attachment_path?.includes('.pdf') ? 'Documento PDF' : 'Arquivo anexado'}
+              </small>
             </div>
-          </Col>
+          </div>
           
-          <Col md={8}>
-            <div className="d-flex flex-column h-100 justify-content-center">
-              <div className="mb-3">
-                <h5 className="text-white fw-bold mb-2">
-                  <i className="bi bi-file-earmark-text me-2 text-primary"></i>
-                  {fileName}
-                </h5>
-                <span className="badge bg-light text-dark px-3 py-2 rounded-pill">
-                  {isPDF ? 'Documento PDF' : 'Imagem'}
-                </span>
-              </div>
-              
-              <div className="d-flex gap-3 flex-wrap">
-                <a
-                  href={fullUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-outline-light px-4 py-2 rounded-pill"
-                >
-                  <i className="bi bi-eye-fill me-2"></i>
-                  Visualizar
-                </a>
-                <a
-                  href={fullUrl}
-                  download={fileName}
-                  className="btn btn-primary px-4 py-2 rounded-pill"
-                >
-                  <i className="bi bi-download me-2"></i>
-                  Download
-                </a>
-              </div>
-            </div>
-          </Col>
+          <a
+            href={fullUrl}
+            download={fileName}
+            className="btn btn-primary px-4 py-2 rounded-pill"
+          >
+            <i className="bi bi-download me-2"></i>
+            Download
+          </a>
         </div>
       </div>
     </div>
