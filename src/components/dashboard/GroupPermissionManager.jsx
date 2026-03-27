@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Form, Spinner, Modal, Alert } from "react-bootstrap";
 import Swal from "sweetalert2";
-import "../../GroupPermissionManager.css";
+//import "../../GroupPermissionManager.css";
 
 export default function GroupPermissionManager({ 
   group, 

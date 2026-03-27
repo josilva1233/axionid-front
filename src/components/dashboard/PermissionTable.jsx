@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Modal, Form, Spinner } from "react-bootstrap";
 import Swal from "sweetalert2";
-import "../../PermissionTable.css";
+//import "../../PermissionTable.css";
 
 export default function PermissionTable({ permissions, loading, currentUser, onEdit, onDelete }) {
   const [showEditModal, setShowEditModal] = useState(false);

@@ -1,4 +1,3 @@
-import React from "react";
 
 export default function ServiceOrderTable({ orders, loading, onViewDetail }) {
   const getStatusBadge = (status) => {
