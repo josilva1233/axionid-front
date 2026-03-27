@@ -1,0 +1,346 @@
+/* PermissionTable.css */
+
+/* Container principal */
+.permission-table-container {
+  width: 100%;
+  overflow-x: auto;
+  background: #111214;
+  border-radius: 12px;
+  border: 1px solid #2a2c30;
+}
+
+/* Tabela */
+.permission-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+}
+
+.permission-table thead {
+  background: #1a1c20;
+  border-bottom: 1px solid #2a2c30;
+}
+
+.permission-table th {
+  padding: 16px 20px;
+  text-align: left;
+  color: #9ca3af;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.permission-table td {
+  padding: 16px 20px;
+  color: #e5e7eb;
+  font-size: 0.875rem;
+  border-bottom: 1px solid #2a2c30;
+}
+
+.permission-table tbody tr:hover {
+  background: #1a1c20;
+  transition: background 0.2s ease;
+}
+
+/* Texto primário */
+.text-primary {
+  color: #818cf8 !important;
+}
+
+/* Código da permissão */
+.permission-code {
+  background: #1f2127;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 0.75rem;
+  color: #a78bfa;
+  border: 1px solid #2a2c30;
+}
+
+/* Badge IAM */
+.badge-iam {
+  display: inline-block;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Status badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  background: #1f2127;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Botões de ação */
+.btn-action {
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  margin: 0 4px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #818cf8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-action i {
+  font-size: 0.9rem;
+}
+
+.btn-action:hover {
+  background: #2d2f36;
+  color: #a78bfa;
+  transform: translateY(-1px);
+}
+
+.btn-action-danger {
+  color: #ef4444;
+}
+
+.btn-action-danger:hover {
+  background: #2d2f36;
+  color: #f87171;
+}
+
+/* Badge read-only */
+.readonly-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  background: #2a2c30;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Estado vazio */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7280;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+/* Alinhamentos */
+.text-center {
+  text-align: center;
+}
+
+.text-end {
+  text-align: right;
+}
+
+/* Modal personalizado */
+.permission-modal .modal-content {
+  background: #111214;
+  border: 1px solid #2a2c30;
+  border-radius: 16px;
+  color: #e5e7eb;
+}
+
+.permission-modal .modal-header {
+  border-bottom: 1px solid #2a2c30;
+  padding: 20px 24px;
+}
+
+.permission-modal .modal-header .btn-close {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%239ca3af'%3E%3Cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3E%3C/svg%3E") center/1em auto no-repeat;
+  opacity: 0.8;
+}
+
+.permission-modal .modal-header .btn-close:hover {
+  opacity: 1;
+}
+
+.permission-modal .modal-title {
+  color: #e5e7eb;
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+
+.permission-modal .modal-body {
+  padding: 24px;
+}
+
+.permission-modal .modal-footer {
+  border-top: 1px solid #2a2c30;
+  padding: 20px 24px;
+  gap: 12px;
+}
+
+/* Formulário */
+.form-label-custom {
+  color: #e5e7eb;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.custom-input-dark {
+  background: #1a1c20;
+  border: 1px solid #2a2c30;
+  border-radius: 8px;
+  color: #e5e7eb;
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.custom-input-dark:focus {
+  background: #1f2127;
+  border-color: #6366f1;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.custom-input-dark::placeholder {
+  color: #4b5563;
+}
+
+.form-text-custom {
+  color: #6b7280;
+  font-size: 0.75rem;
+  margin-top: 6px;
+}
+
+/* Botões do modal */
+.btn-primary {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: #2a2c30;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  color: #e5e7eb;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #3f4148;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .permission-table th,
+  .permission-table td {
+    padding: 12px 16px;
+  }
+
+  .permission-code {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+  }
+
+  .btn-action {
+    padding: 6px 8px;
+  }
+
+  .badge-iam {
+    font-size: 0.65rem;
+    padding: 3px 8px;
+  }
+
+  .status-badge {
+    padding: 2px 8px;
+  }
+}
+
+/* Scrollbar personalizada */
+.permission-table-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.permission-table-container::-webkit-scrollbar-track {
+  background: #1a1c20;
+  border-radius: 4px;
+}
+
+.permission-table-container::-webkit-scrollbar-thumb {
+  background: #3f4148;
+  border-radius: 4px;
+}
+
+.permission-table-container::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}
