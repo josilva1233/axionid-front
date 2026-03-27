@@ -22,7 +22,7 @@ import ServiceOrderForm from "../components/dashboard/ServiceOrderForm";
 import ServiceOrderDetail from "../components/dashboard/ServiceOrderDetail";
 import Pagination from "../components/dashboard/Pagination";
 
-import '../../Pagination.css';
+import '../Pagination.css';
 
 export default function Dashboard() {
   const navigate = useNavigate();
