@@ -1,4 +1,9 @@
-
+/* Pagination.css */
+/* ============================================
+   AxionID - Componente de Paginação
+   Design System: Dark Theme + Roxo (#6366f1)
+   Responsivo: Mobile First
+   ============================================ */
 
 /* Pagination Container */
 .pagination-wrapper {
@@ -47,7 +52,7 @@
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
   text-decoration: none;
 }
 
@@ -62,7 +67,7 @@
   background: var(--primary);
   border-color: var(--primary);
   color: white;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  box-shadow: var(--shadow-primary);
 }
 
 .pagination-item.disabled .pagination-link {
@@ -88,7 +93,10 @@
   line-height: 1;
 }
 
-/* Responsive Styles */
+/* ============================================
+   RESPONSIVIDADE
+   ============================================ */
+
 @media (max-width: 768px) {
   .pagination-info {
     flex-direction: column;
