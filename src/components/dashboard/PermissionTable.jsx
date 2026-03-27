@@ -108,14 +108,14 @@ export default function PermissionTable({ permissions, loading, currentUser, onE
                           onClick={() => handleEdit(perm)}
                           title="Editar Permissão"
                         >
-                          <i className="bi bi-pencil-square"></i>
+                          <i className="bi bi-pencil-square">Editar Permissão</i>
                         </button>
                         <button
                           className="btn-action btn-action-danger"
                           onClick={() => handleDelete(perm)}
                           title="Excluir Permissão"
                         >
-                          <i className="bi bi-trash3-fill"></i>
+                          <i className="bi bi-trash3-fill">Deletar</i>
                         </button>
                       </>
                     ) : (
