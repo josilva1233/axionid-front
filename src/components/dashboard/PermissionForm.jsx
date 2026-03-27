@@ -1,5 +1,7 @@
+// components/dashboard/PermissionForm.jsx
 import { useState } from "react";
 import { Form, Spinner, Modal } from "react-bootstrap";
+import "./PermissionForm.css";
 
 export default function PermissionForm({ loading, onCancel, onSave }) {
   const [formData, setFormData] = useState({
@@ -23,14 +25,17 @@ export default function PermissionForm({ loading, onCancel, onSave }) {
   };
 
   return (
-    <Modal show={true} onHide={onCancel} centered className="custom-modal">
-      <Modal.Header closeButton className="custom-modal-header">
-        <Modal.Title className="text-white">Nova Permissão</Modal.Title>
+    <Modal show={true} onHide={onCancel} centered className="permission-modal">
+      <Modal.Header closeButton>
+        <Modal.Title>
+          <i className="bi bi-shield-plus me-2"></i>
+          Nova Permissão
+        </Modal.Title>
       </Modal.Header>
-      <Modal.Body className="custom-modal-body">
+      <Modal.Body>
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3">
-            <Form.Label className="filter-label">Nome (Slug)</Form.Label>
+            <Form.Label className="form-label-custom">Nome (Slug)</Form.Label>
             <Form.Control
               type="text"
               name="name"
@@ -40,13 +45,13 @@ export default function PermissionForm({ loading, onCancel, onSave }) {
               placeholder="ex: users.create"
               required
             />
-            <Form.Text className="text-muted">
+            <Form.Text className="form-text-custom">
               Identificador único da permissão (usado no código)
             </Form.Text>
           </Form.Group>
 
           <Form.Group className="mb-3">
-            <Form.Label className="filter-label">Label (Nome Exibido)</Form.Label>
+            <Form.Label className="form-label-custom">Label (Nome Exibido)</Form.Label>
             <Form.Control
               type="text"
               name="label"
@@ -59,7 +64,7 @@ export default function PermissionForm({ loading, onCancel, onSave }) {
           </Form.Group>
 
           <Form.Group className="mb-4">
-            <Form.Label className="filter-label">Descrição</Form.Label>
+            <Form.Label className="form-label-custom">Descrição</Form.Label>
             <Form.Control
               as="textarea"
               rows={2}
