@@ -1,5 +1,5 @@
 // components/dashboard/Pagination.jsx
-import '../../Pagination.css'; // ← Importando o CSS separado
+ // ← Importando o CSS separado
 
 export default function Pagination({ 
   currentPage, 
