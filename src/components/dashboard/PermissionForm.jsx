@@ -1,7 +1,3 @@
-// components/dashboard/PermissionForm.jsx
-//import { useState } from "react";
-//import { Form, Spinner, Modal } from "react-bootstrap";
-//import "../../PermissionForm.css";
 
 export default function PermissionForm({ loading, onCancel, onSave }) {
   const [formData, setFormData] = useState({
