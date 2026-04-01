@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import UserPermissionManager from "./UserPermissionManager"; // Adicione esta importação
 
 export default function UserDetail({
   user,
@@ -10,6 +11,11 @@ export default function UserDetail({
   onBack = () => {},
   setIsEditing = () => {},
   handleSave = () => {},
+  // Novas props para permissões
+  userPermissions = [],
+  allAvailablePermissions = [],
+  onAddPermission = () => {},
+  onRemovePermission = () => {},
 }) {
   useEffect(() => {
     if (user && setFormData) {
@@ -239,6 +245,16 @@ export default function UserDetail({
           </div>
         </section>
       </div>
+
+      {/* ADICIONE O GERENCIADOR DE PERMISSÕES AQUI */}
+      <UserPermissionManager
+        user={user}
+        userPermissions={userPermissions}
+        allAvailablePermissions={allAvailablePermissions}
+        onAddPermission={onAddPermission}
+        onRemovePermission={onRemovePermission}
+        actionLoading={actionLoading}
+      />
 
       <section className="critical-actions-section">
         <h4 className="critical-title">Gestão de Acesso e Privilégios</h4>

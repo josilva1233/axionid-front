@@ -1,4 +1,11 @@
-export default function UserTable({ users, onViewDetail, onDeleteUser, onToggleAdmin, isGlobalAdmin }) {
+export default function UserTable({ 
+  users, 
+  onViewDetail, 
+  onDeleteUser, 
+  onToggleAdmin, 
+  isGlobalAdmin,
+  onManagePermissions // Nova prop para gerenciar permissões
+}) {
   if (!isGlobalAdmin) {
     return null;
   }
@@ -60,8 +67,18 @@ export default function UserTable({ users, onViewDetail, onDeleteUser, onToggleA
                       onClick={() => onViewDetail(u.id)}
                       title="Visualizar Detalhes"
                     >
-                      <i className="bi bi-eye"></i> Gerenciar
+                      <i className="bi bi-eye"></i> Detalhes
                     </button>
+                    {onManagePermissions && (
+                      <button
+                        className="btn-table-action"
+                        onClick={() => onManagePermissions(u.id)}
+                        title="Gerenciar Permissões"
+                        style={{ marginLeft: '8px' }}
+                      >
+                        <i className="bi bi-shield-lock"></i> Permissões
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
