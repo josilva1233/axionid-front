@@ -1,53 +1,36 @@
 // components/dashboard/GroupPermissionManager.jsx
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Form, Spinner, Modal, Alert } from "react-bootstrap";
 import Swal from "sweetalert2";
-// import "../../GroupPermissionManager.css";
-
-// Movemos a instância do alerta para fora do componente 
-// para evitar recriação desnecessária a cada render.
-const AxionAlert = Swal.mixin({
-  background: "#111214",
-  color: "#ffffff",
-  confirmButtonColor: "#6366f1",
-  cancelButtonColor: "#343a40",
-});
+//import "../../GroupPermissionManager.css";
 
 export default function GroupPermissionManager({ 
-  group = {}, 
-  permissions = [], 
+  group, 
+  permissions, 
   onAddPermission, 
   onRemovePermission,
-  actionLoading = false 
+  actionLoading 
 }) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedPermission, setSelectedPermission] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
-  const groupPermissions = group?.permissions || [];
+  const AxionAlert = Swal.mixin({
+    background: "#111214",
+    color: "#ffffff",
+    confirmButtonColor: "#6366f1",
+    cancelButtonColor: "#343a40",
+  });
 
-  // useMemo evita filtros pesados e desnecessários em re-renders
-  const availablePermissions = useMemo(() => {
-    return permissions.filter(
-      (perm) => !groupPermissions.some((gp) => gp.id === perm.id)
-    );
-  }, [permissions, groupPermissions]);
+  // Filtrar permissões disponíveis (que o grupo ainda não tem)
+  const availablePermissions = permissions.filter(
+    perm => !group.permissions?.some(gp => gp.id === perm.id)
+  );
 
-  const filteredPermissions = useMemo(() => {
-    const term = searchTerm.toLowerCase();
-    return availablePermissions.filter(
-      (perm) =>
-        perm.name?.toLowerCase().includes(term) ||
-        perm.label?.toLowerCase().includes(term)
-    );
-  }, [availablePermissions, searchTerm]);
-
-  // Centraliza a limpeza de estado ao fechar o modal
-  const handleCloseModal = () => {
-    setShowAddModal(false);
-    setSelectedPermission("");
-    setSearchTerm("");
-  };
+  const filteredPermissions = availablePermissions.filter(perm =>
+    perm.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    perm.label?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleAddPermission = async () => {
     if (!selectedPermission) {
@@ -55,19 +38,10 @@ export default function GroupPermissionManager({
       return;
     }
     
-    try {
-      await onAddPermission(selectedPermission);
-      handleCloseModal();
-      AxionAlert.fire({
-        title: "Sucesso!",
-        text: "Permissão adicionada com sucesso.",
-        icon: "success",
-        timer: 1500,
-        showConfirmButton: false
-      });
-    } catch (error) {
-      AxionAlert.fire("Erro", "Não foi possível adicionar a permissão. Tente novamente.", "error");
-    }
+    await onAddPermission(selectedPermission);
+    setShowAddModal(false);
+    setSelectedPermission("");
+    setSearchTerm("");
   };
 
   const handleRemovePermission = async (permissionId, permissionName) => {
@@ -81,18 +55,7 @@ export default function GroupPermissionManager({
     });
 
     if (result.isConfirmed) {
-      try {
-        await onRemovePermission(permissionId);
-        AxionAlert.fire({
-          title: "Removida!",
-          text: "A permissão foi removida do grupo.",
-          icon: "success",
-          timer: 1500,
-          showConfirmButton: false
-        });
-      } catch (error) {
-        AxionAlert.fire("Erro", "Não foi possível remover a permissão.", "error");
-      }
+      await onRemovePermission(permissionId);
     }
   };
 
@@ -112,21 +75,20 @@ export default function GroupPermissionManager({
         </button>
       </div>
 
-      {groupPermissions.length === 0 ? (
+      {group.permissions?.length === 0 ? (
         <div className="empty-permissions">
           <i className="bi bi-shield-slash"></i>
           <p>Nenhuma permissão vinculada a este grupo.</p>
           <button
             className="btn-add-first"
             onClick={() => setShowAddModal(true)}
-            disabled={actionLoading}
           >
             <i className="bi bi-plus-circle me-2"></i> Adicionar primeira permissão
           </button>
         </div>
       ) : (
         <div className="permissions-list">
-          {groupPermissions.map((perm) => (
+          {group.permissions?.map((perm) => (
             <div key={perm.id} className="permission-item">
               <div className="permission-info">
                 <div className="permission-icon">
@@ -139,7 +101,6 @@ export default function GroupPermissionManager({
               </div>
               <button
                 className="btn-remove"
-                aria-label={`Remover permissão ${perm.label || perm.name}`}
                 onClick={() => handleRemovePermission(perm.id, perm.label || perm.name)}
                 disabled={actionLoading}
                 title="Remover permissão"
@@ -152,12 +113,7 @@ export default function GroupPermissionManager({
       )}
 
       {/* Modal para adicionar permissão */}
-      <Modal 
-        show={showAddModal} 
-        onHide={handleCloseModal} 
-        centered 
-        className="permission-modal"
-      >
+      <Modal show={showAddModal} onHide={() => setShowAddModal(false)} centered className="permission-modal">
         <Modal.Header closeButton>
           <Modal.Title>
             <i className="bi bi-plus-circle-fill text-primary me-2"></i>
@@ -167,7 +123,7 @@ export default function GroupPermissionManager({
         <Modal.Body>
           <Alert variant="info" className="alert-info-custom">
             <i className="bi bi-info-circle-fill me-2"></i>
-            Selecione uma permissão para vincular ao grupo <strong>{group?.name || "Selecionado"}</strong>
+            Selecione uma permissão para vincular ao grupo <strong>{group?.name}</strong>
           </Alert>
 
           <Form.Group className="mb-3">
@@ -180,7 +136,6 @@ export default function GroupPermissionManager({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
-              autoFocus
             />
           </Form.Group>
 
@@ -190,11 +145,7 @@ export default function GroupPermissionManager({
               {filteredPermissions.length === 0 ? (
                 <div className="empty-list">
                   <i className="bi bi-inbox"></i>
-                  <p className="mt-2 mb-0 small">
-                    {searchTerm 
-                      ? "Nenhuma permissão encontrada para a busca." 
-                      : "Nenhuma permissão disponível para adicionar."}
-                  </p>
+                  <p className="mt-2 mb-0 small">Nenhuma permissão disponível para adicionar</p>
                 </div>
               ) : (
                 filteredPermissions.map((perm) => (
@@ -202,7 +153,6 @@ export default function GroupPermissionManager({
                     key={perm.id}
                     className={`permission-option ${selectedPermission === perm.name ? 'selected' : ''}`}
                     onClick={() => setSelectedPermission(perm.name)}
-                    style={{ cursor: "pointer" }}
                   >
                     <div className="d-flex justify-content-between align-items-center">
                       <div>
@@ -210,7 +160,7 @@ export default function GroupPermissionManager({
                         <code className="permission-option-slug">{perm.name}</code>
                       </div>
                       {selectedPermission === perm.name && (
-                        <i className="bi bi-check-circle-fill permission-option-check text-success"></i>
+                        <i className="bi bi-check-circle-fill permission-option-check"></i>
                       )}
                     </div>
                   </div>
@@ -219,18 +169,22 @@ export default function GroupPermissionManager({
             </div>
           </Form.Group>
 
-          <div className="modal-actions d-flex justify-content-end gap-2">
+          <div className="modal-actions">
             <button
               type="button"
-              className="btn btn-secondary"
-              onClick={handleCloseModal}
+              className="btn-secondary"
+              onClick={() => {
+                setShowAddModal(false);
+                setSelectedPermission("");
+                setSearchTerm("");
+              }}
               disabled={actionLoading}
             >
               Cancelar
             </button>
             <button
               type="button"
-              className="btn btn-primary"
+              className="btn-primary"
               onClick={handleAddPermission}
               disabled={actionLoading || !selectedPermission}
             >
