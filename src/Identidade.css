@@ -1,149 +1,147 @@
-/* ============================================
-   AxionID - Painel de Identidade (Dropdown)
-   ============================================ */
+/* ==========================================================
+   AXIONID - PAINEL DE IDENTIDADE (Namespace: ax-)
+   ========================================================== */
 
-.dropdown-floating-menu.details-panel {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
-  width: 100%;
-  max-width: 380px;
-  overflow: hidden;
-  animation: fadeInUp 0.3s ease-out;
-  display: flex;
-  flex-direction: column;
+/* Reset básico para evitar conflitos com Bootstrap/Global */
+.dropdown-floating-menu,
+.dropdown-floating-menu * {
+    box-sizing: border-box;
 }
 
-/* ----- HEADER DO PAINEL ----- */
+/* Container do Dropdown */
+.dropdown-floating-menu {
+    position: absolute;
+    top: 60px; /* Ajuste conforme a altura da sua navbar */
+    right: 20px;
+    width: 300px;
+    background: #0f1119;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    z-index: 1000;
+    color: #f8fafc;
+    overflow: hidden;
+    font-family: sans-serif;
+}
+
+/* Header do Menu */
 .menu-header {
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.02);
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border-bottom: 1px solid #334155;
 }
 
-.badge-operacional {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: 50px;
-  letter-spacing: 0.5px;
+.info-label {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.badge-operacional.success {
-  background: rgba(34, 197, 94, 0.15); /* Utiliza opacidade sobre a cor de sucesso */
-  color: var(--success);
-  border: 1px solid rgba(34, 197, 94, 0.3);
+.info-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* ----- CONTEÚDO SCROLLÁVEL ----- */
+.info-email {
+    font-size: 0.85rem;
+    color: #64748b;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Divider */
+.menu-divider {
+    height: 1px;
+    background: #334155;
+    margin: 4px 0;
+}
+
+/* Itens do Menu */
+.menu-body {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    color: #e2e8f0;
+    cursor: pointer;
+    width: 100%;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.menu-item:hover {
+    background: #1e293b;
+}
+
+.logout-action {
+    color: #f87171 !important;
+}
+
+/* Painel de Detalhes (O que abre depois) */
+.details-panel {
+    width: 320px;
+}
+
 .details-content {
-  padding: 1.5rem;
-  max-height: 420px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+    padding: 16px;
+    max-height: 400px;
+    overflow-y: auto;
 }
 
-/* Customização leve da scrollbar para o painel */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 10px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
-}
-
-/* ----- TIPOGRAFIA E CAMPOS ----- */
 .section-subtitle {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--primary);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 1rem;
-}
-
-.info-section {
-  display: flex;
-  flex-direction: column;
+    font-size: 0.7rem;
+    color: #6366f1;
+    font-weight: bold;
+    margin-bottom: 10px;
+    margin-top: 15px;
 }
 
 .data-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  margin-bottom: 1rem;
-}
-
-.data-field:last-child {
-  margin-bottom: 0;
+    margin-bottom: 12px;
 }
 
 .data-field .label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+    font-size: 0.65rem;
+    color: #94a3b8;
+    display: block;
+    text-transform: uppercase;
 }
 
 .data-field .value {
-  font-size: 0.95rem;
-  color: var(--text-main);
-  font-weight: 500;
+    font-size: 0.9rem;
+    color: #ffffff;
 }
 
-.mono-text {
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  letter-spacing: 0.5px;
-  color: var(--text-muted);
+.btn-secondary {
+    width: 100%;
+    padding: 12px;
+    background: #1e293b;
+    color: white;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 10px;
 }
 
-/* ----- ELEMENTOS ESTRUTURAIS ----- */
-.menu-divider {
-  height: 1px;
-  background: var(--border);
-  margin: 0.5rem 0;
-  width: 100%;
-}
-
-.address-info-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  background: var(--bg-input);
-  padding: 1rem;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-light);
-}
-
-.empty-state {
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: var(--radius-md);
-  text-align: center;
-  border: 1px dashed var(--border);
-}
-
-.empty-state span {
-  color: var(--text-muted);
-}
-
-/* ----- FOOTER ----- */
-.menu-footer {
-  padding: 1rem 1.5rem 1.5rem;
-  background: var(--bg-card);
-  border-top: 1px solid var(--border-light);
+.btn-secondary:hover {
+    background: #334155;
 }
