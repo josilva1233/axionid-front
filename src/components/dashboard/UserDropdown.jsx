@@ -33,25 +33,48 @@ const UserDropdown = ({ user, onLogout }) => {
       </button>
 
       {isOpen && (
-        <div className="dropdown-floating-menu">
-          <div className="menu-header">
-            <span className="info-label">Sessão ativa:</span>
-            <span className="info-name text-truncate">{user?.name}</span>
-            <span className="info-email text-truncate">{user?.email}</span>
-          </div>
-          
-          <div className="menu-divider"></div>
-          
-          <div className="menu-body">
-            <button className="menu-item" onClick={() => { setShowDetails(true); setIsOpen(false); }}>
-              <span className="menu-icon">👤</span> Meus Detalhes
-            </button>
-            
-            <button className="menu-item logout-action" onClick={onLogout}>
-              <span className="menu-icon">🚪</span> Encerrar Sessão
-            </button>
-          </div>
-        </div>
+<div 
+  className="dropdown-floating-menu" 
+  role="menu" 
+  aria-label="Menu do usuário"
+>
+  <header className="menu-header">
+    <span className="info-label">Sessão ativa:</span>
+    <strong className="info-name text-truncate">
+      {user?.name || 'Usuário'}
+    </strong>
+    <span className="info-email text-truncate">
+      {user?.email || 'E-mail não informado'}
+    </span>
+  </header>
+  
+  <div className="menu-divider" role="separator"></div>
+  
+  <nav className="menu-body">
+    <button 
+      type="button"
+      className="menu-item" 
+      role="menuitem"
+      onClick={() => { 
+        setShowDetails(true); 
+        setIsOpen(false); 
+      }}
+    >
+      <span className="menu-icon" aria-hidden="true">👤</span> 
+      Meus Detalhes
+    </button>
+    
+    <button 
+      type="button"
+      className="menu-item logout-action" 
+      role="menuitem"
+      onClick={onLogout}
+    >
+      <span className="menu-icon" aria-hidden="true">🚪</span> 
+      Encerrar Sessão
+    </button>
+  </nav>
+</div>
       )}
 
       {showDetails && (
