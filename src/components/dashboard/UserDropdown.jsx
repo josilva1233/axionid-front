@@ -53,56 +53,65 @@ const UserDropdown = ({ user, onLogout }) => {
       )}
 
       {showDetails && (
-        <div className="dropdown-floating-menu details-panel" ref={detailsRef}>
-          <div className="menu-header">
-            <h5 className="text-white fw-bold mb-0">Minha Identidade</h5>
-            <span className="badge-operacional">Verificada</span>
+<div className="dropdown-floating-menu details-panel" ref={detailsRef}>
+  <header className="menu-header">
+    <h5 className="text-white fw-bold mb-0">Minha Identidade</h5>
+    <span className="badge-operacional success">Verificada</span>
+  </header>
+
+  <main className="details-content custom-scrollbar">
+    <section className="info-section">
+      <p className="section-subtitle">Dados da Conta</p>
+      
+      <div className="data-field">
+        <span className="label">Nome Completo</span>
+        <span className="value">{user?.name || 'Não informado'}</span>
+      </div>
+
+      <div className="data-field">
+        <span className="label">E-mail Cadastrado</span>
+        <span className="value">{user?.email || 'Não informado'}</span>
+      </div>
+
+      <div className="data-field">
+        <span className="label">Documento ID</span>
+        <span className="value mono-text">{user?.cpf_cnpj || 'Não informado'}</span>
+      </div>
+    </section>
+
+    <div className="menu-divider"></div>
+
+    <section className="info-section">
+      <p className="section-subtitle">Endereço Registrado</p>
+      {user?.address ? (
+        <div className="address-info-stack">
+          <div className="data-field">
+            <span className="label">Logradouro</span>
+            <span className="value">{user.address.street}, {user.address.number}</span>
           </div>
-
-          <div className="details-content custom-scrollbar">
-            <p className="section-subtitle">DADOS DA CONTA</p>
-            
-            <div className="data-field">
-              <label>NOME COMPLETO</label>
-              <span>{user?.name}</span>
-            </div>
-
-            <div className="data-field">
-              <label>E-MAIL CADASTRADO</label>
-              <span>{user?.email}</span>
-            </div>
-
-            <div className="data-field">
-              <label>DOCUMENTO ID</label>
-              <span className="mono-text">{user?.cpf_cnpj || 'Não informado'}</span>
-            </div>
-
-            <div className="menu-divider"></div>
-
-            <p className="section-subtitle">ENDEREÇO REGISTRADO</p>
-            {user?.address ? (
-              <div className="address-info-stack">
-                <div className="data-field">
-                  <label>LOGRADOURO</label>
-                  <span>{user.address.street}, {user.address.number}</span>
-                </div>
-                <div className="data-field">
-                  <label>CIDADE / UF</label>
-                  <span>{user.address.city} - {user.address.state}</span>
-                </div>
-              </div>
-            ) : (
-              <span className="text-dim italic small">Nenhum endereço vinculado à ID.</span>
-            )}
+          <div className="data-field">
+            <span className="label">Cidade / UF</span>
+            <span className="value">{user.address.city} - {user.address.state}</span>
           </div>
-
-          <button 
-            className="btn-secondary w-100 mt-3" 
-            onClick={() => setShowDetails(false)}
-          >
-            Fechar Painel
-          </button>
         </div>
+      ) : (
+        <div className="empty-state">
+          <span className="text-dim italic small">Nenhum endereço vinculado à ID.</span>
+        </div>
+      )}
+    </section>
+  </main>
+
+  <footer className="menu-footer">
+    <button 
+      type="button"
+      className="btn-secondary w-100" 
+      onClick={() => setShowDetails(false)}
+    >
+      Fechar Painel
+    </button>
+  </footer>
+</div>
       )}
     </div>
   );
