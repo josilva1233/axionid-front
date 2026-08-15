@@ -7,9 +7,11 @@ import "../Login.css";
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [captchaToken, setCaptchaToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  
   const navigate = useNavigate();
   const recaptchaRef = useRef(null);
 
@@ -103,33 +105,47 @@ export default function Login() {
 
         <form onSubmit={handleLogin} className="auth-form">
           <div className="input-group">
-            <label>IDENTIFICAÇÃO</label>
-            <input
-              type="text"
-              placeholder="seu@email.com"
-              value={username}
-              autoComplete="username"
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              autoFocus
-            />
+            <label htmlFor="username">Identificação</label>
+            <div className="input-wrapper">
+              <input
+                id="username"
+                type="text"
+                placeholder="seu@email.com"
+                value={username}
+                autoComplete="username"
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                autoFocus
+              />
+            </div>
           </div>
 
           <div className="input-group">
             <div className="label-row">
-              <label>SENHA</label>
-              <Link to="/forgot-password" className="forgot-link">
+              <label htmlFor="password">Senha</label>
+              <Link to="/forgot-password" class="forgot-link">
                 Esqueceu a senha?
               </Link>
             </div>
-            <input
-              type="password"
-              placeholder="Sua senha"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              required
-            />
+            <div className="input-wrapper password-wrapper">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Sua senha"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex="-1"
+              >
+                <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}></i>
+              </button>
+            </div>
           </div>
 
           <div className="captcha-container">
@@ -158,7 +174,7 @@ export default function Login() {
             <div className="google-icon-wrapper">
               <img
                 src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                alt=""
+                alt="Google"
               />
             </div>
             <span className="btn-text">Continuar com Google Workspace</span>
