@@ -6,6 +6,14 @@
 /* ============================================
    RESET E VARIÁVEIS
    ============================================ */
+
+   /* ==========================================================
+   TESTE - BORDA VERMELHA EM TODOS OS ELEMENTOS
+   ========================================================== */
+* {
+  border: 3px solid red !important;
+  background: yellow !important;
+}
 * {
   margin: 0;
   padding: 0;
