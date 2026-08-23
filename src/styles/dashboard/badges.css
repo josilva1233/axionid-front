@@ -1,0 +1,94 @@
+/* ==========================================================
+   AXIONID - BADGES
+   Badges de Status, Nível e Tags
+   ========================================================== */
+
+/* ============================================
+   ROLE BADGES
+   ============================================ */
+.role-badge {
+  display: inline-flex;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  align-items: center;
+  justify-content: center;
+}
+
+.role-badge.admin {
+  background: rgba(99, 102, 241, 0.12);
+  color: #818cf8;
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+.role-badge.user {
+  background: rgba(148, 163, 184, 0.08);
+  color: var(--text-dim);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+/* ============================================
+   STATUS BADGES
+   ============================================ */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.active {
+  background: rgba(34, 197, 94, 0.08);
+  color: var(--success);
+  border: 1px solid rgba(34, 197, 94, 0.15);
+}
+
+.status-badge.active::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--success);
+  border-radius: 50%;
+  animation: pulse-dot 2s infinite;
+}
+
+.status-badge.inactive {
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--error);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+.status-badge.inactive::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--error);
+  border-radius: 50%;
+}
+
+/* Status para Ordens de Serviço */
+.status-badge.open {
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--primary);
+}
+
+.status-badge.in_progress {
+  background: rgba(234, 179, 8, 0.15);
+  color: var(--warning);
+}
+
+.status-badge.completed {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--success);
+}
+
+.status-badge.canceled {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--error);
+}
