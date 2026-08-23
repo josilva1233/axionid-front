@@ -1,5 +1,5 @@
 // components/dashboard/GroupTable.jsx
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { Modal, Form, Spinner } from "react-bootstrap";
 import Swal from "sweetalert2";
 
@@ -18,28 +18,12 @@ export default function GroupTable({
     description: "" 
   });
   const [editLoading, setEditLoading] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState(null);
-  const dropdownRefs = useRef({});
 
   const AxionAlert = Swal.mixin({
     background: "#111214",
     color: "#ffffff",
     confirmButtonColor: "#6366f1",
   });
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      const isOutside = Object.values(dropdownRefs.current).every(
-        (ref) => ref && !ref.contains(event.target)
-      );
-      if (isOutside) {
-        setOpenDropdown(null);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const handleEdit = (group) => {
     setEditingGroup(group);
@@ -48,7 +32,6 @@ export default function GroupTable({
       description: group.description || "",
     });
     setShowEditModal(true);
-    setOpenDropdown(null);
   };
 
   const handleSaveEdit = async () => {
@@ -75,7 +58,6 @@ export default function GroupTable({
   };
 
   const handleDelete = async (group) => {
-    setOpenDropdown(null);
     const result = await AxionAlert.fire({
       title: "Excluir Grupo?",
       text: `Deseja remover permanentemente o grupo "${group.name}"?`,
@@ -91,10 +73,6 @@ export default function GroupTable({
     if (result.isConfirmed) {
       if (onDelete) await onDelete(group.id);
     }
-  };
-
-  const toggleDropdown = (groupId) => {
-    setOpenDropdown(openDropdown === groupId ? null : groupId);
   };
 
   const isSystemAdmin = currentUser?.is_admin === 1 || currentUser?.is_admin === true;
@@ -121,11 +99,10 @@ export default function GroupTable({
                   g.users?.some((u) => u.id === currentUser?.id && u.pivot?.role === "admin");
 
                 const memberCount = g.users_count || g.users?.length || 0;
-                const isDropdownOpen = openDropdown === g.id;
 
                 return (
                   <tr key={g.id}>
-                    <td>#{g.id}</td>
+                    <td className="mono-text">#{g.id}</td>
                     <td>
                       <div className="group-name-cell">
                         <strong className="text-primary group-name-text">
@@ -164,77 +141,31 @@ export default function GroupTable({
                     </td>
                     <td className="text-end">
                       {canManage ? (
-                        <div 
-                          className="actions-dropdown-container" 
-                          ref={(el) => (dropdownRefs.current[g.id] = el)}
-                        >
+                        <div className="actions-wrapper">
                           <button
-                            className={`actions-dropdown-trigger ${isDropdownOpen ? 'active' : ''}`}
-                            onClick={() => toggleDropdown(g.id)}
-                            type="button"
-                            title="Abrir ações do grupo"
+                            className="btn-table-action"
+                            onClick={() => onViewDetail(g.id)}
+                            title="Gerenciar Membros"
                           >
-                            <i className="bi bi-three-dots-vertical"></i>
+                            <i className="bi bi-people-fill"></i> Membros
                           </button>
-
-                          {isDropdownOpen && (
-                            <div className="actions-dropdown-menu-floating" role="menu">
-                              <header className="dropdown-menu-header">
-                                <span className="dropdown-header-label">Ações</span>
-                                <strong className="dropdown-header-name text-truncate">
-                                  {g.name}
-                                </strong>
-                              </header>
-                              
-                              <div className="dropdown-menu-divider"></div>
-                              
-                              <nav className="dropdown-menu-body">
-                                <button
-                                  type="button"
-                                  className="dropdown-menu-item"
-                                  role="menuitem"
-                                  onClick={() => {
-                                    onViewDetail(g.id);
-                                    setOpenDropdown(null);
-                                  }}
-                                >
-                                  <span className="dropdown-menu-icon" aria-hidden="true">
-                                    <i className="bi bi-people-fill"></i>
-                                  </span>
-                                  Gerenciar Membros
-                                </button>
-
-                                {isSystemAdmin && (
-                                  <>
-                                    <button
-                                      type="button"
-                                      className="dropdown-menu-item"
-                                      role="menuitem"
-                                      onClick={() => handleEdit(g)}
-                                    >
-                                      <span className="dropdown-menu-icon" aria-hidden="true">
-                                        <i className="bi bi-pencil-square"></i>
-                                      </span>
-                                      Editar Grupo
-                                    </button>
-
-                                    <div className="dropdown-menu-divider"></div>
-
-                                    <button
-                                      type="button"
-                                      className="dropdown-menu-item dropdown-menu-item-danger"
-                                      role="menuitem"
-                                      onClick={() => handleDelete(g)}
-                                    >
-                                      <span className="dropdown-menu-icon" aria-hidden="true">
-                                        <i className="bi bi-trash3-fill"></i>
-                                      </span>
-                                      Deletar Grupo
-                                    </button>
-                                  </>
-                                )}
-                              </nav>
-                            </div>
+                          {isSystemAdmin && (
+                            <>
+                              <button
+                                className="btn-table-action btn-table-action-edit"
+                                onClick={() => handleEdit(g)}
+                                title="Editar Grupo"
+                              >
+                                <i className="bi bi-pencil-square"></i> Editar
+                              </button>
+                              <button
+                                className="btn-table-action btn-table-action-danger"
+                                onClick={() => handleDelete(g)}
+                                title="Excluir Grupo"
+                              >
+                                <i className="bi bi-trash3-fill"></i> Excluir
+                              </button>
+                            </>
                           )}
                         </div>
                       ) : (
@@ -262,7 +193,7 @@ export default function GroupTable({
         </table>
       </div>
 
-      {/* Modal de Edição */}
+      {/* Modal de Edição - PADRONIZADO COM O SERVICE ORDER */}
       <Modal 
         show={showEditModal} 
         onHide={() => setShowEditModal(false)} 
@@ -319,6 +250,7 @@ export default function GroupTable({
             onClick={() => setShowEditModal(false)} 
             disabled={editLoading}
           >
+            <i className="bi bi-x-circle me-1"></i>
             Cancelar
           </button>
           <button 
