@@ -1,53 +1,19 @@
 // components/dashboard/PermissionTable.jsx
-import React, { useState } from "react";
-import { Modal, Form, Spinner } from "react-bootstrap";
+import React from "react";
 import Swal from "sweetalert2";
 
-
-export default function PermissionTable({ permissions, loading, currentUser, onEdit, onDelete }) {
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editingPermission, setEditingPermission] = useState(null);
-  const [editForm, setEditForm] = useState({ name: "", label: "", description: "" });
-  const [editLoading, setEditLoading] = useState(false);
-
+export default function PermissionTable({ 
+  permissions, 
+  loading, 
+  currentUser, 
+  onViewDetail,  // ← NOVO: para abrir o detalhe
+  onDelete 
+}) {
   const AxionAlert = Swal.mixin({
     background: "#111214",
     color: "#ffffff",
     confirmButtonColor: "#6366f1",
   });
-
-  const handleEdit = (perm) => {
-    setEditingPermission(perm);
-    setEditForm({
-      name: perm.name,
-      label: perm.label,
-      description: perm.description || "",
-    });
-    setShowEditModal(true);
-  };
-
-  const handleSaveEdit = async () => {
-    if (!editForm.name.trim() || !editForm.label.trim()) {
-      AxionAlert.fire("Erro", "Nome e label são obrigatórios.", "error");
-      return;
-    }
-
-    setEditLoading(true);
-    try {
-      if (onEdit) await onEdit(editingPermission.id, editForm);
-      AxionAlert.fire({
-        icon: "success",
-        title: "Permissão atualizada!",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-      setShowEditModal(false);
-    } catch (err) {
-      AxionAlert.fire("Erro", "Falha ao atualizar permissão.", "error");
-    } finally {
-      setEditLoading(false);
-    }
-  };
 
   const handleDelete = async (perm) => {
     const result = await AxionAlert.fire({
@@ -106,12 +72,13 @@ export default function PermissionTable({ permissions, loading, currentUser, onE
                   <td className="text-end">
                     {isSystemAdmin ? (
                       <div className="actions-wrapper">
+                        {/* Botão Visualizar/Editar - Abre o PermissionDetail */}
                         <button
                           className="btn-table-action"
-                          onClick={() => handleEdit(perm)}
-                          title="Editar Permissão"
+                          onClick={() => onViewDetail(perm.id)}
+                          title="Visualizar e Editar Permissão"
                         >
-                          <i className="bi bi-pencil-square"></i> Editar
+                          <i className="bi bi-eye"></i> Detalhes
                         </button>
                         <button
                           className="btn-table-action btn-table-action-danger"
@@ -144,93 +111,6 @@ export default function PermissionTable({ permissions, loading, currentUser, onE
           </tbody>
         </table>
       </div>
-
-      {/* Modal de Edição - PADRONIZADO */}
-      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered className="permission-modal">
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <i className="bi bi-pencil-square me-2"></i>
-            Editar Permissão
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label className="form-label-custom">
-                <i className="bi bi-tag me-1"></i>
-                Chave do Sistema (Slug)
-              </Form.Label>
-              <Form.Control
-                type="text"
-                value={editForm.name}
-                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                className="custom-input-dark"
-                placeholder="ex: users.create"
-              />
-              <Form.Text className="form-text-custom">
-                Identificador único da permissão (usado no código)
-              </Form.Text>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label className="form-label-custom">
-                <i className="bi bi-fonts me-1"></i>
-                Label (Nome Exibido)
-              </Form.Label>
-              <Form.Control
-                type="text"
-                value={editForm.label}
-                onChange={(e) => setEditForm({ ...editForm, label: e.target.value })}
-                className="custom-input-dark"
-                placeholder="ex: Criar Usuários"
-              />
-              <Form.Text className="form-text-custom">
-                Nome que será exibido para esta permissão
-              </Form.Text>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label className="form-label-custom">
-                <i className="bi bi-file-text me-1"></i>
-                Descrição
-              </Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                value={editForm.description}
-                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                className="custom-input-dark"
-                placeholder="Descreva o que esta permissão concede..."
-              />
-              <Form.Text className="form-text-custom">
-                Opcional: detalhes sobre o que a permissão permite
-              </Form.Text>
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <button 
-            className="btn-secondary" 
-            onClick={() => setShowEditModal(false)} 
-            disabled={editLoading}
-          >
-            <i className="bi bi-x-circle me-1"></i>
-            Cancelar
-          </button>
-          <button 
-            className="btn-primary" 
-            onClick={handleSaveEdit} 
-            disabled={editLoading}
-          >
-            {editLoading ? (
-              <Spinner animation="border" size="sm" className="me-2" />
-            ) : (
-              <i className="bi bi-check2-circle me-2"></i>
-            )}
-            Salvar Alterações
-          </button>
-        </Modal.Footer>
-      </Modal>
     </>
   );
 }
