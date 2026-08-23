@@ -152,21 +152,18 @@ export function useDashboardData(role) {
     }
   }, [filters.method, filters.date, role]);
 
-  // Listar Ordens de Serviço (Chamados) - ADICIONAR
+// Listar Ordens de Serviço (Chamados)
   const loadServiceOrders = useCallback(async (page = 1) => {
     setLoading(true);
     try {
       const params = new URLSearchParams({ page, per_page: 10 });
+      
+      // 👇 ADICIONADO: Captura os filtros de busca e status para enviar à API
+      if (filters.search) params.append("search", filters.search);
+      if (filters.status) params.append("status", filters.status);
+
       const res = await api.get(`/api/v1/service-orders?${params.toString()}`);
       const responseData = res.data;
-      
-      console.log("Service Orders Response:", {
-        current_page: responseData.current_page,
-        last_page: responseData.last_page,
-        total: responseData.total,
-        per_page: responseData.per_page,
-        data_count: responseData.data?.length
-      });
       
       // Estrutura paginada do Laravel
       if (responseData.data && Array.isArray(responseData.data)) {
@@ -202,7 +199,7 @@ export function useDashboardData(role) {
     } finally { 
       setLoading(false); 
     }
-  }, []);
+  }, [filters.search, filters.status]); // 👈 ADICIONADO: Dependências para disparar quando alterados
 
   return { 
     loading, 
