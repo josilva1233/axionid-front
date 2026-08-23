@@ -6575,3 +6575,190 @@ body {
     transform: rotate(360deg);
   }
 }
+
+
+/* ==========================================================
+   SERVICE ORDER TABLE - ESTILO PADRONIZADO
+   ========================================================== */
+
+/* ============================================
+   LARGURAS DAS COLUNAS
+   ============================================ */
+.permission-table thead th:nth-child(1) { width: 5%; }   /* ID */
+.permission-table thead th:nth-child(2) { width: 12%; }  /* PROTOCOLO */
+.permission-table thead th:nth-child(3) { width: 22%; }  /* TÍTULO */
+.permission-table thead th:nth-child(4) { width: 16%; }  /* SOLICITANTE */
+.permission-table thead th:nth-child(5) { width: 12%; }  /* PRIORIDADE */
+.permission-table thead th:nth-child(6) { width: 13%; }  /* STATUS */
+.permission-table thead th:nth-child(7) { width: 20%; }  /* AÇÕES */
+
+/* ============================================
+   STATUS BADGE SERVICE - MESMO ESTILO DO PERMISSION TABLE
+   ============================================ */
+.status-badge-service {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  border-radius: var(--radius-2xl, 20px);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border: 1px solid transparent;
+}
+
+.status-badge-service .status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-circle, 50%);
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+/* ============================================
+   PRIORITY BADGE
+   ============================================ */
+.priority-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  border-radius: var(--radius-2xl, 20px);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border: 1px solid transparent;
+}
+
+.priority-badge .status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-circle, 50%);
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+/* ============================================
+   BOTÃO DE EDIÇÃO - VERDE
+   ============================================ */
+.btn-table-action-edit {
+  color: var(--success, #22c55e) !important;
+  background: rgba(34, 197, 94, 0.06) !important;
+  border-color: rgba(34, 197, 94, 0.1) !important;
+}
+
+.btn-table-action-edit:hover {
+  background: rgba(34, 197, 94, 0.12) !important;
+  border-color: rgba(34, 197, 94, 0.25) !important;
+  color: var(--success-hover, #4ade80) !important;
+  box-shadow: var(--shadow-success, 0 4px 16px rgba(34, 197, 94, 0.15)) !important;
+}
+
+/* ============================================
+   USER INFO MIN - PADRONIZADO
+   ============================================ */
+.user-info-min {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  min-width: 0;
+}
+
+.user-info-min .creator-name {
+  font-size: 13px;
+  color: var(--text-dim, #94a3b8);
+  font-weight: 500;
+}
+
+.user-info-min .text-dim {
+  font-size: 11px;
+  color: var(--text-dim, #94a3b8);
+}
+
+/* ============================================
+   RESPONSIVIDADE
+   ============================================ */
+
+/* Tablets (768px) */
+@media screen and (max-width: 768px) {
+  .permission-table thead th:nth-child(1) { width: 7%; }
+  .permission-table thead th:nth-child(2) { width: 14%; }
+  .permission-table thead th:nth-child(3) { width: 18%; }
+  .permission-table thead th:nth-child(4) { width: 14%; }
+  .permission-table thead th:nth-child(5) { width: 12%; }
+  .permission-table thead th:nth-child(6) { width: 13%; }
+  .permission-table thead th:nth-child(7) { width: 22%; }
+
+  .priority-badge,
+  .status-badge-service {
+    font-size: 10px;
+    padding: 3px 10px;
+  }
+
+  .priority-badge .status-dot,
+  .status-badge-service .status-dot {
+    width: 5px;
+    height: 5px;
+  }
+
+  .btn-table-action {
+    font-size: 10px;
+    padding: 4px 10px;
+  }
+
+  .btn-table-action i {
+    font-size: 12px;
+  }
+}
+
+/* Mobile (480px) */
+@media screen and (max-width: 480px) {
+  .permission-table thead th:nth-child(1) { width: 8%; }
+  .permission-table thead th:nth-child(2) { width: 15%; }
+  .permission-table thead th:nth-child(3) { width: 16%; }
+  .permission-table thead th:nth-child(4) { width: 12%; }
+  .permission-table thead th:nth-child(5) { width: 14%; }
+  .permission-table thead th:nth-child(6) { width: 15%; }
+  .permission-table thead th:nth-child(7) { width: 20%; }
+
+  .priority-badge,
+  .status-badge-service {
+    font-size: 9px;
+    padding: 2px 8px;
+    gap: 4px;
+  }
+
+  .priority-badge .status-dot,
+  .status-badge-service .status-dot {
+    width: 4px;
+    height: 4px;
+  }
+
+  .btn-table-action {
+    font-size: 9px;
+    padding: 3px 8px;
+    gap: 2px;
+  }
+
+  .btn-table-action i {
+    font-size: 10px;
+  }
+
+  .user-info-min .creator-name {
+    font-size: 11px;
+  }
+
+  .permission-code {
+    font-size: 10px;
+  }
+
+  .mono-text {
+    font-size: 11px;
+  }
+
+  .text-primary {
+    font-size: 12px;
+  }
+}
