@@ -1,5 +1,4 @@
-// hooks/useDashboardData.js
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import api from "../services/api";
 
 export function useDashboardData(role) {
@@ -7,215 +6,125 @@ export function useDashboardData(role) {
   const [users, setUsers] = useState([]);
   const [groups, setGroups] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
-  const [serviceOrders, setServiceOrders] = useState([]); // ← ADICIONAR
-  const [filters, setFilters] = useState({ name: "", completed: "", method: "", date: "" });
-  
-  // Paginação separada para cada tipo
-  const [usersPagination, setUsersPagination] = useState({ current: 1, last: 1, total: 0, perPage: 10 });
-  const [groupsPagination, setGroupsPagination] = useState({ current: 1, last: 1, total: 0, perPage: 15 });
-  const [auditPagination, setAuditPagination] = useState({ current: 1, last: 1, total: 0, perPage: 20 });
-  const [ordersPagination, setOrdersPagination] = useState({ current: 1, last: 1, total: 0, perPage: 10 }); // ← ADICIONAR
+  const [serviceOrders, setServiceOrders] = useState([]);
 
-  // Listar Usuários
+  const [usersPagination, setUsersPagination] = useState({ current: 1, last: 1, total: 0 });
+  const [groupsPagination, setGroupsPagination] = useState({ current: 1, last: 1, total: 0 });
+  const [auditPagination, setAuditPagination] = useState({ current: 1, last: 1, total: 0 });
+  const [ordersPagination, setOrdersPagination] = useState({ current: 1, last: 1, total: 0 });
+
+  const [filters, setFilters] = useState({
+    name: "",
+    completed: "",
+    method: "",
+    date: "",
+    search: "",
+    status: "",
+  });
+
   const loadUsers = useCallback(async (page = 1) => {
     if (role !== "admin") return;
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page, per_page: 10 });
-      if (filters.name) params.append("name", filters.name);
-      if (filters.completed !== "") params.append("completed", filters.completed);
-      
-      const res = await api.get(`/api/v1/admin/users?${params.toString()}`);
-      const responseData = res.data;
-      
-      if (responseData.data && Array.isArray(responseData.data)) {
-        setUsers(responseData.data);
-        setUsersPagination({
-          current: responseData.current_page || 1,
-          last: responseData.last_page || 1,
-          total: responseData.total || 0,
-          perPage: responseData.per_page || 10
-        });
-      } else if (Array.isArray(responseData)) {
-        const allUsers = responseData;
-        const total = allUsers.length;
-        const perPage = 10;
-        const lastPage = Math.ceil(total / perPage);
-        const start = (page - 1) * perPage;
-        const end = start + perPage;
-        setUsers(allUsers.slice(start, end));
-        setUsersPagination({
-          current: page,
-          last: lastPage,
-          total: total,
-          perPage: perPage
-        });
-      } else {
-        setUsers([]);
-        setUsersPagination({ current: 1, last: 1, total: 0, perPage: 10 });
-      }
-    } catch (err) { 
-      console.error(err); 
+      const res = await api.get("/api/v1/admin/users", {
+        params: { page, ...filters },
+      });
+      const responseData = res.data.data || res.data;
+      setUsers(Array.isArray(responseData) ? responseData : responseData.data || []);
+      setUsersPagination({
+        current: responseData.current_page || page,
+        last: responseData.last_page || 1,
+        total: responseData.total || 0,
+      });
+    } catch (err) {
+      console.error("Erro ao carregar usuários:", err);
       setUsers([]);
-    } finally { 
-      setLoading(false); 
+    } finally {
+      setLoading(false);
     }
-  }, [role, filters.name, filters.completed]);
+  }, [role, filters]);
 
-  // Listar Grupos
   const loadGroups = useCallback(async (page = 1) => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page });
-      if (filters.name) params.append("name", filters.name);
-      
-      const res = await api.get(`/api/v1/groups?${params.toString()}`);
-      const responseData = res.data;
-      
-      if (responseData.data && Array.isArray(responseData.data)) {
-        setGroups(responseData.data);
-        setGroupsPagination({
-          current: responseData.current_page || 1,
-          last: responseData.last_page || 1,
-          total: responseData.total || 0,
-          perPage: responseData.per_page || 15
-        });
-      } else if (Array.isArray(responseData)) {
-        const allGroups = responseData;
-        const total = allGroups.length;
-        const perPage = 15;
-        const lastPage = Math.ceil(total / perPage);
-        const start = (page - 1) * perPage;
-        const end = start + perPage;
-        setGroups(allGroups.slice(start, end));
-        setGroupsPagination({
-          current: page,
-          last: lastPage,
-          total: total,
-          perPage: perPage
-        });
-      } else {
-        setGroups([]);
-        setGroupsPagination({ current: 1, last: 1, total: 0, perPage: 15 });
-      }
-    } catch (err) { 
-      console.error("Erro ao carregar grupos:", err); 
+      const res = await api.get("/api/v1/groups", {
+        params: { page, ...filters },
+      });
+      const responseData = res.data.data || res.data;
+      setGroups(Array.isArray(responseData) ? responseData : responseData.data || []);
+      setGroupsPagination({
+        current: responseData.current_page || page,
+        last: responseData.last_page || 1,
+        total: responseData.total || 0,
+      });
+    } catch (err) {
+      console.error("Erro ao carregar grupos:", err);
       setGroups([]);
-    } finally { 
-      setLoading(false); 
+    } finally {
+      setLoading(false);
     }
-  }, [filters.name]);
+  }, [filters]);
 
-  // Listar Logs de Auditoria
   const loadAuditLogs = useCallback(async (page = 1) => {
     if (role !== "admin") return;
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page: page.toString() });
-      if (filters.method) params.append("method", filters.method);
-      if (filters.date) params.append("date", filters.date);
-      
-      const res = await api.get(`/api/v1/admin/audit-logs?${params.toString()}`);
-      const responseData = res.data;
-      
-      if (responseData.data && Array.isArray(responseData.data)) {
-        setAuditLogs(responseData.data);
-        setAuditPagination({
-          current: responseData.current_page || 1,
-          last: responseData.last_page || 1,
-          total: responseData.total || 0,
-          perPage: responseData.per_page || 20
-        });
-      } else if (Array.isArray(responseData)) {
-        const allLogs = responseData;
-        const total = allLogs.length;
-        const perPage = 20;
-        const lastPage = Math.ceil(total / perPage);
-        const start = (page - 1) * perPage;
-        const end = start + perPage;
-        setAuditLogs(allLogs.slice(start, end));
-        setAuditPagination({
-          current: page,
-          last: lastPage,
-          total: total,
-          perPage: perPage
-        });
-      } else {
-        setAuditLogs([]);
-        setAuditPagination({ current: 1, last: 1, total: 0, perPage: 20 });
-      }
-    } catch (err) { 
-      console.error("Erro ao carregar logs:", err); 
+      const res = await api.get("/api/v1/admin/audit-logs", {
+        params: { page, ...filters },
+      });
+      const responseData = res.data.data || res.data;
+      setAuditLogs(Array.isArray(responseData) ? responseData : responseData.data || []);
+      setAuditPagination({
+        current: responseData.current_page || page,
+        last: responseData.last_page || 1,
+        total: responseData.total || 0,
+      });
+    } catch (err) {
+      console.error("Erro ao carregar auditoria:", err);
       setAuditLogs([]);
-    } finally { 
-      setLoading(false); 
+    } finally {
+      setLoading(false);
     }
-  }, [filters.method, filters.date, role]);
+  }, [role, filters]);
 
-// Listar Ordens de Serviço (Chamados)
   const loadServiceOrders = useCallback(async (page = 1) => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page, per_page: 10 });
+      const res = await api.get("/api/v1/service-orders", {
+        params: { page, ...filters },
+      });
+      const responseData = res.data.data || res.data;
+      const ordersList = Array.isArray(responseData) ? responseData : responseData.data || [];
       
-      // 👇 ADICIONADO: Captura os filtros de busca e status para enviar à API
-      if (filters.search) params.append("search", filters.search);
-      if (filters.status) params.append("status", filters.status);
-
-      const res = await api.get(`/api/v1/service-orders?${params.toString()}`);
-      const responseData = res.data;
-      
-      // Estrutura paginada do Laravel
-      if (responseData.data && Array.isArray(responseData.data)) {
-        setServiceOrders(responseData.data);
-        setOrdersPagination({
-          current: responseData.current_page || 1,
-          last: responseData.last_page || 1,
-          total: responseData.total || 0,
-          perPage: responseData.per_page || 10
-        });
-      } else if (Array.isArray(responseData)) {
-        // Fallback: array simples (paginação no frontend)
-        const allOrders = responseData;
-        const total = allOrders.length;
-        const perPage = 10;
-        const lastPage = Math.ceil(total / perPage);
-        const start = (page - 1) * perPage;
-        const end = start + perPage;
-        setServiceOrders(allOrders.slice(start, end));
-        setOrdersPagination({
-          current: page,
-          last: lastPage,
-          total: total,
-          perPage: perPage
-        });
-      } else {
-        setServiceOrders([]);
-        setOrdersPagination({ current: 1, last: 1, total: 0, perPage: 10 });
-      }
-    } catch (err) { 
-      console.error("Erro ao carregar ordens de serviço:", err); 
+      setServiceOrders(ordersList);
+      setOrdersPagination({
+        current: responseData.current_page || page,
+        last: responseData.last_page || 1,
+        total: responseData.total || ordersList.length,
+      });
+    } catch (err) {
+      console.error("Erro ao carregar ordens de serviço:", err);
       setServiceOrders([]);
-    } finally { 
-      setLoading(false); 
+    } finally {
+      setLoading(false);
     }
-  }, [filters.search, filters.status]); // 👈 ADICIONADO: Dependências para disparar quando alterados
+  }, [filters]);
 
-  return { 
-    loading, 
-    users, 
-    groups, 
-    auditLogs, 
-    serviceOrders, // ← ADICIONAR
+  return {
+    loading,
+    users,
+    groups,
+    auditLogs,
+    serviceOrders,
     usersPagination,
     groupsPagination,
     auditPagination,
-    ordersPagination, // ← ADICIONAR
-    filters, 
-    setFilters, 
-    loadUsers, 
-    loadGroups, 
+    ordersPagination,
+    filters,
+    setFilters,
+    loadUsers,
+    loadGroups,
     loadAuditLogs,
-    loadServiceOrders // ← ADICIONAR
+    loadServiceOrders,
   };
 }
