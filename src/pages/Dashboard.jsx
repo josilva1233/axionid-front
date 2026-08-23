@@ -39,13 +39,14 @@ export default function Dashboard() {
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const [selectedPermission, setSelectedPermission] = useState(null);
 
   // Estados para paginação
   const [usersCurrentPage, setUsersCurrentPage] = useState(1);
   const [groupsCurrentPage, setGroupsCurrentPage] = useState(1);
   const [auditCurrentPage, setAuditCurrentPage] = useState(1);
   const [ordersCurrentPage, setOrdersCurrentPage] = useState(1);
-  const [permissionsCurrentPage, setPermissionsCurrentPage] = useState(1); // ADICIONADO
+  const [permissionsCurrentPage, setPermissionsCurrentPage] = useState(1);
 
   const AxionAlert = Swal.mixin({
     background: "#111214",
@@ -65,19 +66,19 @@ export default function Dashboard() {
     groups,
     auditLogs,
     serviceOrders,
-    permissions, // ADICIONADO
+    permissions,
     usersPagination,
     groupsPagination,
     auditPagination,
     ordersPagination,
-    permissionsPagination, // ADICIONADO
+    permissionsPagination,
     filters,
     setFilters,
     loadUsers,
     loadGroups,
     loadAuditLogs,
     loadServiceOrders,
-    loadPermissions, // ADICIONADO
+    loadPermissions,
   } = useDashboardData(role);
 
   const isGlobalAdmin = role === "admin" || currentUser?.is_admin === true;
@@ -90,32 +91,28 @@ export default function Dashboard() {
     setShowPermissionModal(false);
     setShowGroupForm(false);
     setSelectedOrder(null);
-    // Resetar páginas para 1 ao trocar de tab
+    setSelectedPermission(null); // ADICIONADO
     setUsersCurrentPage(1);
     setGroupsCurrentPage(1);
     setAuditCurrentPage(1);
     setOrdersCurrentPage(1);
-    setPermissionsCurrentPage(1); // ADICIONADO
+    setPermissionsCurrentPage(1);
   };
 
   const handleClearFilters = () => {
     setFilters({ 
-      // Filtros de Usuários
       name: "", 
       completed: "", 
-      // Filtros de Auditoria (SEGURANÇA)
       user: "",
       url: "",
       method: "", 
       start_date: "",
       end_date: "",
-      // Filtros de Ordens de Serviço
       protocol: "",
       title: "",
       applicant: "",
       priority: "",
       status: "",
-      // Filtros de Permissões
       label: "",
       perm_name: ""
     });
@@ -123,7 +120,7 @@ export default function Dashboard() {
     setGroupsCurrentPage(1);
     setAuditCurrentPage(1);
     setOrdersCurrentPage(1);
-    setPermissionsCurrentPage(1); // ADICIONADO
+    setPermissionsCurrentPage(1);
   };
 
   // ============ HANDLERS DE ORDENS DE SERVIÇO ============
@@ -176,7 +173,6 @@ export default function Dashboard() {
     }
   };
 
-  // ============ HANDLER DE EDIÇÃO DE ORDEM ============
   const handleEditOrder = async (orderId, data) => {
     try {
       setActionLoading(true);
@@ -195,7 +191,6 @@ export default function Dashboard() {
     }
   };
 
-  // ============ HANDLER DE EXCLUSÃO DE ORDEM ============
   const handleDeleteOrder = async (orderId) => {
     const result = await AxionAlert.fire({
       title: "Excluir OS?",
@@ -229,7 +224,7 @@ export default function Dashboard() {
     }
   };
 
-  // ============ HANDLER DE CRIAÇÃO DE PERMISSÃO ============
+  // ============ HANDLERS DE PERMISSÕES ============
   const handleCreatePermission = async (data) => {
     setActionLoading(true);
     try {
@@ -245,6 +240,57 @@ export default function Dashboard() {
       loadPermissions(permissionsCurrentPage);
     } catch (err) {
       AxionAlert.fire("Erro!", "Não foi possível criar a permissão.", "error");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleOpenPermissionDetail = async (permissionId) => {
+    try {
+      setActionLoading(true);
+      const res = await api.get(`/api/v1/admin/permissions/${permissionId}`);
+      setSelectedPermission(res.data.data || res.data);
+    } catch (err) {
+      AxionAlert.fire("Erro", "Não foi possível carregar os detalhes da permissão.", "error");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleEditPermission = async (permissionId, data) => {
+    try {
+      setActionLoading(true);
+      await api.put(`/api/v1/admin/permissions/${permissionId}`, data);
+      await loadPermissions(permissionsCurrentPage);
+      const res = await api.get(`/api/v1/admin/permissions/${permissionId}`);
+      setSelectedPermission(res.data.data || res.data);
+      AxionAlert.fire({
+        icon: "success",
+        title: "Permissão atualizada!",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao atualizar permissão.", "error");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeletePermission = async (permissionId) => {
+    try {
+      setActionLoading(true);
+      await api.delete(`/api/v1/admin/permissions/${permissionId}`);
+      setSelectedPermission(null);
+      await loadPermissions(permissionsCurrentPage);
+      AxionAlert.fire({
+        icon: "success",
+        title: "Permissão excluída!",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao excluir permissão.", "error");
     } finally {
       setActionLoading(false);
     }
@@ -273,7 +319,7 @@ export default function Dashboard() {
       } else if (activeTab === "groups") {
         await loadGroups(groupsCurrentPage);
       } else if (activeTab === "permissions") {
-        await loadPermissions(permissionsCurrentPage); // ATUALIZADO
+        await loadPermissions(permissionsCurrentPage);
       } else if (activeTab === "orders") {
         await loadServiceOrders(ordersCurrentPage);
       }
@@ -286,7 +332,7 @@ export default function Dashboard() {
     groupsCurrentPage,
     auditCurrentPage,
     ordersCurrentPage,
-    permissionsCurrentPage, // ADICIONADO
+    permissionsCurrentPage,
     loadUsers,
     loadGroups,
     loadAuditLogs,
@@ -391,7 +437,7 @@ export default function Dashboard() {
     setOrdersCurrentPage(page);
   };
 
-  const handlePermissionsPageChange = (page) => { // ADICIONADO
+  const handlePermissionsPageChange = (page) => {
     setPermissionsCurrentPage(page);
   };
 
@@ -935,22 +981,35 @@ export default function Dashboard() {
                   )}
 
                   {activeTab === "permissions" && (
-                    <>
-                      <PermissionTable
-                        permissions={permissions}
-                        loading={loading}
-                        currentUser={currentUser}
+                    selectedPermission ? (
+                      <PermissionDetail
+                        permission={selectedPermission}
+                        onBack={() => setSelectedPermission(null)}
+                        onEdit={handleEditPermission}
+                        onDelete={handleDeletePermission}
+                        isSystemAdmin={isGlobalAdmin}
+                        actionLoading={actionLoading}
                       />
-                      {permissionsPagination?.last > 1 && (
-                        <Pagination
-                          currentPage={permissionsPagination.current}
-                          lastPage={permissionsPagination.last}
-                          total={permissionsPagination.total}
-                          onPageChange={handlePermissionsPageChange}
+                    ) : (
+                      <>
+                        <PermissionTable
+                          permissions={permissions}
                           loading={loading}
+                          currentUser={currentUser}
+                          onViewDetail={handleOpenPermissionDetail}
+                          onDelete={handleDeletePermission}
                         />
-                      )}
-                    </>
+                        {permissionsPagination?.last > 1 && (
+                          <Pagination
+                            currentPage={permissionsPagination.current}
+                            lastPage={permissionsPagination.last}
+                            total={permissionsPagination.total}
+                            onPageChange={handlePermissionsPageChange}
+                            loading={loading}
+                          />
+                        )}
+                      </>
+                    )
                   )}
                 </div>
               </div>
