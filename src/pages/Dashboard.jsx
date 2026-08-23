@@ -169,6 +169,23 @@ export default function Dashboard() {
   }, [navigate]);
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      if (activeTab === "users") loadUsers(1);
+      else if (activeTab === "audit") loadAuditLogs(1);
+      else if (activeTab === "groups") loadGroups(1);
+      else if (activeTab === "orders") loadServiceOrders(1);
+      
+      // Reseta a paginação ao filtrar
+      setUsersCurrentPage(1);
+      setGroupsCurrentPage(1);
+      setAuditCurrentPage(1);
+      setOrdersCurrentPage(1);
+    }, 500); // 500ms de espera após o usuário parar de digitar
+
+    return () => clearTimeout(timer);
+  }, [filters, activeTab]);
+
+  useEffect(() => {
     if (selectedUser) {
       const userData = selectedUser.data || selectedUser;
       setFormData({
