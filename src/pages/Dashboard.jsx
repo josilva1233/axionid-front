@@ -21,6 +21,7 @@ import ServiceOrderTable from "../components/dashboard/ServiceOrderTable";
 import ServiceOrderForm from "../components/dashboard/ServiceOrderForm";
 import ServiceOrderDetail from "../components/dashboard/ServiceOrderDetail";
 import Pagination from "../components/dashboard/Pagination";
+import PermissionDetail from "../components/dashboard/PermissionDetail";
 
 import '../dashboard.css';
 
