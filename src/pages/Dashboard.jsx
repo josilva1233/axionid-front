@@ -37,7 +37,6 @@ export default function Dashboard() {
   const [formData, setFormData] = useState({});
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [permissions, setPermissions] = useState([]);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
 
   // Estados para paginação
@@ -45,6 +44,7 @@ export default function Dashboard() {
   const [groupsCurrentPage, setGroupsCurrentPage] = useState(1);
   const [auditCurrentPage, setAuditCurrentPage] = useState(1);
   const [ordersCurrentPage, setOrdersCurrentPage] = useState(1);
+  const [permissionsCurrentPage, setPermissionsCurrentPage] = useState(1); // ADICIONADO
 
   const AxionAlert = Swal.mixin({
     background: "#111214",
@@ -64,16 +64,19 @@ export default function Dashboard() {
     groups,
     auditLogs,
     serviceOrders,
+    permissions, // ADICIONADO
     usersPagination,
     groupsPagination,
     auditPagination,
     ordersPagination,
+    permissionsPagination, // ADICIONADO
     filters,
     setFilters,
     loadUsers,
     loadGroups,
     loadAuditLogs,
     loadServiceOrders,
+    loadPermissions, // ADICIONADO
   } = useDashboardData(role);
 
   const isGlobalAdmin = role === "admin" || currentUser?.is_admin === true;
@@ -91,42 +94,36 @@ export default function Dashboard() {
     setGroupsCurrentPage(1);
     setAuditCurrentPage(1);
     setOrdersCurrentPage(1);
+    setPermissionsCurrentPage(1); // ADICIONADO
   };
 
   const handleClearFilters = () => {
     setFilters({ 
+      // Filtros de Usuários
       name: "", 
       completed: "", 
+      // Filtros de Auditoria (SEGURANÇA)
+      user: "",
+      url: "",
       method: "", 
-      date: "",
-        // Filtros de Auditoria (SEGURANÇA)
-    user: "",      // NOVO
-    url: "",       // NOVO
-    method: "", 
-    start_date: "", // NOVO (ANTES ERA "date")
-    end_date: "",   // NOVO
-    // Filtros de Ordens de Serviço
+      start_date: "",
+      end_date: "",
+      // Filtros de Ordens de Serviço
       protocol: "",
       title: "",
       applicant: "",
       priority: "",
-      status: ""      
+      status: "",
+      // Filtros de Permissões
+      label: "",
+      perm_name: ""
     });
     setUsersCurrentPage(1);
     setGroupsCurrentPage(1);
     setAuditCurrentPage(1);
     setOrdersCurrentPage(1);
+    setPermissionsCurrentPage(1); // ADICIONADO
   };
-
-  // ============ CARREGAR PERMISSÕES ============
-  const loadPermissions = useCallback(async () => {
-    try {
-      const res = await api.get("/api/v1/admin/permissions");
-      setPermissions(res.data.data || res.data || []);
-    } catch (err) {
-      setPermissions([]);
-    }
-  }, []);
 
   // ============ HANDLERS DE ORDENS DE SERVIÇO ============
   const handleOpenOrderDetail = async (orderId) => {
@@ -231,6 +228,27 @@ export default function Dashboard() {
     }
   };
 
+  // ============ HANDLER DE CRIAÇÃO DE PERMISSÃO ============
+  const handleCreatePermission = async (data) => {
+    setActionLoading(true);
+    try {
+      await api.post("/api/v1/admin/permissions", data);
+      AxionAlert.fire({
+        icon: "success",
+        title: "Criada!",
+        text: "Permissão registrada.",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+      setShowPermissionModal(false);
+      loadPermissions(permissionsCurrentPage);
+    } catch (err) {
+      AxionAlert.fire("Erro!", "Não foi possível criar a permissão.", "error");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   // ============ LOAD PROFILE ============
   useEffect(() => {
     const loadProfile = async () => {
@@ -254,7 +272,7 @@ export default function Dashboard() {
       } else if (activeTab === "groups") {
         await loadGroups(groupsCurrentPage);
       } else if (activeTab === "permissions") {
-        await loadPermissions();
+        await loadPermissions(permissionsCurrentPage); // ATUALIZADO
       } else if (activeTab === "orders") {
         await loadServiceOrders(ordersCurrentPage);
       }
@@ -267,6 +285,7 @@ export default function Dashboard() {
     groupsCurrentPage,
     auditCurrentPage,
     ordersCurrentPage,
+    permissionsCurrentPage, // ADICIONADO
     loadUsers,
     loadGroups,
     loadAuditLogs,
@@ -307,21 +326,34 @@ export default function Dashboard() {
   }, [filters.name, loadGroups, activeTab]);
 
   // ============ RECARREGAR AUDIT QUANDO FILTROS MUDAREM ============
-// ============ RECARREGAR AUDIT QUANDO FILTROS MUDAREM ============
-useEffect(() => {
-  if (activeTab === "audit") {
-    loadAuditLogs(1);
-    setAuditCurrentPage(1);
-  }
-}, [
-  filters.user,        // NOVO
-  filters.url,         // NOVO
-  filters.method,
-  filters.start_date,  // NOVO (ANTES ERA "date")
-  filters.end_date,    // NOVO
-  loadAuditLogs,
-  activeTab,
-]);
+  useEffect(() => {
+    if (activeTab === "audit") {
+      loadAuditLogs(1);
+      setAuditCurrentPage(1);
+    }
+  }, [
+    filters.user,
+    filters.url,
+    filters.method,
+    filters.start_date,
+    filters.end_date,
+    loadAuditLogs,
+    activeTab,
+  ]);
+
+  // ============ RECARREGAR PERMISSÕES QUANDO FILTROS MUDAREM ============
+  useEffect(() => {
+    if (activeTab === "permissions") {
+      loadPermissions(1);
+      setPermissionsCurrentPage(1);
+    }
+  }, [
+    filters.label,
+    filters.perm_name,
+    loadPermissions,
+    activeTab,
+  ]);
+
   // ============ ATUALIZAR FORM DATA QUANDO USUÁRIO SELECIONADO ============
   useEffect(() => {
     if (selectedUser) {
@@ -356,6 +388,10 @@ useEffect(() => {
 
   const handleOrdersPageChange = (page) => {
     setOrdersCurrentPage(page);
+  };
+
+  const handlePermissionsPageChange = (page) => { // ADICIONADO
+    setPermissionsCurrentPage(page);
   };
 
   // ============ HANDLERS DE USUÁRIOS ============
@@ -467,27 +503,6 @@ useEffect(() => {
       } finally {
         setActionLoading(false);
       }
-    }
-  };
-
-  // ============ HANDLERS DE PERMISSÕES ============
-  const handleCreatePermission = async (data) => {
-    setActionLoading(true);
-    try {
-      await api.post("/api/v1/admin/permissions", data);
-      AxionAlert.fire({
-        icon: "success",
-        title: "Criada!",
-        text: "Permissão registrada.",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-      setShowPermissionModal(false);
-      loadPermissions();
-    } catch (err) {
-      AxionAlert.fire("Erro!", "Não foi possível criar a permissão.", "error");
-    } finally {
-      setActionLoading(false);
     }
   };
 
@@ -919,11 +934,22 @@ useEffect(() => {
                   )}
 
                   {activeTab === "permissions" && (
-                    <PermissionTable
-                      permissions={permissions}
-                      loading={loading}
-                      currentUser={currentUser}
-                    />
+                    <>
+                      <PermissionTable
+                        permissions={permissions}
+                        loading={loading}
+                        currentUser={currentUser}
+                      />
+                      {permissionsPagination?.last > 1 && (
+                        <Pagination
+                          currentPage={permissionsPagination.current}
+                          lastPage={permissionsPagination.last}
+                          total={permissionsPagination.total}
+                          onPageChange={handlePermissionsPageChange}
+                          loading={loading}
+                        />
+                      )}
+                    </>
                   )}
                 </div>
               </div>
