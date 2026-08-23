@@ -51,29 +51,6 @@ body {
    IMPORTA OS MÓDULOS CSS
    ============================================ */
 
-/* Layout - Borda AZUL */
-@import './styles/dashboard/layout.css';
-
-/* Filtros - Borda AMARELA */
-@import './styles/dashboard/filters.css';
-
-/* Tabelas - Borda ROXA */
-@import './styles/dashboard/tables.css';
-
-/* User Table - Borda ROSA */
-@import './styles/dashboard/user-table.css';
-
-/* Badges - Borda LARANJA */
-@import './styles/dashboard/badges.css';
-
-/* Paginação - Borda CIANO */
-@import './styles/dashboard/pagination.css';
-
-/* Dropdown - Borda VERMELHA */
-@import './styles/components/dropdown.css';
-
-/* Responsividade - Borda BRANCA (mobile) */
-@import './styles/dashboard/responsive.css';
 
 /* ============================================
    ESTILOS BASE (SEMPRE VISÍVEIS)
