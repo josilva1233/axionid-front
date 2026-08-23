@@ -10,7 +10,7 @@ export default function DashboardFilters({
 }) {
   const isUserDetailView = !!user;
 
-  // Renderizador de campos (Helpers)
+  // Renderizador de campos
   const renderInput = (label, name, placeholder = "") => (
     <div className="filter-col">
       <Form.Group>
@@ -19,7 +19,10 @@ export default function DashboardFilters({
           type="text" 
           name={name} 
           value={filters[name] || ""} 
-          onChange={onFilterChange} 
+          onChange={(e) => {
+            console.log(`🔍 Input ${name} alterado:`, e.target.value);
+            onFilterChange(e);
+          }} 
           className="custom-input-dark" 
           placeholder={placeholder} 
         />
@@ -35,7 +38,15 @@ export default function DashboardFilters({
         <div className="filter-col">
           <Form.Group>
             <Form.Label className="filter-label">Status Perfil</Form.Label>
-            <Form.Select name="completed" value={filters.completed || ""} onChange={onFilterChange} className="custom-input-dark">
+            <Form.Select 
+              name="completed" 
+              value={filters.completed || ""} 
+              onChange={(e) => {
+                console.log("🔍 Select completed alterado:", e.target.value);
+                onFilterChange(e);
+              }} 
+              className="custom-input-dark"
+            >
               <option value="">Todos</option>
               <option value="1">✅ Completo</option>
               <option value="0">⚠️ Incompleto</option>
@@ -54,19 +65,35 @@ export default function DashboardFilters({
         </div>
       </>
     ),
-orders: (
+    orders: (
       <>
-        {/* 1. Campo Único de Busca Dinâmica (Pesquisa Geral) */}
-        {renderInput("Buscar Chamado", "search", "Digite o protocolo, título ou solicitante...")}
+        <div className="filter-col">
+          <Form.Group>
+            <Form.Label className="filter-label">Buscar Chamado</Form.Label>
+            <Form.Control 
+              type="text" 
+              name="search" 
+              value={filters.search || ""} 
+              onChange={(e) => {
+                console.log("🔍 Buscar Chamado alterado:", e.target.value);
+                onFilterChange(e);
+              }} 
+              className="custom-input-dark" 
+              placeholder="Digite o protocolo, título ou solicitante..."
+            />
+          </Form.Group>
+        </div>
 
-        {/* 2. Filtro de Status Separado */}
         <div className="filter-col">
           <Form.Group>
             <Form.Label className="filter-label">Status</Form.Label>
             <Form.Select 
               name="status" 
               value={filters.status || ""} 
-              onChange={onFilterChange} 
+              onChange={(e) => {
+                console.log("🔍 Status alterado:", e.target.value);
+                onFilterChange(e);
+              }} 
               className="custom-input-dark"
             >
               <option value="">Todos os Status</option>
@@ -78,7 +105,6 @@ orders: (
           </Form.Group>
         </div>
 
-        {/* Botão de Novo Chamado */}
         <div className="filter-col">
           <button className="btn-primary w-100" onClick={onNewOrder}>
             <i className="bi bi-megaphone me-2"></i> Abrir Chamado
@@ -92,25 +118,33 @@ orders: (
     <div className="filter-card">
       <div className="filter-row">
         {isUserDetailView ? (
-          /* Renderização do Detail View */
           <>
-            <div className="filter-col"><button className="btn-back w-100" onClick={onBack}><i className="bi bi-arrow-left me-2"></i> Voltar</button></div>
+            <div className="filter-col">
+              <button className="btn-back w-100" onClick={onBack}>
+                <i className="bi bi-arrow-left me-2"></i> Voltar
+              </button>
+            </div>
             <div className="filter-col">
               {!isEditing ? 
-                <button className="btn-edit w-100" onClick={() => setIsEditing(true)}><i className="bi bi-pencil me-2"></i> Editar</button> :
+                <button className="btn-edit w-100" onClick={() => setIsEditing(true)}>
+                  <i className="bi bi-pencil me-2"></i> Editar
+                </button> :
                 <div className="action-buttons">
                   <button className="btn-secondary" onClick={() => setIsEditing(false)}>Cancelar</button>
-                  <button className="btn-primary" onClick={handleSave} disabled={actionLoading}>{actionLoading ? "..." : "Salvar"}</button>
+                  <button className="btn-primary" onClick={handleSave} disabled={actionLoading}>
+                    {actionLoading ? "..." : "Salvar"}
+                  </button>
                 </div>
               }
             </div>
           </>
         ) : (
-          /* Renderização dinâmica */
           <>
             {tabConfigs[activeTab]}
             <div className="filter-col">
-              <button className="btn-filter-clear w-100" onClick={onClear}><i className="bi bi-eraser me-2"></i> Limpar</button>
+              <button className="btn-filter-clear w-100" onClick={onClear}>
+                <i className="bi bi-eraser me-2"></i> Limpar
+              </button>
             </div>
           </>
         )}
