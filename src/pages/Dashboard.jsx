@@ -100,8 +100,8 @@ export default function Dashboard() {
       completed: "", 
       method: "", 
       date: "", 
-      search: "", 
-      status: "" 
+      search: "",  // ← ADICIONADO
+      status: ""   // ← ADICIONADO
     });
     setUsersCurrentPage(1);
     setGroupsCurrentPage(1);
@@ -211,6 +211,17 @@ export default function Dashboard() {
     loadPermissions,
     loadServiceOrders,
   ]);
+
+  // ============ RECARREGAR CHAMADOS QUANDO O FILTRO MUDAR ============
+  // Este useEffect garante que quando o usuário digitar no campo de busca,
+  // os chamados sejam recarregados com o filtro aplicado
+  useEffect(() => {
+    if (activeTab === "orders") {
+      // Recarrega com a página 1 e os filtros atuais
+      loadServiceOrders(1);
+      setOrdersCurrentPage(1);
+    }
+  }, [filters.search, filters.status]); // ← DEPENDÊNCIAS DOS FILTROS DE CHAMADOS
 
   // ============ ATUALIZAR FORM DATA QUANDO USUÁRIO SELECIONADO ============
   useEffect(() => {
@@ -589,9 +600,11 @@ export default function Dashboard() {
                 user={selectedUser}
                 role={role}
                 filters={filters}
-                onFilterChange={(e) =>
-                  setFilters({ ...filters, [e.target.name]: e.target.value })
-                }
+                onFilterChange={(e) => {
+                  // Log para debug
+                  console.log('Filtro alterado:', e.target.name, e.target.value);
+                  setFilters({ ...filters, [e.target.name]: e.target.value });
+                }}
                 onClear={handleClearFilters}
                 onNewGroup={() => setShowGroupForm(true)}
                 onNewPermission={() => setShowPermissionModal(true)}
