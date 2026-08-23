@@ -22,11 +22,12 @@ import ServiceOrderForm from "../components/dashboard/ServiceOrderForm";
 import ServiceOrderDetail from "../components/dashboard/ServiceOrderDetail";
 import Pagination from "../components/dashboard/Pagination";
 
-import '../Pagination.css';
-import '../PermissionTable.css';
+import "../Pagination.css";
+import "../PermissionTable.css";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+
   const [role] = useState(localStorage.getItem("@AxionID:role"));
   const [activeTab, setActiveTab] = useState("users");
   const [currentUser, setCurrentUser] = useState(null);
@@ -41,11 +42,18 @@ export default function Dashboard() {
   const [permissions, setPermissions] = useState([]);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
 
-  // Estados para paginação
+  // ============================================================
+  // PAGINAÇÃO
+  // ============================================================
+
   const [usersCurrentPage, setUsersCurrentPage] = useState(1);
   const [groupsCurrentPage, setGroupsCurrentPage] = useState(1);
   const [auditCurrentPage, setAuditCurrentPage] = useState(1);
   const [ordersCurrentPage, setOrdersCurrentPage] = useState(1);
+
+  // ============================================================
+  // ALERTAS
+  // ============================================================
 
   const AxionAlert = Swal.mixin({
     background: "#111214",
@@ -59,70 +67,103 @@ export default function Dashboard() {
     },
   });
 
+  // ============================================================
+  // DADOS DO DASHBOARD
+  // ============================================================
+
   const {
     loading,
     users,
     groups,
     auditLogs,
-    serviceOrders,        // ← DO HOOK
+    serviceOrders,
     usersPagination,
     groupsPagination,
     auditPagination,
-    ordersPagination,     // ← DO HOOK
+    ordersPagination,
     filters,
     setFilters,
     loadUsers,
     loadGroups,
     loadAuditLogs,
-    loadServiceOrders,    // ← DO HOOK
+    loadServiceOrders,
   } = useDashboardData(role);
 
-  const isGlobalAdmin = role === "admin" || currentUser?.is_admin === true;
+  const isGlobalAdmin =
+    role === "admin" || currentUser?.is_admin === true;
+
+  // ============================================================
+  // PERMISSÕES
+  // ============================================================
 
   const loadPermissions = useCallback(async () => {
     try {
       const res = await api.get("/api/v1/admin/permissions");
       setPermissions(res.data.data || res.data || []);
     } catch (err) {
+      console.error("Erro ao carregar permissões:", err);
       setPermissions([]);
     }
   }, []);
 
+  // ============================================================
+  // DETALHE DA ORDEM DE SERVIÇO
+  // ============================================================
+
   const handleOpenOrderDetail = async (orderId) => {
     setActionLoading(true);
     setShowOrderForm(false);
+
     try {
-      const res = await api.get(`/api/v1/service-orders/${orderId}`);
+      const res = await api.get(
+        `/api/v1/service-orders/${orderId}`
+      );
+
       setSelectedOrder(res.data.data || res.data);
     } catch (err) {
+      console.error("Erro ao carregar detalhes da OS:", err);
+
       AxionAlert.fire(
         "Erro",
         "Não foi possível carregar os detalhes desta OS.",
-        "error",
+        "error"
       );
     } finally {
       setActionLoading(false);
     }
   };
 
+  // ============================================================
+  // ATUALIZAR STATUS DA ORDEM
+  // ============================================================
+
   const onUpdateStatus = async (orderId, newStatus) => {
     if (!orderId) {
       return AxionAlert.fire(
         "Erro",
         "Não foi possível identificar o ID da OS.",
-        "error",
+        "error"
       );
     }
 
     try {
       setActionLoading(true);
-      const res = await api.put(`/api/v1/service-orders/${orderId}`, {
-        status: newStatus,
-      });
+
+      const res = await api.put(
+        `/api/v1/service-orders/${orderId}`,
+        {
+          status: newStatus,
+        }
+      );
+
       const updatedOrder = res.data.data || res.data;
+
       setSelectedOrder(updatedOrder);
-      await loadServiceOrders(ordersCurrentPage); // ← CARREGA A PÁGINA ATUAL
-      
+
+      // Atualiza somente a página atual.
+      // Não altera ordersCurrentPage, evitando disparar outro efeito.
+      await loadServiceOrders(ordersCurrentPage);
+
       AxionAlert.fire({
         icon: "success",
         title: "Status Atualizado!",
@@ -131,24 +172,40 @@ export default function Dashboard() {
       });
     } catch (err) {
       console.error("Erro na API:", err);
-      AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao atualizar no servidor.", "error");
+
+      AxionAlert.fire(
+        "Erro",
+        err.response?.data?.message ||
+          "Falha ao atualizar no servidor.",
+        "error"
+      );
     } finally {
       setActionLoading(false);
     }
   };
 
+  // ============================================================
+  // CARREGAMENTO PRINCIPAL DAS ABAS
+  // ============================================================
+
   useEffect(() => {
-    if (activeTab === "users") loadUsers(usersCurrentPage);
-    else if (activeTab === "audit") loadAuditLogs(auditCurrentPage);
-    else if (activeTab === "groups") loadGroups(groupsCurrentPage);
-    else if (activeTab === "permissions") loadPermissions();
-    else if (activeTab === "orders") loadServiceOrders(ordersCurrentPage);
+    if (activeTab === "users") {
+      loadUsers(usersCurrentPage);
+    } else if (activeTab === "audit") {
+      loadAuditLogs(auditCurrentPage);
+    } else if (activeTab === "groups") {
+      loadGroups(groupsCurrentPage);
+    } else if (activeTab === "permissions") {
+      loadPermissions();
+    } else if (activeTab === "orders") {
+      loadServiceOrders(ordersCurrentPage);
+    }
   }, [
     activeTab,
     usersCurrentPage,
     groupsCurrentPage,
     auditCurrentPage,
-    ordersCurrentPage,   // ← ADICIONADO
+    ordersCurrentPage,
     loadUsers,
     loadGroups,
     loadAuditLogs,
@@ -156,32 +213,55 @@ export default function Dashboard() {
     loadServiceOrders,
   ]);
 
+  // ============================================================
+  // CARREGAR USUÁRIO LOGADO
+  // ============================================================
+
   useEffect(() => {
     const loadProfile = async () => {
       try {
         const res = await api.get("/api/v1/me");
         setCurrentUser(res.data);
-      } catch {
+      } catch (err) {
+        console.error("Erro ao carregar perfil:", err);
         navigate("/login");
       }
     };
+
     loadProfile();
   }, [navigate]);
 
-useEffect(() => {
-  const timer = setTimeout(() => {
-    setUsersCurrentPage(1);
-    setGroupsCurrentPage(1);
-    setAuditCurrentPage(1);
-    setOrdersCurrentPage(1);
-  }, 500);
+  // ============================================================
+  // FILTROS
+  //
+  // IMPORTANTE:
+  // Este efeito NÃO chama loadUsers/loadGroups/loadServiceOrders.
+  //
+  // Ele apenas reseta a página.
+  //
+  // O efeito principal acima será responsável pelo carregamento.
+  // ============================================================
 
-  return () => clearTimeout(timer);
-}, [filters, activeTab]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setUsersCurrentPage(1);
+      setGroupsCurrentPage(1);
+      setAuditCurrentPage(1);
+      setOrdersCurrentPage(1);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [filters, activeTab]);
+
+  // ============================================================
+  // PREENCHER FORMULÁRIO DO USUÁRIO
+  // ============================================================
 
   useEffect(() => {
     if (selectedUser) {
-      const userData = selectedUser.data || selectedUser;
+      const userData =
+        selectedUser.data || selectedUser;
+
       setFormData({
         name: userData.name || "",
         email: userData.email || "",
@@ -189,13 +269,19 @@ useEffect(() => {
         zip_code: userData.address?.zip_code || "",
         street: userData.address?.street || "",
         number: userData.address?.number || "",
-        neighborhood: userData.address?.neighborhood || "",
+        neighborhood:
+          userData.address?.neighborhood || "",
         city: userData.address?.city || "",
         state: userData.address?.state || "",
-        complement: userData.address?.complement || "",
+        complement:
+          userData.address?.complement || "",
       });
     }
   }, [selectedUser]);
+
+  // ============================================================
+  // PAGINAÇÃO
+  // ============================================================
 
   const handleUsersPageChange = (page) => {
     setUsersCurrentPage(page);
@@ -209,15 +295,30 @@ useEffect(() => {
     setAuditCurrentPage(page);
   };
 
+  // IMPORTANTE:
+  // Não chamar loadServiceOrders aqui.
+  //
+  // Apenas altera o estado.
+  // O useEffect principal fará a requisição uma única vez.
   const handleOrdersPageChange = (page) => {
     setOrdersCurrentPage(page);
   };
 
+  // ============================================================
+  // ATUALIZAR USUÁRIO
+  // ============================================================
+
   const handleUpdateUser = async (userId, data) => {
     if (!userId) return;
+
     setActionLoading(true);
+
     try {
-      await api.put(`/api/v1/admin/users/${userId}/update-manual`, data);
+      await api.put(
+        `/api/v1/admin/users/${userId}/update-manual`,
+        data
+      );
+
       AxionAlert.fire({
         icon: "success",
         title: "Sucesso!",
@@ -225,22 +326,39 @@ useEffect(() => {
         timer: 1500,
         showConfirmButton: false,
       });
-      const res = await api.get(`/api/v1/admin/users/${userId}`);
-      setSelectedUser(res.data.data || res.data);
+
+      const res = await api.get(
+        `/api/v1/admin/users/${userId}`
+      );
+
+      setSelectedUser(
+        res.data.data || res.data
+      );
+
       setIsEditing(false);
-      loadUsers(usersCurrentPage);
+
+      await loadUsers(usersCurrentPage);
     } catch (err) {
+      console.error("Erro ao atualizar usuário:", err);
+
       AxionAlert.fire(
         "Erro!",
         "Não foi possível salvar as alterações.",
-        "error",
+        "error"
       );
     } finally {
       setActionLoading(false);
     }
   };
 
-  const handleDeleteUser = async (userId, userName) => {
+  // ============================================================
+  // EXCLUIR USUÁRIO
+  // ============================================================
+
+  const handleDeleteUser = async (
+    userId,
+    userName
+  ) => {
     const result = await AxionAlert.fire({
       title: "Excluir usuário?",
       text: `Deseja realmente remover permanentemente ${userName}?`,
@@ -252,21 +370,47 @@ useEffect(() => {
 
     if (result.isConfirmed) {
       setActionLoading(true);
+
       try {
-        await api.delete(`/api/v1/admin/users/${userId}`);
-        AxionAlert.fire("Removido!", "Usuário deletado do sistema.", "success");
+        await api.delete(
+          `/api/v1/admin/users/${userId}`
+        );
+
+        AxionAlert.fire(
+          "Removido!",
+          "Usuário deletado do sistema.",
+          "success"
+        );
+
         setSelectedUser(null);
-        loadUsers(usersCurrentPage);
+
+        await loadUsers(usersCurrentPage);
       } catch (err) {
-        AxionAlert.fire("Erro!", "Falha ao excluir usuário.", "error");
+        console.error("Erro ao excluir usuário:", err);
+
+        AxionAlert.fire(
+          "Erro!",
+          "Falha ao excluir usuário.",
+          "error"
+        );
       } finally {
         setActionLoading(false);
       }
     }
   };
 
-  const handleToggleAdmin = async (userId, currentStatus) => {
-    const endpoint = currentStatus ? "remove-admin" : "promote";
+  // ============================================================
+  // PROMOVER / REBAIXAR ADMIN
+  // ============================================================
+
+  const handleToggleAdmin = async (
+    userId,
+    currentStatus
+  ) => {
+    const endpoint = currentStatus
+      ? "remove-admin"
+      : "promote";
+
     const actionText = currentStatus
       ? "rebaixar para usuário comum"
       : "promover a administrador";
@@ -280,22 +424,55 @@ useEffect(() => {
 
     if (result.isConfirmed) {
       setActionLoading(true);
+
       try {
-        await api.post(`/api/v1/admin/users/${userId}/${endpoint}`);
-        AxionAlert.fire("Sucesso!", "Nível de acesso alterado.", "success");
-        const res = await api.get(`/api/v1/admin/users/${userId}`);
-        setSelectedUser(res.data.data || res.data);
-        loadUsers(usersCurrentPage);
+        await api.post(
+          `/api/v1/admin/users/${userId}/${endpoint}`
+        );
+
+        AxionAlert.fire(
+          "Sucesso!",
+          "Nível de acesso alterado.",
+          "success"
+        );
+
+        const res = await api.get(
+          `/api/v1/admin/users/${userId}`
+        );
+
+        setSelectedUser(
+          res.data.data || res.data
+        );
+
+        await loadUsers(usersCurrentPage);
       } catch (err) {
-        AxionAlert.fire("Erro!", "Não foi possível alterar o cargo.", "error");
+        console.error(
+          "Erro ao alterar privilégios:",
+          err
+        );
+
+        AxionAlert.fire(
+          "Erro!",
+          "Não foi possível alterar o cargo.",
+          "error"
+        );
       } finally {
         setActionLoading(false);
       }
     }
   };
 
-  const handleToggleStatus = async (userId, currentStatus) => {
-    const action = currentStatus ? "suspender" : "ativar";
+  // ============================================================
+  // ATIVAR / SUSPENDER USUÁRIO
+  // ============================================================
+
+  const handleToggleStatus = async (
+    userId,
+    currentStatus
+  ) => {
+    const action = currentStatus
+      ? "suspender"
+      : "ativar";
 
     const result = await AxionAlert.fire({
       title: "Status da Conta",
@@ -306,28 +483,59 @@ useEffect(() => {
 
     if (result.isConfirmed) {
       setActionLoading(true);
+
       try {
-        await api.patch(`/api/v1/admin/users/${userId}/toggle-status`);
+        await api.patch(
+          `/api/v1/admin/users/${userId}/toggle-status`
+        );
+
         AxionAlert.fire(
           "Concluído!",
-          `Usuário agora está ${currentStatus ? "inativo" : "ativo"}.`,
-          "success",
+          `Usuário agora está ${
+            currentStatus ? "inativo" : "ativo"
+          }.`,
+          "success"
         );
-        const res = await api.get(`/api/v1/admin/users/${userId}`);
-        setSelectedUser(res.data.data || res.data);
-        loadUsers(usersCurrentPage);
+
+        const res = await api.get(
+          `/api/v1/admin/users/${userId}`
+        );
+
+        setSelectedUser(
+          res.data.data || res.data
+        );
+
+        await loadUsers(usersCurrentPage);
       } catch (err) {
-        AxionAlert.fire("Erro!", "Falha ao atualizar status.", "error");
+        console.error(
+          "Erro ao atualizar status:",
+          err
+        );
+
+        AxionAlert.fire(
+          "Erro!",
+          "Falha ao atualizar status.",
+          "error"
+        );
       } finally {
         setActionLoading(false);
       }
     }
   };
 
+  // ============================================================
+  // CRIAR PERMISSÃO
+  // ============================================================
+
   const handleCreatePermission = async (data) => {
     setActionLoading(true);
+
     try {
-      await api.post("/api/v1/admin/permissions", data);
+      await api.post(
+        "/api/v1/admin/permissions",
+        data
+      );
+
       AxionAlert.fire({
         icon: "success",
         title: "Criada!",
@@ -335,51 +543,122 @@ useEffect(() => {
         timer: 2000,
         showConfirmButton: false,
       });
+
       setShowPermissionModal(false);
-      loadPermissions();
+
+      await loadPermissions();
     } catch (err) {
-      AxionAlert.fire("Erro!", "Não foi possível criar a permissão.", "error");
+      console.error(
+        "Erro ao criar permissão:",
+        err
+      );
+
+      AxionAlert.fire(
+        "Erro!",
+        "Não foi possível criar a permissão.",
+        "error"
+      );
     } finally {
       setActionLoading(false);
     }
   };
 
-  const handleGroupMemberRole = async (userId, type) => {
+  // ============================================================
+  // ALTERAR CARGO DE MEMBRO DO GRUPO
+  // ============================================================
+
+  const handleGroupMemberRole = async (
+    userId,
+    type
+  ) => {
     setActionLoading(true);
+
     try {
       await api.patch(
-        `/api/v1/groups/${selectedGroupId}/members/${userId}/${type}`,
+        `/api/v1/groups/${selectedGroupId}/members/${userId}/${type}`
       );
-      AxionAlert.fire("Sucesso!", "Cargo no grupo atualizado.", "success");
+
+      AxionAlert.fire(
+        "Sucesso!",
+        "Cargo no grupo atualizado.",
+        "success"
+      );
+
       await loadGroups(groupsCurrentPage);
     } catch (err) {
-      AxionAlert.fire("Erro", "Erro ao alterar cargo no grupo.", "error");
+      console.error(
+        "Erro ao alterar cargo no grupo:",
+        err
+      );
+
+      AxionAlert.fire(
+        "Erro",
+        "Erro ao alterar cargo no grupo.",
+        "error"
+      );
     } finally {
       setActionLoading(false);
     }
   };
+
+  // ============================================================
+  // ADICIONAR USUÁRIO AO GRUPO
+  // ============================================================
 
   const handleAddUserToGroup = async (email) => {
     if (!selectedGroupId) return;
+
     setActionLoading(true);
+
     try {
       const userToInvite = users.find(
-        (u) => u.email.toLowerCase() === email.toLowerCase(),
+        (u) =>
+          u.email?.toLowerCase() ===
+          email.toLowerCase()
       );
-      if (!userToInvite)
-        return AxionAlert.fire("Aviso", "Usuário não encontrado.", "info");
-      await api.post(`/api/v1/groups/${selectedGroupId}/members`, {
-        user_id: userToInvite.id,
-      });
+
+      if (!userToInvite) {
+        AxionAlert.fire(
+          "Aviso",
+          "Usuário não encontrado.",
+          "info"
+        );
+
+        return;
+      }
+
+      await api.post(
+        `/api/v1/groups/${selectedGroupId}/members`,
+        {
+          user_id: userToInvite.id,
+        }
+      );
+
       await loadGroups(groupsCurrentPage);
     } catch (err) {
-      AxionAlert.fire("Erro", "Erro ao adicionar.", "error");
+      console.error(
+        "Erro ao adicionar usuário:",
+        err
+      );
+
+      AxionAlert.fire(
+        "Erro",
+        "Erro ao adicionar.",
+        "error"
+      );
     } finally {
       setActionLoading(false);
     }
   };
 
-  const handleRemoveUserFromGroup = async (userId, userName) => {
+  // ============================================================
+  // REMOVER USUÁRIO DO GRUPO
+  // ============================================================
+
+  const handleRemoveUserFromGroup = async (
+    userId,
+    userName
+  ) => {
     const result = await AxionAlert.fire({
       title: "Remover do grupo?",
       text: `Deseja remover ${userName}?`,
@@ -389,25 +668,60 @@ useEffect(() => {
 
     if (result.isConfirmed) {
       setActionLoading(true);
+
       try {
-        await api.delete(`/api/v1/groups/${selectedGroupId}/members/${userId}`);
+        await api.delete(
+          `/api/v1/groups/${selectedGroupId}/members/${userId}`
+        );
+
         await loadGroups(groupsCurrentPage);
-        AxionAlert.fire("Removido!", "", "success");
+
+        AxionAlert.fire(
+          "Removido!",
+          "",
+          "success"
+        );
       } catch (err) {
-        AxionAlert.fire("Erro", "Erro ao remover.", "error");
+        console.error(
+          "Erro ao remover usuário:",
+          err
+        );
+
+        AxionAlert.fire(
+          "Erro",
+          "Erro ao remover.",
+          "error"
+        );
       } finally {
         setActionLoading(false);
       }
     }
   };
 
-  const handleAddPermissionToGroup = async (permissionName) => {
-    if (!selectedGroupId || !permissionName) return;
+  // ============================================================
+  // ADICIONAR PERMISSÃO AO GRUPO
+  // ============================================================
+
+  const handleAddPermissionToGroup = async (
+    permissionName
+  ) => {
+    if (
+      !selectedGroupId ||
+      !permissionName
+    ) {
+      return;
+    }
+
     setActionLoading(true);
+
     try {
-      await api.post(`/api/v1/admin/groups/${selectedGroupId}/permissions`, {
-        permission_name: permissionName,
-      });
+      await api.post(
+        `/api/v1/admin/groups/${selectedGroupId}/permissions`,
+        {
+          permission_name: permissionName,
+        }
+      );
+
       AxionAlert.fire({
         icon: "success",
         title: "Permissão Atribuída",
@@ -415,19 +729,31 @@ useEffect(() => {
         timer: 1500,
         showConfirmButton: false,
       });
+
       await loadGroups(groupsCurrentPage);
     } catch (err) {
+      console.error(
+        "Erro ao adicionar permissão:",
+        err
+      );
+
       AxionAlert.fire(
         "Erro",
         "Não foi possível vincular a permissão.",
-        "error",
+        "error"
       );
     } finally {
       setActionLoading(false);
     }
   };
 
-  const handleRemovePermissionFromGroup = async (permissionId) => {
+  // ============================================================
+  // REMOVER PERMISSÃO DO GRUPO
+  // ============================================================
+
+  const handleRemovePermissionFromGroup = async (
+    permissionId
+  ) => {
     if (!selectedGroupId) return;
 
     const result = await AxionAlert.fire({
@@ -440,28 +766,62 @@ useEffect(() => {
 
     if (result.isConfirmed) {
       setActionLoading(true);
+
       try {
         await api.delete(
-          `/api/v1/admin/groups/${selectedGroupId}/permissions/${permissionId}`,
+          `/api/v1/admin/groups/${selectedGroupId}/permissions/${permissionId}`
         );
-        AxionAlert.fire("Removido!", "Permissão desvinculada.", "success");
+
+        AxionAlert.fire(
+          "Removido!",
+          "Permissão desvinculada.",
+          "success"
+        );
+
         await loadGroups(groupsCurrentPage);
       } catch (err) {
-        AxionAlert.fire("Erro", "Falha ao remover permissão.", "error");
+        console.error(
+          "Erro ao remover permissão:",
+          err
+        );
+
+        AxionAlert.fire(
+          "Erro",
+          "Falha ao remover permissão.",
+          "error"
+        );
       } finally {
         setActionLoading(false);
       }
     }
   };
 
+  // ============================================================
+  // LOGOUT
+  // ============================================================
+
   const handleLogout = () => {
     localStorage.clear();
     navigate("/login");
   };
 
-  // Log para debug
-  console.log("Dashboard render - ordersPagination:", ordersPagination);
-  console.log("serviceOrders length:", serviceOrders?.length);
+  // ============================================================
+  // DEBUG
+  // ============================================================
+
+  console.log(
+    "Dashboard render - ordersPagination:",
+    ordersPagination
+  );
+
+  console.log(
+    "serviceOrders length:",
+    serviceOrders?.length
+  );
+
+  // ============================================================
+  // RENDER
+  // ============================================================
 
   return (
     <div className="dashboard-layout">
@@ -471,11 +831,13 @@ useEffect(() => {
         onLogout={handleLogout}
         setActiveTab={(tab) => {
           setActiveTab(tab);
+
           setSelectedUser(null);
           setSelectedGroupId(null);
           setShowPermissionModal(false);
           setShowGroupForm(false);
           setSelectedOrder(null);
+
           setUsersCurrentPage(1);
           setGroupsCurrentPage(1);
           setAuditCurrentPage(1);
@@ -487,19 +849,33 @@ useEffect(() => {
         <header className="main-header">
           <h2 className="brand mb-0">
             AxionID
+
             <span
-              className={`role-badge ${role === "admin" ? "admin" : "user"}`}
+              className={`role-badge ${
+                role === "admin"
+                  ? "admin"
+                  : "user"
+              }`}
             >
-              {role === "admin" ? "Admin" : "Comum"}
+              {role === "admin"
+                ? "Admin"
+                : "Comum"}
             </span>
           </h2>
 
           {currentUser && (
-            <UserDropdown user={currentUser} onLogout={handleLogout} />
+            <UserDropdown
+              user={currentUser}
+              onLogout={handleLogout}
+            />
           )}
         </header>
 
         <main className="content-area">
+          {/* ==================================================
+              DETALHE DO USUÁRIO
+          ================================================== */}
+
           {selectedUser ? (
             <UserDetail
               user={selectedUser}
@@ -507,195 +883,398 @@ useEffect(() => {
               setIsEditing={setIsEditing}
               formData={formData}
               setFormData={setFormData}
-              onBack={() => setSelectedUser(null)}
+              onBack={() =>
+                setSelectedUser(null)
+              }
               actionLoading={actionLoading}
               handleSave={() => {
-                const userId = selectedUser?.id;
-                if (!userId)
+                const userId =
+                  selectedUser?.id;
+
+                if (!userId) {
                   return AxionAlert.fire(
                     "Erro",
                     "ID do usuário não identificado.",
-                    "error",
+                    "error"
                   );
-                handleUpdateUser(userId, formData);
+                }
+
+                handleUpdateUser(
+                  userId,
+                  formData
+                );
               }}
               onAction={async (type) => {
-                if (type === "promote")
-                  await handleToggleAdmin(selectedUser.id, false);
-                else if (type === "remove-admin")
-                  await handleToggleAdmin(selectedUser.id, true);
-                else if (type === "toggle-status")
+                if (type === "promote") {
+                  await handleToggleAdmin(
+                    selectedUser.id,
+                    false
+                  );
+                } else if (
+                  type === "remove-admin"
+                ) {
+                  await handleToggleAdmin(
+                    selectedUser.id,
+                    true
+                  );
+                } else if (
+                  type === "toggle-status"
+                ) {
                   await handleToggleStatus(
                     selectedUser.id,
-                    selectedUser.is_active,
+                    selectedUser.is_active
                   );
-                else if (type === "delete")
-                  await handleDeleteUser(selectedUser.id, selectedUser.name);
+                } else if (
+                  type === "delete"
+                ) {
+                  await handleDeleteUser(
+                    selectedUser.id,
+                    selectedUser.name
+                  );
+                }
               }}
             />
           ) : selectedGroupId ? (
+            // ==================================================
+            // DETALHE DO GRUPO
+            // ==================================================
+
             <GroupDetail
-              group={groups.find((g) => g.id === selectedGroupId)}
-              onBack={() => setSelectedGroupId(null)}
+              group={groups.find(
+                (g) =>
+                  g.id === selectedGroupId
+              )}
+              onBack={() =>
+                setSelectedGroupId(null)
+              }
               isSystemAdmin={isGlobalAdmin}
               currentUserId={currentUser?.id}
               actionLoading={actionLoading}
-              onAddUser={handleAddUserToGroup}
-              onRemoveUser={handleRemoveUserFromGroup}
-              onPromoteUser={(uid) => handleGroupMemberRole(uid, "promote")}
-              onDemoteUser={(uid) => handleGroupMemberRole(uid, "demote")}
-              onDeleteGroup={(id) =>
-                api.delete(`/api/v1/groups/${id}`).then(() => {
-                  setSelectedGroupId(null);
-                  loadGroups(1);
-                  setGroupsCurrentPage(1);
-                })
+              onAddUser={
+                handleAddUserToGroup
               }
-              allAvailablePermissions={permissions || []}
-              onAddPermission={handleAddPermissionToGroup}
-              onRemovePermission={handleRemovePermissionFromGroup}
+              onRemoveUser={
+                handleRemoveUserFromGroup
+              }
+              onPromoteUser={(uid) =>
+                handleGroupMemberRole(
+                  uid,
+                  "promote"
+                )
+              }
+              onDemoteUser={(uid) =>
+                handleGroupMemberRole(
+                  uid,
+                  "demote"
+                )
+              }
+              onDeleteGroup={(id) =>
+                api
+                  .delete(
+                    `/api/v1/groups/${id}`
+                  )
+                  .then(() => {
+                    setSelectedGroupId(null);
+                    setGroupsCurrentPage(1);
+                    loadGroups(1);
+                  })
+              }
+              allAvailablePermissions={
+                permissions || []
+              }
+              onAddPermission={
+                handleAddPermissionToGroup
+              }
+              onRemovePermission={
+                handleRemovePermissionFromGroup
+              }
             />
           ) : (
             <>
-<DashboardFilters
-  activeTab={activeTab}
-  onNewOrder={() => setShowOrderForm(true)}
-  user={selectedUser}
-  role={role}
-  filters={filters}
-  onFilterChange={(e) =>
-    setFilters({ ...filters, [e.target.name]: e.target.value })
-  }
-  onClear={() => {
-    // CORREÇÃO: Limpa todas as chaves possíveis de filtros de todas as abas
-    setFilters({ name: "", completed: "", method: "", date: "", search: "", status: "" });
-    setUsersCurrentPage(1);
-    setGroupsCurrentPage(1);
-    setAuditCurrentPage(1);
-    setOrdersCurrentPage(1);
-  }}
-  onNewGroup={() => setShowGroupForm(true)}
-  onNewPermission={() => setShowPermissionModal(true)}
-  isEditing={isEditing}
-  setIsEditing={setIsEditing}
-  actionLoading={actionLoading}
-  handleSave={() => {
-    const userId = selectedUser?.data?.id || selectedUser?.id;
-    if (!userId)
-      return AxionAlert.fire(
-        "Erro",
-        "ID do usuário não identificado.",
-        "error"
-      );
-    handleUpdateUser(userId, formData);
-  }}
-  onBack={() => {
-    setSelectedUser(null);
-    setIsEditing(false);
-  }}
-/>
+              {/* ==================================================
+                  FILTROS
+              ================================================== */}
 
-              {activeTab === "permissions" && showPermissionModal && (
-                <PermissionForm
-                  loading={actionLoading}
-                  onCancel={() => setShowPermissionModal(false)}
-                  onSave={handleCreatePermission}
-                />
-              )}
+              <DashboardFilters
+                activeTab={activeTab}
+                onNewOrder={() =>
+                  setShowOrderForm(true)
+                }
+                user={selectedUser}
+                role={role}
+                filters={filters}
+                onFilterChange={(e) =>
+                  setFilters({
+                    ...filters,
+                    [e.target.name]:
+                      e.target.value,
+                  })
+                }
+                onClear={() => {
+                  setFilters({
+                    name: "",
+                    completed: "",
+                    method: "",
+                    date: "",
+                    search: "",
+                    status: "",
+                  });
+
+                  setUsersCurrentPage(1);
+                  setGroupsCurrentPage(1);
+                  setAuditCurrentPage(1);
+                  setOrdersCurrentPage(1);
+                }}
+                onNewGroup={() =>
+                  setShowGroupForm(true)
+                }
+                onNewPermission={() =>
+                  setShowPermissionModal(true)
+                }
+                isEditing={isEditing}
+                setIsEditing={setIsEditing}
+                actionLoading={actionLoading}
+                handleSave={() => {
+                  const userId =
+                    selectedUser?.data?.id ||
+                    selectedUser?.id;
+
+                  if (!userId) {
+                    return AxionAlert.fire(
+                      "Erro",
+                      "ID do usuário não identificado.",
+                      "error"
+                    );
+                  }
+
+                  handleUpdateUser(
+                    userId,
+                    formData
+                  );
+                }}
+                onBack={() => {
+                  setSelectedUser(null);
+                  setIsEditing(false);
+                }}
+              />
+
+              {/* ==================================================
+                  PERMISSÕES
+              ================================================== */}
+
+              {activeTab === "permissions" &&
+                showPermissionModal && (
+                  <PermissionForm
+                    loading={actionLoading}
+                    onCancel={() =>
+                      setShowPermissionModal(
+                        false
+                      )
+                    }
+                    onSave={
+                      handleCreatePermission
+                    }
+                  />
+                )}
+
+              {/* ==================================================
+                  ORDENS DE SERVIÇO
+              ================================================== */}
 
               {activeTab === "orders" && (
                 <>
-                  {/* Formulário de criação */}
+                  {/* FORMULÁRIO DE CRIAÇÃO */}
+
                   {showOrderForm && (
                     <ServiceOrderForm
                       groups={groups}
                       onSuccess={() => {
                         setShowOrderForm(false);
-                        loadServiceOrders(ordersCurrentPage);
+
+                        // Atualiza somente a lista.
+                        await loadServiceOrders(
+                          ordersCurrentPage
+                        );
                       }}
-                      onCancel={() => setShowOrderForm(false)}
+                      onCancel={() =>
+                        setShowOrderForm(false)
+                      }
                     />
                   )}
 
-                  {/* Detalhes da OS */}
-                  {!showOrderForm && selectedOrder && selectedOrder.id && (
-                    <ServiceOrderDetail
-                      order={selectedOrder}
-                      onBack={() => setSelectedOrder(null)}
-                      onUpdateStatus={onUpdateStatus}
-                      isSystemAdmin={isGlobalAdmin}
-                      onDeleteOrder={async (id) => {
-                        const result = await AxionAlert.fire({
-                          title: "Excluir OS?",
-                          text: "Esta ação não pode ser desfeita!",
-                          icon: "warning",
-                          showCancelButton: true,
-                          confirmButtonText: "Sim, excluir!",
-                        });
-                        if (result.isConfirmed) {
-                          try {
-                            await api.delete(`/api/v1/service-orders/${id}`);
-                            setSelectedOrder(null);
-                            loadServiceOrders(ordersCurrentPage);
-                            AxionAlert.fire("Deletado!", "Ordem de serviço removida.", "success");
-                          } catch (e) {
-                            AxionAlert.fire("Erro", "Falha ao excluir.", "error");
-                          }
+                  {/* ==================================================
+                      DETALHES DA OS
+                  ================================================== */}
+
+                  {!showOrderForm &&
+                    selectedOrder &&
+                    selectedOrder.id && (
+                      <ServiceOrderDetail
+                        order={selectedOrder}
+                        onBack={() =>
+                          setSelectedOrder(null)
                         }
-                      }}
-                    />
-                  )}
+                        onUpdateStatus={
+                          onUpdateStatus
+                        }
+                        isSystemAdmin={
+                          isGlobalAdmin
+                        }
+                        onDeleteOrder={async (
+                          id
+                        ) => {
+                          const result =
+                            await AxionAlert.fire(
+                              {
+                                title:
+                                  "Excluir OS?",
+                                text: "Esta ação não pode ser desfeita!",
+                                icon: "warning",
+                                showCancelButton:
+                                  true,
+                                confirmButtonText:
+                                  "Sim, excluir!",
+                              }
+                            );
 
-                  {/* Lista de chamados */}
-                  {!showOrderForm && !selectedOrder && (
-                    <div className="animate-in">
-                      <div className="orders-header">
-                        <h4 className="text-white mb-0">Gestão de Chamados</h4>
-                        <button
-                          className="btn-primary-sm"
-                          onClick={() => {
-                            setShowOrderForm(true);
-                            setSelectedOrder(null);
-                          }}
-                        >
-                          <i className="bi bi-plus-lg me-2"></i> Nova OS
-                        </button>
-                      </div>
+                          if (
+                            result.isConfirmed
+                          ) {
+                            try {
+                              await api.delete(
+                                `/api/v1/service-orders/${id}`
+                              );
 
-                      <ServiceOrderTable
-                        orders={serviceOrders}
-                        loading={actionLoading || loading}
-                        onViewDetail={(id) => {
-                          setShowOrderForm(false);
-                          handleOpenOrderDetail(id);
+                              setSelectedOrder(
+                                null
+                              );
+
+                              await loadServiceOrders(
+                                ordersCurrentPage
+                              );
+
+                              AxionAlert.fire(
+                                "Deletado!",
+                                "Ordem de serviço removida.",
+                                "success"
+                              );
+                            } catch (e) {
+                              console.error(
+                                "Erro ao excluir OS:",
+                                e
+                              );
+
+                              AxionAlert.fire(
+                                "Erro",
+                                "Falha ao excluir.",
+                                "error"
+                              );
+                            }
+                          }
                         }}
                       />
+                    )}
 
-                      {/* Paginação dos chamados */}
-                      {ordersPagination.last > 1 && (
-                        <Pagination
-                          currentPage={ordersPagination.current}
-                          lastPage={ordersPagination.last}
-                          total={ordersPagination.total}
-                          onPageChange={handleOrdersPageChange}
-                          loading={loading}
+                  {/* ==================================================
+                      LISTA DE CHAMADOS
+                  ================================================== */}
+
+                  {!showOrderForm &&
+                    !selectedOrder && (
+                      <div className="animate-in">
+                        <div className="orders-header">
+                          <h4 className="text-white mb-0">
+                            Gestão de Chamados
+                          </h4>
+
+                          <button
+                            className="btn-primary-sm"
+                            onClick={() => {
+                              setShowOrderForm(
+                                true
+                              );
+                              setSelectedOrder(
+                                null
+                              );
+                            }}
+                          >
+                            <i className="bi bi-plus-lg me-2"></i>
+                            Nova OS
+                          </button>
+                        </div>
+
+                        <ServiceOrderTable
+                          orders={
+                            serviceOrders
+                          }
+                          loading={
+                            actionLoading ||
+                            loading
+                          }
+                          onViewDetail={(
+                            id
+                          ) => {
+                            setShowOrderForm(
+                              false
+                            );
+
+                            handleOpenOrderDetail(
+                              id
+                            );
+                          }}
                         />
-                      )}
-                    </div>
-                  )}
+
+                        {/* PAGINAÇÃO */}
+
+                        {ordersPagination.last >
+                          1 && (
+                          <Pagination
+                            currentPage={
+                              ordersPagination.current
+                            }
+                            lastPage={
+                              ordersPagination.last
+                            }
+                            total={
+                              ordersPagination.total
+                            }
+                            onPageChange={
+                              handleOrdersPageChange
+                            }
+                            loading={loading}
+                          />
+                        )}
+                      </div>
+                    )}
                 </>
               )}
 
+              {/* ==================================================
+                  ÁREA PRINCIPAL
+              ================================================== */}
+
               <div
-                className={`tab-wrapper ${loading || actionLoading ? "is-loading" : ""}`}
+                className={`tab-wrapper ${
+                  loading || actionLoading
+                    ? "is-loading"
+                    : ""
+                }`}
               >
-                {(loading || actionLoading) && (
+                {(loading ||
+                  actionLoading) && (
                   <div className="loading-overlay">
-                    <Spinner animation="border" variant="primary" />
+                    <Spinner
+                      animation="border"
+                      variant="primary"
+                    />
                   </div>
                 )}
 
                 <div className="content-card">
+                  {/* ==================================================
+                      USUÁRIOS
+                  ================================================== */}
+
                   {activeTab === "users" &&
                     (isGlobalAdmin ? (
                       <>
@@ -703,20 +1282,40 @@ useEffect(() => {
                           users={users}
                           onViewDetail={(id) =>
                             api
-                              .get(`/api/v1/admin/users/${id}`)
+                              .get(
+                                `/api/v1/admin/users/${id}`
+                              )
                               .then((res) =>
-                                setSelectedUser(res.data.data || res.data),
+                                setSelectedUser(
+                                  res.data.data ||
+                                    res.data
+                                )
                               )
                           }
-                          onDeleteUser={handleDeleteUser}
-                          onToggleAdmin={handleToggleAdmin}
-                          isGlobalAdmin={isGlobalAdmin}
+                          onDeleteUser={
+                            handleDeleteUser
+                          }
+                          onToggleAdmin={
+                            handleToggleAdmin
+                          }
+                          isGlobalAdmin={
+                            isGlobalAdmin
+                          }
                         />
+
                         <Pagination
-                          currentPage={usersPagination.current}
-                          lastPage={usersPagination.last}
-                          total={usersPagination.total}
-                          onPageChange={handleUsersPageChange}
+                          currentPage={
+                            usersPagination.current
+                          }
+                          lastPage={
+                            usersPagination.last
+                          }
+                          total={
+                            usersPagination.total
+                          }
+                          onPageChange={
+                            handleUsersPageChange
+                          }
                           loading={loading}
                         />
                       </>
@@ -724,73 +1323,142 @@ useEffect(() => {
                       <OperationView />
                     ))}
 
+                  {/* ==================================================
+                      AUDITORIA
+                  ================================================== */}
+
                   {activeTab === "audit" && (
                     <>
-                      <AuditTable logs={auditLogs} />
+                      <AuditTable
+                        logs={auditLogs}
+                      />
+
                       <Pagination
-                        currentPage={auditPagination.current}
-                        lastPage={auditPagination.last}
-                        total={auditPagination.total}
-                        onPageChange={handleAuditPageChange}
+                        currentPage={
+                          auditPagination.current
+                        }
+                        lastPage={
+                          auditPagination.last
+                        }
+                        total={
+                          auditPagination.total
+                        }
+                        onPageChange={
+                          handleAuditPageChange
+                        }
                         loading={loading}
                       />
                     </>
                   )}
 
+                  {/* ==================================================
+                      GRUPOS
+                  ================================================== */}
+
                   {activeTab === "groups" &&
                     (showGroupForm ? (
                       <GroupForm
-                        onCancel={() => setShowGroupForm(false)}
+                        onCancel={() =>
+                          setShowGroupForm(false)
+                        }
                         onSave={async (data) => {
                           try {
-                            setActionLoading(true);
-                            await api.post("/api/v1/groups", data);
-                            setShowGroupForm(false);
-                            await loadGroups(groupsCurrentPage);
+                            setActionLoading(
+                              true
+                            );
+
+                            await api.post(
+                              "/api/v1/groups",
+                              data
+                            );
+
+                            setShowGroupForm(
+                              false
+                            );
+
+                            await loadGroups(
+                              groupsCurrentPage
+                            );
+
                             AxionAlert.fire({
                               icon: "success",
-                              title: "Grupo Criado!",
+                              title:
+                                "Grupo Criado!",
                               text: `O grupo "${data.name}" foi criado com sucesso.`,
                               timer: 1500,
-                              showConfirmButton: false,
+                              showConfirmButton:
+                                false,
                             });
                           } catch (err) {
-                            console.error("Erro ao criar grupo:", err);
+                            console.error(
+                              "Erro ao criar grupo:",
+                              err
+                            );
+
                             AxionAlert.fire(
                               "Erro",
-                              err.response?.data?.message ||
+                              err.response?.data
+                                ?.message ||
                                 "Não foi possível criar o grupo.",
-                              "error",
+                              "error"
                             );
                           } finally {
-                            setActionLoading(false);
+                            setActionLoading(
+                              false
+                            );
                           }
                         }}
-                        loading={actionLoading}
+                        loading={
+                          actionLoading
+                        }
                       />
                     ) : (
                       <>
                         <GroupTable
                           groups={groups}
-                          onViewDetail={setSelectedGroupId}
-                          isGlobalAdmin={isGlobalAdmin}
-                          currentUser={currentUser}
+                          onViewDetail={
+                            setSelectedGroupId
+                          }
+                          isGlobalAdmin={
+                            isGlobalAdmin
+                          }
+                          currentUser={
+                            currentUser
+                          }
                         />
+
                         <Pagination
-                          currentPage={groupsPagination.current}
-                          lastPage={groupsPagination.last}
-                          total={groupsPagination.total}
-                          onPageChange={handleGroupsPageChange}
+                          currentPage={
+                            groupsPagination.current
+                          }
+                          lastPage={
+                            groupsPagination.last
+                          }
+                          total={
+                            groupsPagination.total
+                          }
+                          onPageChange={
+                            handleGroupsPageChange
+                          }
                           loading={loading}
                         />
                       </>
                     ))}
 
-                  {activeTab === "permissions" && (
+                  {/* ==================================================
+                      PERMISSÕES
+                  ================================================== */}
+
+                  {activeTab ===
+                    "permissions" && (
                     <PermissionTable
-                      permissions={permissions}
+                      permissions={
+                        permissions
+                      }
                       loading={loading}
-                      currentUser={currentUser}
+                      currentUser={
+                        currentUser
+                      }
                     />
                   )}
                 </div>
