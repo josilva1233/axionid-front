@@ -74,7 +74,6 @@ export default function DashboardFilters({
     permissions: (
       <>
         {renderInput("Buscar Permissão", "label", "Ex: Criar Usuários...")}
-        {renderInput("Chave do Sistema", "name", "Ex: users.create...")}
         <div className="filter-col">
           <button className="btn-primary w-100" onClick={onNewPermission}>
             <i className="bi bi-plus-lg me-2"></i> Nova Permissão
