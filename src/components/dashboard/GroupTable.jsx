@@ -27,7 +27,6 @@ export default function GroupTable({
     confirmButtonColor: "#6366f1",
   });
 
-  // Fecha dropdown ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event) => {
       const isOutside = Object.values(dropdownRefs.current).every(
@@ -106,11 +105,11 @@ export default function GroupTable({
         <table className="axion-table">
           <thead>
             <tr>
-              <th>NOME DO GRUPO</th>
-              <th>CRIADOR</th>
-              <th className="text-center">MEMBROS</th>
-              <th className="text-center">MEU STATUS</th>
-              <th className="text-end">AÇÕES</th>
+              <th className="col-group">NOME DO GRUPO</th>
+              <th className="col-creator">CRIADOR</th>
+              <th className="col-members text-center">MEMBROS</th>
+              <th className="col-status text-center">MEU STATUS</th>
+              <th className="col-actions text-end">AÇÕES</th>
             </tr>
           </thead>
           <tbody>
@@ -125,49 +124,43 @@ export default function GroupTable({
 
                 return (
                   <tr key={g.id}>
-                    <td>
-                      <strong className="text-white">
-                        {g.name.toUpperCase()}
-                      </strong>
-                      {g.description && (
-                        <>
-                          <br />
-                          <span className="text-dim" style={{ fontSize: '12px' }}>
+                    <td className="col-group">
+                      <div className="group-name-cell">
+                        <strong className="text-white group-name-text">
+                          {g.name.toUpperCase()}
+                        </strong>
+                        {g.description && (
+                          <span className="group-description text-dim">
                             {g.description}
                           </span>
-                        </>
-                      )}
+                        )}
+                      </div>
                     </td>
-                    <td className="text-dim">
-                      <i className="bi bi-person-badge me-1"></i>
-                      {g.creator?.name || "Sistema"}
-                      {g.creator?.id === currentUser?.id && (
-                        <span className="badge-current-user" style={{ marginLeft: '6px' }}>
-                          Você
-                        </span>
-                      )}
+                    <td className="col-creator">
+                      <div className="creator-cell">
+                        <i className="bi bi-person-badge me-1"></i>
+                        <span className="creator-name">{g.creator?.name || "Sistema"}</span>
+                        {g.creator?.id === currentUser?.id && (
+                          <span className="badge-current-user">Você</span>
+                        )}
+                      </div>
                     </td>
-                    <td className="text-center">
-                      <div className="status-indicator-wrapper">
-                        <span
-                          className="status-indicator"
-                          style={{
-                            backgroundColor: "var(--primary)",
-                          }}
-                        />
-                        <span className="status-text">
-                          {memberCount} membro{memberCount !== 1 ? "s" : ""}
+                    <td className="col-members text-center">
+                      <div className="members-cell">
+                        <span className="members-count">{memberCount}</span>
+                        <span className="members-label">
+                          membro{memberCount !== 1 ? "s" : ""}
                         </span>
                       </div>
                     </td>
-                    <td className="text-center">
+                    <td className="col-status text-center">
                       <span
-                        className={`badge ${canManage ? "badge-success" : "badge-operacional"}`}
+                        className={`badge ${canManage ? "badge-success" : "badge-operacional"} status-badge-responsive`}
                       >
                         {isSystemAdmin ? "Admin Global" : canManage ? "Administrador" : "Membro"}
                       </span>
                     </td>
-                    <td className="text-end">
+                    <td className="col-actions text-end">
                       {canManage ? (
                         <div 
                           className="actions-dropdown-wrapper" 
@@ -177,7 +170,7 @@ export default function GroupTable({
                             className="btn-dropdown-toggle"
                             onClick={() => toggleDropdown(g.id)}
                             title="Abrir ações"
-                          >Abrir ações
+                          >
                             <i className="bi bi-three-dots-vertical"></i>
                           </button>
 
@@ -213,7 +206,8 @@ export default function GroupTable({
                         </div>
                       ) : (
                         <span className="readonly-indicator">
-                          <i className="bi bi-lock-fill"></i> Somente Leitura
+                          <i className="bi bi-lock-fill"></i>
+                          <span className="readonly-text">Somente Leitura</span>
                         </span>
                       )}
                     </td>
