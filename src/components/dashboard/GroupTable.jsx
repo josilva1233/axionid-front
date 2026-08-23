@@ -1,5 +1,5 @@
 // components/dashboard/GroupTable.jsx
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Modal, Form, Spinner } from "react-bootstrap";
 import Swal from "sweetalert2";
 
@@ -18,13 +18,26 @@ export default function GroupTable({
     description: "" 
   });
   const [editLoading, setEditLoading] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState(null); // Estado para controlar qual dropdown está aberto
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const dropdownRef = useRef(null);
 
   const AxionAlert = Swal.mixin({
     background: "#111214",
     color: "#ffffff",
     confirmButtonColor: "#6366f1",
   });
+
+  // Fecha dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpenDropdown(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleEdit = (group) => {
     setEditingGroup(group);
@@ -33,7 +46,7 @@ export default function GroupTable({
       description: group.description || "",
     });
     setShowEditModal(true);
-    setOpenDropdown(null); // Fecha dropdown ao abrir modal
+    setOpenDropdown(null);
   };
 
   const handleSaveEdit = async () => {
@@ -60,7 +73,7 @@ export default function GroupTable({
   };
 
   const handleDelete = async (group) => {
-    setOpenDropdown(null); // Fecha dropdown
+    setOpenDropdown(null);
     const result = await AxionAlert.fire({
       title: "Excluir Grupo?",
       text: `Deseja remover permanentemente o grupo "${group.name}"?`,
@@ -153,7 +166,7 @@ export default function GroupTable({
                     </td>
                     <td className="text-end">
                       {canManage ? (
-                        <div className="actions-dropdown-wrapper">
+                        <div className="actions-dropdown-wrapper" ref={dropdownRef}>
                           <button
                             className="btn-dropdown-toggle"
                             onClick={() => toggleDropdown(g.id)}
@@ -170,23 +183,20 @@ export default function GroupTable({
                                   onViewDetail(g.id);
                                   setOpenDropdown(null);
                                 }}
-                                title="Gerenciar Membros"
                               >
-                                <i className="bi bi-gear-fill"></i> Gerenciar
+                                <i className="bi bi-gear-fill"></i> Gerenciar Membros
                               </button>
                               {isSystemAdmin && (
                                 <>
                                   <button
                                     className="dropdown-item"
                                     onClick={() => handleEdit(g)}
-                                    title="Editar Grupo"
                                   >
                                     <i className="bi bi-pencil-square"></i> Editar
                                   </button>
                                   <button
                                     className="dropdown-item dropdown-item-danger"
                                     onClick={() => handleDelete(g)}
-                                    title="Excluir Grupo"
                                   >
                                     <i className="bi bi-trash3-fill"></i> Deletar
                                   </button>
