@@ -1,6 +1,6 @@
 import { useState } from "react";
 import GroupPermissionManager from "./GroupPermissionManager";
-import "./styles/GroupDetail.css";
+
 
 export default function GroupDetail({
   group,
