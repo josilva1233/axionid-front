@@ -19,7 +19,7 @@ export default function GroupTable({
   });
   const [editLoading, setEditLoading] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
-  const dropdownRef = useRef(null);
+  const dropdownRefs = useRef({});
 
   const AxionAlert = Swal.mixin({
     background: "#111214",
@@ -30,7 +30,10 @@ export default function GroupTable({
   // Fecha dropdown ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      const isOutside = Object.values(dropdownRefs.current).every(
+        (ref) => ref && !ref.contains(event.target)
+      );
+      if (isOutside) {
         setOpenDropdown(null);
       }
     };
@@ -166,7 +169,10 @@ export default function GroupTable({
                     </td>
                     <td className="text-end">
                       {canManage ? (
-                        <div className="actions-dropdown-wrapper" ref={dropdownRef}>
+                        <div 
+                          className="actions-dropdown-wrapper" 
+                          ref={(el) => (dropdownRefs.current[g.id] = el)}
+                        >
                           <button
                             className="btn-dropdown-toggle"
                             onClick={() => toggleDropdown(g.id)}

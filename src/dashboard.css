@@ -3788,22 +3788,24 @@ body {
     font-size: 32px;
   }
 }
-
 /* ============================================
-   DROPDOWN DE AÇÕES
+   DROPDOWN DE AÇÕES - COMPLETO
    ============================================ */
+
+/* Wrapper do dropdown */
 .actions-dropdown-wrapper {
   position: relative;
   display: inline-block;
 }
 
+/* Botão de três pontos */
 .btn-dropdown-toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 6px 12px;
   border-radius: var(--radius-md, 8px);
-  border: 1px solid var(--border, #f5f6f8);
+  border: 1px solid var(--border, #2a2d3a);
   background: transparent;
   color: var(--text-dim, #94a3b8);
   font-size: 18px;
@@ -3811,6 +3813,7 @@ body {
   transition: all 0.25s ease;
   min-width: 36px;
   min-height: 36px;
+  line-height: 1;
 }
 
 .btn-dropdown-toggle:hover {
@@ -3824,6 +3827,7 @@ body {
   outline-offset: 2px;
 }
 
+/* Menu do dropdown */
 .actions-dropdown-menu {
   position: absolute;
   right: 0;
@@ -3831,18 +3835,21 @@ body {
   background: var(--bg-card, #14161e);
   border: 1px solid var(--border, #2a2d3a);
   border-radius: var(--radius-md, 8px);
-  padding: 4px 0;
-  min-width: 180px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  z-index: 100;
+  padding: 6px 0;
+  min-width: 200px;
+  max-width: 220px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
   animation: dropdownSlideIn 0.2s ease forwards;
+  overflow: hidden;
 }
 
+/* Itens do dropdown */
 .actions-dropdown-menu .dropdown-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 16px;
+  gap: 12px;
+  padding: 9px 16px;
   width: 100%;
   border: none;
   background: transparent;
@@ -3869,11 +3876,12 @@ body {
 }
 
 .actions-dropdown-menu .dropdown-item i {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text-muted, #4a4f6a);
   transition: color 0.2s ease;
-  width: 18px;
+  width: 20px;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .actions-dropdown-menu .dropdown-item:hover {
@@ -3910,7 +3918,7 @@ body {
 @keyframes dropdownSlideIn {
   from {
     opacity: 0;
-    transform: translateY(-8px) scale(0.98);
+    transform: translateY(-10px) scale(0.96);
   }
   to {
     opacity: 1;
@@ -3921,14 +3929,16 @@ body {
 /* ============================================
    RESPONSIVIDADE
    ============================================ */
+
+/* Tablets */
 @media screen and (max-width: 768px) {
   .actions-dropdown-menu {
-    min-width: 160px;
+    min-width: 180px;
     right: -8px;
   }
 
   .actions-dropdown-menu .dropdown-item {
-    padding: 10px 14px;
+    padding: 10px 16px;
     font-size: 14px;
   }
 
@@ -3940,15 +3950,16 @@ body {
   }
 }
 
+/* Mobile */
 @media screen and (max-width: 480px) {
   .actions-dropdown-menu {
     position: fixed;
     right: 16px;
     left: auto;
-    min-width: 180px;
+    min-width: 190px;
     top: auto;
     bottom: auto;
-    transform: none;
+    animation: dropdownSlideInMobile 0.2s ease forwards;
   }
 
   .actions-dropdown-menu .dropdown-item {
@@ -3962,9 +3973,22 @@ body {
     min-width: 28px;
     min-height: 28px;
   }
+
+  @keyframes dropdownSlideInMobile {
+    from {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
 }
 
-/* High Contrast */
+/* ============================================
+   HIGH CONTRAST
+   ============================================ */
 @media (prefers-contrast: high) {
   .actions-dropdown-menu {
     border: 2px solid var(--border, #2a2d3a);
@@ -3979,9 +4003,11 @@ body {
   }
 }
 
-/* Reduced Motion */
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
 @media (prefers-reduced-motion: reduce) {
   .actions-dropdown-menu {
-    animation: none;
+    animation: none !important;
   }
 }
