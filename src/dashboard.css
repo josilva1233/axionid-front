@@ -6762,3 +6762,464 @@ body {
     font-size: 12px;
   }
 }
+
+/* ==========================================================
+   PERMISSION TABLE - ESTILO PADRONIZADO
+   ========================================================== */
+
+/* ============================================
+   CONTAINER DA TABELA
+   ============================================ */
+.permission-table-container {
+  overflow-x: auto;
+  padding: var(--spacing-xs);
+  margin-top: var(--spacing-sm);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  transition: all var(--transition-slow);
+}
+
+.permission-table-container:hover {
+  border-color: var(--border-active);
+}
+
+/* ============================================
+   TABELA
+   ============================================ */
+.permission-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 850px;
+  table-layout: fixed;
+}
+
+/* ============================================
+   CABEÇALHO
+   ============================================ */
+.permission-table thead {
+  background: var(--bg-input);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.permission-table thead th {
+  padding: var(--spacing-lg) 18px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+}
+
+.permission-table thead th.text-center { text-align: center; }
+.permission-table thead th.text-end { text-align: right; }
+
+/* Larguras das colunas */
+.permission-table thead th:nth-child(1) { width: 6%; }
+.permission-table thead th:nth-child(2) { width: 25%; }
+.permission-table thead th:nth-child(3) { width: 22%; }
+.permission-table thead th:nth-child(4) { width: 12%; }
+.permission-table thead th:nth-child(5) { width: 12%; }
+.permission-table thead th:nth-child(6) { width: 23%; }
+
+/* ============================================
+   CORPO DA TABELA
+   ============================================ */
+.permission-table tbody tr {
+  transition: all var(--transition-normal);
+  border-bottom: 1px solid var(--border-light);
+  cursor: default;
+  animation: fadeInRow var(--transition-slow) forwards;
+  opacity: 0;
+}
+
+.permission-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.permission-table tbody tr:hover {
+  background: var(--bg-hover);
+  transform: scale(1.002);
+  box-shadow: var(--shadow-md);
+}
+
+.permission-table tbody td {
+  padding: 14px 18px;
+  vertical-align: middle;
+  color: var(--text-main);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+/* ============================================
+   TEXTO PRIMÁRIO
+   ============================================ */
+.permission-table tbody td strong.text-primary {
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  transition: color var(--transition-fast);
+}
+
+.permission-table tbody tr:hover td strong.text-primary {
+  color: var(--primary-hover);
+}
+
+/* ============================================
+   PERMISSION CODE
+   ============================================ */
+.permission-code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+  font-weight: 500;
+  background: rgba(148, 163, 184, 0.05);
+  padding: 2px var(--spacing-sm);
+  border-radius: var(--radius-sm);
+}
+
+/* ============================================
+   BADGE IAM
+   ============================================ */
+.badge-iam {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 14px;
+  border-radius: var(--radius-2xl);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+/* ============================================
+   STATUS BADGE
+   ============================================ */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  border-radius: var(--radius-2xl);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--success);
+  background: var(--success-light);
+  border: 1px solid rgba(34, 197, 94, 0.15);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-circle);
+  flex-shrink: 0;
+  display: inline-block;
+  background-color: var(--success);
+}
+
+/* ============================================
+   ACTIONS WRAPPER - PADRONIZADO
+   ============================================ */
+.actions-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+/* ============================================
+   BOTÕES DE AÇÃO - PADRONIZADOS
+   ============================================ */
+.btn-table-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: var(--spacing-sm) 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.btn-table-action i {
+  font-size: 14px;
+  transition: transform var(--transition-fast);
+}
+
+.btn-table-action:first-child {
+  color: var(--primary);
+  background: var(--primary-light);
+  border-color: rgba(99, 102, 241, 0.1);
+}
+
+.btn-table-action:first-child:hover {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.25);
+  color: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-primary);
+}
+
+.btn-table-action:first-child:hover i {
+  transform: scale(1.1);
+}
+
+/* ============================================
+   BOTÃO DE EXCLUSÃO (PERIGO)
+   ============================================ */
+.btn-table-action-danger {
+  color: var(--error) !important;
+  background: rgba(239, 68, 68, 0.06) !important;
+  border-color: rgba(239, 68, 68, 0.1) !important;
+}
+
+.btn-table-action-danger:hover {
+  background: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.25) !important;
+  color: var(--error-hover) !important;
+  box-shadow: var(--shadow-error) !important;
+}
+
+.btn-table-action-danger:hover i {
+  transform: scale(1.1);
+}
+
+.btn-table-action:active {
+  transform: scale(0.95);
+}
+
+/* ============================================
+   READONLY BADGE
+   ============================================ */
+.readonly-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  background: rgba(108, 117, 125, 0.08);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid rgba(108, 117, 125, 0.1);
+}
+
+/* ============================================
+   MONO TEXT
+   ============================================ */
+.mono-text {
+  font-family: var(--font-mono) !important;
+  letter-spacing: 1px;
+}
+
+/* ============================================
+   ESTADO VAZIO
+   ============================================ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-3xl) var(--spacing-xl);
+  color: var(--text-dim);
+}
+
+.empty-icon {
+  font-size: var(--spacing-3xl);
+  line-height: 1;
+  opacity: 0.6;
+  animation: pulse-float 2s ease-in-out infinite;
+}
+
+.empty-state p {
+  font-size: 15px;
+  color: var(--text-muted);
+  margin-top: var(--spacing-md);
+  font-weight: 400;
+}
+
+/* ============================================
+   ANIMAÇÕES
+   ============================================ */
+@keyframes fadeInRow {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-float {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
+  50% { transform: translateY(-8px) scale(1.05); opacity: 1; }
+}
+
+/* ============================================
+   RESPONSIVIDADE
+   ============================================ */
+
+/* Tablets (1024px) */
+@media screen and (max-width: 1024px) {
+  .permission-table {
+    font-size: 13px;
+    min-width: 750px;
+  }
+
+  .permission-table thead th,
+  .permission-table tbody td {
+    padding: 10px 14px;
+  }
+
+  .permission-table thead th:nth-child(1) { width: 7%; }
+  .permission-table thead th:nth-child(2) { width: 23%; }
+  .permission-table thead th:nth-child(3) { width: 20%; }
+  .permission-table thead th:nth-child(4) { width: 13%; }
+  .permission-table thead th:nth-child(5) { width: 13%; }
+  .permission-table thead th:nth-child(6) { width: 24%; }
+
+  .btn-table-action {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+
+  .btn-table-action i {
+    font-size: 12px;
+  }
+}
+
+/* Mobile (768px) */
+@media screen and (max-width: 768px) {
+  .permission-table-container {
+    border-radius: var(--radius-md);
+    padding: 0;
+  }
+
+  .permission-table {
+    font-size: 12px;
+    min-width: 650px;
+  }
+
+  .permission-table thead th {
+    padding: 8px 10px;
+    font-size: 10px;
+  }
+
+  .permission-table tbody td {
+    padding: 8px 10px;
+  }
+
+  .permission-table thead th:nth-child(1) { width: 8%; }
+  .permission-table thead th:nth-child(2) { width: 21%; }
+  .permission-table thead th:nth-child(3) { width: 18%; }
+  .permission-table thead th:nth-child(4) { width: 14%; }
+  .permission-table thead th:nth-child(5) { width: 14%; }
+  .permission-table thead th:nth-child(6) { width: 25%; }
+
+  .permission-code {
+    font-size: 11px;
+  }
+
+  .btn-table-action {
+    font-size: 10px;
+    padding: 3px 8px;
+    gap: 3px;
+  }
+
+  .btn-table-action i {
+    font-size: 11px;
+  }
+
+  .badge-iam {
+    font-size: 9px;
+    padding: 3px 10px;
+  }
+
+  .status-badge {
+    font-size: 10px;
+    padding: 3px 10px;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+  }
+}
+
+/* Telas pequenas (480px) */
+@media screen and (max-width: 480px) {
+  .permission-table {
+    font-size: 11px;
+    min-width: 550px;
+  }
+
+  .permission-table thead th,
+  .permission-table tbody td {
+    padding: 6px 8px;
+  }
+
+  .permission-table thead th {
+    font-size: 9px;
+    letter-spacing: 0.2px;
+  }
+
+  .permission-table thead th:nth-child(1) { width: 9%; }
+  .permission-table thead th:nth-child(2) { width: 19%; }
+  .permission-table thead th:nth-child(3) { width: 16%; }
+  .permission-table thead th:nth-child(4) { width: 15%; }
+  .permission-table thead th:nth-child(5) { width: 15%; }
+  .permission-table thead th:nth-child(6) { width: 26%; }
+
+  .permission-code {
+    font-size: 10px;
+  }
+
+  .btn-table-action {
+    font-size: 9px;
+    padding: 2px 6px;
+    gap: 2px;
+  }
+
+  .btn-table-action i {
+    font-size: 10px;
+  }
+
+  .badge-iam {
+    font-size: 8px;
+    padding: 2px 8px;
+  }
+
+  .status-badge {
+    font-size: 9px;
+    padding: 2px 8px;
+  }
+
+  .status-dot {
+    width: 5px;
+    height: 5px;
+  }
+
+  .mono-text {
+    font-size: 11px;
+  }
+
+  .readonly-badge {
+    font-size: 9px;
+    padding: 2px 8px;
+  }
+}

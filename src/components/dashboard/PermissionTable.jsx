@@ -57,6 +57,9 @@ export default function PermissionTable({ permissions, loading, currentUser, onE
       showCancelButton: true,
       confirmButtonText: "Sim, excluir",
       cancelButtonText: "Cancelar",
+      background: "#111214",
+      color: "#ffffff",
+      confirmButtonColor: "#6366f1",
     });
 
     if (result.isConfirmed) {
@@ -84,7 +87,7 @@ export default function PermissionTable({ permissions, loading, currentUser, onE
             {permissions.length > 0 ? (
               permissions.map((perm) => (
                 <tr key={perm.id}>
-                  <td>#{perm.id}</td>
+                  <td className="mono-text">#{perm.id}</td>
                   <td>
                     <strong className="text-primary">{perm.label?.toUpperCase() || "SEM NOME"}</strong>
                   </td>
@@ -96,28 +99,28 @@ export default function PermissionTable({ permissions, loading, currentUser, onE
                   </td>
                   <td className="text-center">
                     <div className="status-badge">
-                      <span className="status-dot"></span>
+                      <span className="status-dot" style={{ backgroundColor: "var(--success)" }}></span>
                       <span>Ativo</span>
                     </div>
                   </td>
                   <td className="text-end">
                     {isSystemAdmin ? (
-                      <>
+                      <div className="actions-wrapper">
                         <button
-                          className="btn-action"
+                          className="btn-table-action"
                           onClick={() => handleEdit(perm)}
                           title="Editar Permissão"
                         >
-                          <i className="bi bi-pencil-square">Editar Permissão</i>
+                          <i className="bi bi-pencil-square"></i> Editar
                         </button>
                         <button
-                          className="btn-action btn-action-danger"
+                          className="btn-table-action btn-table-action-danger"
                           onClick={() => handleDelete(perm)}
                           title="Excluir Permissão"
                         >
-                          <i className="bi bi-trash3-fill">Deletar</i>
+                          <i className="bi bi-trash3-fill"></i> Excluir
                         </button>
-                      </>
+                      </div>
                     ) : (
                       <span className="readonly-badge">
                         <i className="bi bi-lock-fill me-1"></i> Read-only
@@ -142,15 +145,21 @@ export default function PermissionTable({ permissions, loading, currentUser, onE
         </table>
       </div>
 
-      {/* Modal de Edição */}
+      {/* Modal de Edição - PADRONIZADO */}
       <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered className="permission-modal">
         <Modal.Header closeButton>
-          <Modal.Title>Editar Permissão</Modal.Title>
+          <Modal.Title>
+            <i className="bi bi-pencil-square me-2"></i>
+            Editar Permissão
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
             <Form.Group className="mb-3">
-              <Form.Label className="form-label-custom">Nome (Slug)</Form.Label>
+              <Form.Label className="form-label-custom">
+                <i className="bi bi-tag me-1"></i>
+                Chave do Sistema (Slug)
+              </Form.Label>
               <Form.Control
                 type="text"
                 value={editForm.name}
@@ -164,7 +173,10 @@ export default function PermissionTable({ permissions, loading, currentUser, onE
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label className="form-label-custom">Label (Nome Exibido)</Form.Label>
+              <Form.Label className="form-label-custom">
+                <i className="bi bi-fonts me-1"></i>
+                Label (Nome Exibido)
+              </Form.Label>
               <Form.Control
                 type="text"
                 value={editForm.label}
@@ -172,27 +184,50 @@ export default function PermissionTable({ permissions, loading, currentUser, onE
                 className="custom-input-dark"
                 placeholder="ex: Criar Usuários"
               />
+              <Form.Text className="form-text-custom">
+                Nome que será exibido para esta permissão
+              </Form.Text>
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label className="form-label-custom">Descrição</Form.Label>
+              <Form.Label className="form-label-custom">
+                <i className="bi bi-file-text me-1"></i>
+                Descrição
+              </Form.Label>
               <Form.Control
                 as="textarea"
-                rows={2}
+                rows={3}
                 value={editForm.description}
                 onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                 className="custom-input-dark"
                 placeholder="Descreva o que esta permissão concede..."
               />
+              <Form.Text className="form-text-custom">
+                Opcional: detalhes sobre o que a permissão permite
+              </Form.Text>
             </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <button className="btn-secondary" onClick={() => setShowEditModal(false)} disabled={editLoading}>
+          <button 
+            className="btn-secondary" 
+            onClick={() => setShowEditModal(false)} 
+            disabled={editLoading}
+          >
+            <i className="bi bi-x-circle me-1"></i>
             Cancelar
           </button>
-          <button className="btn-primary" onClick={handleSaveEdit} disabled={editLoading}>
-            {editLoading ? <Spinner animation="border" size="sm" /> : "Salvar Alterações"}
+          <button 
+            className="btn-primary" 
+            onClick={handleSaveEdit} 
+            disabled={editLoading}
+          >
+            {editLoading ? (
+              <Spinner animation="border" size="sm" className="me-2" />
+            ) : (
+              <i className="bi bi-check2-circle me-2"></i>
+            )}
+            Salvar Alterações
           </button>
         </Modal.Footer>
       </Modal>
