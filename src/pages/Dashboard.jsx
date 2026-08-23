@@ -24,6 +24,7 @@ import Pagination from "../components/dashboard/Pagination";
 
 import '../Pagination.css';
 import '../PermissionTable.css';
+import '../dashboard.css';
 
 export default function Dashboard() {
   const navigate = useNavigate();
