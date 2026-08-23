@@ -1119,3 +1119,709 @@ body::after {
     --border-light: #f1f5f9;
   }
 }
+
+/* ==========================================================
+   GROUP TABLE - ESTILOS OTIMIZADOS
+   ========================================================== */
+
+/* ============================================
+   CONTAINER PRINCIPAL
+   ============================================ */
+.permission-table-container {
+  overflow-x: auto;
+  padding: 4px;
+  margin-top: 8px;
+  border-radius: var(--radius-lg, 12px);
+  background: var(--bg-card, #14161e);
+  border: 1px solid var(--border, #2a2d3a);
+  transition: all 0.3s ease;
+}
+
+.permission-table-container:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+/* ============================================
+   TABELA
+   ============================================ */
+.permission-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 850px;
+  table-layout: fixed;
+}
+
+/* ============================================
+   HEADER DA TABELA
+   ============================================ */
+.permission-table thead {
+  background: var(--bg-input, #1a1d2a);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.permission-table thead th {
+  padding: 16px 18px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim, #94a3b8);
+  border-bottom: 2px solid var(--border, #2a2d3a);
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+/* Ajuste de largura das colunas */
+.permission-table thead th:nth-child(1) { width: 6%; }  /* ID */
+.permission-table thead th:nth-child(2) { width: 28%; } /* NOME */
+.permission-table thead th:nth-child(3) { width: 18%; } /* CRIADOR */
+.permission-table thead th:nth-child(4) { width: 12%; } /* MEMBROS */
+.permission-table thead th:nth-child(5) { width: 16%; } /* MEU STATUS */
+.permission-table thead th:nth-child(6) { width: 20%; } /* AÇÕES */
+
+.permission-table thead th.text-center {
+  text-align: center;
+}
+
+.permission-table thead th.text-end {
+  text-align: right;
+}
+
+/* ============================================
+   CORPO DA TABELA
+   ============================================ */
+.permission-table tbody tr {
+  transition: all 0.25s ease;
+  border-bottom: 1px solid var(--border-light, #1e2130);
+  cursor: default;
+  animation: fadeInRow 0.3s ease forwards;
+  opacity: 0;
+}
+
+.permission-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.permission-table tbody tr:hover {
+  background: var(--bg-hover, #1e2130);
+  transform: scale(1.002);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.permission-table tbody td {
+  padding: 14px 18px;
+  vertical-align: middle;
+  color: var(--text-main, #e2e8f0);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+/* ============================================
+   ANIMAÇÃO DE ENTRADA
+   ============================================ */
+.permission-table tbody tr:nth-child(1) { animation-delay: 0.02s; }
+.permission-table tbody tr:nth-child(2) { animation-delay: 0.04s; }
+.permission-table tbody tr:nth-child(3) { animation-delay: 0.06s; }
+.permission-table tbody tr:nth-child(4) { animation-delay: 0.08s; }
+.permission-table tbody tr:nth-child(5) { animation-delay: 0.10s; }
+.permission-table tbody tr:nth-child(6) { animation-delay: 0.12s; }
+.permission-table tbody tr:nth-child(7) { animation-delay: 0.14s; }
+.permission-table tbody tr:nth-child(8) { animation-delay: 0.16s; }
+.permission-table tbody tr:nth-child(9) { animation-delay: 0.18s; }
+.permission-table tbody tr:nth-child(10) { animation-delay: 0.20s; }
+
+@keyframes fadeInRow {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   CÉLULAS ESPECÍFICAS
+   ============================================ */
+
+/* ID */
+.permission-code {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 13px;
+  color: var(--text-muted, #4a4f6a);
+  letter-spacing: 0.5px;
+  font-weight: 500;
+  background: rgba(148, 163, 184, 0.05);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* Nome do Grupo */
+.permission-table tbody td strong.text-primary {
+  color: var(--primary, #6366f1);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  transition: color 0.2s ease;
+}
+
+.permission-table tbody tr:hover td strong.text-primary {
+  color: #818cf8;
+}
+
+/* Descrição */
+.permission-table tbody td .text-dim {
+  color: var(--text-dim, #94a3b8);
+  font-size: 12px;
+  display: block;
+  margin-top: 2px;
+}
+
+/* ============================================
+   BADGE DE STATUS
+   ============================================ */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  background: rgba(148, 163, 184, 0.05);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dim, #94a3b8);
+  transition: all 0.3s ease;
+}
+
+.status-badge:hover {
+  background: rgba(148, 163, 184, 0.1);
+  border-color: rgba(148, 163, 184, 0.15);
+}
+
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+}
+
+.status-dot[style*="background-color: #6366f1"] {
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+}
+
+/* ============================================
+   AÇÕES - BOTÕES
+   ============================================ */
+.permission-table .text-end {
+  text-align: right;
+}
+
+.permission-table .text-end > * {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid transparent;
+  background: rgba(99, 102, 241, 0.06);
+  color: var(--primary, #6366f1);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  border-color: rgba(99, 102, 241, 0.1);
+  position: relative;
+}
+
+.btn-action i {
+  font-size: 14px;
+  transition: transform 0.2s ease;
+}
+
+.btn-action:hover {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.25);
+  color: #818cf8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+.btn-action:hover i {
+  transform: scale(1.1);
+}
+
+.btn-action:active {
+  transform: scale(0.95);
+}
+
+/* Botão Editar */
+.btn-action:not(.btn-action-danger) {
+  background: rgba(99, 102, 241, 0.06);
+  color: var(--primary, #6366f1);
+  border-color: rgba(99, 102, 241, 0.1);
+}
+
+.btn-action:not(.btn-action-danger):hover {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.25);
+}
+
+/* Botão Deletar */
+.btn-action-danger {
+  background: rgba(239, 68, 68, 0.06);
+  color: var(--error, #ef4444);
+  border-color: rgba(239, 68, 68, 0.1);
+}
+
+.btn-action-danger:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+}
+
+/* Botão Gerenciar (ícone de engrenagem) */
+.btn-action:has(.bi-gear-fill) {
+  background: rgba(34, 197, 94, 0.06);
+  color: var(--success, #22c55e);
+  border-color: rgba(34, 197, 94, 0.1);
+}
+
+.btn-action:has(.bi-gear-fill):hover {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.25);
+  color: #4ade80;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+}
+
+/* ============================================
+   READONLY BADGE
+   ============================================ */
+.readonly-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  background: rgba(108, 117, 125, 0.08);
+  color: var(--text-muted, #4a4f6a);
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid rgba(108, 117, 125, 0.1);
+}
+
+.readonly-badge i {
+  font-size: 12px;
+}
+
+/* ============================================
+   ESTADO VAZIO
+   ============================================ */
+.permission-table .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+  color: var(--text-dim, #94a3b8);
+}
+
+.permission-table .empty-state .empty-icon {
+  font-size: 48px;
+  line-height: 1;
+  opacity: 0.6;
+  animation: pulse-float 2s ease-in-out infinite;
+}
+
+.permission-table .empty-state p {
+  font-size: 15px;
+  color: var(--text-muted, #4a4f6a);
+  margin-top: 12px;
+  font-weight: 400;
+}
+
+@keyframes pulse-float {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-8px) scale(1.05);
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   MODAL DE EDIÇÃO
+   ============================================ */
+.permission-modal .modal-content {
+  background: var(--bg-card, #14161e);
+  border: 1px solid var(--border, #2a2d3a);
+  border-radius: var(--radius-xl, 16px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.permission-modal .modal-header {
+  border-bottom: 1px solid var(--border, #2a2d3a);
+  padding: 20px 24px;
+}
+
+.permission-modal .modal-header .btn-close {
+  filter: invert(1) brightness(2);
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.permission-modal .modal-header .btn-close:hover {
+  opacity: 1;
+}
+
+.permission-modal .modal-title {
+  color: var(--text-main, #e2e8f0);
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.permission-modal .modal-body {
+  padding: 24px;
+}
+
+.permission-modal .modal-footer {
+  border-top: 1px solid var(--border, #2a2d3a);
+  padding: 16px 24px;
+  gap: 8px;
+}
+
+/* Form Labels */
+.form-label-custom {
+  color: var(--text-dim, #94a3b8);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.form-text-custom {
+  color: var(--text-muted, #4a4f6a);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* Inputs */
+.permission-modal .custom-input-dark {
+  background: var(--bg-input, #1a1d2a) !important;
+  border: 1px solid var(--border, #2a2d3a) !important;
+  color: var(--text-main, #e2e8f0) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  padding: 10px 14px !important;
+  transition: all 0.3s ease;
+}
+
+.permission-modal .custom-input-dark:focus {
+  border-color: var(--primary, #6366f1) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+  outline: none !important;
+}
+
+.permission-modal .custom-input-dark::placeholder {
+  color: var(--text-muted, #4a4f6a);
+}
+
+.permission-modal textarea.custom-input-dark {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Botões do Modal */
+.permission-modal .btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border, #2a2d3a);
+  color: var(--text-dim, #94a3b8);
+  padding: 8px 20px;
+  border-radius: var(--radius-md, 8px);
+  font-weight: 500;
+  transition: all 0.25s ease;
+}
+
+.permission-modal .btn-secondary:hover {
+  background: var(--bg-hover, #1e2130);
+  color: var(--text-main, #e2e8f0);
+}
+
+.permission-modal .btn-primary {
+  background: var(--primary, #6366f1);
+  border: none;
+  color: #fff;
+  padding: 8px 24px;
+  border-radius: var(--radius-md, 8px);
+  font-weight: 600;
+  transition: all 0.25s ease;
+}
+
+.permission-modal .btn-primary:hover {
+  background: #818cf8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+}
+
+.permission-modal .btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ============================================
+   RESPONSIVIDADE
+   ============================================ */
+
+/* Tablets */
+@media screen and (max-width: 1024px) {
+  .permission-table {
+    font-size: 13px;
+    min-width: 750px;
+  }
+
+  .permission-table thead th,
+  .permission-table tbody td {
+    padding: 12px 14px;
+  }
+
+  .btn-action {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .btn-action i {
+    font-size: 13px;
+  }
+
+  .status-badge {
+    font-size: 12px;
+    padding: 3px 12px;
+  }
+
+  .permission-code {
+    font-size: 12px;
+  }
+}
+
+/* Mobile */
+@media screen and (max-width: 768px) {
+  .permission-table-container {
+    border-radius: var(--radius-md, 8px);
+    padding: 0;
+  }
+
+  .permission-table {
+    font-size: 12px;
+    min-width: 650px;
+  }
+
+  .permission-table thead th {
+    padding: 10px 12px;
+    font-size: 10px;
+  }
+
+  .permission-table tbody td {
+    padding: 10px 12px;
+  }
+
+  .permission-table tbody td strong.text-primary {
+    font-size: 13px;
+  }
+
+  .btn-action {
+    padding: 4px 8px;
+    font-size: 10px;
+    gap: 3px;
+  }
+
+  .btn-action i {
+    font-size: 12px;
+  }
+
+  .status-badge {
+    font-size: 11px;
+    padding: 2px 10px;
+    gap: 6px;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .permission-code {
+    font-size: 11px;
+  }
+
+  .readonly-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+
+  /* Modal mobile */
+  .permission-modal .modal-dialog {
+    margin: 16px;
+  }
+
+  .permission-modal .modal-header {
+    padding: 16px 20px;
+  }
+
+  .permission-modal .modal-body {
+    padding: 20px;
+  }
+
+  .permission-modal .modal-footer {
+    padding: 12px 20px;
+    flex-direction: column;
+  }
+
+  .permission-modal .modal-footer button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .permission-table .empty-state {
+    padding: 32px 16px;
+  }
+
+  .permission-table .empty-state .empty-icon {
+    font-size: 36px;
+  }
+
+  .permission-table .empty-state p {
+    font-size: 13px;
+  }
+}
+
+/* Telas muito pequenas */
+@media screen and (max-width: 480px) {
+  .permission-table {
+    font-size: 11px;
+    min-width: 550px;
+  }
+
+  .permission-table thead th,
+  .permission-table tbody td {
+    padding: 8px 10px;
+  }
+
+  .permission-table thead th {
+    font-size: 9px;
+  }
+
+  .btn-action {
+    font-size: 9px;
+    padding: 3px 6px;
+    gap: 2px;
+  }
+
+  .btn-action i {
+    font-size: 10px;
+  }
+
+  .status-badge {
+    font-size: 10px;
+    padding: 2px 8px;
+  }
+
+  .permission-code {
+    font-size: 10px;
+  }
+
+  .readonly-badge {
+    font-size: 9px;
+    padding: 2px 6px;
+  }
+}
+
+/* ============================================
+   SCROLLBAR PERSONALIZADA
+   ============================================ */
+.permission-table-container::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.permission-table-container::-webkit-scrollbar-track {
+  background: var(--bg-input, #1a1d2a);
+  border-radius: 4px;
+}
+
+.permission-table-container::-webkit-scrollbar-thumb {
+  background: var(--border, #2a2d3a);
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+.permission-table-container::-webkit-scrollbar-thumb:hover {
+  background: var(--primary, #6366f1);
+}
+
+.permission-table-container {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border, #2a2d3a) var(--bg-input, #1a1d2a);
+}
+
+/* ============================================
+   ACESSIBILIDADE
+   ============================================ */
+.btn-action:focus-visible,
+.permission-modal .btn-primary:focus-visible,
+.permission-modal .btn-secondary:focus-visible {
+  outline: 2px solid var(--primary, #6366f1);
+  outline-offset: 2px;
+}
+
+/* High Contrast */
+@media (prefers-contrast: high) {
+  .btn-action {
+    border-color: var(--primary, #6366f1);
+    color: var(--primary, #6366f1);
+    background: transparent;
+  }
+
+  .btn-action-danger {
+    border-color: var(--error, #ef4444);
+    color: var(--error, #ef4444);
+    background: transparent;
+  }
+
+  .readonly-badge {
+    border-color: var(--text-muted, #4a4f6a);
+    color: var(--text-muted, #4a4f6a);
+  }
+}
