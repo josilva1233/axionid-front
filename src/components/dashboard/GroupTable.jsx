@@ -18,6 +18,7 @@ export default function GroupTable({
     description: "" 
   });
   const [editLoading, setEditLoading] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null); // Estado para controlar qual dropdown está aberto
 
   const AxionAlert = Swal.mixin({
     background: "#111214",
@@ -32,6 +33,7 @@ export default function GroupTable({
       description: group.description || "",
     });
     setShowEditModal(true);
+    setOpenDropdown(null); // Fecha dropdown ao abrir modal
   };
 
   const handleSaveEdit = async () => {
@@ -58,6 +60,7 @@ export default function GroupTable({
   };
 
   const handleDelete = async (group) => {
+    setOpenDropdown(null); // Fecha dropdown
     const result = await AxionAlert.fire({
       title: "Excluir Grupo?",
       text: `Deseja remover permanentemente o grupo "${group.name}"?`,
@@ -73,6 +76,10 @@ export default function GroupTable({
     if (result.isConfirmed) {
       if (onDelete) await onDelete(group.id);
     }
+  };
+
+  const toggleDropdown = (groupId) => {
+    setOpenDropdown(openDropdown === groupId ? null : groupId);
   };
 
   const isSystemAdmin = currentUser?.is_admin === 1 || currentUser?.is_admin === true;
@@ -98,6 +105,7 @@ export default function GroupTable({
                   g.users?.some((u) => u.id === currentUser?.id && u.pivot?.role === "admin");
 
                 const memberCount = g.users_count || g.users?.length || 0;
+                const isDropdownOpen = openDropdown === g.id;
 
                 return (
                   <tr key={g.id}>
@@ -144,41 +152,54 @@ export default function GroupTable({
                       </span>
                     </td>
                     <td className="text-end">
-                      <div className="actions-wrapper">
-                        {canManage ? (
-                          <>
-                            <button
-                              className="btn-table-action"
-                              onClick={() => onViewDetail(g.id)}
-                              title="Gerenciar Membros"
-                            >
-                              <i className="bi bi-gear-fill"></i> Gerenciar
-                            </button>
-                            {isSystemAdmin && (
-                              <>
-                                <button
-                                  className="btn-table-action"
-                                  onClick={() => handleEdit(g)}
-                                  title="Editar Grupo"
-                                >
-                                  <i className="bi bi-pencil-square"></i> Editar
-                                </button>
-                                <button
-                                  className="btn-table-action"
-                                  onClick={() => handleDelete(g)}
-                                  title="Excluir Grupo"
-                                >
-                                  <i className="bi bi-trash3-fill"></i> Deletar
-                                </button>
-                              </>
-                            )}
-                          </>
-                        ) : (
-                          <span className="readonly-indicator">
-                            <i className="bi bi-lock-fill"></i> Somente Leitura
-                          </span>
-                        )}
-                      </div>
+                      {canManage ? (
+                        <div className="actions-dropdown-wrapper">
+                          <button
+                            className="btn-dropdown-toggle"
+                            onClick={() => toggleDropdown(g.id)}
+                            title="Abrir ações"
+                          >
+                            <i className="bi bi-three-dots-vertical"></i>
+                          </button>
+
+                          {isDropdownOpen && (
+                            <div className="actions-dropdown-menu">
+                              <button
+                                className="dropdown-item"
+                                onClick={() => {
+                                  onViewDetail(g.id);
+                                  setOpenDropdown(null);
+                                }}
+                                title="Gerenciar Membros"
+                              >
+                                <i className="bi bi-gear-fill"></i> Gerenciar
+                              </button>
+                              {isSystemAdmin && (
+                                <>
+                                  <button
+                                    className="dropdown-item"
+                                    onClick={() => handleEdit(g)}
+                                    title="Editar Grupo"
+                                  >
+                                    <i className="bi bi-pencil-square"></i> Editar
+                                  </button>
+                                  <button
+                                    className="dropdown-item dropdown-item-danger"
+                                    onClick={() => handleDelete(g)}
+                                    title="Excluir Grupo"
+                                  >
+                                    <i className="bi bi-trash3-fill"></i> Deletar
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="readonly-indicator">
+                          <i className="bi bi-lock-fill"></i> Somente Leitura
+                        </span>
+                      )}
                     </td>
                   </tr>
                 );
