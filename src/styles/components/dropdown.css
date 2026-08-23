@@ -4,7 +4,10 @@
 
 .user-dropdown-container {
   position: relative;
+  border: 3px solid red !important;
 }
+
+
 
 .avatar-trigger {
   width: 40px;
