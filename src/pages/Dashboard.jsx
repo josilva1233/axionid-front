@@ -168,22 +168,16 @@ export default function Dashboard() {
     loadProfile();
   }, [navigate]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (activeTab === "users") loadUsers(1);
-      else if (activeTab === "audit") loadAuditLogs(1);
-      else if (activeTab === "groups") loadGroups(1);
-      else if (activeTab === "orders") loadServiceOrders(1);
-      
-      // Reseta a paginação ao filtrar
-      setUsersCurrentPage(1);
-      setGroupsCurrentPage(1);
-      setAuditCurrentPage(1);
-      setOrdersCurrentPage(1);
-    }, 500); // 500ms de espera após o usuário parar de digitar
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setUsersCurrentPage(1);
+    setGroupsCurrentPage(1);
+    setAuditCurrentPage(1);
+    setOrdersCurrentPage(1);
+  }, 500);
 
-    return () => clearTimeout(timer);
-  }, [filters, activeTab]);
+  return () => clearTimeout(timer);
+}, [filters, activeTab]);
 
   useEffect(() => {
     if (selectedUser) {
@@ -217,7 +211,6 @@ export default function Dashboard() {
 
   const handleOrdersPageChange = (page) => {
     setOrdersCurrentPage(page);
-    loadServiceOrders(page); // ← CARREGA A PÁGINA SELECIONADA
   };
 
   const handleUpdateUser = async (userId, data) => {
