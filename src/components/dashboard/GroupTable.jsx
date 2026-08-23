@@ -105,11 +105,12 @@ export default function GroupTable({
         <table className="axion-table">
           <thead>
             <tr>
-              <th className="col-group">NOME DO GRUPO</th>
-              <th className="col-creator">CRIADOR</th>
-              <th className="col-members text-center">MEMBROS</th>
-              <th className="col-status text-center">MEU STATUS</th>
-              <th className="col-actions text-end">AÇÕES</th>
+              <th>ID</th>
+              <th>NOME DO GRUPO</th>
+              <th>CRIADOR</th>
+              <th className="text-center">MEMBROS</th>
+              <th className="text-center">MEU STATUS</th>
+              <th className="text-end">AÇÕES</th>
             </tr>
           </thead>
           <tbody>
@@ -124,9 +125,10 @@ export default function GroupTable({
 
                 return (
                   <tr key={g.id}>
-                    <td className="col-group">
+                    <td>#{g.id}</td>
+                    <td>
                       <div className="group-name-cell">
-                        <strong className="text-white group-name-text">
+                        <strong className="text-primary group-name-text">
                           {g.name.toUpperCase()}
                         </strong>
                         {g.description && (
@@ -136,7 +138,7 @@ export default function GroupTable({
                         )}
                       </div>
                     </td>
-                    <td className="col-creator">
+                    <td>
                       <div className="creator-cell">
                         <i className="bi bi-person-badge me-1"></i>
                         <span className="creator-name">{g.creator?.name || "Sistema"}</span>
@@ -145,7 +147,7 @@ export default function GroupTable({
                         )}
                       </div>
                     </td>
-                    <td className="col-members text-center">
+                    <td className="text-center">
                       <div className="members-cell">
                         <span className="members-count">{memberCount}</span>
                         <span className="members-label">
@@ -153,20 +155,19 @@ export default function GroupTable({
                         </span>
                       </div>
                     </td>
-                    <td className="col-status text-center">
+                    <td className="text-center">
                       <span
                         className={`badge ${canManage ? "badge-success" : "badge-operacional"} status-badge-responsive`}
                       >
                         {isSystemAdmin ? "Admin Global" : canManage ? "Administrador" : "Membro"}
                       </span>
                     </td>
-                    <td className="col-actions text-end">
+                    <td className="text-end">
                       {canManage ? (
                         <div 
                           className="actions-dropdown-container" 
                           ref={(el) => (dropdownRefs.current[g.id] = el)}
                         >
-                          {/* Botão Trigger - estilo igual ao UserDropdown */}
                           <button
                             className={`actions-dropdown-trigger ${isDropdownOpen ? 'active' : ''}`}
                             onClick={() => toggleDropdown(g.id)}
@@ -176,7 +177,6 @@ export default function GroupTable({
                             <i className="bi bi-three-dots-vertical"></i>
                           </button>
 
-                          {/* Menu Flutuante - estilo igual ao UserDropdown */}
                           {isDropdownOpen && (
                             <div className="actions-dropdown-menu-floating" role="menu">
                               <header className="dropdown-menu-header">
@@ -238,9 +238,8 @@ export default function GroupTable({
                           )}
                         </div>
                       ) : (
-                        <span className="readonly-indicator">
-                          <i className="bi bi-lock-fill"></i>
-                          <span className="readonly-text">Somente Leitura</span>
+                        <span className="readonly-badge">
+                          <i className="bi bi-lock-fill me-1"></i> Read-only
                         </span>
                       )}
                     </td>
@@ -249,7 +248,7 @@ export default function GroupTable({
               })
             ) : (
               <tr>
-                <td colSpan="5" className="text-center py-5 text-dim">
+                <td colSpan="6" className="text-center py-5 text-dim">
                   <div className="empty-state">
                     <span className="empty-icon">{loading ? "⏳" : "📁"}</span>
                     <p className="mt-2 mb-0">
