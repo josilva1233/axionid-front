@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { Modal, Form, Spinner } from "react-bootstrap";
 import Swal from "sweetalert2";
 
-
 export default function GroupTable({ 
   groups, 
   loading, 
@@ -80,167 +79,124 @@ export default function GroupTable({
 
   return (
     <>
-      <div className="group-table-wrapper">
-        <div className="group-table-header">
-          <div className="header-left">
-            <h4 className="table-title">
-              <i className="bi bi-people-fill"></i>
-              Grupos de Usuários
-            </h4>
-            <span className="group-count">
-              {groups.length} {groups.length === 1 ? "grupo" : "grupos"}
-            </span>
-          </div>
-          <div className="header-right">
-            <span className="table-badge">
-              <i className="bi bi-shield-check"></i>
-              {isSystemAdmin ? "Admin Global" : "Visualização"}
-            </span>
-          </div>
-        </div>
+      <div className="table-responsive">
+        <table className="axion-table">
+          <thead>
+            <tr>
+              <th>NOME DO GRUPO</th>
+              <th>CRIADOR</th>
+              <th className="text-center">MEMBROS</th>
+              <th className="text-center">MEU STATUS</th>
+              <th className="text-end">AÇÕES</th>
+            </tr>
+          </thead>
+          <tbody>
+            {groups.length > 0 ? (
+              groups.map((g) => {
+                const canManage = isSystemAdmin ||
+                  g.creator_id === currentUser?.id ||
+                  g.users?.some((u) => u.id === currentUser?.id && u.pivot?.role === "admin");
 
-        <div className="permission-table-container">
-          <table className="permission-table">
-            <thead>
-              <tr>
-                <th>
-                  <span className="th-icon">🏷️</span>
-                  NOME DO GRUPO
-                </th>
-                <th>
-                  <span className="th-icon">👤</span>
-                  CRIADOR
-                </th>
-                <th className="text-center">
-                  <span className="th-icon">👥</span>
-                  MEMBROS
-                </th>
-                <th className="text-center">
-                  <span className="th-icon">⚡</span>
-                  MEU STATUS
-                </th>
-                <th className="text-end">
-                  <span className="th-icon">⚙️</span>
-                  AÇÕES
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {groups.length > 0 ? (
-                groups.map((g) => {
-                  const canManage = isSystemAdmin ||
-                    g.creator_id === currentUser?.id ||
-                    g.users?.some((u) => u.id === currentUser?.id && u.pivot?.role === "admin");
+                const memberCount = g.users_count || g.users?.length || 0;
 
-                  const memberCount = g.users_count || g.users?.length || 0;
-
-                  return (
-                    <tr key={g.id} className="group-row">
-                      <td>
-                        <div className="group-info">
-                          <div className="group-avatar">
-                            {g.name.charAt(0).toUpperCase()}
-                          </div>
-                          <div className="group-details">
-                            <strong className="group-name">
-                              {g.name.toUpperCase()}
-                            </strong>
-                            {g.description && (
-                              <span className="group-description">
-                                {g.description}
-                              </span>
+                return (
+                  <tr key={g.id}>
+                    <td>
+                      <strong className="text-white">
+                        {g.name.toUpperCase()}
+                      </strong>
+                      {g.description && (
+                        <>
+                          <br />
+                          <span className="text-dim" style={{ fontSize: '12px' }}>
+                            {g.description}
+                          </span>
+                        </>
+                      )}
+                    </td>
+                    <td className="text-dim">
+                      <i className="bi bi-person-badge me-1"></i>
+                      {g.creator?.name || "Sistema"}
+                      {g.creator?.id === currentUser?.id && (
+                        <span className="badge-current-user" style={{ marginLeft: '6px' }}>
+                          Você
+                        </span>
+                      )}
+                    </td>
+                    <td className="text-center">
+                      <div className="status-indicator-wrapper">
+                        <span
+                          className="status-indicator"
+                          style={{
+                            backgroundColor: "var(--primary)",
+                          }}
+                        />
+                        <span className="status-text">
+                          {memberCount} membro{memberCount !== 1 ? "s" : ""}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="text-center">
+                      <span
+                        className={`badge ${canManage ? "badge-success" : "badge-operacional"}`}
+                      >
+                        {isSystemAdmin ? "Admin Global" : canManage ? "Administrador" : "Membro"}
+                      </span>
+                    </td>
+                    <td className="text-end">
+                      <div className="actions-wrapper">
+                        {canManage ? (
+                          <>
+                            <button
+                              className="btn-table-action"
+                              onClick={() => onViewDetail(g.id)}
+                              title="Gerenciar Membros"
+                            >
+                              <i className="bi bi-gear-fill"></i> Gerenciar
+                            </button>
+                            {isSystemAdmin && (
+                              <>
+                                <button
+                                  className="btn-table-action"
+                                  onClick={() => handleEdit(g)}
+                                  title="Editar Grupo"
+                                >
+                                  <i className="bi bi-pencil-square"></i> Editar
+                                </button>
+                                <button
+                                  className="btn-table-action"
+                                  onClick={() => handleDelete(g)}
+                                  title="Excluir Grupo"
+                                >
+                                  <i className="bi bi-trash3-fill"></i> Deletar
+                                </button>
+                              </>
                             )}
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="creator-info">
-                          <span className="creator-name">
-                            {g.creator?.name || "Sistema"}
+                          </>
+                        ) : (
+                          <span className="readonly-indicator">
+                            <i className="bi bi-lock-fill"></i> Somente Leitura
                           </span>
-                          {g.creator?.id === currentUser?.id && (
-                            <span className="creator-badge">Você</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="text-center">
-                        <div className="member-count">
-                          <span className="member-number">{memberCount}</span>
-                          <span className="member-label">
-                            membro{memberCount !== 1 ? "s" : ""}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="text-center">
-                        <div className={`status-role ${canManage ? 'can-manage' : 'readonly'}`}>
-                          <span className="status-dot"></span>
-                          <span className="status-label">
-                            {isSystemAdmin ? "Admin Global" : canManage ? "Administrador" : "Membro"}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="text-end">
-                        <div className="actions-group">
-                          {canManage ? (
-                            <>
-                              <button
-                                className="action-btn action-manage"
-                                onClick={() => onViewDetail(g.id)}
-                                title="Gerenciar Membros"
-                              >
-                                <i className="bi bi-gear-fill"></i>
-                                Gerenciar
-                              </button>
-                              {isSystemAdmin && (
-                                <>
-                                  <button
-                                    className="action-btn action-edit"
-                                    onClick={() => handleEdit(g)}
-                                    title="Editar Grupo"
-                                  >
-                                    <i className="bi bi-pencil-square"></i>
-                                    Editar
-                                  </button>
-                                  <button
-                                    className="action-btn action-delete"
-                                    onClick={() => handleDelete(g)}
-                                    title="Excluir Grupo"
-                                  >
-                                    <i className="bi bi-trash3-fill"></i>
-                                    Deletar
-                                  </button>
-                                </>
-                              )}
-                            </>
-                          ) : (
-                            <span className="readonly-indicator">
-                              <i className="bi bi-lock-fill"></i>
-                              Somente Leitura
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan="5">
-                    <div className="empty-state">
-                      <div className="empty-icon">{loading ? "⏳" : "📁"}</div>
-                      <h5 className="empty-title">
-                        {loading ? "Carregando grupos..." : "Nenhum grupo encontrado"}
-                      </h5>
-                      <p className="empty-subtitle">
-                        {loading ? "Aguarde um momento..." : "Crie seu primeiro grupo para começar a gerenciar permissões."}
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan="5" className="text-center py-5 text-dim">
+                  <div className="empty-state">
+                    <span className="empty-icon">{loading ? "⏳" : "📁"}</span>
+                    <p className="mt-2 mb-0">
+                      {loading ? "Carregando grupos..." : "Nenhum grupo encontrado."}
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* Modal de Edição */}
@@ -248,7 +204,7 @@ export default function GroupTable({
         show={showEditModal} 
         onHide={() => setShowEditModal(false)} 
         centered 
-        className="group-edit-modal"
+        className="permission-modal"
       >
         <Modal.Header closeButton>
           <Modal.Title>
@@ -296,14 +252,14 @@ export default function GroupTable({
         </Modal.Body>
         <Modal.Footer>
           <button 
-            className="btn-cancel" 
+            className="btn-secondary" 
             onClick={() => setShowEditModal(false)} 
             disabled={editLoading}
           >
             Cancelar
           </button>
           <button 
-            className="btn-save" 
+            className="btn-primary" 
             onClick={handleSaveEdit} 
             disabled={editLoading}
           >
