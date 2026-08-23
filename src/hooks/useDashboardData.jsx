@@ -5,6 +5,8 @@ import api from "../services/api";
 export function useDashboardData(role) {
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([]);
+  // ✅ Como deve ficar:
+  const [filters, setFilters] = useState({ name: "", completed: "", method: "", date: "", search: "", status: "" });
   const [groups, setGroups] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
   const [serviceOrders, setServiceOrders] = useState([]); // ← ADICIONAR
