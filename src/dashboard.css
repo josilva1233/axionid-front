@@ -1825,3 +1825,53 @@ body::after {
     color: var(--text-muted, #4a4f6a);
   }
 }
+
+
+/* ============================================
+   BOTÃO LIMPAR - OPÇÃO 1 (MINIMALISTA)
+   ============================================ */
+.btn-filter-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--border, #2a2d3a);
+  background: transparent;
+  color: var(--text-dim, #94a3b8);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  width: 100%;
+  min-height: 44px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-filter-clear i {
+  font-size: 16px;
+  transition: transform 0.3s ease;
+}
+
+.btn-filter-clear:hover {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: var(--error, #ef4444);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
+}
+
+.btn-filter-clear:hover i {
+  transform: rotate(-15deg) scale(1.1);
+}
+
+.btn-filter-clear:active {
+  transform: scale(0.96);
+}
+
+.btn-filter-clear:focus-visible {
+  outline: 2px solid var(--error, #ef4444);
+  outline-offset: 2px;
+}
