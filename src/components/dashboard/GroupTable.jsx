@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Modal, Form, Spinner } from "react-bootstrap";
 import Swal from "sweetalert2";
-import "./styles/GroupTable.css";
+
 
 export default function GroupTable({ 
   groups, 
