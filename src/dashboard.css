@@ -5513,3 +5513,369 @@ body {
 }
 
 
+/* ==========================================================
+   GROUP TABLE - ESTILO PERMISSION TABLE
+   ========================================================== */
+
+/* ============================================
+   AJUSTE DAS LARGURAS DAS COLUNAS
+   ============================================ */
+.axion-table thead th:nth-child(1) { width: 8%; }   /* ID */
+.axion-table thead th:nth-child(2) { width: 22%; }  /* NOME DO GRUPO */
+.axion-table thead th:nth-child(3) { width: 20%; }  /* CRIADOR */
+.axion-table thead th:nth-child(4) { width: 12%; }  /* MEMBROS */
+.axion-table thead th:nth-child(5) { width: 18%; }  /* MEU STATUS */
+.axion-table thead th:nth-child(6) { width: 20%; }  /* AÇÕES */
+
+/* ============================================
+   TEXTO PRIMÁRIO PARA O NOME DO GRUPO
+   ============================================ */
+.group-name-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary, #6366f1) !important;
+  line-height: 1.3;
+  word-break: break-word;
+  transition: color var(--transition-fast, 0.2s ease);
+}
+
+.group-name-text:hover {
+  color: var(--primary-hover, #818cf8) !important;
+}
+
+/* ============================================
+   CÉLULA DO CRIADOR
+   ============================================ */
+.creator-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.creator-cell i {
+  font-size: 14px;
+  color: var(--text-muted, #4a4f6a);
+}
+
+.creator-name {
+  font-size: 13px;
+  color: var(--text-dim, #94a3b8);
+  font-weight: 500;
+}
+
+/* ============================================
+   CÉLULA DE MEMBROS
+   ============================================ */
+.members-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.members-count {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main, #e2e8f0);
+  line-height: 1;
+}
+
+.members-label {
+  font-size: 12px;
+  color: var(--text-dim, #94a3b8);
+}
+
+/* ============================================
+   BADGE DE STATUS - MESMO ESTILO DO PERMISSION TABLE
+   ============================================ */
+.status-badge-responsive {
+  font-size: 11px !important;
+  padding: 4px 14px !important;
+  min-width: 80px !important;
+  white-space: nowrap;
+}
+
+.badge-success {
+  background: var(--primary-light, rgba(99, 102, 241, 0.15));
+  color: var(--primary, #6366f1);
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
+.badge-success:hover {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 0 20px var(--primary-light);
+}
+
+.badge-operacional {
+  background: rgba(148, 163, 184, 0.08);
+  color: var(--text-dim, #94a3b8);
+  border-color: rgba(148, 163, 184, 0.1);
+}
+
+.badge-operacional:hover {
+  background: rgba(148, 163, 184, 0.15);
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+/* ============================================
+   BADGE "VOCÊ" - MESMO ESTILO
+   ============================================ */
+.badge-current-user {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--primary, #6366f1);
+  background: var(--primary-light, rgba(99, 102, 241, 0.12));
+  padding: 1px 10px;
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  white-space: nowrap;
+}
+
+/* ============================================
+   READONLY BADGE - IGUAL AO PERMISSION TABLE
+   ============================================ */
+.readonly-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  padding: var(--spacing-xs, 4px) var(--spacing-md, 12px);
+  border-radius: var(--radius-sm, 6px);
+  background: rgba(108, 117, 125, 0.08);
+  color: var(--text-muted, #4a4f6a);
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid rgba(108, 117, 125, 0.1);
+}
+
+/* ============================================
+   DROPDOWN DE AÇÕES - MESMO ESTILO
+   ============================================ */
+.actions-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.actions-dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--border, #2a2d3a);
+  background: transparent;
+  color: var(--text-dim, #94a3b8);
+  font-size: 18px;
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.2s ease);
+  min-width: 36px;
+  min-height: 36px;
+  line-height: 1;
+}
+
+.actions-dropdown-trigger:hover {
+  background: var(--bg-hover, #1e2130);
+  color: var(--text-main, #e2e8f0);
+  border-color: var(--border-light, #1e2130);
+}
+
+.actions-dropdown-trigger.active {
+  background: var(--bg-hover, #1e2130);
+  color: var(--primary, #6366f1);
+  border-color: var(--primary, #6366f1);
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+}
+
+.actions-dropdown-trigger:focus-visible {
+  outline: 2px solid var(--primary, #6366f1);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   MENU FLUTUANTE - MESMO ESTILO
+   ============================================ */
+.actions-dropdown-menu-floating {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 220px;
+  max-width: 280px;
+  background: var(--bg-card, #14161e);
+  border: 1px solid var(--border, #2a2d3a);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-xl, 0 20px 60px rgba(0, 0, 0, 0.6));
+  z-index: 1050;
+  animation: actionsDropdownSlideIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  background: rgba(20, 22, 30, 0.95);
+}
+
+/* Header do menu */
+.actions-dropdown-menu-floating .dropdown-menu-header {
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  background: var(--bg-input, #1a1d2a);
+  border-bottom: 1px solid var(--border-light, #1e2130);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+}
+
+.actions-dropdown-menu-floating .dropdown-header-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted, #4a4f6a);
+}
+
+.actions-dropdown-menu-floating .dropdown-header-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main, #e2e8f0);
+  line-height: 1.3;
+}
+
+/* Divisor */
+.actions-dropdown-menu-floating .dropdown-menu-divider {
+  height: 1px;
+  background: var(--border-light, #1e2130);
+  margin: 0;
+  flex-shrink: 0;
+}
+
+/* Corpo do menu */
+.actions-dropdown-menu-floating .dropdown-menu-body {
+  padding: var(--spacing-sm, 8px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+}
+
+.actions-dropdown-menu-floating .dropdown-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+  padding: var(--spacing-md, 12px) var(--spacing-lg, 16px);
+  border: none;
+  background: transparent;
+  color: var(--text-dim, #94a3b8);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.2s ease);
+  border-radius: var(--radius-md, 8px);
+  width: 100%;
+  text-align: left;
+}
+
+.actions-dropdown-menu-floating .dropdown-menu-item:hover {
+  background: var(--bg-hover, #1e2130);
+  color: var(--text-main, #e2e8f0);
+}
+
+.actions-dropdown-menu-floating .dropdown-menu-icon {
+  font-size: 16px;
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actions-dropdown-menu-floating .dropdown-menu-icon i {
+  font-size: 16px;
+  color: var(--text-muted, #4a4f6a);
+  transition: color var(--transition-fast, 0.2s ease);
+}
+
+.actions-dropdown-menu-floating .dropdown-menu-item:hover .dropdown-menu-icon i {
+  color: var(--text-main, #e2e8f0);
+  opacity: 1;
+}
+
+/* Item de perigo */
+.actions-dropdown-menu-floating .dropdown-menu-item-danger {
+  color: var(--error, #ef4444) !important;
+}
+
+.actions-dropdown-menu-floating .dropdown-menu-item-danger .dropdown-menu-icon i {
+  color: var(--error, #ef4444) !important;
+}
+
+.actions-dropdown-menu-floating .dropdown-menu-item-danger:hover {
+  background: var(--error-light, rgba(239, 68, 68, 0.08)) !important;
+  color: var(--error-hover, #f87171) !important;
+}
+
+.actions-dropdown-menu-floating .dropdown-menu-item-danger:hover .dropdown-menu-icon i {
+  color: var(--error-hover, #f87171) !important;
+}
+
+/* ============================================
+   ANIMAÇÕES
+   ============================================ */
+@keyframes actionsDropdownSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ============================================
+   RESPONSIVIDADE
+   ============================================ */
+
+/* Tablets (768px) */
+@media screen and (max-width: 768px) {
+  .axion-table thead th:nth-child(1) { width: 9%; }
+  .axion-table thead th:nth-child(2) { width: 20%; }
+  .axion-table thead th:nth-child(3) { width: 18%; }
+  .axion-table thead th:nth-child(4) { width: 14%; }
+  .axion-table thead th:nth-child(5) { width: 19%; }
+  .axion-table thead th:nth-child(6) { width: 20%; }
+
+  .actions-dropdown-menu-floating {
+    min-width: 200px;
+    max-width: 240px;
+    right: -8px;
+  }
+}
+
+/* Mobile (480px) */
+@media screen and (max-width: 480px) {
+  .axion-table thead th:nth-child(1) { width: 10%; }
+  .axion-table thead th:nth-child(2) { width: 18%; }
+  .axion-table thead th:nth-child(3) { width: 16%; }
+  .axion-table thead th:nth-child(4) { width: 15%; }
+  .axion-table thead th:nth-child(5) { width: 21%; }
+  .axion-table thead th:nth-child(6) { width: 20%; }
+
+  .actions-dropdown-menu-floating {
+    position: fixed;
+    right: 12px;
+    left: 12px;
+    min-width: unset;
+    max-width: unset;
+    width: calc(100% - 24px);
+    animation: actionsDropdownSlideInMobile 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    border-radius: var(--radius-xl, 16px);
+  }
+
+  @keyframes actionsDropdownSlideInMobile {
+    from {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+}
