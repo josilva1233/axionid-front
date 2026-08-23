@@ -28,34 +28,42 @@ export default function DashboardFilters({
     </div>
   );
 
+  const renderSelect = (label, name, options) => (
+    <div className="filter-col">
+      <Form.Group>
+        <Form.Label className="filter-label">{label}</Form.Label>
+        <Form.Select 
+          name={name} 
+          value={filters[name] || ""} 
+          onChange={(e) => {
+            console.log(`🔍 Select ${name} alterado:`, e.target.value);
+            onFilterChange(e);
+          }} 
+          className="custom-input-dark"
+        >
+          <option value="">Todos</option>
+          {options.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </Form.Select>
+      </Form.Group>
+    </div>
+  );
+
   // Configuração das abas
   const tabConfigs = {
     users: role === "admin" && (
       <>
         {renderInput("Buscar por Nome", "name", "Ex: João Silva...")}
-        <div className="filter-col">
-          <Form.Group>
-            <Form.Label className="filter-label">Status Perfil</Form.Label>
-            <Form.Select 
-              name="completed" 
-              value={filters.completed || ""} 
-              onChange={(e) => {
-                console.log("🔍 Select completed alterado:", e.target.value);
-                onFilterChange(e);
-              }} 
-              className="custom-input-dark"
-            >
-              <option value="">Todos</option>
-              <option value="1">✅ Completo</option>
-              <option value="0">⚠️ Incompleto</option>
-            </Form.Select>
-          </Form.Group>
-        </div>
+        {renderSelect("Status Perfil", "completed", [
+          { value: "1", label: "✅ Completo" },
+          { value: "0", label: "⚠️ Incompleto" },
+        ])}
       </>
     ),
     groups: (
       <>
-        {renderInput("Buscar Grupos/Membros", "name")}
+        {renderInput("Buscar Grupos/Membros", "name", "Digite o nome do grupo...")}
         <div className="filter-col">
           <button className="btn-primary w-100" onClick={onNewGroup}>
             <i className="bi bi-plus-lg me-2"></i> Novo Grupo
@@ -63,115 +71,61 @@ export default function DashboardFilters({
         </div>
       </>
     ),
+    permissions: (
+      <>
+        {renderInput("Buscar Permissão", "label", "Ex: Criar Usuários...")}
+        {renderInput("Chave do Sistema", "name", "Ex: users.create...")}
+        <div className="filter-col">
+          <button className="btn-primary w-100" onClick={onNewPermission}>
+            <i className="bi bi-plus-lg me-2"></i> Nova Permissão
+          </button>
+        </div>
+      </>
+    ),
     orders: (
       <>
-        {/* Campo: Protocolo */}
-        <div className="filter-col">
-          <Form.Group>
-            <Form.Label className="filter-label">Protocolo</Form.Label>
-            <Form.Control 
-              type="text" 
-              name="protocol" 
-              value={filters.protocol || ""} 
-              onChange={(e) => {
-                console.log("🔍 Protocolo alterado:", e.target.value);
-                onFilterChange(e);
-              }} 
-              className="custom-input-dark" 
-              placeholder="Digite o protocolo..."
-            />
-          </Form.Group>
-        </div>
-
-        {/* Campo: Título / Assunto */}
-        <div className="filter-col">
-          <Form.Group>
-            <Form.Label className="filter-label">Título / Assunto</Form.Label>
-            <Form.Control 
-              type="text" 
-              name="title" 
-              value={filters.title || ""} 
-              onChange={(e) => {
-                console.log("🔍 Título alterado:", e.target.value);
-                onFilterChange(e);
-              }} 
-              className="custom-input-dark" 
-              placeholder="Digite o título..."
-            />
-          </Form.Group>
-        </div>
-
-        {/* Campo: Solicitante */}
-        <div className="filter-col">
-          <Form.Group>
-            <Form.Label className="filter-label">Solicitante</Form.Label>
-            <Form.Control 
-              type="text" 
-              name="applicant" 
-              value={filters.applicant || ""} 
-              onChange={(e) => {
-                console.log("🔍 Solicitante alterado:", e.target.value);
-                onFilterChange(e);
-              }} 
-              className="custom-input-dark" 
-              placeholder="Digite o nome do solicitante..."
-            />
-          </Form.Group>
-        </div>
-
-        {/* Campo: Prioridade */}
-        <div className="filter-col">
-          <Form.Group>
-            <Form.Label className="filter-label">Prioridade</Form.Label>
-            <Form.Select 
-              name="priority" 
-              value={filters.priority || ""} 
-              onChange={(e) => {
-                console.log("🔍 Prioridade alterado:", e.target.value);
-                onFilterChange(e);
-              }} 
-              className="custom-input-dark"
-            >
-              <option value="">Todas</option>
-              <option value="low">Baixa</option>
-              <option value="medium">Média</option>
-              <option value="high">Alta</option>
-              <option value="urgent">Urgente</option>
-            </Form.Select>
-          </Form.Group>
-        </div>
-
-        {/* Campo: Status */}
-        <div className="filter-col">
-          <Form.Group>
-            <Form.Label className="filter-label">Status</Form.Label>
-            <Form.Select 
-              name="status" 
-              value={filters.status || ""} 
-              onChange={(e) => {
-                console.log("🔍 Status alterado:", e.target.value);
-                onFilterChange(e);
-              }} 
-              className="custom-input-dark"
-            >
-              <option value="">Todos os Status</option>
-              <option value="open">Aberto</option>
-              <option value="in_progress">Em Andamento</option>
-              <option value="completed">Fechado / Concluído</option>
-              <option value="canceled">Cancelado</option>
-            </Form.Select>
-          </Form.Group>
-        </div>
-
-        {/* Botão: Abrir Chamado */}
+        {renderInput("Protocolo", "protocol", "Digite o protocolo...")}
+        {renderInput("Título / Assunto", "title", "Digite o título...")}
+        {renderInput("Solicitante", "applicant", "Digite o nome do solicitante...")}
+        {renderSelect("Prioridade", "priority", [
+          { value: "low", label: "Baixa" },
+          { value: "medium", label: "Média" },
+          { value: "high", label: "Alta" },
+          { value: "urgent", label: "Urgente" },
+        ])}
+        {renderSelect("Status", "status", [
+          { value: "open", label: "Aberto" },
+          { value: "in_progress", label: "Em Andamento" },
+          { value: "completed", label: "Fechado / Concluído" },
+          { value: "canceled", label: "Cancelado" },
+        ])}
         <div className="filter-col">
           <button className="btn-primary w-100" onClick={onNewOrder}>
             <i className="bi bi-megaphone me-2"></i> Abrir Chamado
           </button>
         </div>
       </>
-    )
+    ),
+    audit: role === "admin" && (
+      <>
+        {renderInput("Usuário / E-mail", "user", "Ex: joao@email.com...")}
+        {renderInput("Endpoint / URL", "url", "Ex: /api/users...")}
+        {renderSelect("Método HTTP", "method", [
+          { value: "GET", label: "GET" },
+          { value: "POST", label: "POST" },
+          { value: "PUT", label: "PUT" },
+          { value: "PATCH", label: "PATCH" },
+          { value: "DELETE", label: "DELETE" },
+        ])}
+        {renderInput("Data Início", "start_date", "YYYY-MM-DD")}
+        {renderInput("Data Fim", "end_date", "YYYY-MM-DD")}
+      </>
+    ),
   };
+
+  // Verifica se a aba atual tem configuração
+  const hasConfig = tabConfigs[activeTab];
+  const isAuditOrPermission = activeTab === "audit" || activeTab === "permissions";
 
   return (
     <div className="filter-card">
@@ -188,7 +142,7 @@ export default function DashboardFilters({
                 <button className="btn-edit w-100" onClick={() => setIsEditing(true)}>
                   <i className="bi bi-pencil me-2"></i> Editar
                 </button> :
-                <div className="action-buttons">
+                <div className="action-buttons" style={{ display: "flex", gap: "8px" }}>
                   <button className="btn-secondary" onClick={() => setIsEditing(false)}>Cancelar</button>
                   <button className="btn-primary" onClick={handleSave} disabled={actionLoading}>
                     {actionLoading ? "..." : "Salvar"}
@@ -199,12 +153,15 @@ export default function DashboardFilters({
           </>
         ) : (
           <>
-            {tabConfigs[activeTab]}
-            <div className="filter-col">
-              <button className="btn-filter-clear w-100" onClick={onClear}>
-                <i className="bi bi-eraser me-2"></i> Limpar
-              </button>
-            </div>
+            {hasConfig}
+            {/* Botão Limpar - aparece apenas se não for visualização de usuário */}
+            {!isUserDetailView && (
+              <div className="filter-col">
+                <button className="btn-filter-clear w-100" onClick={onClear}>
+                  <i className="bi bi-eraser me-2"></i> Limpar
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>
