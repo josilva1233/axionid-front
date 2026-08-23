@@ -22,26 +22,34 @@ export default function ServiceOrderTable({ orders, loading, onViewDetail, onEdi
 
   const getStatusBadge = (status) => {
     const styles = {
-      open: { bg: "rgba(0, 255, 255, 0.1)", color: "#00ffff", label: "Aberto" },
-      in_progress: { bg: "rgba(255, 193, 7, 0.1)", color: "#ffc107", label: "Em Atendimento" },
-      resolved: { bg: "rgba(40, 167, 69, 0.1)", color: "#28a745", label: "Resolvido" },
-      closed: { bg: "rgba(108, 117, 125, 0.1)", color: "#6c757d", label: "Fechado" },
+      open: { bg: "rgba(99, 102, 241, 0.12)", color: "#6366f1", label: "Aberto" },
+      in_progress: { bg: "rgba(251, 146, 60, 0.12)", color: "#fb923c", label: "Em Atendimento" },
+      resolved: { bg: "rgba(34, 197, 94, 0.12)", color: "#22c55e", label: "Resolvido" },
+      closed: { bg: "rgba(148, 163, 184, 0.08)", color: "#94a3b8", label: "Fechado" },
     };
     const current = styles[status] || styles.open;
     return (
-      <div className="status-badge">
+      <span className="status-badge-service" style={{ backgroundColor: current.bg, color: current.color }}>
         <span className="status-dot" style={{ backgroundColor: current.color }}></span>
-        <span>{current.label}</span>
-      </div>
+        {current.label}
+      </span>
     );
   };
 
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'high': return '#ffc107';
-      case 'urgent': return '#dc3545';
-      default: return '#6366f1';
-    }
+  const getPriorityBadge = (priority) => {
+    const styles = {
+      low: { bg: "rgba(34, 197, 94, 0.12)", color: "#22c55e", label: "Baixa" },
+      medium: { bg: "rgba(234, 179, 8, 0.12)", color: "#eab308", label: "Média" },
+      high: { bg: "rgba(251, 146, 60, 0.12)", color: "#fb923c", label: "Alta" },
+      urgent: { bg: "rgba(239, 68, 68, 0.12)", color: "#ef4444", label: "Urgente" },
+    };
+    const current = styles[priority] || styles.medium;
+    return (
+      <span className="priority-badge" style={{ backgroundColor: current.bg, color: current.color }}>
+        <span className="status-dot" style={{ backgroundColor: current.color }}></span>
+        {current.label}
+      </span>
+    );
   };
 
   const handleEdit = (order) => {
@@ -86,6 +94,9 @@ export default function ServiceOrderTable({ orders, loading, onViewDetail, onEdi
       showCancelButton: true,
       confirmButtonText: "Sim, excluir",
       cancelButtonText: "Cancelar",
+      background: "#111214",
+      color: "#ffffff",
+      confirmButtonColor: "#6366f1",
     });
 
     if (result.isConfirmed) {
@@ -101,6 +112,7 @@ export default function ServiceOrderTable({ orders, loading, onViewDetail, onEdi
         <table className="permission-table">
           <thead>
             <tr>
+              <th>ID</th>
               <th>PROTOCOLO</th>
               <th>TÍTULO / ASSUNTO</th>
               <th>SOLICITANTE</th>
@@ -113,6 +125,7 @@ export default function ServiceOrderTable({ orders, loading, onViewDetail, onEdi
             {orders.length > 0 ? (
               orders.map((os) => (
                 <tr key={os.id}>
+                  <td className="mono-text">#{os.id}</td>
                   <td>
                     <code className="permission-code">{os.protocol}</code>
                   </td>
@@ -120,62 +133,55 @@ export default function ServiceOrderTable({ orders, loading, onViewDetail, onEdi
                     <strong className="text-primary">{os.title.toUpperCase()}</strong>
                     <br />
                     <small className="text-dim">
-                      Criado em: {new Date(os.created_at).toLocaleDateString('pt-BR')}
+                      {new Date(os.created_at).toLocaleDateString('pt-BR')}
                     </small>
                   </td>
                   <td>
-                    <i className="bi bi-person me-1"></i>
-                    {os.user?.name || "Usuário Externo"}
+                    <div className="user-info-min">
+                      <i className="bi bi-person me-1 text-dim"></i>
+                      <span className="creator-name">{os.user?.name || "Usuário Externo"}</span>
+                    </div>
                   </td>
                   <td className="text-center">
-                    <div className="priority-indicator">
-                      <span
-                        className="status-dot"
-                        style={{ backgroundColor: getPriorityColor(os.priority) }}
-                      />
-                      <span className="text-dim">
-                        {os.priority.toUpperCase()}
-                      </span>
-                    </div>
+                    {getPriorityBadge(os.priority)}
                   </td>
                   <td className="text-center">
                     {getStatusBadge(os.status)}
                   </td>
                   <td className="text-end">
-                    <button
-                      className="btn-action"
-                      onClick={() => onViewDetail(os.id)}
-                      title="Ver Detalhes"
-                    >
-                      <i className="bi bi-eye-fill me-1"></i>
-                      Detalhes
-                    </button>
-                    {isSystemAdmin && (
-                      <>
-                        <button
-                          className="btn-action"
-                          onClick={() => handleEdit(os)}
-                          title="Editar OS"
-                        >
-                          <i className="bi bi-pencil-square me-1"></i>
-                          Editar
-                        </button>
-                        <button
-                          className="btn-action btn-action-danger"
-                          onClick={() => handleDelete(os)}
-                          title="Excluir OS"
-                        >
-                          <i className="bi bi-trash3-fill me-1"></i>
-                          Deletar
-                        </button>
-                      </>
-                    )}
+                    <div className="actions-wrapper">
+                      <button
+                        className="btn-table-action"
+                        onClick={() => onViewDetail(os.id)}
+                        title="Ver Detalhes"
+                      >
+                        <i className="bi bi-eye"></i> Detalhes
+                      </button>
+                      {isSystemAdmin && (
+                        <>
+                          <button
+                            className="btn-table-action btn-table-action-edit"
+                            onClick={() => handleEdit(os)}
+                            title="Editar OS"
+                          >
+                            <i className="bi bi-pencil-square"></i> Editar
+                          </button>
+                          <button
+                            className="btn-table-action btn-table-action-danger"
+                            onClick={() => handleDelete(os)}
+                            title="Excluir OS"
+                          >
+                            <i className="bi bi-trash3-fill"></i> Excluir
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="6" className="empty-state">
+                <td colSpan="7" className="empty-state">
                   <div className="empty-state">
                     <div className="empty-icon">{loading ? "⏳" : "📋"}</div>
                     <p>
@@ -192,12 +198,18 @@ export default function ServiceOrderTable({ orders, loading, onViewDetail, onEdi
       {/* Modal de Edição */}
       <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered className="permission-modal">
         <Modal.Header closeButton>
-          <Modal.Title>Editar Ordem de Serviço</Modal.Title>
+          <Modal.Title>
+            <i className="bi bi-pencil-square me-2"></i>
+            Editar Ordem de Serviço
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
             <Form.Group className="mb-3">
-              <Form.Label className="form-label-custom">Título</Form.Label>
+              <Form.Label className="form-label-custom">
+                <i className="bi bi-tag me-1"></i>
+                Título
+              </Form.Label>
               <Form.Control
                 type="text"
                 value={editForm.title}
@@ -205,10 +217,16 @@ export default function ServiceOrderTable({ orders, loading, onViewDetail, onEdi
                 className="custom-input-dark"
                 placeholder="Título da OS"
               />
+              <Form.Text className="form-text-custom">
+                Título descritivo da Ordem de Serviço
+              </Form.Text>
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label className="form-label-custom">Status</Form.Label>
+              <Form.Label className="form-label-custom">
+                <i className="bi bi-circle me-1"></i>
+                Status
+              </Form.Label>
               <Form.Select
                 value={editForm.status}
                 onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
@@ -219,10 +237,16 @@ export default function ServiceOrderTable({ orders, loading, onViewDetail, onEdi
                 <option value="resolved">Resolvido</option>
                 <option value="closed">Fechado</option>
               </Form.Select>
+              <Form.Text className="form-text-custom">
+                Status atual da Ordem de Serviço
+              </Form.Text>
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label className="form-label-custom">Prioridade</Form.Label>
+              <Form.Label className="form-label-custom">
+                <i className="bi bi-flag me-1"></i>
+                Prioridade
+              </Form.Label>
               <Form.Select
                 value={editForm.priority}
                 onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })}
@@ -233,10 +257,16 @@ export default function ServiceOrderTable({ orders, loading, onViewDetail, onEdi
                 <option value="high">Alta</option>
                 <option value="urgent">Urgente</option>
               </Form.Select>
+              <Form.Text className="form-text-custom">
+                Nível de prioridade da Ordem de Serviço
+              </Form.Text>
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label className="form-label-custom">Descrição</Form.Label>
+              <Form.Label className="form-label-custom">
+                <i className="bi bi-file-text me-1"></i>
+                Descrição
+              </Form.Label>
               <Form.Control
                 as="textarea"
                 rows={3}
@@ -245,15 +275,24 @@ export default function ServiceOrderTable({ orders, loading, onViewDetail, onEdi
                 className="custom-input-dark"
                 placeholder="Descrição detalhada da OS..."
               />
+              <Form.Text className="form-text-custom">
+                Detalhes adicionais sobre a Ordem de Serviço
+              </Form.Text>
             </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
           <button className="btn-secondary" onClick={() => setShowEditModal(false)} disabled={editLoading}>
+            <i className="bi bi-x-circle me-1"></i>
             Cancelar
           </button>
           <button className="btn-primary" onClick={handleSaveEdit} disabled={editLoading}>
-            {editLoading ? <Spinner animation="border" size="sm" /> : "Salvar Alterações"}
+            {editLoading ? (
+              <Spinner animation="border" size="sm" className="me-2" />
+            ) : (
+              <i className="bi bi-check2-circle me-2"></i>
+            )}
+            Salvar Alterações
           </button>
         </Modal.Footer>
       </Modal>
