@@ -564,42 +564,43 @@ export default function Dashboard() {
             />
           ) : (
             <>
-              <DashboardFilters
-                activeTab={activeTab}
-                onNewOrder={() => setShowOrderForm(true)}
-                user={selectedUser}
-                role={role}
-                filters={filters}
-                onFilterChange={(e) =>
-                  setFilters({ ...filters, [e.target.name]: e.target.value })
-                }
-                onClear={() => {
-                  setFilters({ name: "", completed: "", method: "", date: "" });
-                  setUsersCurrentPage(1);
-                  setGroupsCurrentPage(1);
-                  setAuditCurrentPage(1);
-                  setOrdersCurrentPage(1);
-                }}
-                onNewGroup={() => setShowGroupForm(true)}
-                onNewPermission={() => setShowPermissionModal(true)}
-                isEditing={isEditing}
-                setIsEditing={setIsEditing}
-                actionLoading={actionLoading}
-                handleSave={() => {
-                  const userId = selectedUser?.data?.id || selectedUser?.id;
-                  if (!userId)
-                    return AxionAlert.fire(
-                      "Erro",
-                      "ID do usuário não identificado.",
-                      "error",
-                    );
-                  handleUpdateUser(userId, formData);
-                }}
-                onBack={() => {
-                  setSelectedUser(null);
-                  setIsEditing(false);
-                }}
-              />
+<DashboardFilters
+  activeTab={activeTab}
+  onNewOrder={() => setShowOrderForm(true)}
+  user={selectedUser}
+  role={role}
+  filters={filters}
+  onFilterChange={(e) =>
+    setFilters({ ...filters, [e.target.name]: e.target.value })
+  }
+  onClear={() => {
+    // CORREÇÃO: Limpa todas as chaves possíveis de filtros de todas as abas
+    setFilters({ name: "", completed: "", method: "", date: "", search: "", status: "" });
+    setUsersCurrentPage(1);
+    setGroupsCurrentPage(1);
+    setAuditCurrentPage(1);
+    setOrdersCurrentPage(1);
+  }}
+  onNewGroup={() => setShowGroupForm(true)}
+  onNewPermission={() => setShowPermissionModal(true)}
+  isEditing={isEditing}
+  setIsEditing={setIsEditing}
+  actionLoading={actionLoading}
+  handleSave={() => {
+    const userId = selectedUser?.data?.id || selectedUser?.id;
+    if (!userId)
+      return AxionAlert.fire(
+        "Erro",
+        "ID do usuário não identificado.",
+        "error"
+      );
+    handleUpdateUser(userId, formData);
+  }}
+  onBack={() => {
+    setSelectedUser(null);
+    setIsEditing(false);
+  }}
+/>
 
               {activeTab === "permissions" && showPermissionModal && (
                 <PermissionForm
