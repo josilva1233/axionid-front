@@ -9,12 +9,19 @@ export function useDashboardData(role) {
   const [auditLogs, setAuditLogs] = useState([]);
   const [serviceOrders, setServiceOrders] = useState([]);
   
-  // Estado dos filtros - ADICIONADOS os novos campos
+  // =========================================================
+  // FILTROS - ADICIONAR TODOS OS CAMPOS DE AUDIT
+  // =========================================================
   const [filters, setFilters] = useState({ 
+    // Filtros de Usuários
     name: "", 
     completed: "", 
+    // Filtros de Auditoria (SEGURANÇA)
+    user: "",      // NOVO
+    url: "",       // NOVO
     method: "", 
-    date: "",
+    start_date: "", // NOVO (ANTES ERA "date")
+    end_date: "",   // NOVO
     // Filtros de Ordens de Serviço
     protocol: "",
     title: "",
@@ -29,7 +36,9 @@ export function useDashboardData(role) {
   const [auditPagination, setAuditPagination] = useState({ current: 1, last: 1, total: 0, perPage: 20 });
   const [ordersPagination, setOrdersPagination] = useState({ current: 1, last: 1, total: 0, perPage: 10 });
 
-  // Listar Usuários
+  // =========================================================
+  // LISTAR USUÁRIOS
+  // =========================================================
   const loadUsers = useCallback(async (page = 1) => {
     if (role !== "admin") return;
     setLoading(true);
@@ -75,7 +84,9 @@ export function useDashboardData(role) {
     }
   }, [role, filters.name, filters.completed]);
 
-  // Listar Grupos
+  // =========================================================
+  // LISTAR GRUPOS
+  // =========================================================
   const loadGroups = useCallback(async (page = 1) => {
     setLoading(true);
     try {
@@ -119,15 +130,26 @@ export function useDashboardData(role) {
     }
   }, [filters.name]);
 
-  // Listar Logs de Auditoria
+  // =========================================================
+  // LISTAR LOGS DE AUDITORIA - CORRIGIDO
+  // =========================================================
   const loadAuditLogs = useCallback(async (page = 1) => {
     if (role !== "admin") return;
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: page.toString() });
-      if (filters.method) params.append("method", filters.method);
-      if (filters.date) params.append("date", filters.date);
       
+      // =========================================================
+      // TODOS OS FILTROS DE AUDITORIA QUE O FRONTEND ENVIA
+      // =========================================================
+      if (filters.user) params.append("user", filters.user);
+      if (filters.url) params.append("url", filters.url);
+      if (filters.method) params.append("method", filters.method);
+      if (filters.start_date) params.append("start_date", filters.start_date);
+      if (filters.end_date) params.append("end_date", filters.end_date);
+
+      console.log("🔍 Parâmetros do Audit:", params.toString());
+
       const res = await api.get(`/api/v1/admin/audit-logs?${params.toString()}`);
       const responseData = res.data;
       
@@ -163,9 +185,18 @@ export function useDashboardData(role) {
     } finally { 
       setLoading(false); 
     }
-  }, [filters.method, filters.date, role]);
+  }, [
+    filters.user,
+    filters.url,
+    filters.method,
+    filters.start_date,
+    filters.end_date,
+    role
+  ]);
 
-  // Listar Ordens de Serviço (Chamados) - CORRIGIDO
+  // =========================================================
+  // LISTAR ORDENS DE SERVIÇO
+  // =========================================================
   const loadServiceOrders = useCallback(async (page = 1) => {
     setLoading(true);
     try {
@@ -174,19 +205,17 @@ export function useDashboardData(role) {
         per_page: "10" 
       });
       
-      // ADICIONADO: Todos os filtros de busca
       if (filters.protocol) params.append("protocol", filters.protocol);
       if (filters.title) params.append("title", filters.title);
       if (filters.applicant) params.append("applicant", filters.applicant);
       if (filters.priority) params.append("priority", filters.priority);
       if (filters.status) params.append("status", filters.status);
 
-      console.log("🔍 Parâmetros da busca:", params.toString()); // Debug
+      console.log("🔍 Parâmetros da OS:", params.toString());
 
       const res = await api.get(`/api/v1/service-orders?${params.toString()}`);
       const responseData = res.data;
       
-      // Estrutura paginada do Laravel
       if (responseData.data && Array.isArray(responseData.data)) {
         setServiceOrders(responseData.data);
         setOrdersPagination({
@@ -196,7 +225,6 @@ export function useDashboardData(role) {
           perPage: responseData.per_page || 10
         });
       } else if (Array.isArray(responseData)) {
-        // Fallback: array simples (paginação no frontend)
         const allOrders = responseData;
         const total = allOrders.length;
         const perPage = 10;
@@ -220,7 +248,13 @@ export function useDashboardData(role) {
     } finally { 
       setLoading(false); 
     }
-  }, [filters.protocol, filters.title, filters.applicant, filters.priority, filters.status]); // ADICIONADO: Dependências dos filtros
+  }, [
+    filters.protocol, 
+    filters.title, 
+    filters.applicant, 
+    filters.priority, 
+    filters.status
+  ]);
 
   return { 
     loading, 

@@ -99,7 +99,13 @@ export default function Dashboard() {
       completed: "", 
       method: "", 
       date: "",
-      // Filtros de Ordens de Serviço
+        // Filtros de Auditoria (SEGURANÇA)
+    user: "",      // NOVO
+    url: "",       // NOVO
+    method: "", 
+    start_date: "", // NOVO (ANTES ERA "date")
+    end_date: "",   // NOVO
+    // Filtros de Ordens de Serviço
       protocol: "",
       title: "",
       applicant: "",
@@ -301,13 +307,21 @@ export default function Dashboard() {
   }, [filters.name, loadGroups, activeTab]);
 
   // ============ RECARREGAR AUDIT QUANDO FILTROS MUDAREM ============
-  useEffect(() => {
-    if (activeTab === "audit") {
-      loadAuditLogs(1);
-      setAuditCurrentPage(1);
-    }
-  }, [filters.method, filters.date, loadAuditLogs, activeTab]);
-
+// ============ RECARREGAR AUDIT QUANDO FILTROS MUDAREM ============
+useEffect(() => {
+  if (activeTab === "audit") {
+    loadAuditLogs(1);
+    setAuditCurrentPage(1);
+  }
+}, [
+  filters.user,        // NOVO
+  filters.url,         // NOVO
+  filters.method,
+  filters.start_date,  // NOVO (ANTES ERA "date")
+  filters.end_date,    // NOVO
+  loadAuditLogs,
+  activeTab,
+]);
   // ============ ATUALIZAR FORM DATA QUANDO USUÁRIO SELECIONADO ============
   useEffect(() => {
     if (selectedUser) {
