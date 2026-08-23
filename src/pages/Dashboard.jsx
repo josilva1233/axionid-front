@@ -687,19 +687,6 @@ export default function Dashboard() {
 
                   {!showOrderForm && !selectedOrder && (
                     <div className="animate-in">
-                      <div className="orders-header">
-                        <h4 className="text-white mb-0">Gestão de Chamados</h4>
-                        <button
-                          className="btn-primary-sm"
-                          onClick={() => {
-                            setShowOrderForm(true);
-                            setSelectedOrder(null);
-                          }}
-                        >
-                          <i className="bi bi-plus-lg me-2"></i> Nova OS
-                        </button>
-                      </div>
-
                       <ServiceOrderTable
                         orders={serviceOrders}
                         loading={actionLoading || loading}
