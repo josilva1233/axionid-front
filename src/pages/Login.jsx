@@ -1,79 +1,48 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
 import api from "../services/api";
 import "../Login.css";
 
-// ─── Configurações ───────────────────────────────────────
-const CONFIG = {
-  SITE_KEY: "6Lc5n4ksAAAAAEXLVSyq519dGet20T0gaQ2LXzPY",
-  API_GOOGLE_AUTH: "http://163.176.168.224/api/v1/auth/google",
-  STORAGE_KEYS: {
-    TOKEN: "@AxionID:token",
-    ROLE: "@AxionID:role",
-  },
-  ROUTES: {
-    DASHBOARD: "/dashboard",
-    LOGIN: "/login",
-  },
-  MESSAGES: {
-    NO_CAPTCHA: "Por favor, confirme que você não é um robô.",
-    LOGIN_FAILED: "Usuário ou senha incorretos.",
-  },
-};
-
-// ─── Componente ───────────────────────────────────────────
 export default function Login() {
-  // Estados
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [captchaToken, setCaptchaToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  // Hooks
   const navigate = useNavigate();
   const recaptchaRef = useRef(null);
 
-  // ─── Trata retorno do login Google ─────────────────────
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
 
-    if (!token) return;
+    if (token) {
+      localStorage.setItem("@AxionID:token", token);
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-    localStorage.setItem(CONFIG.STORAGE_KEYS.TOKEN, token);
-    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-    const fetchUser = async () => {
-      try {
-        const res = await api.get("/api/v1/me");
-        const user = res.data;
-        const role = user.is_admin === 1 || user.is_admin === true ? "admin" : "user";
-        localStorage.setItem(CONFIG.STORAGE_KEYS.ROLE, role);
-
-        window.history.replaceState({}, document.title, CONFIG.ROUTES.LOGIN);
-        navigate(CONFIG.ROUTES.DASHBOARD, { replace: true });
-      } catch (err) {
-        console.error("Erro ao buscar perfil do Google:", err);
-        navigate(CONFIG.ROUTES.LOGIN, { replace: true });
-      }
-    };
-
-    fetchUser();
+      api
+        .get("/api/v1/me")
+        .then((res) => {
+          const user = res.data;
+          const role =
+            user.is_admin === 1 || user.is_admin === true ? "admin" : "user";
+          localStorage.setItem("@AxionID:role", role);
+          window.history.replaceState({}, document.title, "/login");
+          navigate("/dashboard", { replace: true });
+        })
+        .catch((err) => {
+          console.error("Erro ao buscar perfil do Google login", err);
+          navigate("/login", { replace: true });
+        });
+    }
   }, [navigate]);
 
-  // ─── Define papel do usuário ────────────────────────────
-  const resolveUserRole = useCallback((user) => {
-    return user.is_admin === 1 || user.is_admin === true ? "admin" : "user";
-  }, []);
-
-  // ─── Login por senha ─────────────────────────────────────
   const handleLogin = async (e) => {
     e.preventDefault();
 
     if (!captchaToken) {
-      setError(CONFIG.MESSAGES.NO_CAPTCHA);
+      setError("Por favor, confirme que você não é um robô.");
       return;
     }
 
@@ -81,23 +50,24 @@ export default function Login() {
     setError("");
 
     try {
-      const { data } = await api.post("/api/v1/login", {
+      const response = await api.post("/api/v1/login", {
         username,
         password,
         captcha_token: captchaToken,
       });
 
-      const { token, user } = data;
-      const role = resolveUserRole(user);
+      const { token, user } = response.data;
 
-      localStorage.setItem(CONFIG.STORAGE_KEYS.TOKEN, token);
-      localStorage.setItem(CONFIG.STORAGE_PATH.ROLE, role);
+      localStorage.setItem("@AxionID:token", token);
+      const role =
+        user.is_admin === 1 || user.is_admin === true ? "admin" : "user";
+      localStorage.setItem("@AxionID:role", role);
+
       api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-      navigate(CONFIG.ROUTES.DASHBOARD, { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || CONFIG.MESSAGES.LOGIN_FAILED);
-      console.error("Erro no login:", err);
+      setError(err.response?.data?.message || "Usuário ou senha incorretos.");
+      console.error("Erro no login manual", err);
       setCaptchaToken(null);
       recaptchaRef.current?.reset();
     } finally {
@@ -105,51 +75,36 @@ export default function Login() {
     }
   };
 
-  // ─── Login via Google ───────────────────────────────────
-  const handleGoogleLogin = useCallback(() => {
+  const handleGoogleLogin = () => {
     const origin = window.location.origin;
-    window.location.href = `${CONFIG.API_GOOGLE_AUTH}?origin=${encodeURIComponent(origin)}`;
-  }, []);
+    window.location.href = `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
+  };
 
-  // ─── Captcha ────────────────────────────────────────────
-  const handleCaptchaChange = useCallback((token) => {
-    setCaptchaToken(token);
-  }, []);
-
-  const handleCaptchaExpire = useCallback(() => {
-    setCaptchaToken(null);
-  }, []);
-
-  // ─── Render ──────────────────────────────────────────────
   return (
     <div className="auth-container">
       <div className="auth-card">
-        {/* Marca */}
         <div className="brand">
-          <h1>Axion<span>ID</span></h1>
+          <h1>
+            Axion<span>ID</span>
+          </h1>
         </div>
 
-        {/* Cabeçalho */}
         <div className="auth-header">
           <h2>Acessar Conta</h2>
           <p>Identifique-se para gerenciar seus serviços.</p>
         </div>
 
-        {/* Mensagem de erro */}
         {error && (
-          <div className="error-message" role="alert">
-            <i className="bi bi-exclamation-triangle-fill" aria-hidden="true" />
+          <div className="error-message">
+            <i className="bi bi-exclamation-triangle-fill"></i>
             <span>{error}</span>
           </div>
         )}
 
-        {/* Formulário */}
-        <form onSubmit={handleLogin} className="auth-form" noValidate>
-          {/* Usuário */}
+        <form onSubmit={handleLogin} className="auth-form">
           <div className="input-group">
-            <label htmlFor="username">IDENTIFICAÇÃO</label>
+            <label>IDENTIFICAÇÃO</label>
             <input
-              id="username"
               type="text"
               placeholder="seu@email.com"
               value={username}
@@ -160,16 +115,14 @@ export default function Login() {
             />
           </div>
 
-          {/* Senha */}
           <div className="input-group">
             <div className="label-row">
-              <label htmlFor="password">SENHA</label>
+              <label>SENHA</label>
               <Link to="/forgot-password" className="forgot-link">
                 Esqueceu a senha?
               </Link>
             </div>
             <input
-              id="password"
               type="password"
               placeholder="Sua senha"
               value={password}
@@ -179,28 +132,24 @@ export default function Login() {
             />
           </div>
 
-          {/* Captcha */}
           <div className="captcha-container">
             <ReCAPTCHA
               ref={recaptchaRef}
-              sitekey={CONFIG.SITE_KEY}
-              onChange={handleCaptchaChange}
-              onExpired={handleCaptchaExpire}
+              sitekey="6Lc5n4ksAAAAAEXLVSyq519dGet20T0gaQ2LXzPY"
+              onChange={(token) => setCaptchaToken(token)}
+              onExpired={() => setCaptchaToken(null)}
               theme="dark"
             />
           </div>
 
-          {/* Botão entrar */}
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? "Autenticando..." : "Acessar Painel"}
           </button>
 
-          {/* Divisor */}
           <div className="divider">
             <span>ou continue com</span>
           </div>
 
-          {/* Botão Google */}
           <button
             type="button"
             className="btn-google-workspace"
@@ -209,15 +158,13 @@ export default function Login() {
             <div className="google-icon-wrapper">
               <img
                 src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                alt="Google"
-                loading="lazy"
+                alt=""
               />
             </div>
             <span className="btn-text">Continuar com Google Workspace</span>
           </button>
         </form>
 
-        {/* Rodapé */}
         <div className="auth-footer">
           <p>
             Ainda não tem acesso? <Link to="/register">Criar Conta AxionID</Link>
