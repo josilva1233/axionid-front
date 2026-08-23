@@ -100,10 +100,10 @@ export default function Dashboard() {
       method: "", 
       date: "",
       // Filtros de Ordens de Serviço
-      protocol: "",   // ADICIONADO
-      title: "",      // ADICIONADO
-      applicant: "",  // ADICIONADO
-      priority: "",   // ADICIONADO
+      protocol: "",
+      title: "",
+      applicant: "",
+      priority: "",
       status: ""      
     });
     setUsersCurrentPage(1);
@@ -172,6 +172,59 @@ export default function Dashboard() {
     }
   };
 
+  // ============ HANDLER DE EDIÇÃO DE ORDEM ============
+  const handleEditOrder = async (orderId, data) => {
+    try {
+      setActionLoading(true);
+      await api.put(`/api/v1/service-orders/${orderId}`, data);
+      await loadServiceOrders(ordersCurrentPage);
+      AxionAlert.fire({
+        icon: "success",
+        title: "OS atualizada!",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao atualizar OS.", "error");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // ============ HANDLER DE EXCLUSÃO DE ORDEM ============
+  const handleDeleteOrder = async (orderId) => {
+    const result = await AxionAlert.fire({
+      title: "Excluir OS?",
+      text: "Esta ação não pode ser desfeita!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sim, excluir!",
+      cancelButtonText: "Cancelar",
+      background: "#111214",
+      color: "#ffffff",
+      confirmButtonColor: "#6366f1",
+    });
+    
+    if (result.isConfirmed) {
+      try {
+        setActionLoading(true);
+        await api.delete(`/api/v1/service-orders/${orderId}`);
+        await loadServiceOrders(ordersCurrentPage);
+        AxionAlert.fire({
+          icon: "success",
+          title: "Deletado!",
+          text: "Ordem de serviço removida.",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } catch (e) {
+        AxionAlert.fire("Erro", "Falha ao excluir a OS.", "error");
+      } finally {
+        setActionLoading(false);
+      }
+    }
+  };
+
   // ============ LOAD PROFILE ============
   useEffect(() => {
     const loadProfile = async () => {
@@ -215,22 +268,45 @@ export default function Dashboard() {
     loadServiceOrders,
   ]);
 
-  // ============ RECARREGAR CHAMADOS QUANDO O FILTRO MUDAR ============
-  // Este useEffect garante que quando o usuário digitar nos campos de busca,
-  // os chamados sejam recarregados com os filtros aplicados
+  // ============ RECARREGAR ORDENS QUANDO FILTROS MUDAREM ============
   useEffect(() => {
     if (activeTab === "orders") {
-      // Recarrega com a página 1 e os filtros atuais
       loadServiceOrders(1);
       setOrdersCurrentPage(1);
     }
   }, [
-    filters.protocol,   // ADICIONADO
-    filters.title,      // ADICIONADO
-    filters.applicant,  // ADICIONADO
-    filters.priority,   // ADICIONADO
-    filters.status      
+    filters.protocol,
+    filters.title,
+    filters.applicant,
+    filters.priority,
+    filters.status,
+    loadServiceOrders,
+    activeTab,
   ]);
+
+  // ============ RECARREGAR USUÁRIOS QUANDO FILTROS MUDAREM ============
+  useEffect(() => {
+    if (activeTab === "users") {
+      loadUsers(1);
+      setUsersCurrentPage(1);
+    }
+  }, [filters.name, filters.completed, loadUsers, activeTab]);
+
+  // ============ RECARREGAR GRUPOS QUANDO FILTROS MUDAREM ============
+  useEffect(() => {
+    if (activeTab === "groups") {
+      loadGroups(1);
+      setGroupsCurrentPage(1);
+    }
+  }, [filters.name, loadGroups, activeTab]);
+
+  // ============ RECARREGAR AUDIT QUANDO FILTROS MUDAREM ============
+  useEffect(() => {
+    if (activeTab === "audit") {
+      loadAuditLogs(1);
+      setAuditCurrentPage(1);
+    }
+  }, [filters.method, filters.date, loadAuditLogs, activeTab]);
 
   // ============ ATUALIZAR FORM DATA QUANDO USUÁRIO SELECIONADO ============
   useEffect(() => {
@@ -670,15 +746,28 @@ export default function Dashboard() {
                           icon: "warning",
                           showCancelButton: true,
                           confirmButtonText: "Sim, excluir!",
+                          cancelButtonText: "Cancelar",
+                          background: "#111214",
+                          color: "#ffffff",
+                          confirmButtonColor: "#6366f1",
                         });
                         if (result.isConfirmed) {
                           try {
+                            setActionLoading(true);
                             await api.delete(`/api/v1/service-orders/${id}`);
                             setSelectedOrder(null);
                             loadServiceOrders(ordersCurrentPage);
-                            AxionAlert.fire("Deletado!", "Ordem de serviço removida.", "success");
+                            AxionAlert.fire({
+                              icon: "success",
+                              title: "Deletado!",
+                              text: "Ordem de serviço removida.",
+                              timer: 1500,
+                              showConfirmButton: false,
+                            });
                           } catch (e) {
                             AxionAlert.fire("Erro", "Falha ao excluir.", "error");
+                          } finally {
+                            setActionLoading(false);
                           }
                         }
                       }}
@@ -694,6 +783,9 @@ export default function Dashboard() {
                           setShowOrderForm(false);
                           handleOpenOrderDetail(id);
                         }}
+                        onEdit={handleEditOrder}
+                        onDelete={handleDeleteOrder}
+                        currentUser={currentUser}
                       />
 
                       {ordersPagination?.last > 1 && (
