@@ -5879,3 +5879,197 @@ body {
     }
   }
 }
+
+
+/* ==========================================================
+   AUDIT TABLE - ESTILO PADRONIZADO
+   ========================================================== */
+
+/* ============================================
+   LARGURAS DAS COLUNAS
+   ============================================ */
+.permission-table thead th:nth-child(1) { width: 6%; }   /* ID */
+.permission-table thead th:nth-child(2) { width: 14%; }  /* DATA/HORA */
+.permission-table thead th:nth-child(3) { width: 18%; }  /* USUÁRIO */
+.permission-table thead th:nth-child(4) { width: 10%; }  /* MÉTODO */
+.permission-table thead th:nth-child(5) { width: 22%; }  /* URL */
+.permission-table thead th:nth-child(6) { width: 14%; }  /* IP */
+.permission-table thead th:nth-child(7) { width: 16%; }  /* AÇÕES */
+
+/* ============================================
+   USER INFO MIN - PARA AUDIT
+   ============================================ */
+.user-info-min {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.user-info-min .text-primary {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary, #6366f1) !important;
+}
+
+.user-info-min .text-dim {
+  font-size: 11px;
+  color: var(--text-dim, #94a3b8);
+}
+
+/* ============================================
+   STATUS BADGE PARA MÉTODOS HTTP
+   ============================================ */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-2xl, 20px);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border: 1px solid transparent;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-circle, 50%);
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+/* ============================================
+   BOTÃO DE AÇÃO PERIGO (EXCLUIR)
+   ============================================ */
+.btn-table-action-danger {
+  color: var(--error, #ef4444) !important;
+  background: rgba(239, 68, 68, 0.06) !important;
+  border-color: rgba(239, 68, 68, 0.1) !important;
+}
+
+.btn-table-action-danger:hover {
+  background: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.25) !important;
+  color: var(--error-hover, #f87171) !important;
+  box-shadow: var(--shadow-error, 0 4px 16px rgba(239, 68, 68, 0.15)) !important;
+}
+
+/* ============================================
+   DETAILS DO AUDIT - MODAL
+   ============================================ */
+.audit-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg, 16px);
+}
+
+.detail-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+}
+
+.detail-group .detail-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim, #94a3b8);
+}
+
+.detail-group .detail-value {
+  font-size: 14px;
+  color: var(--text-main, #e2e8f0);
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  background: var(--bg-input, #1a1d2a);
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--border-light, #1e2130);
+}
+
+.detail-group .detail-value.mono-text {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 13px;
+}
+
+.detail-group .detail-value .text-dim {
+  color: var(--text-dim, #94a3b8);
+}
+
+.detail-group .detail-value .small {
+  font-size: 12px;
+}
+
+.detail-group .detail-code {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 12px;
+  color: var(--text-main, #e2e8f0);
+  background: var(--bg-input, #1a1d2a);
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--border-light, #1e2130);
+  padding: var(--spacing-md, 12px);
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* ============================================
+   RESPONSIVIDADE
+   ============================================ */
+
+/* Tablets (768px) */
+@media screen and (max-width: 768px) {
+  .permission-table thead th:nth-child(1) { width: 8%; }
+  .permission-table thead th:nth-child(2) { width: 12%; }
+  .permission-table thead th:nth-child(3) { width: 16%; }
+  .permission-table thead th:nth-child(4) { width: 10%; }
+  .permission-table thead th:nth-child(5) { width: 20%; }
+  .permission-table thead th:nth-child(6) { width: 14%; }
+  .permission-table thead th:nth-child(7) { width: 20%; }
+
+  .user-info-min .text-primary {
+    font-size: 12px;
+  }
+
+  .user-info-min .text-dim {
+    font-size: 10px;
+  }
+
+  .status-badge {
+    font-size: 10px;
+    padding: 3px 10px;
+  }
+}
+
+/* Mobile (480px) */
+@media screen and (max-width: 480px) {
+  .permission-table thead th:nth-child(1) { width: 9%; }
+  .permission-table thead th:nth-child(2) { width: 10%; }
+  .permission-table thead th:nth-child(3) { width: 14%; }
+  .permission-table thead th:nth-child(4) { width: 12%; }
+  .permission-table thead th:nth-child(5) { width: 18%; }
+  .permission-table thead th:nth-child(6) { width: 15%; }
+  .permission-table thead th:nth-child(7) { width: 22%; }
+
+  .detail-group .detail-value {
+    font-size: 13px;
+    padding: var(--spacing-sm, 8px) var(--spacing-sm, 8px);
+  }
+
+  .detail-group .detail-code {
+    font-size: 11px;
+    padding: var(--spacing-sm, 8px);
+  }
+
+  .btn-table-action {
+    font-size: 9px;
+    padding: 3px 8px;
+  }
+
+  .btn-table-action i {
+    font-size: 10px;
+  }
+}

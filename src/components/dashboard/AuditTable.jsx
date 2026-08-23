@@ -29,6 +29,9 @@ export default function AuditTable({ logs, loading, onViewDetail, onDelete, curr
       showCancelButton: true,
       confirmButtonText: "Sim, excluir",
       cancelButtonText: "Cancelar",
+      background: "#111214",
+      color: "#ffffff",
+      confirmButtonColor: "#6366f1",
     });
 
     if (result.isConfirmed) {
@@ -52,11 +55,11 @@ export default function AuditTable({ logs, loading, onViewDetail, onDelete, curr
 
   const getMethodBadgeClass = (method) => {
     const methodColors = {
-      GET: { bg: "rgba(99, 102, 241, 0.1)", color: "#6366f1" },
-      POST: { bg: "rgba(34, 197, 94, 0.1)", color: "#22c55e" },
-      PUT: { bg: "rgba(245, 158, 11, 0.1)", color: "#f59e0b" },
-      PATCH: { bg: "rgba(245, 158, 11, 0.1)", color: "#f59e0b" },
-      DELETE: { bg: "rgba(239, 68, 68, 0.1)", color: "#ef4444" },
+      GET: { bg: "rgba(99, 102, 241, 0.12)", color: "#6366f1" },
+      POST: { bg: "rgba(34, 197, 94, 0.12)", color: "#22c55e" },
+      PUT: { bg: "rgba(245, 158, 11, 0.12)", color: "#f59e0b" },
+      PATCH: { bg: "rgba(245, 158, 11, 0.12)", color: "#f59e0b" },
+      DELETE: { bg: "rgba(239, 68, 68, 0.12)", color: "#ef4444" },
     };
     const style = methodColors[method] || methodColors.GET;
     return { backgroundColor: style.bg, color: style.color };
@@ -70,6 +73,7 @@ export default function AuditTable({ logs, loading, onViewDetail, onDelete, curr
         <table className="permission-table">
           <thead>
             <tr>
+              <th>ID</th>
               <th>DATA / HORA</th>
               <th>USUÁRIO / ORIGEM</th>
               <th className="text-center">MÉTODO</th>
@@ -81,8 +85,9 @@ export default function AuditTable({ logs, loading, onViewDetail, onDelete, curr
           <tbody>
             {logs && logs.length > 0 ? (
               logs.map((log) => (
-                <tr key={log.id} onClick={() => handleViewDetail(log)} style={{ cursor: "pointer" }}>
-                  <td className="mono-text">
+                <tr key={log.id}>
+                  <td className="mono-text">#{log.id}</td>
+                  <td className="mono-text" style={{ fontSize: "12px" }}>
                     {log.created_at 
                       ? new Date(log.created_at).toLocaleString('pt-BR') 
                       : 'n/a'}
@@ -115,30 +120,35 @@ export default function AuditTable({ logs, loading, onViewDetail, onDelete, curr
                       {log.url}
                     </code>
                   </td>
-                  <td className="mono-text text-dim">
+                  <td className="mono-text text-dim" style={{ fontSize: "12px" }}>
                     <i className="bi bi-geo-alt-fill me-1"></i>
                     {log.ip_address || 'n/a'}
                   </td>
                   {isSystemAdmin && (
                     <td className="text-end">
-                      <button
-                        className="btn-action btn-action-danger"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(log);
-                        }}
-                        title="Excluir Registro"
-                      >
-                        <i className="bi bi-trash3-fill me-1"></i>
-                        Excluir
-                      </button>
+                      <div className="actions-wrapper">
+                        <button
+                          className="btn-table-action"
+                          onClick={() => handleViewDetail(log)}
+                          title="Ver Detalhes"
+                        >
+                          <i className="bi bi-eye"></i> Detalhes
+                        </button>
+                        <button
+                          className="btn-table-action btn-table-action-danger"
+                          onClick={() => handleDelete(log)}
+                          title="Excluir Registro"
+                        >
+                          <i className="bi bi-trash3-fill"></i> Excluir
+                        </button>
+                      </div>
                     </td>
                   )}
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={isSystemAdmin ? 6 : 5} className="empty-state">
+                <td colSpan={isSystemAdmin ? 7 : 6} className="empty-state">
                   <div className="empty-state">
                     <div className="empty-icon">{loading ? "⏳" : "🔒"}</div>
                     <p>
@@ -157,14 +167,17 @@ export default function AuditTable({ logs, loading, onViewDetail, onDelete, curr
       {/* Modal de Detalhes */}
       <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)} centered className="permission-modal" size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Detalhes do Registro de Auditoria</Modal.Title>
+          <Modal.Title>
+            <i className="bi bi-file-earmark-text me-2"></i>
+            Detalhes do Registro de Auditoria
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {selectedLog && (
             <div className="audit-details">
               <div className="detail-group">
                 <label className="detail-label">ID do Registro:</label>
-                <code className="detail-value">#{selectedLog.id}</code>
+                <code className="detail-value mono-text">#{selectedLog.id}</code>
               </div>
 
               <div className="detail-group">
@@ -239,45 +252,21 @@ export default function AuditTable({ logs, loading, onViewDetail, onDelete, curr
         </Modal.Body>
         <Modal.Footer>
           <button className="btn-secondary" onClick={() => setShowDetailModal(false)}>
+            <i className="bi bi-x-circle me-1"></i>
             Fechar
           </button>
           {isSystemAdmin && selectedLog && (
             <button 
-              className="btn-action-danger" 
+              className="btn-delete-permanent" 
               onClick={() => {
                 setShowDetailModal(false);
                 handleDelete(selectedLog);
               }}
-              style={{ padding: "8px 16px", borderRadius: "6px" }}
             >
               <i className="bi bi-trash3-fill me-1"></i>
               Excluir Registro
             </button>
           )}
-        </Modal.Footer>
-      </Modal>
-
-      {/* Modal de Confirmação de Exclusão */}
-      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered className="permission-modal">
-        <Modal.Header closeButton>
-          <Modal.Title>Confirmar Exclusão</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p>Tem certeza que deseja excluir este registro de auditoria?</p>
-          <small className="text-dim">Esta ação não pode ser desfeita.</small>
-        </Modal.Body>
-        <Modal.Footer>
-          <button className="btn-secondary" onClick={() => setShowDeleteModal(false)} disabled={deleteLoading}>
-            Cancelar
-          </button>
-          <button 
-            className="btn-action-danger" 
-            onClick={() => deletingLog && handleDelete(deletingLog)} 
-            disabled={deleteLoading}
-            style={{ padding: "8px 16px", borderRadius: "6px" }}
-          >
-            {deleteLoading ? <Spinner animation="border" size="sm" /> : "Confirmar Exclusão"}
-          </button>
         </Modal.Footer>
       </Modal>
     </>
