@@ -1,8 +1,6 @@
 import React from "react";
 import { Form } from "react-bootstrap";
 
-import '../../dashboardFilters.css';
-
 export default function DashboardFilters({
   activeTab, role, filters, onFilterChange, onClear,
   onNewGroup, onNewPermission, onNewOrder,
