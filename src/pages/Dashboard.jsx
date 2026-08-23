@@ -99,9 +99,13 @@ export default function Dashboard() {
       name: "", 
       completed: "", 
       method: "", 
-      date: "", 
-      search: "",  // ← ADICIONADO
-      status: ""   // ← ADICIONADO
+      date: "",
+      // Filtros de Ordens de Serviço
+      protocol: "",   // ADICIONADO
+      title: "",      // ADICIONADO
+      applicant: "",  // ADICIONADO
+      priority: "",   // ADICIONADO
+      status: ""      
     });
     setUsersCurrentPage(1);
     setGroupsCurrentPage(1);
@@ -213,15 +217,21 @@ export default function Dashboard() {
   ]);
 
   // ============ RECARREGAR CHAMADOS QUANDO O FILTRO MUDAR ============
-  // Este useEffect garante que quando o usuário digitar no campo de busca,
-  // os chamados sejam recarregados com o filtro aplicado
+  // Este useEffect garante que quando o usuário digitar nos campos de busca,
+  // os chamados sejam recarregados com os filtros aplicados
   useEffect(() => {
     if (activeTab === "orders") {
       // Recarrega com a página 1 e os filtros atuais
       loadServiceOrders(1);
       setOrdersCurrentPage(1);
     }
-  }, [filters.search, filters.status]); // ← DEPENDÊNCIAS DOS FILTROS DE CHAMADOS
+  }, [
+    filters.protocol,   // ADICIONADO
+    filters.title,      // ADICIONADO
+    filters.applicant,  // ADICIONADO
+    filters.priority,   // ADICIONADO
+    filters.status      
+  ]);
 
   // ============ ATUALIZAR FORM DATA QUANDO USUÁRIO SELECIONADO ============
   useEffect(() => {
@@ -601,7 +611,6 @@ export default function Dashboard() {
                 role={role}
                 filters={filters}
                 onFilterChange={(e) => {
-                  // Log para debug
                   console.log('Filtro alterado:', e.target.name, e.target.value);
                   setFilters({ ...filters, [e.target.name]: e.target.value });
                 }}

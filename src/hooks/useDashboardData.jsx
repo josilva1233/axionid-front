@@ -7,14 +7,27 @@ export function useDashboardData(role) {
   const [users, setUsers] = useState([]);
   const [groups, setGroups] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
-  const [serviceOrders, setServiceOrders] = useState([]); // ← ADICIONAR
-  const [filters, setFilters] = useState({ name: "", completed: "", method: "", date: "" });
+  const [serviceOrders, setServiceOrders] = useState([]);
+  
+  // Estado dos filtros - ADICIONADOS os novos campos
+  const [filters, setFilters] = useState({ 
+    name: "", 
+    completed: "", 
+    method: "", 
+    date: "",
+    // Filtros de Ordens de Serviço
+    protocol: "",
+    title: "",
+    applicant: "",
+    priority: "",
+    status: ""
+  });
   
   // Paginação separada para cada tipo
   const [usersPagination, setUsersPagination] = useState({ current: 1, last: 1, total: 0, perPage: 10 });
   const [groupsPagination, setGroupsPagination] = useState({ current: 1, last: 1, total: 0, perPage: 15 });
   const [auditPagination, setAuditPagination] = useState({ current: 1, last: 1, total: 0, perPage: 20 });
-  const [ordersPagination, setOrdersPagination] = useState({ current: 1, last: 1, total: 0, perPage: 10 }); // ← ADICIONAR
+  const [ordersPagination, setOrdersPagination] = useState({ current: 1, last: 1, total: 0, perPage: 10 });
 
   // Listar Usuários
   const loadUsers = useCallback(async (page = 1) => {
@@ -152,15 +165,23 @@ export function useDashboardData(role) {
     }
   }, [filters.method, filters.date, role]);
 
-// Listar Ordens de Serviço (Chamados)
+  // Listar Ordens de Serviço (Chamados) - CORRIGIDO
   const loadServiceOrders = useCallback(async (page = 1) => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page, per_page: 10 });
+      const params = new URLSearchParams({ 
+        page: page.toString(), 
+        per_page: "10" 
+      });
       
-      // 👇 ADICIONADO: Captura os filtros de busca e status para enviar à API
-      if (filters.search) params.append("search", filters.search);
+      // ADICIONADO: Todos os filtros de busca
+      if (filters.protocol) params.append("protocol", filters.protocol);
+      if (filters.title) params.append("title", filters.title);
+      if (filters.applicant) params.append("applicant", filters.applicant);
+      if (filters.priority) params.append("priority", filters.priority);
       if (filters.status) params.append("status", filters.status);
+
+      console.log("🔍 Parâmetros da busca:", params.toString()); // Debug
 
       const res = await api.get(`/api/v1/service-orders?${params.toString()}`);
       const responseData = res.data;
@@ -199,23 +220,23 @@ export function useDashboardData(role) {
     } finally { 
       setLoading(false); 
     }
-  }, [filters.search, filters.status]); // 👈 ADICIONADO: Dependências para disparar quando alterados
+  }, [filters.protocol, filters.title, filters.applicant, filters.priority, filters.status]); // ADICIONADO: Dependências dos filtros
 
   return { 
     loading, 
     users, 
     groups, 
     auditLogs, 
-    serviceOrders, // ← ADICIONAR
+    serviceOrders,
     usersPagination,
     groupsPagination,
     auditPagination,
-    ordersPagination, // ← ADICIONAR
+    ordersPagination,
     filters, 
     setFilters, 
     loadUsers, 
     loadGroups, 
     loadAuditLogs,
-    loadServiceOrders // ← ADICIONAR
+    loadServiceOrders
   };
 }

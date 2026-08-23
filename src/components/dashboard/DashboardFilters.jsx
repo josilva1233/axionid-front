@@ -67,23 +67,83 @@ export default function DashboardFilters({
     ),
     orders: (
       <>
+        {/* Campo: Protocolo */}
         <div className="filter-col">
           <Form.Group>
-            <Form.Label className="filter-label">Buscar Chamado</Form.Label>
+            <Form.Label className="filter-label">Protocolo</Form.Label>
             <Form.Control 
               type="text" 
-              name="search" 
-              value={filters.search || ""} 
+              name="protocol" 
+              value={filters.protocol || ""} 
               onChange={(e) => {
-                console.log("🔍 Buscar Chamado alterado:", e.target.value);
+                console.log("🔍 Protocolo alterado:", e.target.value);
                 onFilterChange(e);
               }} 
               className="custom-input-dark" 
-              placeholder="Digite o protocolo, título ou solicitante..."
+              placeholder="Digite o protocolo..."
             />
           </Form.Group>
         </div>
 
+        {/* Campo: Título / Assunto */}
+        <div className="filter-col">
+          <Form.Group>
+            <Form.Label className="filter-label">Título / Assunto</Form.Label>
+            <Form.Control 
+              type="text" 
+              name="title" 
+              value={filters.title || ""} 
+              onChange={(e) => {
+                console.log("🔍 Título alterado:", e.target.value);
+                onFilterChange(e);
+              }} 
+              className="custom-input-dark" 
+              placeholder="Digite o título..."
+            />
+          </Form.Group>
+        </div>
+
+        {/* Campo: Solicitante */}
+        <div className="filter-col">
+          <Form.Group>
+            <Form.Label className="filter-label">Solicitante</Form.Label>
+            <Form.Control 
+              type="text" 
+              name="applicant" 
+              value={filters.applicant || ""} 
+              onChange={(e) => {
+                console.log("🔍 Solicitante alterado:", e.target.value);
+                onFilterChange(e);
+              }} 
+              className="custom-input-dark" 
+              placeholder="Digite o nome do solicitante..."
+            />
+          </Form.Group>
+        </div>
+
+        {/* Campo: Prioridade */}
+        <div className="filter-col">
+          <Form.Group>
+            <Form.Label className="filter-label">Prioridade</Form.Label>
+            <Form.Select 
+              name="priority" 
+              value={filters.priority || ""} 
+              onChange={(e) => {
+                console.log("🔍 Prioridade alterado:", e.target.value);
+                onFilterChange(e);
+              }} 
+              className="custom-input-dark"
+            >
+              <option value="">Todas</option>
+              <option value="low">Baixa</option>
+              <option value="medium">Média</option>
+              <option value="high">Alta</option>
+              <option value="urgent">Urgente</option>
+            </Form.Select>
+          </Form.Group>
+        </div>
+
+        {/* Campo: Status */}
         <div className="filter-col">
           <Form.Group>
             <Form.Label className="filter-label">Status</Form.Label>
@@ -105,6 +165,7 @@ export default function DashboardFilters({
           </Form.Group>
         </div>
 
+        {/* Botão: Abrir Chamado */}
         <div className="filter-col">
           <button className="btn-primary w-100" onClick={onNewOrder}>
             <i className="bi bi-megaphone me-2"></i> Abrir Chamado
