@@ -119,7 +119,7 @@ export default function Login() {
             <div className="label-row">
               <label>SENHA</label>
               <Link to="/forgot-password" className="forgot-link">
-                Esqueceu a senha?
+                Esqueceu a senha?, vamos te ajudar a recuperar.
               </Link>
             </div>
             <input
