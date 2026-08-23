@@ -177,7 +177,7 @@ export default function GroupTable({
                             className="btn-dropdown-toggle"
                             onClick={() => toggleDropdown(g.id)}
                             title="Abrir ações"
-                          >
+                          >Abrir ações
                             <i className="bi bi-three-dots-vertical"></i>
                           </button>
 
