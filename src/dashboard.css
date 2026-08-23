@@ -1875,3 +1875,772 @@ body::after {
   outline: 2px solid var(--error, #ef4444);
   outline-offset: 2px;
 }
+
+
+/* ==========================================================
+   SERVICE ORDER - ESTILOS OTIMIZADOS
+   ========================================================== */
+
+/* ============================================
+   FILTER CARD - CONTAINER PRINCIPAL
+   ============================================ */
+.filter-card {
+  background: var(--bg-card, #14161e);
+  border: 1px solid var(--border, #2a2d3a);
+  border-radius: var(--radius-xl, 16px);
+  padding: var(--spacing-xl, 24px);
+  margin-bottom: var(--spacing-xl, 24px);
+  transition: all 0.3s ease;
+}
+
+.filter-card:hover {
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
+/* ============================================
+   CARD TITLE
+   ============================================ */
+.card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-main, #e2e8f0);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card-title i {
+  font-size: 22px;
+  color: var(--primary, #6366f1);
+}
+
+/* ============================================
+   FILTER LABEL
+   ============================================ */
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.filter-label i {
+  font-size: 14px;
+  color: var(--primary, #6366f1);
+}
+
+/* ============================================
+   INPUTS PERSONALIZADOS
+   ============================================ */
+.custom-input-dark {
+  background: var(--bg-input, #1a1d2a) !important;
+  border: 1px solid var(--border, #2a2d3a) !important;
+  color: var(--text-main, #e2e8f0) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  padding: 10px 14px !important;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.custom-input-dark::placeholder {
+  color: var(--text-muted, #4a4f6a);
+  font-size: 13px;
+}
+
+.custom-input-dark:focus {
+  border-color: var(--primary, #6366f1) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+  outline: none !important;
+}
+
+.custom-input-dark:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Select personalizado */
+.custom-input-dark option {
+  background: var(--bg-card, #14161e);
+  color: var(--text-main, #e2e8f0);
+}
+
+/* Textarea */
+.custom-input-dark textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* ============================================
+   FILE INPUT ESTILIZADO
+   ============================================ */
+.custom-input-dark[type="file"] {
+  padding: 8px 12px !important;
+  cursor: pointer;
+}
+
+.custom-input-dark[type="file"]::file-selector-button {
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 6px;
+  padding: 6px 16px;
+  color: var(--text-main, #e2e8f0);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-right: 12px;
+}
+
+.custom-input-dark[type="file"]::file-selector-button:hover {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+/* ============================================
+   BOTÕES - GERAL
+   ============================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border-radius: var(--radius-md, 8px);
+  font-weight: 600;
+  font-size: 14px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-decoration: none;
+  min-height: 44px;
+}
+
+.btn i {
+  font-size: 16px;
+  transition: transform 0.2s ease;
+}
+
+.btn:hover i {
+  transform: scale(1.1);
+}
+
+.btn:active {
+  transform: scale(0.96);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ============================================
+   BOTÃO PRIMARY
+   ============================================ */
+.btn-primary {
+  background: var(--primary, #6366f1);
+  color: #fff;
+  border-color: var(--primary, #6366f1);
+}
+
+.btn-primary:hover {
+  background: #818cf8;
+  border-color: #818cf8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+}
+
+.btn-primary:focus-visible {
+  outline: 2px solid var(--primary, #6366f1);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   BOTÃO OUTLINE LIGHT
+   ============================================ */
+.btn-outline-light {
+  background: transparent;
+  color: var(--text-dim, #94a3b8);
+  border-color: var(--border, #2a2d3a);
+}
+
+.btn-outline-light:hover {
+  background: var(--bg-hover, #1e2130);
+  color: var(--text-main, #e2e8f0);
+  border-color: var(--border-light, #1e2130);
+  transform: translateY(-1px);
+}
+
+.btn-outline-light:focus-visible {
+  outline: 2px solid var(--text-dim, #94a3b8);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   BOTÃO CANCELAR (FECHAR)
+   ============================================ */
+.btn-close-custom {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  background: rgba(239, 68, 68, 0.04);
+  color: var(--error, #ef4444);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-close-custom:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-close-custom:active {
+  transform: scale(0.95);
+}
+
+.btn-close-custom i {
+  font-size: 14px;
+}
+
+/* ============================================
+   BOTÃO LIMPAR (FILTROS)
+   ============================================ */
+.btn-filter-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  background: rgba(239, 68, 68, 0.04);
+  color: var(--error, #ef4444);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  width: 100%;
+  min-height: 44px;
+}
+
+.btn-filter-clear i {
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.btn-filter-clear:hover {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.15);
+}
+
+.btn-filter-clear:hover i {
+  transform: rotate(-15deg) scale(1.1);
+}
+
+.btn-filter-clear:active {
+  transform: scale(0.95);
+}
+
+.btn-filter-clear:focus-visible {
+  outline: 2px solid var(--error, #ef4444);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   BOTÃO ABRIR CHAMADO
+   ============================================ */
+.btn-open-service {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border-radius: var(--radius-md, 8px);
+  border: none;
+  background: linear-gradient(135deg, var(--primary, #6366f1), #8b5cf6);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  min-height: 44px;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-open-service i {
+  font-size: 18px;
+  transition: transform 0.3s ease;
+}
+
+.btn-open-service:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.3);
+}
+
+.btn-open-service:hover i {
+  transform: scale(1.15) rotate(-5deg);
+}
+
+.btn-open-service:active {
+  transform: scale(0.95);
+}
+
+.btn-open-service:focus-visible {
+  outline: 2px solid var(--primary, #6366f1);
+  outline-offset: 2px;
+}
+
+/* Efeito de brilho no hover */
+.btn-open-service::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.btn-open-service:hover::before {
+  opacity: 1;
+}
+
+.btn-open-service:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ============================================
+   GRUPO DE BOTÕES
+   ============================================ */
+.btn-group-custom {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.btn-group-custom .btn {
+  min-width: 140px;
+  justify-content: center;
+}
+
+/* ============================================
+   FILTER ROW
+   ============================================ */
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.filter-col {
+  flex: 1;
+  min-width: 160px;
+  max-width: 240px;
+}
+
+.filter-col-full {
+  flex: 0 0 100%;
+  max-width: 100%;
+}
+
+/* ============================================
+   BADGE DE PRIORIDADE
+   ============================================ */
+.priority-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.priority-badge.low {
+  background: rgba(34, 197, 94, 0.12);
+  color: var(--success, #22c55e);
+}
+
+.priority-badge.medium {
+  background: rgba(234, 179, 8, 0.12);
+  color: #eab308;
+}
+
+.priority-badge.high {
+  background: rgba(251, 146, 60, 0.12);
+  color: #fb923c;
+}
+
+.priority-badge.urgent {
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--error, #ef4444);
+  animation: pulse-urgent 2s ease-in-out infinite;
+}
+
+@keyframes pulse-urgent {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* ============================================
+   STATUS BADGE
+   ============================================ */
+.status-badge-service {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-badge-service.open {
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--primary, #6366f1);
+}
+
+.status-badge-service.in-progress {
+  background: rgba(251, 146, 60, 0.12);
+  color: #fb923c;
+}
+
+.status-badge-service.resolved {
+  background: rgba(34, 197, 94, 0.12);
+  color: var(--success, #22c55e);
+}
+
+.status-badge-service.closed {
+  background: rgba(148, 163, 184, 0.08);
+  color: var(--text-muted, #4a4f6a);
+}
+
+/* ============================================
+   NOTIFICAÇÃO / CARD DE CHAMADO
+   ============================================ */
+.service-card {
+  background: var(--bg-card, #14161e);
+  border: 1px solid var(--border, #2a2d3a);
+  border-radius: var(--radius-lg, 12px);
+  padding: 16px 20px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.service-card:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+  background: var(--bg-hover, #1e2130);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.service-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.service-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main, #e2e8f0);
+}
+
+.service-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-dim, #94a3b8);
+  flex-wrap: wrap;
+}
+
+.service-card-meta i {
+  margin-right: 4px;
+}
+
+.service-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-light, #1e2130);
+}
+
+/* ============================================
+   FILE UPLOAD STATUS
+   ============================================ */
+.file-upload-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-md, 8px);
+  background: rgba(34, 197, 94, 0.06);
+  border: 1px solid rgba(34, 197, 94, 0.1);
+  color: var(--success, #22c55e);
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.file-upload-status i {
+  font-size: 16px;
+}
+
+/* ============================================
+   ANIMAÇÕES
+   ============================================ */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.filter-card {
+  animation: slideDown 0.3s ease forwards;
+}
+
+/* ============================================
+   RESPONSIVIDADE
+   ============================================ */
+
+/* Tablets */
+@media screen and (max-width: 1024px) {
+  .filter-card {
+    padding: 20px;
+  }
+
+  .filter-col {
+    min-width: 140px;
+    max-width: 200px;
+  }
+
+  .btn {
+    font-size: 13px;
+    padding: 8px 18px;
+    min-height: 40px;
+  }
+
+  .card-title {
+    font-size: 16px;
+  }
+}
+
+/* Mobile */
+@media screen and (max-width: 768px) {
+  .filter-card {
+    padding: 16px;
+    border-radius: var(--radius-md, 8px);
+  }
+
+  .card-title {
+    font-size: 15px;
+  }
+
+  .card-title i {
+    font-size: 18px;
+  }
+
+  .filter-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .filter-col {
+    min-width: 100%;
+    max-width: 100%;
+  }
+
+  .filter-col-full {
+    flex: 0 0 100%;
+  }
+
+  .btn-group-custom {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn-group-custom .btn {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .btn,
+  .btn-filter-clear,
+  .btn-open-service {
+    font-size: 13px;
+    padding: 10px 16px;
+    min-height: 40px;
+  }
+
+  .custom-input-dark {
+    font-size: 13px;
+    padding: 8px 12px !important;
+  }
+
+  .filter-label {
+    font-size: 11px;
+  }
+
+  .service-card {
+    padding: 12px 16px;
+  }
+
+  .service-card-title {
+    font-size: 14px;
+  }
+
+  .service-card-meta {
+    font-size: 11px;
+    gap: 8px;
+  }
+}
+
+/* Telas pequenas */
+@media screen and (max-width: 480px) {
+  .filter-card {
+    padding: 12px;
+  }
+
+  .btn {
+    font-size: 12px;
+    padding: 8px 14px;
+    min-height: 36px;
+  }
+
+  .btn i {
+    font-size: 14px;
+  }
+
+  .custom-input-dark {
+    font-size: 12px;
+    padding: 6px 10px !important;
+  }
+
+  .custom-input-dark::placeholder {
+    font-size: 12px;
+  }
+
+  .card-title {
+    font-size: 14px;
+  }
+
+  .service-card-title {
+    font-size: 13px;
+  }
+}
+
+/* ============================================
+   SCROLLBAR PERSONALIZADA
+   ============================================ */
+.filter-card::-webkit-scrollbar {
+  height: 4px;
+  width: 4px;
+}
+
+.filter-card::-webkit-scrollbar-track {
+  background: var(--bg-input, #1a1d2a);
+  border-radius: 4px;
+}
+
+.filter-card::-webkit-scrollbar-thumb {
+  background: var(--border, #2a2d3a);
+  border-radius: 4px;
+}
+
+.filter-card::-webkit-scrollbar-thumb:hover {
+  background: var(--primary, #6366f1);
+}
+
+/* ============================================
+   ACESSIBILIDADE
+   ============================================ */
+.btn:focus-visible,
+.custom-input-dark:focus-visible {
+  outline: 2px solid var(--primary, #6366f1);
+  outline-offset: 2px;
+}
+
+/* High Contrast */
+@media (prefers-contrast: high) {
+  .btn-primary {
+    border: 2px solid #fff;
+  }
+
+  .btn-outline-light {
+    border-width: 2px;
+  }
+
+  .btn-filter-clear {
+    border: 2px solid var(--error, #ef4444);
+    background: transparent;
+    color: var(--error, #ef4444);
+  }
+
+  .custom-input-dark {
+    border-width: 2px !important;
+  }
+}
+
+/* Prefers Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .filter-card {
+    animation: none;
+  }
+
+  .priority-badge.urgent {
+    animation: none;
+  }
+
+  .btn:hover i,
+  .btn-open-service:hover i,
+  .btn-filter-clear:hover i {
+    transform: none;
+  }
+
+  .service-card:hover {
+    transform: none;
+  }
+
+  .btn:hover,
+  .btn-open-service:hover,
+  .btn-filter-clear:hover {
+    transform: none !important;
+  }
+}
