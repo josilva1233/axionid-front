@@ -8,26 +8,30 @@ export function useDashboardData(role) {
   const [groups, setGroups] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
   const [serviceOrders, setServiceOrders] = useState([]);
+  const [permissions, setPermissions] = useState([]);
   
   // =========================================================
-  // FILTROS - ADICIONAR TODOS OS CAMPOS DE AUDIT
+  // FILTROS - COMPLETO PARA TODAS AS ABAS
   // =========================================================
   const [filters, setFilters] = useState({ 
     // Filtros de Usuários
     name: "", 
     completed: "", 
     // Filtros de Auditoria (SEGURANÇA)
-    user: "",      // NOVO
-    url: "",       // NOVO
+    user: "",
+    url: "",
     method: "", 
-    start_date: "", // NOVO (ANTES ERA "date")
-    end_date: "",   // NOVO
+    start_date: "",
+    end_date: "",
     // Filtros de Ordens de Serviço
     protocol: "",
     title: "",
     applicant: "",
     priority: "",
-    status: ""
+    status: "",
+    // Filtros de Permissões
+    label: "",
+    perm_name: ""
   });
   
   // Paginação separada para cada tipo
@@ -35,6 +39,7 @@ export function useDashboardData(role) {
   const [groupsPagination, setGroupsPagination] = useState({ current: 1, last: 1, total: 0, perPage: 15 });
   const [auditPagination, setAuditPagination] = useState({ current: 1, last: 1, total: 0, perPage: 20 });
   const [ordersPagination, setOrdersPagination] = useState({ current: 1, last: 1, total: 0, perPage: 10 });
+  const [permissionsPagination, setPermissionsPagination] = useState({ current: 1, last: 1, total: 0, perPage: 10 });
 
   // =========================================================
   // LISTAR USUÁRIOS
@@ -131,7 +136,7 @@ export function useDashboardData(role) {
   }, [filters.name]);
 
   // =========================================================
-  // LISTAR LOGS DE AUDITORIA - CORRIGIDO
+  // LISTAR LOGS DE AUDITORIA (SEGURANÇA)
   // =========================================================
   const loadAuditLogs = useCallback(async (page = 1) => {
     if (role !== "admin") return;
@@ -139,9 +144,7 @@ export function useDashboardData(role) {
     try {
       const params = new URLSearchParams({ page: page.toString() });
       
-      // =========================================================
-      // TODOS OS FILTROS DE AUDITORIA QUE O FRONTEND ENVIA
-      // =========================================================
+      // TODOS OS FILTROS DE AUDITORIA
       if (filters.user) params.append("user", filters.user);
       if (filters.url) params.append("url", filters.url);
       if (filters.method) params.append("method", filters.method);
@@ -256,21 +259,83 @@ export function useDashboardData(role) {
     filters.status
   ]);
 
+  // =========================================================
+  // LISTAR PERMISSÕES COM FILTROS
+  // =========================================================
+  const loadPermissions = useCallback(async (page = 1) => {
+    if (role !== "admin") return;
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({ 
+        page: page.toString(), 
+        per_page: "10" 
+      });
+      
+      // FILTROS DE PERMISSÕES
+      if (filters.label) params.append("label", filters.label);
+      if (filters.perm_name) params.append("name", filters.perm_name);
+
+      console.log("🔍 Parâmetros das Permissões:", params.toString());
+
+      const res = await api.get(`/api/v1/admin/permissions?${params.toString()}`);
+      const responseData = res.data;
+      
+      if (responseData.data && Array.isArray(responseData.data)) {
+        setPermissions(responseData.data);
+        setPermissionsPagination({
+          current: responseData.current_page || 1,
+          last: responseData.last_page || 1,
+          total: responseData.total || 0,
+          perPage: responseData.per_page || 10
+        });
+      } else if (Array.isArray(responseData)) {
+        const allPermissions = responseData;
+        const total = allPermissions.length;
+        const perPage = 10;
+        const lastPage = Math.ceil(total / perPage);
+        const start = (page - 1) * perPage;
+        const end = start + perPage;
+        setPermissions(allPermissions.slice(start, end));
+        setPermissionsPagination({
+          current: page,
+          last: lastPage,
+          total: total,
+          perPage: perPage
+        });
+      } else {
+        setPermissions([]);
+        setPermissionsPagination({ current: 1, last: 1, total: 0, perPage: 10 });
+      }
+    } catch (err) { 
+      console.error("Erro ao carregar permissões:", err); 
+      setPermissions([]);
+    } finally { 
+      setLoading(false); 
+    }
+  }, [
+    filters.label,
+    filters.perm_name,
+    role
+  ]);
+
   return { 
     loading, 
     users, 
     groups, 
     auditLogs, 
     serviceOrders,
+    permissions,
     usersPagination,
     groupsPagination,
     auditPagination,
     ordersPagination,
+    permissionsPagination,
     filters, 
     setFilters, 
     loadUsers, 
     loadGroups, 
     loadAuditLogs,
-    loadServiceOrders
+    loadServiceOrders,
+    loadPermissions
   };
 }
