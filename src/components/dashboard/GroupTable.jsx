@@ -163,44 +163,77 @@ export default function GroupTable({
                     <td className="col-actions text-end">
                       {canManage ? (
                         <div 
-                          className="actions-dropdown-wrapper" 
+                          className="actions-dropdown-container" 
                           ref={(el) => (dropdownRefs.current[g.id] = el)}
                         >
+                          {/* Botão Trigger - estilo igual ao UserDropdown */}
                           <button
-                            className="btn-dropdown-toggle"
+                            className={`actions-dropdown-trigger ${isDropdownOpen ? 'active' : ''}`}
                             onClick={() => toggleDropdown(g.id)}
-                            title="Abrir ações"
+                            type="button"
+                            title="Abrir ações do grupo"
                           >
                             <i className="bi bi-three-dots-vertical"></i>
                           </button>
 
+                          {/* Menu Flutuante - estilo igual ao UserDropdown */}
                           {isDropdownOpen && (
-                            <div className="actions-dropdown-menu">
-                              <button
-                                className="dropdown-item"
-                                onClick={() => {
-                                  onViewDetail(g.id);
-                                  setOpenDropdown(null);
-                                }}
-                              >
-                                <i className="bi bi-gear-fill"></i> Gerenciar Membros
-                              </button>
-                              {isSystemAdmin && (
-                                <>
-                                  <button
-                                    className="dropdown-item"
-                                    onClick={() => handleEdit(g)}
-                                  >
-                                    <i className="bi bi-pencil-square"></i> Editar
-                                  </button>
-                                  <button
-                                    className="dropdown-item dropdown-item-danger"
-                                    onClick={() => handleDelete(g)}
-                                  >
-                                    <i className="bi bi-trash3-fill"></i> Deletar
-                                  </button>
-                                </>
-                              )}
+                            <div className="actions-dropdown-menu-floating" role="menu">
+                              <header className="dropdown-menu-header">
+                                <span className="dropdown-header-label">Ações</span>
+                                <strong className="dropdown-header-name text-truncate">
+                                  {g.name}
+                                </strong>
+                              </header>
+                              
+                              <div className="dropdown-menu-divider"></div>
+                              
+                              <nav className="dropdown-menu-body">
+                                <button
+                                  type="button"
+                                  className="dropdown-menu-item"
+                                  role="menuitem"
+                                  onClick={() => {
+                                    onViewDetail(g.id);
+                                    setOpenDropdown(null);
+                                  }}
+                                >
+                                  <span className="dropdown-menu-icon" aria-hidden="true">
+                                    <i className="bi bi-people-fill"></i>
+                                  </span>
+                                  Gerenciar Membros
+                                </button>
+
+                                {isSystemAdmin && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      className="dropdown-menu-item"
+                                      role="menuitem"
+                                      onClick={() => handleEdit(g)}
+                                    >
+                                      <span className="dropdown-menu-icon" aria-hidden="true">
+                                        <i className="bi bi-pencil-square"></i>
+                                      </span>
+                                      Editar Grupo
+                                    </button>
+
+                                    <div className="dropdown-menu-divider"></div>
+
+                                    <button
+                                      type="button"
+                                      className="dropdown-menu-item dropdown-menu-item-danger"
+                                      role="menuitem"
+                                      onClick={() => handleDelete(g)}
+                                    >
+                                      <span className="dropdown-menu-icon" aria-hidden="true">
+                                        <i className="bi bi-trash3-fill"></i>
+                                      </span>
+                                      Deletar Grupo
+                                    </button>
+                                  </>
+                                )}
+                              </nav>
                             </div>
                           )}
                         </div>
