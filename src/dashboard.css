@@ -7223,3 +7223,317 @@ body {
     padding: 2px 8px;
   }
 }
+
+/* ==========================================================
+   SIDEBAR FOOTER - ESTILO MELHORADO
+   ========================================================== */
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: var(--spacing-lg, 16px) var(--spacing-md, 12px);
+  border-top: 1px solid var(--border, #2a2d3a);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 12px);
+}
+
+/* ============================================
+   DIVISOR
+   ============================================ */
+.sidebar-divider {
+  height: 1px;
+  background: var(--border, #2a2d3a);
+  margin: 0 -8px;
+}
+
+/* ============================================
+   INFORMAÇÕES DO USUÁRIO
+   ============================================ */
+.sidebar-user-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+  padding: var(--spacing-sm, 8px) var(--spacing-sm, 8px);
+  border-radius: var(--radius-md, 8px);
+  transition: background var(--transition-fast, 0.2s ease);
+  cursor: default;
+}
+
+.sidebar-user-info:hover {
+  background: var(--bg-hover, #1e2130);
+}
+
+.sidebar-user-avatar {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: var(--radius-circle, 50%);
+  background: linear-gradient(135deg, var(--primary, #6366f1), #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-white, #ffffff);
+  text-transform: uppercase;
+  border: 2px solid rgba(255, 255, 255, 0.05);
+  transition: all var(--transition-slow, 0.3s ease);
+}
+
+.sidebar-user-info:hover .sidebar-user-avatar {
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: scale(1.05);
+}
+
+.sidebar-user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.sidebar-user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main, #e2e8f0);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-user-role {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-dim, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ============================================
+   BOTÃO DE LOGOUT
+   ============================================ */
+.btn-logout-sidebar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  border: none;
+  background: transparent;
+  color: var(--text-dim, #94a3b8);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.2s ease);
+  border-radius: var(--radius-md, 8px);
+  width: 100%;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-logout-sidebar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(239, 68, 68, 0.05);
+  opacity: 0;
+  transition: opacity var(--transition-fast, 0.2s ease);
+  border-radius: var(--radius-md, 8px);
+}
+
+.btn-logout-sidebar:hover {
+  color: var(--error, #ef4444);
+  background: rgba(239, 68, 68, 0.06);
+}
+
+.btn-logout-sidebar:hover::before {
+  opacity: 1;
+}
+
+.btn-logout-sidebar:active {
+  transform: scale(0.97);
+}
+
+.logout-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: currentColor;
+  transition: transform var(--transition-fast, 0.2s ease);
+}
+
+.btn-logout-sidebar:hover .logout-icon {
+  transform: translateX(2px) scale(1.05);
+}
+
+.btn-logout-sidebar .nav-label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ============================================
+   VERSÃO
+   ============================================ */
+.sidebar-version {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm, 8px);
+  padding: var(--spacing-xs, 4px) 0;
+  font-size: 11px;
+  color: var(--text-muted, #4a4f6a);
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.version-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: var(--radius-circle, 50%);
+  background: var(--success, #22c55e);
+  display: inline-block;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+.version-text {
+  color: var(--text-dim, #94a3b8);
+}
+
+.version-status {
+  font-size: 10px;
+  color: var(--success, #22c55e);
+  font-weight: 600;
+  margin-left: auto;
+  padding: 2px 8px;
+  background: rgba(34, 197, 94, 0.08);
+  border-radius: var(--radius-2xl, 20px);
+  border: 1px solid rgba(34, 197, 94, 0.1);
+}
+
+/* ============================================
+   RESPONSIVIDADE
+   ============================================ */
+
+/* Mobile */
+@media screen and (max-width: 768px) {
+  .sidebar-footer {
+    padding: var(--spacing-md, 12px);
+  }
+
+  .sidebar-user-info {
+    padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
+  }
+
+  .sidebar-user-avatar {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    font-size: 12px;
+  }
+
+  .sidebar-user-name {
+    font-size: 12px;
+  }
+
+  .sidebar-user-role {
+    font-size: 9px;
+  }
+
+  .btn-logout-sidebar {
+    padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+    font-size: 13px;
+  }
+
+  .logout-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .sidebar-version {
+    font-size: 10px;
+  }
+
+  .version-status {
+    font-size: 9px;
+    padding: 1px 6px;
+  }
+}
+
+/* ============================================
+   ANIMAÇÕES
+   ============================================ */
+@keyframes pulse-dot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.7;
+  }
+}
+
+/* ============================================
+   DARK MODE (JÁ INCLUÍDO NAS VARIÁVEIS)
+   ============================================ */
+@media (prefers-color-scheme: light) {
+  .sidebar-user-avatar {
+    border-color: rgba(0, 0, 0, 0.05);
+  }
+
+  .sidebar-user-info:hover .sidebar-user-avatar {
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .version-status {
+    background: rgba(34, 197, 94, 0.06);
+  }
+}
+
+/* ============================================
+   HIGH CONTRAST
+   ============================================ */
+@media (prefers-contrast: high) {
+  .btn-logout-sidebar {
+    border: 1px solid transparent;
+  }
+
+  .btn-logout-sidebar:hover {
+    border-color: var(--error, #ef4444);
+  }
+
+  .sidebar-divider {
+    height: 2px;
+  }
+
+  .sidebar-user-avatar {
+    border-width: 2px;
+  }
+
+  .version-status {
+    border-width: 2px;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-user-avatar {
+    transition: none !important;
+  }
+
+  .btn-logout-sidebar {
+    transition: none !important;
+  }
+
+  .btn-logout-sidebar:hover .logout-icon {
+    transform: none !important;
+  }
+
+  .version-dot {
+    animation: none !important;
+  }
+}
