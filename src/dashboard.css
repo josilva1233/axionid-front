@@ -3803,7 +3803,7 @@ body {
   justify-content: center;
   padding: 6px 12px;
   border-radius: var(--radius-md, 8px);
-  border: 1px solid var(--border, #2a2d3a);
+  border: 1px solid var(--border, #f5f6f8);
   background: transparent;
   color: var(--text-dim, #94a3b8);
   font-size: 18px;
