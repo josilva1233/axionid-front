@@ -1,0 +1,26 @@
+/* ==========================================================
+   AXIONID - TABELAS (TESTE VISUAL)
+   ========================================================== */
+
+/* 🔴 TESTE: BORDA VERMELHA EM TODAS AS TABELAS */
+.table-base,
+.user-table,
+table {
+  border: 3px solid #ff0000 !important;
+  background: rgba(255, 0, 0, 0.05) !important;
+}
+
+/* 🔵 TESTE: TEXTO AZUL NO HEADER */
+.table-base thead th,
+.user-table thead th {
+  color: #00ff00 !important;
+  background: #ff00ff !important;
+  font-size: 20px !important;
+}
+
+/* 🟡 TESTE: FUNDO AMARELO NAS CÉLULAS */
+.table-base tbody td,
+.user-table tbody td {
+  background: #ffff00 !important;
+  color: #000000 !important;
+}
