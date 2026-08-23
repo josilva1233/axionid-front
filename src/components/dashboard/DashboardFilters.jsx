@@ -54,37 +54,12 @@ export default function DashboardFilters({
         </div>
       </>
     ),
-    orders: (
+orders: (
       <>
-        {/* 1. Busca por Protocolo */}
-        {renderInput("Buscar por Protocolo", "protocol", "Ex: OS-2026...")}
+        {/* 1. Campo Único de Busca Dinâmica (Pesquisa Geral) */}
+        {renderInput("Buscar Chamado", "search", "Digite o protocolo, título ou solicitante...")}
 
-        {/* 2. Busca por Título / Assunto */}
-        {renderInput("Título / Assunto", "title", "Ex: Erro no sistema...")}
-
-        {/* 3. Busca por Solicitante */}
-        {renderInput("Solicitante", "applicant", "Nome do solicitante...")}
-
-        {/* 4. Filtro por Prioridade */}
-        <div className="filter-col">
-          <Form.Group>
-            <Form.Label className="filter-label">Prioridade</Form.Label>
-            <Form.Select 
-              name="priority" 
-              value={filters.priority || ""} 
-              onChange={onFilterChange} 
-              className="custom-input-dark"
-            >
-              <option value="">Todas as Prioridades</option>
-              <option value="low">Baixa (Low)</option>
-              <option value="medium">Média (Medium)</option>
-              <option value="high">Alta (High)</option>
-              <option value="urgent">Urgente (Urgent)</option>
-            </Form.Select>
-          </Form.Group>
-        </div>
-
-        {/* 5. Filtro por Status */}
+        {/* 2. Filtro de Status Separado */}
         <div className="filter-col">
           <Form.Group>
             <Form.Label className="filter-label">Status</Form.Label>
