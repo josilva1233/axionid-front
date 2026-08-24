@@ -129,12 +129,10 @@ body {
   border-right: 1px solid var(--border);
 }
 
-/* Sidebar recolhida - mostra apenas ícones */
 .sidebar.collapsed {
   width: var(--sidebar-width-collapsed);
 }
 
-/* Efeito de sombra ao expandir */
 .sidebar:not(.collapsed) {
   box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
 }
@@ -169,7 +167,6 @@ body {
   color: var(--primary);
 }
 
-/* Oculta textos quando recolhido */
 .sidebar.collapsed .brand h1 {
   font-size: 0;
   margin: 0;
@@ -335,12 +332,10 @@ body {
   white-space: nowrap;
 }
 
-/* Ocultar textos quando recolhido */
 .sidebar.collapsed .nav-label {
   display: none;
 }
 
-/* Centralizar ícones quando recolhido */
 .sidebar.collapsed .nav-item {
   justify-content: center;
   padding: var(--spacing-md);
@@ -417,7 +412,6 @@ body {
   width: calc(100% - var(--sidebar-width-collapsed));
 }
 
-/* Quando a sidebar está expandida */
 .sidebar:not(.collapsed) ~ .main-wrapper,
 .main-wrapper.sidebar-expanded {
   margin-left: var(--sidebar-width-expanded);
@@ -1221,7 +1215,6 @@ body {
    25. RESPONSIVIDADE - MOBILE
    ============================================ */
 @media screen and (max-width: 768px) {
-  /* Sidebar fica flutuante no mobile */
   .sidebar {
     width: var(--sidebar-width-collapsed) !important;
     position: fixed;
@@ -1369,7 +1362,6 @@ body {
     font-size: 12px;
   }
 
-  /* Tooltips na sidebar mobile */
   .sidebar.collapsed .nav-item:hover .nav-label {
     display: none !important;
   }
