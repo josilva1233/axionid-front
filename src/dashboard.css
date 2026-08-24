@@ -3393,3 +3393,67 @@ body {
     background: #f1f5f9;
   }
 }
+
+/* ============================================
+   INFORMAÇÕES ADICIONAIS NO MODAL
+   ============================================ */
+.info-card-readonly {
+  background: var(--bg-input);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-xs) 0;
+}
+
+.info-row:not(:last-child) {
+  border-bottom: 1px solid var(--border-light);
+}
+
+.info-label-readonly {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.info-label-readonly i {
+  font-size: 13px;
+  color: var(--primary);
+}
+
+.info-value-readonly {
+  font-size: 13px;
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+.info-value-readonly.mono-text {
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+}
+
+/* Responsividade do modal */
+@media screen and (max-width: 480px) {
+  .info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+  
+  .info-row:not(:last-child) {
+    padding-bottom: var(--spacing-sm);
+  }
+}

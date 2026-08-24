@@ -23,40 +23,72 @@ export default function GroupTable({
     background: "#111214",
     color: "#ffffff",
     confirmButtonColor: "#6366f1",
+    cancelButtonColor: "#343a40",
+    customClass: {
+      popup: "border border-secondary rounded-4",
+      confirmButton: "px-4 py-2 rounded-3 fw-bold mx-2",
+      cancelButton: "px-4 py-2 rounded-3 fw-bold mx-2",
+    },
   });
 
-  const handleEdit = (group) => {
+  // ============ ABRIR MODAL DE EDIÇÃO ============
+  const handleOpenEditModal = (group) => {
     setEditingGroup(group);
     setEditForm({
-      name: group.name,
+      name: group.name || "",
       description: group.description || "",
     });
     setShowEditModal(true);
   };
 
+  // ============ FECHAR MODAL ============
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
+    setEditingGroup(null);
+    setEditForm({ name: "", description: "" });
+  };
+
+  // ============ SALVAR EDIÇÃO ============
   const handleSaveEdit = async () => {
+    // Validação
     if (!editForm.name.trim()) {
-      AxionAlert.fire("Erro", "Nome do grupo é obrigatório.", "error");
+      AxionAlert.fire({
+        icon: "warning",
+        title: "Campo Obrigatório",
+        text: "O nome do grupo é obrigatório.",
+        confirmButtonColor: "#6366f1",
+      });
       return;
     }
 
     setEditLoading(true);
     try {
-      if (onEdit) await onEdit(editingGroup.id, editForm);
+      if (onEdit) {
+        await onEdit(editingGroup.id, editForm);
+      }
+      
       AxionAlert.fire({
         icon: "success",
-        title: "Grupo atualizado!",
-        timer: 1500,
+        title: "Grupo Atualizado!",
+        text: `O grupo "${editForm.name}" foi atualizado com sucesso.`,
+        timer: 2000,
         showConfirmButton: false,
       });
-      setShowEditModal(false);
+      
+      handleCloseEditModal();
     } catch (err) {
-      AxionAlert.fire("Erro", "Falha ao atualizar grupo.", "error");
+      AxionAlert.fire({
+        icon: "error",
+        title: "Erro!",
+        text: err.response?.data?.message || "Falha ao atualizar grupo.",
+        confirmButtonColor: "#6366f1",
+      });
     } finally {
       setEditLoading(false);
     }
   };
 
+  // ============ EXCLUIR GRUPO ============
   const handleDelete = async (group) => {
     const result = await AxionAlert.fire({
       title: "Excluir Grupo?",
@@ -65,13 +97,12 @@ export default function GroupTable({
       showCancelButton: true,
       confirmButtonText: "Sim, excluir",
       cancelButtonText: "Cancelar",
-      background: "#111214",
-      color: "#ffffff",
-      confirmButtonColor: "#6366f1",
     });
 
     if (result.isConfirmed) {
-      if (onDelete) await onDelete(group.id);
+      if (onDelete) {
+        await onDelete(group.id);
+      }
     }
   };
 
@@ -153,7 +184,7 @@ export default function GroupTable({
                             <>
                               <button
                                 className="btn-table-action btn-table-action-edit"
-                                onClick={() => handleEdit(g)}
+                                onClick={() => handleOpenEditModal(g)}
                                 title="Editar Grupo"
                               >
                                 <i className="bi bi-pencil-square"></i> Editar
@@ -193,10 +224,12 @@ export default function GroupTable({
         </table>
       </div>
 
-      {/* Modal de Edição - PADRONIZADO COM O SERVICE ORDER */}
+      {/* ============================================
+          MODAL DE EDIÇÃO - PADRONIZADO
+          ============================================ */}
       <Modal 
         show={showEditModal} 
-        onHide={() => setShowEditModal(false)} 
+        onHide={handleCloseEditModal} 
         centered 
         className="permission-modal"
       >
@@ -206,12 +239,14 @@ export default function GroupTable({
             Editar Grupo
           </Modal.Title>
         </Modal.Header>
+        
         <Modal.Body>
           <Form>
-            <Form.Group className="mb-3">
+            {/* Nome do Grupo */}
+            <Form.Group className="mb-4">
               <Form.Label className="form-label-custom">
                 <i className="bi bi-tag me-1"></i>
-                Nome do Grupo
+                Nome do Grupo <span className="text-danger">*</span>
               </Form.Label>
               <Form.Control
                 type="text"
@@ -219,12 +254,14 @@ export default function GroupTable({
                 onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                 className="custom-input-dark"
                 placeholder="Ex: Administradores, TI, RH"
+                disabled={editLoading}
               />
               <Form.Text className="form-text-custom">
                 Nome único para identificar o grupo
               </Form.Text>
             </Form.Group>
 
+            {/* Descrição */}
             <Form.Group className="mb-3">
               <Form.Label className="form-label-custom">
                 <i className="bi bi-file-text me-1"></i>
@@ -237,17 +274,39 @@ export default function GroupTable({
                 onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                 className="custom-input-dark"
                 placeholder="Descreva a finalidade deste grupo..."
+                disabled={editLoading}
               />
               <Form.Text className="form-text-custom">
                 Opcional: descreva as responsabilidades do grupo
               </Form.Text>
             </Form.Group>
+
+            {/* Informações adicionais (somente leitura) */}
+            <div className="info-card-readonly mt-3">
+              <div className="info-row">
+                <span className="info-label-readonly">
+                  <i className="bi bi-hash"></i> ID do Grupo
+                </span>
+                <span className="info-value-readonly mono-text">
+                  #{editingGroup?.id || "---"}
+                </span>
+              </div>
+              <div className="info-row">
+                <span className="info-label-readonly">
+                  <i className="bi bi-person"></i> Criado por
+                </span>
+                <span className="info-value-readonly">
+                  {editingGroup?.creator?.name || "Sistema"}
+                </span>
+              </div>
+            </div>
           </Form>
         </Modal.Body>
+        
         <Modal.Footer>
           <button 
             className="btn-secondary" 
-            onClick={() => setShowEditModal(false)} 
+            onClick={handleCloseEditModal} 
             disabled={editLoading}
           >
             <i className="bi bi-x-circle me-1"></i>
@@ -256,14 +315,19 @@ export default function GroupTable({
           <button 
             className="btn-primary" 
             onClick={handleSaveEdit} 
-            disabled={editLoading}
+            disabled={editLoading || !editForm.name.trim()}
           >
             {editLoading ? (
-              <Spinner animation="border" size="sm" className="me-2" />
+              <>
+                <Spinner animation="border" size="sm" className="me-2" />
+                Salvando...
+              </>
             ) : (
-              <i className="bi bi-check2-circle me-2"></i>
+              <>
+                <i className="bi bi-check2-circle me-2"></i>
+                Salvar Alterações
+              </>
             )}
-            Salvar Alterações
           </button>
         </Modal.Footer>
       </Modal>
