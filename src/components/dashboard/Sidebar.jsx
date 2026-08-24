@@ -28,7 +28,7 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
 
   const handleMouseLeave = () => {
     setIsHovered(false);
-    // Delay de 300ms antes de recolher (dá tempo de voltar o mouse)
+    // Delay de 300ms antes de recolher
     timeoutRef.current = setTimeout(() => {
       if (!isHovered) {
         setIsCollapsed(true);
@@ -58,11 +58,12 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
                 </small>
               </>
             ) : (
+              // Quando recolhido, mostra apenas o ícone
               <span className="brand-icon">🔒</span>
             )}
           </h1>
         </div>
-        {/* Botão de toggle manual (opcional) */}
+        {/* Botão de toggle manual */}
         <button 
           className="toggle-sidebar-btn"
           onClick={toggleSidebar}
@@ -79,14 +80,11 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
           <button 
             className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
             onClick={() => setActiveTab('users')}
+            title={isCollapsed ? (isAdmin ? 'Gestão de Usuários' : 'Operações') : ''}
           >
             <span className="nav-icon">👥</span>
-            {!isCollapsed ? (
+            {!isCollapsed && (
               <span className="nav-label">
-                {isAdmin ? 'Gestão de Usuários' : 'Operações'}
-              </span>
-            ) : (
-              <span className="nav-label-tooltip">
                 {isAdmin ? 'Gestão de Usuários' : 'Operações'}
               </span>
             )}
@@ -95,14 +93,11 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
           <button 
             className={`nav-item ${activeTab === 'groups' ? 'active' : ''}`}
             onClick={() => setActiveTab('groups')}
+            title={isCollapsed ? (isAdmin ? 'Gestão de Grupos' : 'Meus Grupos') : ''}
           >
             <span className="nav-icon">📁</span>
-            {!isCollapsed ? (
+            {!isCollapsed && (
               <span className="nav-label">
-                {isAdmin ? 'Gestão de Grupos' : 'Meus Grupos'}
-              </span>
-            ) : (
-              <span className="nav-label-tooltip">
                 {isAdmin ? 'Gestão de Grupos' : 'Meus Grupos'}
               </span>
             )}
@@ -115,14 +110,11 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
           <button 
             className={`nav-item ${activeTab === 'orders' ? 'active' : ''}`}
             onClick={() => setActiveTab('orders')}
+            title={isCollapsed ? (isAdmin ? 'Gestão de Chamados' : 'Meus Chamados') : ''}
           >
             <span className="nav-icon">🎫</span>
-            {!isCollapsed ? (
+            {!isCollapsed && (
               <span className="nav-label">
-                {isAdmin ? 'Gestão de Chamados' : 'Meus Chamados'}
-              </span>
-            ) : (
-              <span className="nav-label-tooltip">
                 {isAdmin ? 'Gestão de Chamados' : 'Meus Chamados'}
               </span>
             )}
@@ -136,24 +128,22 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
             <button 
               className={`nav-item ${activeTab === 'audit' ? 'active' : ''}`}
               onClick={() => setActiveTab('audit')}
+              title={isCollapsed ? 'Logs de Auditoria' : ''}
             >
               <span className="nav-icon">📜</span>
-              {!isCollapsed ? (
+              {!isCollapsed && (
                 <span className="nav-label">Logs de Auditoria</span>
-              ) : (
-                <span className="nav-label-tooltip">Logs de Auditoria</span>
               )}
             </button>
 
             <button 
               className={`nav-item ${activeTab === 'permissions' ? 'active' : ''}`}
               onClick={() => setActiveTab('permissions')}
+              title={isCollapsed ? 'Permissões' : ''}
             >
               <span className="nav-icon">🛡️</span>
-              {!isCollapsed ? (
+              {!isCollapsed && (
                 <span className="nav-label">Permissões</span>
-              ) : (
-                <span className="nav-label-tooltip">Permissões</span>
               )}
             </button>
           </div>
@@ -164,13 +154,11 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout }) {
         <button 
           onClick={onLogout} 
           className="btn-logout-sidebar"
-          title="Encerrar Sessão"
+          title={isCollapsed ? 'Sair do Sistema' : ''}
         >
           <span className="nav-icon">🚪</span>
-          {!isCollapsed ? (
+          {!isCollapsed && (
             <span className="nav-label">Sair do Sistema</span>
-          ) : (
-            <span className="nav-label-tooltip">Sair do Sistema</span>
           )}
         </button>
         
