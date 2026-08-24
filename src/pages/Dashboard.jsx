@@ -40,7 +40,6 @@ export default function Dashboard() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [selectedPermission, setSelectedPermission] = useState(null);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
   // Estados para paginação
   const [usersCurrentPage, setUsersCurrentPage] = useState(1);
@@ -92,7 +91,7 @@ export default function Dashboard() {
     setShowPermissionModal(false);
     setShowGroupForm(false);
     setSelectedOrder(null);
-    setSelectedPermission(null);
+    setSelectedPermission(null); // ADICIONADO
     setUsersCurrentPage(1);
     setGroupsCurrentPage(1);
     setAuditCurrentPage(1);
@@ -671,10 +670,6 @@ export default function Dashboard() {
     navigate("/login");
   };
 
-  const handleSidebarToggle = (collapsed) => {
-    setIsSidebarCollapsed(collapsed);
-  };
-
   return (
     <div className="dashboard-layout">
       <Sidebar
@@ -682,10 +677,9 @@ export default function Dashboard() {
         role={role}
         onLogout={handleLogout}
         setActiveTab={handleTabChange}
-        onToggle={handleSidebarToggle}
       />
 
-      <div className={`main-wrapper ${isSidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}>
+      <div className="main-wrapper">
         <header className="main-header">
           <h2 className="brand mb-0">
             AxionID
