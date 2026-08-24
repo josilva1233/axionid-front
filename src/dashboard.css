@@ -5315,11 +5315,13 @@ body {
   color: #e2e8f0;
   display: flex;
   flex-direction: column;
-  transition: width 0.3s ease;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   position: fixed;
   left: 0;
   top: 0;
+  z-index: 1000;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Sidebar recolhida */
@@ -5327,7 +5329,17 @@ body {
   width: 70px;
 }
 
-/* Botão de toggle */
+/* Efeito de sombra ao expandir */
+.sidebar:not(.collapsed) {
+  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Botão de toggle - escondido por padrão no auto-recolher */
+.toggle-sidebar-btn {
+  display: none; /* Esconde o botão se não quiser toggle manual */
+}
+
+/* Se quiser manter o botão, use esta versão */
 .toggle-sidebar-btn {
   position: absolute;
   right: -12px;
@@ -5346,14 +5358,16 @@ body {
   justify-content: center;
   z-index: 10;
   transition: transform 0.3s ease, background 0.3s ease;
+  opacity: 0.7;
+}
+
+.toggle-sidebar-btn:hover {
+  opacity: 1;
+  background: #2563eb;
 }
 
 .sidebar.collapsed .toggle-sidebar-btn {
   transform: translateY(-50%) rotate(180deg);
-}
-
-.toggle-sidebar-btn:hover {
-  background: #2563eb;
 }
 
 /* Ajustes para os itens do menu quando recolhido */
@@ -5395,7 +5409,7 @@ body {
   padding: 12px;
 }
 
-/* Efeitos hover nos itens */
+/* Estilo dos itens do menu */
 .nav-item {
   display: flex;
   align-items: center;
@@ -5406,8 +5420,11 @@ body {
   background: transparent;
   color: #cbd5e1;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: all 0.2s ease;
   border-radius: 6px;
+  margin: 2px 8px;
+  width: calc(100% - 16px);
+  position: relative;
 }
 
 .nav-item:hover {
@@ -5420,7 +5437,48 @@ body {
   color: white;
 }
 
-/* Ajustes para o container do botão de toggle */
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: #60a5fa;
+  border-radius: 0 3px 3px 0;
+}
+
+/* Tooltip para ícones quando recolhido */
+.sidebar.collapsed .nav-item:hover .nav-label {
+  display: block !important;
+  position: absolute;
+  left: 70px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1e293b;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  white-space: nowrap;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+/* Ajustes do sidebar-brand */
 .sidebar-brand {
   position: relative;
   padding: 16px 20px;
@@ -5428,6 +5486,71 @@ body {
   min-height: 70px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 
-/* Restante do CSS mantenha o que já existe */
+.brand h1 {
+  font-size: 24px;
+  margin: 0;
+  color: white;
+}
+
+.brand h1 span {
+  color: #3b82f6;
+}
+
+.role-badge-sidebar {
+  font-size: 12px;
+  background: #334155;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-left: 8px;
+  color: #94a3b8;
+}
+
+/* Sidebar footer */
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px 20px;
+  border-top: 1px solid #334155;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-logout-sidebar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: #ef4444;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 6px;
+}
+
+.btn-logout-sidebar:hover {
+  background: #7f1d1d;
+  color: #fca5a5;
+}
+
+.sidebar-version {
+  font-size: 11px;
+  color: #64748b;
+  text-align: center;
+  padding-top: 8px;
+}
+
+/* Ajuste no conteúdo principal */
+.main-content {
+  margin-left: 70px;
+  padding: 24px;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar:not(.collapsed) ~ .main-content {
+  margin-left: 250px;
+}
