@@ -5305,3 +5305,129 @@ body {
     background: #f1f5f9 !important;
   }
 }
+
+
+/* Sidebar principal */
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  background: #1e293b;
+  color: #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s ease;
+  overflow: hidden;
+  position: fixed;
+  left: 0;
+  top: 0;
+}
+
+/* Sidebar recolhida */
+.sidebar.collapsed {
+  width: 70px;
+}
+
+/* Botão de toggle */
+.toggle-sidebar-btn {
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.sidebar.collapsed .toggle-sidebar-btn {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.toggle-sidebar-btn:hover {
+  background: #2563eb;
+}
+
+/* Ajustes para os itens do menu quando recolhido */
+.sidebar.collapsed .nav-label,
+.sidebar.collapsed .nav-section-title,
+.sidebar.collapsed .role-badge-sidebar,
+.sidebar.collapsed .sidebar-version,
+.sidebar.collapsed .brand h1 span:not(.brand-icon) {
+  display: none;
+}
+
+.sidebar.collapsed .brand h1 {
+  font-size: 20px;
+  margin: 0;
+  text-align: center;
+}
+
+.sidebar.collapsed .brand-icon {
+  display: block;
+  font-size: 24px;
+}
+
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 12px;
+}
+
+.sidebar.collapsed .nav-icon {
+  font-size: 20px;
+  margin: 0;
+}
+
+.sidebar.collapsed .sidebar-footer {
+  align-items: center;
+}
+
+.sidebar.collapsed .btn-logout-sidebar {
+  justify-content: center;
+  padding: 12px;
+}
+
+/* Efeitos hover nos itens */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  border-radius: 6px;
+}
+
+.nav-item:hover {
+  background: #334155;
+  color: white;
+}
+
+.nav-item.active {
+  background: #3b82f6;
+  color: white;
+}
+
+/* Ajustes para o container do botão de toggle */
+.sidebar-brand {
+  position: relative;
+  padding: 16px 20px;
+  border-bottom: 1px solid #334155;
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+}
+
+/* Restante do CSS mantenha o que já existe */
