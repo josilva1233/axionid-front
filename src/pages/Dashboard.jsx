@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
-import { Spinner } from "react-bootstrap";
 import Swal from "sweetalert2";
 import api from "../services/api";
 import { useDashboardData } from "../hooks/useDashboardData";
 
+// Components
 import Sidebar from "../components/dashboard/Sidebar";
 import UserTable from "../components/dashboard/UserTable";
 import GroupTable from "../components/dashboard/GroupTable";
@@ -23,7 +23,8 @@ import ServiceOrderDetail from "../components/dashboard/ServiceOrderDetail";
 import Pagination from "../components/dashboard/Pagination";
 import PermissionDetail from "../components/dashboard/PermissionDetail";
 
-import '../dashboard.css';
+// Styles - Tailwind via CSS import
+import '../index.css'; // ← AGORA COM TAILWIND
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -54,9 +55,9 @@ export default function Dashboard() {
     confirmButtonColor: "#6366f1",
     cancelButtonColor: "#343a40",
     customClass: {
-      popup: "border border-secondary rounded-4",
-      confirmButton: "px-4 py-2 rounded-3 fw-bold mx-2",
-      cancelButton: "px-4 py-2 rounded-3 fw-bold mx-2",
+      popup: "border border-gray-700 rounded-xl",
+      confirmButton: "px-4 py-2 rounded-full font-bold mx-2 bg-indigo-500 hover:bg-indigo-400 transition-colors",
+      cancelButton: "px-4 py-2 rounded-full font-bold mx-2 bg-gray-700 hover:bg-gray-600 transition-colors",
     },
   });
 
@@ -91,7 +92,7 @@ export default function Dashboard() {
     setShowPermissionModal(false);
     setShowGroupForm(false);
     setSelectedOrder(null);
-    setSelectedPermission(null); // ADICIONADO
+    setSelectedPermission(null);
     setUsersCurrentPage(1);
     setGroupsCurrentPage(1);
     setAuditCurrentPage(1);
@@ -670,8 +671,22 @@ export default function Dashboard() {
     navigate("/login");
   };
 
+  // ============ COMPONENTE DE LOADING PERSONALIZADO ============
+  const LoadingSpinner = () => (
+    <div className="flex items-center justify-center p-8">
+      <div className="relative">
+        <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-6 h-6 border-4 border-blue-400/30 border-t-blue-400 rounded-full animate-spin animation-delay-150"></div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ============ RENDER PRINCIPAL ============
   return (
-    <div className="dashboard-layout">
+    <div className="flex min-h-screen bg-slate-900">
+      {/* Sidebar */}
       <Sidebar
         activeTab={activeTab}
         role={role}
@@ -679,23 +694,30 @@ export default function Dashboard() {
         setActiveTab={handleTabChange}
       />
 
-      <div className="main-wrapper">
-        <header className="main-header">
-          <h2 className="brand mb-0">
-            AxionID
-            <span
-              className={`role-badge ${role === "admin" ? "admin" : "user"}`}
-            >
-              {role === "admin" ? "Admin" : "Comum"}
-            </span>
-          </h2>
+      {/* Main Content */}
+      <div className="flex-1 ml-[70px] min-h-screen bg-slate-900 transition-all duration-300">
+        {/* Header */}
+        <header className="flex justify-between items-center px-8 py-4 bg-slate-800/50 border-b border-slate-700/50 min-h-[72px] sticky top-0 z-50 backdrop-blur-sm">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+              Axion<span className="text-blue-500">ID</span>
+              <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                role === "admin" 
+                  ? "bg-blue-500/20 text-blue-400" 
+                  : "bg-slate-700 text-slate-300"
+              }`}>
+                {role === "admin" ? "Admin" : "Comum"}
+              </span>
+            </h1>
+          </div>
 
           {currentUser && (
             <UserDropdown user={currentUser} onLogout={handleLogout} />
           )}
         </header>
 
-        <main className="content-area">
+        {/* Content Area */}
+        <main className="p-6 max-w-7xl mx-auto w-full">
           {selectedUser ? (
             <UserDetail
               user={selectedUser}
@@ -755,6 +777,7 @@ export default function Dashboard() {
             />
           ) : (
             <>
+              {/* Filters */}
               <DashboardFilters
                 activeTab={activeTab}
                 onNewOrder={() => setShowOrderForm(true)}
@@ -788,6 +811,7 @@ export default function Dashboard() {
                 }}
               />
 
+              {/* Permission Modal */}
               {activeTab === "permissions" && showPermissionModal && (
                 <PermissionForm
                   loading={actionLoading}
@@ -796,6 +820,7 @@ export default function Dashboard() {
                 />
               )}
 
+              {/* Orders Section */}
               {activeTab === "orders" && (
                 <>
                   {showOrderForm && (
@@ -851,7 +876,7 @@ export default function Dashboard() {
                   )}
 
                   {!showOrderForm && !selectedOrder && (
-                    <div className="animate-in">
+                    <div className="animate-fade-in">
                       <ServiceOrderTable
                         orders={serviceOrders}
                         loading={actionLoading || loading}
@@ -878,16 +903,16 @@ export default function Dashboard() {
                 </>
               )}
 
-              <div
-                className={`tab-wrapper ${loading || actionLoading ? "is-loading" : ""}`}
-              >
+              {/* Tab Content */}
+              <div className={`relative ${loading || actionLoading ? "opacity-60 pointer-events-none" : ""}`}>
                 {(loading || actionLoading) && (
-                  <div className="loading-overlay">
-                    <Spinner animation="border" variant="primary" />
+                  <div className="absolute inset-0 flex items-center justify-center bg-slate-900/50 rounded-xl z-10">
+                    <LoadingSpinner />
                   </div>
                 )}
 
-                <div className="content-card">
+                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden p-6">
+                  {/* Users Tab */}
                   {activeTab === "users" && (
                     isGlobalAdmin ? (
                       <>
@@ -917,6 +942,7 @@ export default function Dashboard() {
                     )
                   )}
 
+                  {/* Audit Tab */}
                   {activeTab === "audit" && (
                     <>
                       <AuditTable logs={auditLogs} />
@@ -930,6 +956,7 @@ export default function Dashboard() {
                     </>
                   )}
 
+                  {/* Groups Tab */}
                   {activeTab === "groups" && (
                     showGroupForm ? (
                       <GroupForm
@@ -980,6 +1007,7 @@ export default function Dashboard() {
                     )
                   )}
 
+                  {/* Permissions Tab */}
                   {activeTab === "permissions" && (
                     selectedPermission ? (
                       <PermissionDetail
