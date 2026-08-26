@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
+import SuccessModal from "../components/SuccessModal";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     token: "",
@@ -62,13 +64,17 @@ export default function ForgotPassword() {
     setError("");
     try {
       await api.post("/api/v1/reset-password", formData);
-      alert("Senha redefinida com sucesso!");
-      navigate("/login");
+      setShowSuccessModal(true); // Exibe o modal elegante em vez do alert
     } catch (err) {
       setError(err.response?.data?.message || "Erro ao redefinir senha.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCloseModal = () => {
+    setShowSuccessModal(false);
+    navigate("/login", { replace: true });
   };
 
   return (
@@ -332,6 +338,14 @@ export default function ForgotPassword() {
         </p>
         <p className="text-slate-600 text-[9px]">Versão: 1.2.1</p>
       </div>
+
+      {/* Modal Customizado de Sucesso */}
+      <SuccessModal
+        isOpen={showSuccessModal}
+        title="Senha Redefinida!"
+        message="Sua senha foi alterada com sucesso. Clique abaixo para fazer login com a nova credencial."
+        onClose={handleCloseModal}
+      />
     </div>
   );
 }
