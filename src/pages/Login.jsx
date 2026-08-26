@@ -80,33 +80,33 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-slate-900 px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <div className="min-h-screen w-full flex items-center justify-center bg-slate-900 px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
       <div className="w-full max-w-md">
         {/* Logo e título */}
-        <div className="flex flex-col items-center mb-8 sm:mb-10">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-[#4D6BFE] flex items-center justify-center text-white font-black text-2xl sm:text-3xl shadow-md">
+        <div className="flex flex-col items-center mb-6 sm:mb-8">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl bg-[#4D6BFE] flex items-center justify-center text-white font-black text-2xl sm:text-3xl shadow-md">
               A
             </div>
-            <span className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+            <span className="text-2xl sm:text-4xl font-bold text-white tracking-tight">
               Axion<span className="text-[#4D6BFE]">ID</span>
             </span>
           </div>
-          <p className="text-slate-400 text-base sm:text-lg">Entre na sua conta</p>
+          <p className="text-slate-400 text-sm sm:text-lg">Entre na sua conta</p>
         </div>
 
-        {/* Cartão com tema escuro */}
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-3xl shadow-xl px-4 sm:px-8 lg:px-10 py-8 sm:py-10 lg:py-12 space-y-6 sm:space-y-8">
+        {/* Cartão com altura máxima e rolagem interna se necessário */}
+        <div className="bg-slate-800/50 border border-slate-700/50 rounded-3xl shadow-xl px-5 sm:px-8 lg:px-10 py-6 sm:py-10 space-y-5 sm:space-y-7 max-h-[90vh] overflow-y-auto">
           {error && (
-            <div className="p-4 bg-red-900/30 border border-red-700/50 rounded-xl text-red-300 text-sm text-center font-medium">
+            <div className="p-3 sm:p-4 bg-red-900/30 border border-red-700/50 rounded-xl text-red-300 text-sm text-center font-medium">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-6 sm:space-y-8">
+          <form onSubmit={handleLogin} className="space-y-5 sm:space-y-7">
             {/* Campo Usuário */}
             <div>
-              <label className="block text-sm sm:text-base font-medium text-slate-300 mb-2 sm:mb-4">
+              <label className="block text-sm sm:text-base font-medium text-slate-300 mb-1.5 sm:mb-3">
                 Usuário
               </label>
               <div className="relative">
@@ -117,7 +117,7 @@ export default function Login() {
                   onChange={(e) => setUsername(e.target.value)}
                   required
                   autoFocus
-                  className="w-full pl-4 pr-12 py-4 sm:py-5 bg-slate-700/50 border border-slate-600/50 rounded-xl text-base text-white placeholder-slate-400 focus:outline-none focus:bg-slate-700 focus:border-[#4D6BFE] focus:ring-2 focus:ring-[#4D6BFE]/30 transition-all"
+                  className="w-full pl-4 pr-12 py-3.5 sm:py-5 bg-slate-700/50 border border-slate-600/50 rounded-xl text-base text-white placeholder-slate-400 focus:outline-none focus:bg-slate-700 focus:border-[#4D6BFE] focus:ring-2 focus:ring-[#4D6BFE]/30 transition-all"
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none">
                   <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,7 +129,7 @@ export default function Login() {
 
             {/* Campo Senha */}
             <div>
-              <label className="block text-sm sm:text-base font-medium text-slate-300 mb-2 sm:mb-4">
+              <label className="block text-sm sm:text-base font-medium text-slate-300 mb-1.5 sm:mb-3">
                 Senha
               </label>
               <div className="relative">
@@ -139,7 +139,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full pl-4 pr-12 py-4 sm:py-5 bg-slate-700/50 border border-slate-600/50 rounded-xl text-base text-white placeholder-slate-400 focus:outline-none focus:bg-slate-700 focus:border-[#4D6BFE] focus:ring-2 focus:ring-[#4D6BFE]/30 transition-all"
+                  className="w-full pl-4 pr-12 py-3.5 sm:py-5 bg-slate-700/50 border border-slate-600/50 rounded-xl text-base text-white placeholder-slate-400 focus:outline-none focus:bg-slate-700 focus:border-[#4D6BFE] focus:ring-2 focus:ring-[#4D6BFE]/30 transition-all"
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none">
                   <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -150,7 +150,7 @@ export default function Login() {
             </div>
 
             {/* Lembrar de mim / Esqueceu a senha */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mt-2">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
               <label className="flex items-center gap-2 text-sm sm:text-base text-slate-300">
                 <input
                   type="checkbox"
@@ -166,15 +166,15 @@ export default function Login() {
               </Link>
             </div>
 
-            {/* reCAPTCHA - mantido claro para legibilidade */}
-            <div className="flex justify-center py-2 sm:py-4 overflow-hidden">
-              <div className="transform scale-90 sm:scale-100 origin-center">
+            {/* reCAPTCHA - com escala ajustada e largura máxima */}
+            <div className="flex justify-center py-1 sm:py-3 overflow-hidden">
+              <div className="w-full max-w-[304px] mx-auto transform scale-90 sm:scale-100 origin-center">
                 <ReCAPTCHA
                   ref={recaptchaRef}
                   sitekey="6Lc5n4ksAAAAAEXLVSyq519dGet20T0gaQ2LXzPY"
                   onChange={(token) => setCaptchaToken(token)}
                   onExpired={() => setCaptchaToken(null)}
-                  theme="light" // mantido light para contraste
+                  theme="light"
                 />
               </div>
             </div>
@@ -183,7 +183,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 sm:py-5 px-4 bg-[#4D6BFE] hover:bg-[#3D5AFE] active:bg-[#2E4BDB] text-white font-semibold text-base sm:text-lg rounded-xl transition-all shadow-md shadow-blue-500/30 disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
+              className="w-full py-3.5 sm:py-5 px-4 bg-[#4D6BFE] hover:bg-[#3D5AFE] active:bg-[#2E4BDB] text-white font-semibold text-base sm:text-lg rounded-xl transition-all shadow-md shadow-blue-500/30 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -196,7 +196,7 @@ export default function Login() {
             </button>
 
             {/* Separador */}
-            <div className="flex items-center gap-4 py-1">
+            <div className="flex items-center gap-4">
               <div className="flex-1 h-px bg-slate-600"></div>
               <span className="text-sm sm:text-base text-slate-400">ou</span>
               <div className="flex-1 h-px bg-slate-600"></div>
@@ -206,7 +206,7 @@ export default function Login() {
             <button
               type="button"
               onClick={handleGoogleLogin}
-              className="w-full flex items-center justify-center gap-3 py-4 sm:py-5 px-4 bg-slate-700/30 hover:bg-slate-700/50 border border-slate-600/50 rounded-xl text-slate-200 text-sm sm:text-base font-medium transition-colors"
+              className="w-full flex items-center justify-center gap-3 py-3.5 sm:py-5 px-4 bg-slate-700/30 hover:bg-slate-700/50 border border-slate-600/50 rounded-xl text-slate-200 text-sm sm:text-base font-medium transition-colors"
             >
               <img
                 src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
