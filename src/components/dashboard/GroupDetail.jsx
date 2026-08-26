@@ -310,7 +310,6 @@ export default function GroupDetail({
         <GroupPermissionManager
           group={group}
           permissions={allAvailablePermissions}
-          allAvailablePermissions={permissions}
           onAddPermission={onAddPermission}
           onRemovePermission={onRemovePermission}
           actionLoading={actionLoading}
