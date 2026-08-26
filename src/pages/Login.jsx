@@ -80,78 +80,95 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#f7f8fa] px-4 py-8">
-      <div className="w-full max-w-[400px]">
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#f7f8fa] px-4 py-12">
+      <div className="w-full max-w-[440px]">
         {/* Logo e título centralizados */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="flex items-center gap-2.5 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-[#4D6BFE] flex items-center justify-center text-white font-black text-xl shadow-md">
+        <div className="flex flex-col items-center mb-10">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-xl bg-[#4D6BFE] flex items-center justify-center text-white font-black text-2xl shadow-md">
               A
             </div>
-            <span className="text-2xl font-bold text-slate-800 tracking-tight">
+            <span className="text-3xl font-bold text-slate-800 tracking-tight">
               Axion<span className="text-[#4D6BFE]">ID</span>
             </span>
           </div>
-          <p className="text-slate-500 text-sm">Entre na sua conta</p>
+          <p className="text-slate-500 text-base">Entre na sua conta</p>
         </div>
 
         {/* Cartão branco com sombra suave */}
-        <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/60 p-8 space-y-5">
+        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 p-10 space-y-6">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-xs text-center font-medium">
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm text-center font-medium">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-5">
             {/* Campo Usuário */}
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Usuário ou e-mail"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                autoFocus
-                className="w-full pl-4 pr-11 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 text-sm placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#4D6BFE] focus:ring-2 focus:ring-[#4D6BFE]/20 transition-all"
-              />
-              <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Usuário
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Digite seu usuário"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  autoFocus
+                  className="w-full pl-4 pr-11 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-sm placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#4D6BFE] focus:ring-2 focus:ring-[#4D6BFE]/20 transition-all"
+                />
+                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
               </div>
             </div>
 
             {/* Campo Senha */}
-            <div className="relative">
-              <input
-                type="password"
-                placeholder="Senha"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full pl-4 pr-11 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 text-sm placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#4D6BFE] focus:ring-2 focus:ring-[#4D6BFE]/20 transition-all"
-              />
-              <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Senha
+              </label>
+              <div className="relative">
+                <input
+                  type="password"
+                  placeholder="Digite sua senha"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full pl-4 pr-11 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-sm placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#4D6BFE] focus:ring-2 focus:ring-[#4D6BFE]/20 transition-all"
+                />
+                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
               </div>
             </div>
 
             {/* Link Esqueci a Senha */}
-            <div className="text-right">
+            <div className="flex justify-between items-center">
+              <label className="flex items-center gap-2 text-sm text-slate-600">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded border-slate-300 text-[#4D6BFE] focus:ring-[#4D6BFE]"
+                />
+                Lembrar de mim
+              </label>
               <Link
                 to="/forgot-password"
-                className="text-xs text-[#4D6BFE] hover:text-blue-700 hover:underline font-medium transition-colors"
+                className="text-sm text-[#4D6BFE] hover:text-blue-700 hover:underline font-medium transition-colors"
               >
                 Esqueceu a senha?
               </Link>
             </div>
 
             {/* reCAPTCHA centralizado */}
-            <div className="flex justify-center overflow-hidden">
-              <div className="transform scale-90 origin-center">
+            <div className="flex justify-center py-2">
+              <div className="transform scale-95 origin-center">
                 <ReCAPTCHA
                   ref={recaptchaRef}
                   sitekey="6Lc5n4ksAAAAAEXLVSyq519dGet20T0gaQ2LXzPY"
@@ -166,11 +183,11 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-[#4D6BFE] hover:bg-[#3D5AFE] active:bg-[#2E4BDB] text-white font-semibold text-sm rounded-lg transition-all shadow-md shadow-blue-200 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full py-4 px-4 bg-[#4D6BFE] hover:bg-[#3D5AFE] active:bg-[#2E4BDB] text-white font-semibold text-base rounded-xl transition-all shadow-md shadow-blue-200 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   <span>Autenticando...</span>
                 </>
               ) : (
@@ -179,9 +196,9 @@ export default function Login() {
             </button>
 
             {/* Separador */}
-            <div className="flex items-center gap-3 py-1">
+            <div className="flex items-center gap-4 py-2">
               <div className="flex-1 h-px bg-slate-200"></div>
-              <span className="text-xs text-slate-400">ou</span>
+              <span className="text-sm text-slate-400">ou</span>
               <div className="flex-1 h-px bg-slate-200"></div>
             </div>
 
@@ -189,24 +206,24 @@ export default function Login() {
             <button
               type="button"
               onClick={handleGoogleLogin}
-              className="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg text-slate-600 text-xs font-medium transition-colors"
+              className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-slate-600 text-sm font-medium transition-colors"
             >
               <img
                 src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
                 alt="Google"
-                className="w-4 h-4"
+                className="w-5 h-5"
               />
               <span>Continuar com Google</span>
             </button>
           </form>
 
           {/* Cadastro */}
-          <div className="text-center pt-4 border-t border-slate-100">
-            <p className="text-xs text-slate-500">
+          <div className="text-center pt-6 border-t border-slate-100">
+            <p className="text-sm text-slate-500">
               Ainda não tem acesso?{" "}
               <Link
                 to="/register"
-                className="text-[#4D6BFE] hover:text-blue-700 hover:underline font-semibold ml-0.5"
+                className="text-[#4D6BFE] hover:text-blue-700 hover:underline font-semibold ml-1"
               >
                 Criar Conta
               </Link>
@@ -215,24 +232,24 @@ export default function Login() {
         </div>
 
         {/* Rodapé discreto */}
-        <div className="text-center text-slate-400 text-xs mt-6 space-y-1">
+        <div className="text-center text-slate-400 text-sm mt-8 space-y-2">
           <p className="font-medium text-slate-500">
             SGA - Secretaria de Tecnologia da Informação
           </p>
           <p>
             Suporte:{" "}
-            <a href="tel:8534911770" className="underline hover:text-slate-600">
-              (85) 3491-1770
+            <a href="tel:21990849204" className="underline hover:text-slate-600">
+              (21) 990849204
             </a>{" "}
             |{" "}
             <a
-              href="mailto:sti.atendimento@tjce.jus.br"
+              href="mailto:josilva1233@gmail.com"
               className="underline hover:text-slate-600"
             >
-              sti.atendimento@tjce.jus.br
+              josilva1233@gmail.com
             </a>
           </p>
-          <p className="text-slate-300 text-[11px]">Versão: 1.2.1</p>
+          <p className="text-slate-300 text-xs">Versão: 1.2.1</p>
         </div>
       </div>
     </div>
