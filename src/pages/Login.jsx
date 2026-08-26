@@ -69,7 +69,7 @@ export default function Login() {
       console.error("Erro no login manual", err);
       setCaptchaToken(null);
       recaptchaRef.current?.reset();
-    } fontally {
+    } finally {
       setLoading(false);
     }
   };
