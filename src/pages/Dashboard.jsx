@@ -614,16 +614,11 @@ export default function Dashboard() {
     }
   }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId]);
 
-  // =========================================================
-  // 🔧 CORREÇÃO: HANDLERS DE PERMISSÕES EM GRUPOS
-  // URL corrigida: sem o prefixo "admin"
-  // =========================================================
   const handleAddPermissionToGroup = useCallback(async (permissionName) => {
     if (!selectedGroupId || !permissionName) return;
     setActionLoading(true);
     try {
-      // 🔧 URL CORRETA: /api/v1/groups/{id}/permissions
-      await api.post(`/api/v1/groups/${selectedGroupId}/permissions`, {
+      await api.post(`/api/v1/admin/groups/${selectedGroupId}/permissions`, {
         permission_name: permissionName,
       });
       AxionAlert.fire({
@@ -635,9 +630,11 @@ export default function Dashboard() {
       });
       await loadGroups(groupsCurrentPage);
     } catch (err) {
-      console.error("Erro ao vincular permissão:", err.response?.data);
-      const message = err.response?.data?.message || "Não foi possível vincular a permissão.";
-      AxionAlert.fire("Erro", message, "error");
+      AxionAlert.fire(
+        "Erro",
+        "Não foi possível vincular a permissão.",
+        "error",
+      );
     } finally {
       setActionLoading(false);
     }
@@ -657,14 +654,12 @@ export default function Dashboard() {
     if (result.isConfirmed) {
       setActionLoading(true);
       try {
-        // 🔧 URL CORRETA: /api/v1/groups/{id}/permissions/{permissionId}
         await api.delete(
-          `/api/v1/groups/${selectedGroupId}/permissions/${permissionId}`,
+          `/api/v1/admin/groups/${selectedGroupId}/permissions/${permissionId}`,
         );
         AxionAlert.fire("Removido!", "Permissão desvinculada.", "success");
         await loadGroups(groupsCurrentPage);
       } catch (err) {
-        console.error("Erro ao remover permissão:", err.response?.data);
         AxionAlert.fire("Erro", "Falha ao remover permissão.", "error");
       } finally {
         setActionLoading(false);
