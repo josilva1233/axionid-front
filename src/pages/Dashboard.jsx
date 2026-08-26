@@ -46,6 +46,7 @@ export default function Dashboard() {
   const [auditCurrentPage, setAuditCurrentPage] = useState(1);
   const [ordersCurrentPage, setOrdersCurrentPage] = useState(1);
   const [permissionsCurrentPage, setPermissionsCurrentPage] = useState(1);
+
   const AxionAlert = Swal.mixin({
     background: "#111214",
     color: "#ffffff",
@@ -293,6 +294,80 @@ export default function Dashboard() {
       setActionLoading(false);
     }
   }, [AxionAlert, loadPermissions, permissionsCurrentPage]);
+
+  // =========================================================
+  // 🔧 CORREÇÃO: HANDLERS DE PERMISSÕES EM GRUPOS
+  // URLs agora com o prefixo /admin/ e validação de ID
+  // =========================================================
+  const handleAddPermissionToGroup = useCallback(async (permissionId, permissionName) => {
+    // Agora recebe ID e nome (o nome é usado no corpo da requisição)
+    if (!selectedGroupId || !permissionName) {
+      AxionAlert.fire("Erro", "Dados inválidos para vincular permissão.", "error");
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      // 🔥 URL CORRETA com /admin/
+      await api.post(`/api/v1/admin/groups/${selectedGroupId}/permissions`, {
+        permission_name: permissionName,
+      });
+      
+      AxionAlert.fire({
+        icon: "success",
+        title: "Permissão Atribuída",
+        text: "A chave foi vinculada ao grupo.",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      await loadGroups(groupsCurrentPage);
+    } catch (err) {
+      console.error("Erro ao vincular permissão:", err.response?.data);
+      const message = err.response?.data?.message || "Não foi possível vincular a permissão.";
+      AxionAlert.fire("Erro", message, "error");
+    } finally {
+      setActionLoading(false);
+    }
+  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId]);
+
+  const handleRemovePermissionFromGroup = useCallback(async (permissionId) => {
+    if (!selectedGroupId) {
+      AxionAlert.fire("Erro", "Grupo não selecionado.", "error");
+      return;
+    }
+
+    // 🔥 Converte para número e valida
+    const numericId = Number(permissionId);
+    if (isNaN(numericId)) {
+      AxionAlert.fire("Erro", "ID da permissão inválido.", "error");
+      return;
+    }
+
+    const result = await AxionAlert.fire({
+      title: "Remover Permissão?",
+      text: "O grupo perderá acesso a esta funcionalidade.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sim, remover",
+    });
+
+    if (result.isConfirmed) {
+      setActionLoading(true);
+      try {
+        // 🔥 URL CORRETA com /admin/ e ID numérico
+        await api.delete(
+          `/api/v1/admin/groups/${selectedGroupId}/permissions/${numericId}`,
+        );
+        AxionAlert.fire("Removido!", "Permissão desvinculada.", "success");
+        await loadGroups(groupsCurrentPage);
+      } catch (err) {
+        console.error("Erro ao remover permissão:", err.response?.data);
+        AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao remover permissão.", "error");
+      } finally {
+        setActionLoading(false);
+      }
+    }
+  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId]);
 
   // ============ LOAD PROFILE ============
   useEffect(() => {
@@ -604,64 +679,6 @@ export default function Dashboard() {
         AxionAlert.fire("Removido!", "", "success");
       } catch (err) {
         AxionAlert.fire("Erro", "Erro ao remover.", "error");
-      } finally {
-        setActionLoading(false);
-      }
-    }
-  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId]);
-
-  // =========================================================
-  // 🔧 CORREÇÃO: HANDLERS DE PERMISSÕES EM GRUPOS
-  // URL corrigida: sem o prefixo "admin"
-  // =========================================================
-  const handleAddPermissionToGroup = useCallback(async (permissionName) => {
-    if (!selectedGroupId || !permissionName) return;
-    setActionLoading(true);
-    try {
-      // 🔧 URL CORRETA: /api/v1/groups/{id}/permissions
-      await api.post(`/api/v1/groups/${selectedGroupId}/permissions`, {
-        permission_name: permissionName,
-      });
-      AxionAlert.fire({
-        icon: "success",
-        title: "Permissão Atribuída",
-        text: "A chave foi vinculada ao grupo.",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-      await loadGroups(groupsCurrentPage);
-    } catch (err) {
-      console.error("Erro ao vincular permissão:", err.response?.data);
-      const message = err.response?.data?.message || "Não foi possível vincular a permissão.";
-      AxionAlert.fire("Erro", message, "error");
-    } finally {
-      setActionLoading(false);
-    }
-  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId]);
-
-  const handleRemovePermissionFromGroup = useCallback(async (permissionId) => {
-    if (!selectedGroupId) return;
-
-    const result = await AxionAlert.fire({
-      title: "Remover Permissão?",
-      text: "O grupo perderá acesso a esta funcionalidade.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Sim, remover",
-    });
-
-    if (result.isConfirmed) {
-      setActionLoading(true);
-      try {
-        // 🔧 URL CORRETA: /api/v1/groups/{id}/permissions/{permissionId}
-        await api.delete(
-          `/api/v1/groups/${selectedGroupId}/permissions/${permissionId}`,
-        );
-        AxionAlert.fire("Removido!", "Permissão desvinculada.", "success");
-        await loadGroups(groupsCurrentPage);
-      } catch (err) {
-        console.error("Erro ao remover permissão:", err.response?.data);
-        AxionAlert.fire("Erro", "Falha ao remover permissão.", "error");
       } finally {
         setActionLoading(false);
       }
