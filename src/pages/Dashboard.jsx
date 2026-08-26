@@ -41,6 +41,7 @@ export default function Dashboard() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [selectedPermission, setSelectedPermission] = useState(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Estados para paginação
   const [usersCurrentPage, setUsersCurrentPage] = useState(1);
@@ -692,10 +693,17 @@ export default function Dashboard() {
         role={role}
         onLogout={handleLogout}
         setActiveTab={handleTabChange}
+        onToggle={setSidebarCollapsed}
       />
 
-      {/* Main Content */}
-      <div className="flex-1 ml-[70px] min-h-screen bg-slate-900 transition-all duration-300">
+      {/* Main Content - com margin dinâmica baseada no estado da sidebar */}
+      <div 
+        className="flex-1 min-h-screen bg-slate-900 transition-all duration-300"
+        style={{ 
+          marginLeft: sidebarCollapsed ? '70px' : '250px',
+          width: `calc(100% - ${sidebarCollapsed ? '70px' : '250px'})`
+        }}
+      >
         {/* Header */}
         <header className="flex justify-between items-center px-8 py-4 bg-slate-800/50 border-b border-slate-700/50 min-h-[72px] sticky top-0 z-50 backdrop-blur-sm">
           <div className="flex items-center gap-3">
