@@ -21,7 +21,7 @@ import ServiceOrderForm from "../components/dashboard/ServiceOrderForm";
 import ServiceOrderDetail from "../components/dashboard/ServiceOrderDetail";
 import Pagination from "../components/dashboard/Pagination";
 import PermissionDetail from "../components/dashboard/PermissionDetail";
-// Styles - Tailwind via CSS import
+// Styles
 import '../index.css';
 
 export default function Dashboard() {
@@ -40,6 +40,10 @@ export default function Dashboard() {
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [selectedPermission, setSelectedPermission] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // ========== ESTADO LOCAL PARA TODAS AS PERMISSÕES ==========
+  const [allPermissions, setAllPermissions] = useState([]);
+
   // Estados para paginação
   const [usersCurrentPage, setUsersCurrentPage] = useState(1);
   const [groupsCurrentPage, setGroupsCurrentPage] = useState(1);
@@ -65,7 +69,7 @@ export default function Dashboard() {
     groups,
     auditLogs,
     serviceOrders,
-    permissions,
+    permissions, // usado apenas na aba "permissions"
     usersPagination,
     groupsPagination,
     auditPagination,
@@ -81,6 +85,22 @@ export default function Dashboard() {
   } = useDashboardData(role);
 
   const isGlobalAdmin = role === "admin" || currentUser?.is_admin === true;
+
+  // ========== CARREGAR TODAS AS PERMISSÕES (para o modal de grupos) ==========
+  useEffect(() => {
+    const fetchAllPermissions = async () => {
+      try {
+        // Busca todas as permissões sem paginação (ou com página grande)
+        const res = await api.get('/api/v1/admin/permissions?per_page=1000');
+        const data = res.data.data || res.data;
+        setAllPermissions(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Erro ao carregar todas as permissões:", err);
+        setAllPermissions([]);
+      }
+    };
+    fetchAllPermissions();
+  }, []);
 
   // ============ HANDLERS PARA TABS E FILTROS ============
   const handleTabChange = useCallback((tab) => {
@@ -223,7 +243,7 @@ export default function Dashboard() {
     }
   }, [AxionAlert, loadServiceOrders, ordersCurrentPage]);
 
-  // ============ HANDLERS DE PERMISSÕES ============
+  // ============ HANDLERS DE PERMISSÕES (CRUD) ============
   const handleCreatePermission = useCallback(async (data) => {
     setActionLoading(true);
     try {
@@ -237,6 +257,9 @@ export default function Dashboard() {
       });
       setShowPermissionModal(false);
       loadPermissions(permissionsCurrentPage);
+      // Atualiza também a lista completa
+      const res = await api.get('/api/v1/admin/permissions?per_page=1000');
+      setAllPermissions(res.data.data || res.data);
     } catch (err) {
       AxionAlert.fire("Erro!", "Não foi possível criar a permissão.", "error");
     } finally {
@@ -263,6 +286,9 @@ export default function Dashboard() {
       await loadPermissions(permissionsCurrentPage);
       const res = await api.get(`/api/v1/admin/permissions/${permissionId}`);
       setSelectedPermission(res.data.data || res.data);
+      // Atualiza a lista completa
+      const allRes = await api.get('/api/v1/admin/permissions?per_page=1000');
+      setAllPermissions(allRes.data.data || allRes.data);
       AxionAlert.fire({
         icon: "success",
         title: "Permissão atualizada!",
@@ -282,6 +308,9 @@ export default function Dashboard() {
       await api.delete(`/api/v1/admin/permissions/${permissionId}`);
       setSelectedPermission(null);
       await loadPermissions(permissionsCurrentPage);
+      // Atualiza a lista completa
+      const res = await api.get('/api/v1/admin/permissions?per_page=1000');
+      setAllPermissions(res.data.data || res.data);
       AxionAlert.fire({
         icon: "success",
         title: "Permissão excluída!",
@@ -297,10 +326,9 @@ export default function Dashboard() {
 
   // =========================================================
   // 🔧 CORREÇÃO: HANDLERS DE PERMISSÕES EM GRUPOS
-  // URLs agora com o prefixo /admin/ e validação de ID
+  // URLs agora com /admin/ e validação de ID
   // =========================================================
   const handleAddPermissionToGroup = useCallback(async (permissionId, permissionName) => {
-    // Agora recebe ID e nome (o nome é usado no corpo da requisição)
     if (!selectedGroupId || !permissionName) {
       AxionAlert.fire("Erro", "Dados inválidos para vincular permissão.", "error");
       return;
@@ -308,7 +336,6 @@ export default function Dashboard() {
 
     setActionLoading(true);
     try {
-      // 🔥 URL CORRETA com /admin/
       await api.post(`/api/v1/admin/groups/${selectedGroupId}/permissions`, {
         permission_name: permissionName,
       });
@@ -336,7 +363,6 @@ export default function Dashboard() {
       return;
     }
 
-    // 🔥 Converte para número e valida
     const numericId = Number(permissionId);
     if (isNaN(numericId)) {
       AxionAlert.fire("Erro", "ID da permissão inválido.", "error");
@@ -354,7 +380,6 @@ export default function Dashboard() {
     if (result.isConfirmed) {
       setActionLoading(true);
       try {
-        // 🔥 URL CORRETA com /admin/ e ID numérico
         await api.delete(
           `/api/v1/admin/groups/${selectedGroupId}/permissions/${numericId}`,
         );
@@ -714,7 +739,7 @@ export default function Dashboard() {
         onToggle={setSidebarCollapsed}
       />
 
-      {/* Main Content - com margin dinâmica baseada no estado da sidebar */}
+      {/* Main Content */}
       <div 
         className="flex-1 min-h-screen bg-slate-900 transition-all duration-300"
         style={{ 
@@ -797,7 +822,8 @@ export default function Dashboard() {
                   setGroupsCurrentPage(1);
                 })
               }
-              allAvailablePermissions={permissions || []}
+              // 🔥 AGORA USA `allPermissions` (TODAS AS PERMISSÕES)
+              allAvailablePermissions={allPermissions}
               onAddPermission={handleAddPermissionToGroup}
               onRemovePermission={handleRemovePermissionFromGroup}
             />
