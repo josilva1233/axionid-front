@@ -80,7 +80,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#f7f8fa] px-4 py-12">
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#f7f8fa] px-4 sm:px-6 py-12">
       <div className="w-full max-w-[480px]">
         {/* Logo e título */}
         <div className="flex flex-col items-center mb-10">
@@ -95,18 +95,18 @@ export default function Login() {
           <p className="text-slate-500 text-lg">Entre na sua conta</p>
         </div>
 
-        {/* Cartão branco com mais padding interno */}
-        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 p-12 space-y-8">
+        {/* Cartão com padding lateral generoso e vertical confortável */}
+        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 px-6 sm:px-10 py-8 sm:py-12 space-y-8">
           {error && (
             <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm text-center font-medium">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-8">
+          <form onSubmit={handleLogin} className="space-y-7">
             {/* Campo Usuário */}
             <div>
-              <label className="block text-base font-medium text-slate-700 mb-4">
+              <label className="block text-base font-medium text-slate-700 mb-3 sm:mb-4">
                 Usuário
               </label>
               <div className="relative">
@@ -117,7 +117,7 @@ export default function Login() {
                   onChange={(e) => setUsername(e.target.value)}
                   required
                   autoFocus
-                  className="w-full pl-4 pr-12 py-5 bg-slate-50 border border-slate-200 rounded-xl text-base text-slate-700 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#4D6BFE] focus:ring-2 focus:ring-[#4D6BFE]/20 transition-all"
+                  className="w-full pl-4 pr-12 py-4 sm:py-5 bg-slate-50 border border-slate-200 rounded-xl text-base text-slate-700 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#4D6BFE] focus:ring-2 focus:ring-[#4D6BFE]/20 transition-all"
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,7 +129,7 @@ export default function Login() {
 
             {/* Campo Senha */}
             <div>
-              <label className="block text-base font-medium text-slate-700 mb-4">
+              <label className="block text-base font-medium text-slate-700 mb-3 sm:mb-4">
                 Senha
               </label>
               <div className="relative">
@@ -139,7 +139,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full pl-4 pr-12 py-5 bg-slate-50 border border-slate-200 rounded-xl text-base text-slate-700 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#4D6BFE] focus:ring-2 focus:ring-[#4D6BFE]/20 transition-all"
+                  className="w-full pl-4 pr-12 py-4 sm:py-5 bg-slate-50 border border-slate-200 rounded-xl text-base text-slate-700 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#4D6BFE] focus:ring-2 focus:ring-[#4D6BFE]/20 transition-all"
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,8 +149,8 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Lembrar de mim / Esqueceu a senha - com margem superior extra */}
-            <div className="flex justify-between items-center mt-2">
+            {/* Lembrar de mim / Esqueceu a senha */}
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 mt-1">
               <label className="flex items-center gap-2 text-base text-slate-600">
                 <input
                   type="checkbox"
@@ -166,8 +166,8 @@ export default function Login() {
               </Link>
             </div>
 
-            {/* reCAPTCHA - mais espaço ao redor */}
-            <div className="flex justify-center py-4">
+            {/* reCAPTCHA */}
+            <div className="flex justify-center py-3">
               <div className="transform scale-100 origin-center">
                 <ReCAPTCHA
                   ref={recaptchaRef}
@@ -179,11 +179,11 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Botão Principal - com margem superior extra */}
+            {/* Botão Principal */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-5 px-4 bg-[#4D6BFE] hover:bg-[#3D5AFE] active:bg-[#2E4BDB] text-white font-semibold text-lg rounded-xl transition-all shadow-md shadow-blue-200 disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
+              className="w-full py-4 sm:py-5 px-4 bg-[#4D6BFE] hover:bg-[#3D5AFE] active:bg-[#2E4BDB] text-white font-semibold text-lg rounded-xl transition-all shadow-md shadow-blue-200 disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
             >
               {loading ? (
                 <>
@@ -206,7 +206,7 @@ export default function Login() {
             <button
               type="button"
               onClick={handleGoogleLogin}
-              className="w-full flex items-center justify-center gap-3 py-5 px-4 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-slate-600 text-base font-medium transition-colors"
+              className="w-full flex items-center justify-center gap-3 py-4 sm:py-5 px-4 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-slate-600 text-base font-medium transition-colors"
             >
               <img
                 src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
