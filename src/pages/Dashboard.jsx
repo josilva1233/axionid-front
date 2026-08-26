@@ -24,7 +24,7 @@ import Pagination from "../components/dashboard/Pagination";
 import PermissionDetail from "../components/dashboard/PermissionDetail";
 
 // Styles - Tailwind via CSS import
-import '../index.css'; // ← AGORA COM TAILWIND
+import '../index.css';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -41,6 +41,7 @@ export default function Dashboard() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [selectedPermission, setSelectedPermission] = useState(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Estados para paginação
   const [usersCurrentPage, setUsersCurrentPage] = useState(1);
@@ -85,7 +86,7 @@ export default function Dashboard() {
   const isGlobalAdmin = role === "admin" || currentUser?.is_admin === true;
 
   // ============ HANDLERS PARA TABS E FILTROS ============
-  const handleTabChange = (tab) => {
+  const handleTabChange = useCallback((tab) => {
     setActiveTab(tab);
     setSelectedUser(null);
     setSelectedGroupId(null);
@@ -98,9 +99,9 @@ export default function Dashboard() {
     setAuditCurrentPage(1);
     setOrdersCurrentPage(1);
     setPermissionsCurrentPage(1);
-  };
+  }, []);
 
-  const handleClearFilters = () => {
+  const handleClearFilters = useCallback(() => {
     setFilters({ 
       name: "", 
       completed: "", 
@@ -122,10 +123,10 @@ export default function Dashboard() {
     setAuditCurrentPage(1);
     setOrdersCurrentPage(1);
     setPermissionsCurrentPage(1);
-  };
+  }, [setFilters]);
 
   // ============ HANDLERS DE ORDENS DE SERVIÇO ============
-  const handleOpenOrderDetail = async (orderId) => {
+  const handleOpenOrderDetail = useCallback(async (orderId) => {
     setActionLoading(true);
     setShowOrderForm(false);
     try {
@@ -140,9 +141,9 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [AxionAlert]);
 
-  const onUpdateStatus = async (orderId, newStatus) => {
+  const onUpdateStatus = useCallback(async (orderId, newStatus) => {
     if (!orderId) {
       return AxionAlert.fire(
         "Erro",
@@ -172,9 +173,9 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [AxionAlert, loadServiceOrders, ordersCurrentPage]);
 
-  const handleEditOrder = async (orderId, data) => {
+  const handleEditOrder = useCallback(async (orderId, data) => {
     try {
       setActionLoading(true);
       await api.put(`/api/v1/service-orders/${orderId}`, data);
@@ -190,9 +191,9 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [AxionAlert, loadServiceOrders, ordersCurrentPage]);
 
-  const handleDeleteOrder = async (orderId) => {
+  const handleDeleteOrder = useCallback(async (orderId) => {
     const result = await AxionAlert.fire({
       title: "Excluir OS?",
       text: "Esta ação não pode ser desfeita!",
@@ -223,10 +224,10 @@ export default function Dashboard() {
         setActionLoading(false);
       }
     }
-  };
+  }, [AxionAlert, loadServiceOrders, ordersCurrentPage]);
 
   // ============ HANDLERS DE PERMISSÕES ============
-  const handleCreatePermission = async (data) => {
+  const handleCreatePermission = useCallback(async (data) => {
     setActionLoading(true);
     try {
       await api.post("/api/v1/admin/permissions", data);
@@ -244,9 +245,9 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [AxionAlert, loadPermissions, permissionsCurrentPage]);
 
-  const handleOpenPermissionDetail = async (permissionId) => {
+  const handleOpenPermissionDetail = useCallback(async (permissionId) => {
     try {
       setActionLoading(true);
       const res = await api.get(`/api/v1/admin/permissions/${permissionId}`);
@@ -256,9 +257,9 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [AxionAlert]);
 
-  const handleEditPermission = async (permissionId, data) => {
+  const handleEditPermission = useCallback(async (permissionId, data) => {
     try {
       setActionLoading(true);
       await api.put(`/api/v1/admin/permissions/${permissionId}`, data);
@@ -276,9 +277,9 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [AxionAlert, loadPermissions, permissionsCurrentPage]);
 
-  const handleDeletePermission = async (permissionId) => {
+  const handleDeletePermission = useCallback(async (permissionId) => {
     try {
       setActionLoading(true);
       await api.delete(`/api/v1/admin/permissions/${permissionId}`);
@@ -295,7 +296,7 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [AxionAlert, loadPermissions, permissionsCurrentPage]);
 
   // ============ LOAD PROFILE ============
   useEffect(() => {
@@ -422,28 +423,28 @@ export default function Dashboard() {
   }, [selectedUser]);
 
   // ============ HANDLERS DE PAGINAÇÃO ============
-  const handleUsersPageChange = (page) => {
+  const handleUsersPageChange = useCallback((page) => {
     setUsersCurrentPage(page);
-  };
+  }, []);
 
-  const handleGroupsPageChange = (page) => {
+  const handleGroupsPageChange = useCallback((page) => {
     setGroupsCurrentPage(page);
-  };
+  }, []);
 
-  const handleAuditPageChange = (page) => {
+  const handleAuditPageChange = useCallback((page) => {
     setAuditCurrentPage(page);
-  };
+  }, []);
 
-  const handleOrdersPageChange = (page) => {
+  const handleOrdersPageChange = useCallback((page) => {
     setOrdersCurrentPage(page);
-  };
+  }, []);
 
-  const handlePermissionsPageChange = (page) => {
+  const handlePermissionsPageChange = useCallback((page) => {
     setPermissionsCurrentPage(page);
-  };
+  }, []);
 
   // ============ HANDLERS DE USUÁRIOS ============
-  const handleUpdateUser = async (userId, data) => {
+  const handleUpdateUser = useCallback(async (userId, data) => {
     if (!userId) return;
     setActionLoading(true);
     try {
@@ -468,9 +469,9 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [AxionAlert, loadUsers, usersCurrentPage]);
 
-  const handleDeleteUser = async (userId, userName) => {
+  const handleDeleteUser = useCallback(async (userId, userName) => {
     const result = await AxionAlert.fire({
       title: "Excluir usuário?",
       text: `Deseja realmente remover permanentemente ${userName}?`,
@@ -493,9 +494,9 @@ export default function Dashboard() {
         setActionLoading(false);
       }
     }
-  };
+  }, [AxionAlert, loadUsers, usersCurrentPage]);
 
-  const handleToggleAdmin = async (userId, currentStatus) => {
+  const handleToggleAdmin = useCallback(async (userId, currentStatus) => {
     const endpoint = currentStatus ? "remove-admin" : "promote";
     const actionText = currentStatus
       ? "rebaixar para usuário comum"
@@ -522,9 +523,9 @@ export default function Dashboard() {
         setActionLoading(false);
       }
     }
-  };
+  }, [AxionAlert, loadUsers, usersCurrentPage]);
 
-  const handleToggleStatus = async (userId, currentStatus) => {
+  const handleToggleStatus = useCallback(async (userId, currentStatus) => {
     const action = currentStatus ? "suspender" : "ativar";
 
     const result = await AxionAlert.fire({
@@ -552,10 +553,10 @@ export default function Dashboard() {
         setActionLoading(false);
       }
     }
-  };
+  }, [AxionAlert, loadUsers, usersCurrentPage]);
 
   // ============ HANDLERS DE GRUPOS ============
-  const handleGroupMemberRole = async (userId, type) => {
+  const handleGroupMemberRole = useCallback(async (userId, type) => {
     setActionLoading(true);
     try {
       await api.patch(
@@ -568,9 +569,9 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId]);
 
-  const handleAddUserToGroup = async (email) => {
+  const handleAddUserToGroup = useCallback(async (email) => {
     if (!selectedGroupId) return;
     setActionLoading(true);
     try {
@@ -589,9 +590,9 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId, users]);
 
-  const handleRemoveUserFromGroup = async (userId, userName) => {
+  const handleRemoveUserFromGroup = useCallback(async (userId, userName) => {
     const result = await AxionAlert.fire({
       title: "Remover do grupo?",
       text: `Deseja remover ${userName}?`,
@@ -611,13 +612,18 @@ export default function Dashboard() {
         setActionLoading(false);
       }
     }
-  };
+  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId]);
 
-  const handleAddPermissionToGroup = async (permissionName) => {
+  // =========================================================
+  // 🔧 CORREÇÃO: HANDLERS DE PERMISSÕES EM GRUPOS
+  // URL corrigida: sem o prefixo "admin"
+  // =========================================================
+  const handleAddPermissionToGroup = useCallback(async (permissionName) => {
     if (!selectedGroupId || !permissionName) return;
     setActionLoading(true);
     try {
-      await api.post(`/api/v1/admin/groups/${selectedGroupId}/permissions`, {
+      // 🔧 URL CORRETA: /api/v1/groups/{id}/permissions
+      await api.post(`/api/v1/groups/${selectedGroupId}/permissions`, {
         permission_name: permissionName,
       });
       AxionAlert.fire({
@@ -629,17 +635,15 @@ export default function Dashboard() {
       });
       await loadGroups(groupsCurrentPage);
     } catch (err) {
-      AxionAlert.fire(
-        "Erro",
-        "Não foi possível vincular a permissão.",
-        "error",
-      );
+      console.error("Erro ao vincular permissão:", err.response?.data);
+      const message = err.response?.data?.message || "Não foi possível vincular a permissão.";
+      AxionAlert.fire("Erro", message, "error");
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId]);
 
-  const handleRemovePermissionFromGroup = async (permissionId) => {
+  const handleRemovePermissionFromGroup = useCallback(async (permissionId) => {
     if (!selectedGroupId) return;
 
     const result = await AxionAlert.fire({
@@ -653,23 +657,25 @@ export default function Dashboard() {
     if (result.isConfirmed) {
       setActionLoading(true);
       try {
+        // 🔧 URL CORRETA: /api/v1/groups/{id}/permissions/{permissionId}
         await api.delete(
-          `/api/v1/admin/groups/${selectedGroupId}/permissions/${permissionId}`,
+          `/api/v1/groups/${selectedGroupId}/permissions/${permissionId}`,
         );
         AxionAlert.fire("Removido!", "Permissão desvinculada.", "success");
         await loadGroups(groupsCurrentPage);
       } catch (err) {
+        console.error("Erro ao remover permissão:", err.response?.data);
         AxionAlert.fire("Erro", "Falha ao remover permissão.", "error");
       } finally {
         setActionLoading(false);
       }
     }
-  };
+  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId]);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     localStorage.clear();
     navigate("/login");
-  };
+  }, [navigate]);
 
   // ============ COMPONENTE DE LOADING PERSONALIZADO ============
   const LoadingSpinner = () => (
@@ -677,7 +683,7 @@ export default function Dashboard() {
       <div className="relative">
         <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-6 h-6 border-4 border-blue-400/30 border-t-blue-400 rounded-full animate-spin animation-delay-150"></div>
+          <div className="w-6 h-6 border-4 border-blue-400/30 border-t-blue-400 rounded-full animate-spin" style={{ animationDelay: '150ms' }}></div>
         </div>
       </div>
     </div>
@@ -692,10 +698,17 @@ export default function Dashboard() {
         role={role}
         onLogout={handleLogout}
         setActiveTab={handleTabChange}
+        onToggle={setSidebarCollapsed}
       />
 
-      {/* Main Content */}
-      <div className="flex-1 ml-[70px] min-h-screen bg-slate-900 transition-all duration-300">
+      {/* Main Content - com margin dinâmica baseada no estado da sidebar */}
+      <div 
+        className="flex-1 min-h-screen bg-slate-900 transition-all duration-300"
+        style={{ 
+          marginLeft: sidebarCollapsed ? '70px' : '250px',
+          width: `calc(100% - ${sidebarCollapsed ? '70px' : '250px'})`
+        }}
+      >
         {/* Header */}
         <header className="flex justify-between items-center px-8 py-4 bg-slate-800/50 border-b border-slate-700/50 min-h-[72px] sticky top-0 z-50 backdrop-blur-sm">
           <div className="flex items-center gap-3">
@@ -876,7 +889,7 @@ export default function Dashboard() {
                   )}
 
                   {!showOrderForm && !selectedOrder && (
-                    <div className="animate-fade-in">
+                    <div className="transition-all duration-300 ease-in opacity-100">
                       <ServiceOrderTable
                         orders={serviceOrders}
                         loading={actionLoading || loading}
