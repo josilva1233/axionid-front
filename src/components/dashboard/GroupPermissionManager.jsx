@@ -27,41 +27,70 @@ export default function GroupPermissionManager({
   });
 
   // =========================================================
+  // 🔧 CORREÇÃO: Função para extrair IDs das permissões do grupo
+  // =========================================================
+  const getGroupPermissionIds = () => {
+    if (!group?.permissions || group.permissions.length === 0) {
+      return [];
+    }
+
+    // 🔧 Suporta diferentes estruturas de dados
+    return group.permissions.map(gp => {
+      // Tenta extrair o ID da permissão de diferentes formas
+      if (gp.id) return Number(gp.id);
+      if (gp.permission_id) return Number(gp.permission_id);
+      if (gp.pivot?.permission_id) return Number(gp.pivot.permission_id);
+      if (typeof gp === 'number') return gp;
+      return null;
+    }).filter(id => id !== null);
+  };
+
+  // =========================================================
   // 🔧 CORREÇÃO: Filtrar permissões disponíveis
   // =========================================================
   const getAvailablePermissions = () => {
     if (!permissions || permissions.length === 0) return [];
-    if (!group?.permissions || group.permissions.length === 0) {
+    
+    const groupPermissionIds = getGroupPermissionIds();
+    
+    // Se o grupo não tem permissões, todas estão disponíveis
+    if (groupPermissionIds.length === 0) {
       return permissions;
     }
 
-    // Extrair IDs das permissões já vinculadas ao grupo
-    const groupPermissionIds = group.permissions.map(gp => {
-      // 🔧 Suporta diferentes estruturas de dados
-      return gp.permission_id || gp.id || gp;
-    });
-
     // Filtrar permissões que NÃO estão no grupo
     return permissions.filter(perm => {
-      const permId = perm.id || perm.permission_id;
+      const permId = Number(perm.id || perm.permission_id);
       return !groupPermissionIds.includes(permId);
     });
   };
 
-  // Filtrar permissões pela busca
+  // =========================================================
+  // 🔧 CORREÇÃO: Filtrar permissões pela busca
+  // =========================================================
   const getFilteredPermissions = () => {
     const available = getAvailablePermissions();
     if (!searchTerm.trim()) return available;
 
+    const term = searchTerm.toLowerCase();
     return available.filter(perm =>
-      perm.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      perm.label?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      perm.permission_name?.toLowerCase().includes(searchTerm.toLowerCase())
+      (perm.name?.toLowerCase() || '').includes(term) ||
+      (perm.label?.toLowerCase() || '').includes(term) ||
+      (perm.permission_name?.toLowerCase() || '').includes(term)
     );
   };
 
   const filteredPermissions = getFilteredPermissions();
   const hasAvailablePermissions = filteredPermissions.length > 0;
+
+  // =========================================================
+  // 🔧 CORREÇÃO: Extrair dados da permissão para exibição
+  // =========================================================
+  const getPermissionData = (perm) => ({
+    id: perm.id || perm.permission_id,
+    name: perm.name || perm.permission_name,
+    label: perm.label || perm.permission_label || perm.name || 'Sem nome'
+  });
 
   // =========================================================
   // HANDLERS
@@ -99,8 +128,9 @@ export default function GroupPermissionManager({
   console.log("🔍 GroupPermissionManager - Debug:");
   console.log("  → group:", group);
   console.log("  → group.permissions:", group?.permissions);
-  console.log("  → permissions disponíveis:", permissions);
-  console.log("  → filtradas:", getAvailablePermissions());
+  console.log("  → group permission IDs:", getGroupPermissionIds());
+  console.log("  → all permissions:", permissions);
+  console.log("  → available permissions:", getAvailablePermissions());
 
   // =========================================================
   // RENDER
@@ -141,31 +171,27 @@ export default function GroupPermissionManager({
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
             {group.permissions.map((perm) => {
-              // 🔧 Extrair dados da permissão corretamente
-              const permId = perm.permission_id || perm.id;
-              const permName = perm.permission_name || perm.name;
-              const permLabel = perm.label || perm.permission_label || permName;
-
+              const data = getPermissionData(perm);
               return (
                 <div
-                  key={permId}
+                  key={data.id}
                   className="flex items-center justify-between gap-3 p-3 bg-slate-800/30 border border-slate-700/30 rounded-lg hover:bg-slate-700/30 transition-all group"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <span className="text-blue-400">🔑</span>
                     <div className="min-w-0">
                       <div className="text-sm font-medium text-slate-200 truncate">
-                        {permLabel}
+                        {data.label}
                       </div>
                       <code className="text-xs text-slate-500 font-mono truncate block">
-                        {permName}
+                        {data.name}
                       </code>
                     </div>
                   </div>
                   {canManage && (
                     <button
                       className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all"
-                      onClick={() => handleRemovePermission(permId, permLabel)}
+                      onClick={() => handleRemovePermission(data.id, data.label)}
                       disabled={actionLoading}
                       title="Remover permissão"
                     >
@@ -180,7 +206,7 @@ export default function GroupPermissionManager({
       </div>
 
       {/* =========================================================
-          MODAL DE ADIÇÃO - CORRIGIDO
+          MODAL DE ADIÇÃO
           ========================================================= */}
       {showAddModal && (
         <>
@@ -239,7 +265,7 @@ export default function GroupPermissionManager({
                 {/* Lista de Permissões */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                    Permissões Disponíveis
+                    Permissões Disponíveis ({filteredPermissions.length})
                   </label>
                   <div className="max-h-60 overflow-y-auto custom-scrollbar space-y-1.5">
                     {!hasAvailablePermissions ? (
@@ -253,9 +279,8 @@ export default function GroupPermissionManager({
                       </div>
                     ) : (
                       filteredPermissions.map((perm) => {
-                        const permId = perm.id || perm.permission_id;
-                        const permName = perm.name || perm.permission_name;
-                        const permLabel = perm.label || perm.permission_label || permName;
+                        const data = getPermissionData(perm);
+                        const permId = String(data.id);
 
                         return (
                           <div
@@ -263,22 +288,22 @@ export default function GroupPermissionManager({
                             className={`
                               flex items-center justify-between p-3 rounded-lg cursor-pointer
                               transition-all duration-200
-                              ${selectedPermission === String(permId)
+                              ${selectedPermission === permId
                                 ? 'bg-blue-500/20 border border-blue-500/30'
                                 : 'bg-slate-800/30 border border-slate-700/30 hover:bg-slate-700/30'
                               }
                             `}
-                            onClick={() => setSelectedPermission(String(permId))}
+                            onClick={() => setSelectedPermission(permId)}
                           >
                             <div>
                               <div className="text-sm font-medium text-slate-200">
-                                {permLabel}
+                                {data.label}
                               </div>
                               <code className="text-xs text-slate-500 font-mono">
-                                {permName}
+                                {data.name}
                               </code>
                             </div>
-                            {selectedPermission === String(permId) && (
+                            {selectedPermission === permId && (
                               <span className="text-blue-400 text-xl">✓</span>
                             )}
                           </div>
