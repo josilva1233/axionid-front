@@ -234,7 +234,7 @@ export default function Login() {
         {/* Rodapé */}
         <div className="text-center text-slate-500 text-xs sm:text-sm mt-6 sm:mt-8 space-y-1 sm:space-y-2">
           <p className="font-medium text-slate-400">
-            STI - Sistema de Tecnologia da Informação
+            STI - Sistema de Tecnologia da Informação e Conhecimento
           </p>
           <p>
             Suporte:{" "}
