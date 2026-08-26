@@ -2,13 +2,13 @@
 import React, { useState } from "react";
 import Swal from "sweetalert2";
 
-export default function PermissionDetail({ 
-  permission, 
-  onBack, 
-  onEdit, 
-  onDelete, 
+export default function PermissionDetail({
+  permission,
+  onBack,
+  onEdit,
+  onDelete,
   isSystemAdmin,
-  actionLoading 
+  actionLoading
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -23,16 +23,25 @@ export default function PermissionDetail({
     background: "#111214",
     color: "#ffffff",
     confirmButtonColor: "#6366f1",
+    cancelButtonColor: "#343a40",
+    customClass: {
+      popup: "border border-slate-700 rounded-xl",
+      confirmButton: "px-4 py-2 rounded-full font-bold mx-2 bg-indigo-500 hover:bg-indigo-400 transition-colors",
+      cancelButton: "px-4 py-2 rounded-full font-bold mx-2 bg-slate-700 hover:bg-slate-600 transition-colors",
+    },
   });
 
   if (!permission) {
     return (
-      <div className="permission-detail-container">
-        <div className="permission-detail-header">
-          <button className="btn-back" onClick={onBack}>
-            <i className="bi bi-arrow-left me-2"></i> Voltar
+      <div className="bg-slate-900 rounded-xl">
+        <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-700/50">
+          <button
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-700/50 bg-transparent text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-all"
+            onClick={onBack}
+          >
+            ← Voltar
           </button>
-          <span className="text-dim">Permissão não encontrada</span>
+          <span className="text-slate-400">Permissão não encontrada</span>
         </div>
       </div>
     );
@@ -80,55 +89,123 @@ export default function PermissionDetail({
     }
   };
 
+  // ============ MODAL DE EXCLUSÃO ============
+  const DeleteModal = () => {
+    if (!showDeleteModal) return null;
+
+    return (
+      <>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[1050]" onClick={() => setShowDeleteModal(false)} />
+        <div className="fixed inset-0 flex items-center justify-center z-[1060] p-4">
+          <div className="bg-slate-800/95 border border-slate-700/50 rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700/50 bg-slate-800/50">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                ⚠️ Confirmar Exclusão
+              </h3>
+              <button onClick={() => setShowDeleteModal(false)} className="text-slate-400 hover:text-slate-200 transition-colors">
+                <span className="text-2xl">✕</span>
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-slate-300">
+                Tem certeza que deseja excluir a permissão
+                <strong className="text-blue-400 block mt-2 text-lg">
+                  "{permission.label}"
+                </strong>
+                ?
+              </p>
+              <div className="flex items-start gap-3 mt-4 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-yellow-400 text-sm">
+                <span className="text-lg">⚠️</span>
+                <span>
+                  Esta ação é <strong>irreversível</strong>. Todos os grupos que
+                  utilizam esta permissão perderão o acesso.
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-700/50 bg-slate-800/50">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={actionLoading}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-600/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={actionLoading}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 hover:border-red-500/30 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {actionLoading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin"></span>
+                    Excluindo...
+                  </>
+                ) : (
+                  <>
+                    🗑️ Sim, Excluir Permanentemente
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  };
+
+  // ============ RENDER ============
   return (
-    <div className="permission-detail-container">
-      {/* =========================================================
-          HEADER
-          ========================================================= */}
-      <div className="permission-detail-header">
-        <div className="header-left">
-          <button className="btn-back" onClick={onBack}>
-            <i className="bi bi-arrow-left me-2"></i> Voltar
+    <div className="bg-slate-900 rounded-xl min-h-screen">
+      {/* ============ HEADER ============ */}
+      <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-5 bg-gradient-to-r from-slate-800/50 to-slate-900/50 border-b border-slate-700/50 rounded-t-xl">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <button
+            onClick={onBack}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-700/50 bg-transparent text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-all whitespace-nowrap text-sm"
+          >
+            ← Voltar
           </button>
 
-          <div className="permission-title-block">
-            <div className="permission-icon-wrapper">
-              <i className="bi bi-shield-lock"></i>
+          <div className="w-px h-8 bg-slate-700/50"></div>
+
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-2xl">
+              🛡️
             </div>
-            <div className="permission-title-info">
-              <h4 className="permission-name-text">
+            <div>
+              <h4 className="text-xl font-bold text-white">
                 {permission.label?.toUpperCase() || "SEM NOME"}
               </h4>
-              <span className="permission-id-text">
+              <span className="font-mono text-xs text-slate-500">
                 #{permission.id} • {permission.name}
               </span>
             </div>
           </div>
         </div>
 
-        <div className="header-actions">
+        <div className="flex items-center gap-2 flex-wrap">
           {isSystemAdmin && !isEditing && (
             <>
               <button
-                className="btn-edit"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-all hover:shadow-lg hover:-translate-y-0.5"
                 onClick={() => setIsEditing(true)}
                 title="Editar Permissão"
               >
-                <i className="bi bi-pencil me-2"></i> Editar
+                ✏️ Editar
               </button>
               <button
-                className="btn-delete-permanent"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-400 font-semibold text-sm border border-red-500/20 transition-all hover:-translate-y-0.5"
                 onClick={() => setShowDeleteModal(true)}
                 title="Excluir Permissão"
               >
-                <i className="bi bi-trash3-fill me-2"></i> Excluir
+                🗑️ Excluir
               </button>
             </>
           )}
           {isEditing && (
-            <div className="action-buttons">
+            <>
               <button
-                className="btn-secondary"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 font-semibold text-sm transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={() => {
                   setIsEditing(false);
                   setEditForm({
@@ -139,120 +216,109 @@ export default function PermissionDetail({
                 }}
                 disabled={editLoading}
               >
-                <i className="bi bi-x-circle me-1"></i> Cancelar
+                Cancelar
               </button>
               <button
-                className="btn-primary"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-green-600 hover:bg-green-500 text-white font-semibold text-sm transition-all hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleSaveEdit}
                 disabled={editLoading}
               >
                 {editLoading ? (
-                  <Spinner animation="border" size="sm" className="me-2" />
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    Salvando...
+                  </>
                 ) : (
-                  <i className="bi bi-check2-circle me-2"></i>
+                  <>
+                    💾 Salvar Alterações
+                  </>
                 )}
-                Salvar Alterações
               </button>
-            </div>
+            </>
           )}
         </div>
       </div>
 
-      {/* =========================================================
-          BODY - DETALHES
-          ========================================================= */}
-      <div className="permission-detail-body">
-        <div className="detail-grid">
-          {/* COLUNA PRINCIPAL */}
-          <div className="detail-col-main">
-            <div className={`info-card ${isEditing ? "editing" : ""}`}>
-              <div className="card-title">
-                <i className="bi bi-info-circle"></i>
-                Informações da Permissão
-              </div>
+      {/* ============ BODY ============ */}
+      <div className="p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* ============ COLUNA PRINCIPAL ============ */}
+          <div className="lg:col-span-2">
+            <div className={`bg-slate-800/50 border rounded-xl p-6 transition-all ${isEditing ? 'border-blue-500/50 shadow-lg shadow-blue-500/10' : 'border-slate-700/50'}`}>
+              <h5 className="text-sm font-bold text-white flex items-center gap-2 mb-4">
+                ℹ️ Informações da Permissão
+              </h5>
 
-              <div className="info-list">
+              <div className="space-y-4">
                 {/* Chave do Sistema */}
-                <div className="info-item">
-                  <label className="info-label">
-                    <i className="bi bi-tag me-1"></i>
-                    Chave do Sistema (Slug)
+                <div>
+                  <label className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                    🔑 Chave do Sistema (Slug)
                   </label>
                   {isEditing ? (
-                    <Form.Control
+                    <input
                       type="text"
                       value={editForm.name}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, name: e.target.value })
-                      }
-                      className="custom-input-dark"
+                      onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                      className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
                       placeholder="ex: users.create"
                     />
                   ) : (
-                    <div className="info-value mono-text">
-                      <code className="permission-code">{permission.name}</code>
+                    <div className="bg-slate-800/30 border border-slate-700/30 rounded-lg px-3 py-2.5">
+                      <code className="font-mono text-sm text-slate-300">{permission.name}</code>
                     </div>
                   )}
-                  <span className="info-hint">
+                  <span className="block text-xs text-slate-500 mt-1">
                     Identificador único usado no código
                   </span>
                 </div>
 
                 {/* Label */}
-                <div className="info-item">
-                  <label className="info-label">
-                    <i className="bi bi-fonts me-1"></i>
-                    Label (Nome Exibido)
+                <div>
+                  <label className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                    📝 Label (Nome Exibido)
                   </label>
                   {isEditing ? (
-                    <Form.Control
+                    <input
                       type="text"
                       value={editForm.label}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, label: e.target.value })
-                      }
-                      className="custom-input-dark"
+                      onChange={(e) => setEditForm({ ...editForm, label: e.target.value })}
+                      className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
                       placeholder="ex: Criar Usuários"
                     />
                   ) : (
-                    <div className="info-value">
-                      <strong className="text-primary">
-                        {permission.label?.toUpperCase() || "SEM NOME"}
-                      </strong>
+                    <div className="bg-slate-800/30 border border-slate-700/30 rounded-lg px-3 py-2.5">
+                      <strong className="text-blue-400">{permission.label?.toUpperCase() || "SEM NOME"}</strong>
                     </div>
                   )}
-                  <span className="info-hint">
+                  <span className="block text-xs text-slate-500 mt-1">
                     Nome exibido para os usuários
                   </span>
                 </div>
 
                 {/* Descrição */}
-                <div className="info-item">
-                  <label className="info-label">
-                    <i className="bi bi-file-text me-1"></i>
-                    Descrição
+                <div>
+                  <label className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                    📄 Descrição
                   </label>
                   {isEditing ? (
-                    <Form.Control
-                      as="textarea"
+                    <textarea
                       rows={3}
                       value={editForm.description}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, description: e.target.value })
-                      }
-                      className="custom-input-dark"
+                      onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                      className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all resize-y"
                       placeholder="Descreva o que esta permissão concede..."
                     />
                   ) : (
-                    <div className="info-value">
-                      {permission.description || (
-                        <span className="text-dim italic">
-                          Nenhuma descrição fornecida
-                        </span>
-                      )}
+                    <div className="bg-slate-800/30 border border-slate-700/30 rounded-lg px-3 py-2.5">
+                      <span className="text-slate-300">
+                        {permission.description || (
+                          <span className="text-slate-500 italic">Nenhuma descrição fornecida</span>
+                        )}
+                      </span>
                     </div>
                   )}
-                  <span className="info-hint">
+                  <span className="block text-xs text-slate-500 mt-1">
                     Opcional: detalhes sobre a permissão
                   </span>
                 </div>
@@ -260,58 +326,51 @@ export default function PermissionDetail({
             </div>
           </div>
 
-          {/* COLUNA LATERAL */}
-          <div className="detail-col-side">
-            <div className="info-card">
-              <div className="card-title">
-                <i className="bi bi-shield-check"></i>
-                Status e Metadados
-              </div>
+          {/* ============ COLUNA LATERAL ============ */}
+          <div className="space-y-4">
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+              <h5 className="text-sm font-bold text-white flex items-center gap-2 mb-4">
+                🛡️ Status e Metadados
+              </h5>
 
-              <div className="info-list">
-                {/* ID */}
-                <div className="info-item">
-                  <label className="info-label">
-                    <i className="bi bi-hash me-1"></i>
-                    ID da Permissão
+              <div className="space-y-3">
+                <div>
+                  <label className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                    # ID da Permissão
                   </label>
-                  <div className="info-value mono-text">
+                  <div className="bg-slate-800/30 border border-slate-700/30 rounded-lg px-3 py-2.5 font-mono text-sm text-slate-300">
                     #{permission.id}
                   </div>
                 </div>
 
-                {/* Tipo */}
-                <div className="info-item">
-                  <label className="info-label">
-                    <i className="bi bi-tag me-1"></i>
-                    Tipo
+                <div>
+                  <label className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                    🏷️ Tipo
                   </label>
-                  <div className="info-value">
-                    <span className="badge-iam">IAM</span>
+                  <div className="bg-slate-800/30 border border-slate-700/30 rounded-lg px-3 py-2.5">
+                    <span className="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-400">
+                      IAM
+                    </span>
                   </div>
                 </div>
 
-                {/* Status */}
-                <div className="info-item">
-                  <label className="info-label">
-                    <i className="bi bi-circle me-1"></i>
-                    Status
+                <div>
+                  <label className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                    🔵 Status
                   </label>
-                  <div className="info-value">
-                    <div className="status-badge">
-                      <span className="status-dot" style={{ backgroundColor: "var(--success)" }}></span>
-                      <span>Ativo</span>
+                  <div className="bg-slate-800/30 border border-slate-700/30 rounded-lg px-3 py-2.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                      <span className="text-sm font-medium text-green-400">Ativo</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Data de Criação */}
-                <div className="info-item">
-                  <label className="info-label">
-                    <i className="bi bi-calendar-plus me-1"></i>
-                    Criado em
+                <div>
+                  <label className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                    📅 Criado em
                   </label>
-                  <div className="info-value mono-text">
+                  <div className="bg-slate-800/30 border border-slate-700/30 rounded-lg px-3 py-2.5 font-mono text-sm text-slate-300">
                     {permission.created_at
                       ? new Date(permission.created_at).toLocaleDateString('pt-BR', {
                           day: '2-digit',
@@ -324,13 +383,11 @@ export default function PermissionDetail({
                   </div>
                 </div>
 
-                {/* Última Atualização */}
-                <div className="info-item">
-                  <label className="info-label">
-                    <i className="bi bi-clock-history me-1"></i>
-                    Última atualização
+                <div>
+                  <label className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                    🔄 Última atualização
                   </label>
-                  <div className="info-value mono-text">
+                  <div className="bg-slate-800/30 border border-slate-700/30 rounded-lg px-3 py-2.5 font-mono text-sm text-slate-300">
                     {permission.updated_at
                       ? new Date(permission.updated_at).toLocaleDateString('pt-BR', {
                           day: '2-digit',
@@ -345,34 +402,29 @@ export default function PermissionDetail({
               </div>
             </div>
 
-            {/* ZONA DE PERIGO */}
+            {/* Zona de Perigo */}
             {isSystemAdmin && (
-              <div className="danger-zone">
-                <div className="danger-card info-card">
-                  <div className="card-title text-error">
-                    <i className="bi bi-exclamation-triangle-fill"></i>
-                    Zona de Perigo
+              <div className="bg-slate-800/50 border border-red-500/20 rounded-xl p-6 hover:border-red-500/30 transition-all">
+                <h5 className="text-sm font-bold text-red-400 flex items-center gap-2 mb-3">
+                  ⚠️ Zona de Perigo
+                </h5>
+                <div className="flex flex-col gap-3">
+                  <div>
+                    <h6 className="text-sm font-semibold text-red-400 flex items-center gap-1.5">
+                      🗑️ Excluir Permissão
+                    </h6>
+                    <p className="text-xs text-slate-400">
+                      Esta ação é irreversível. Todos os grupos que usam esta
+                      permissão perderão o acesso.
+                    </p>
                   </div>
-                  <div className="danger-zone-content">
-                    <div className="danger-zone-text">
-                      <h5>
-                        <i className="bi bi-trash3-fill"></i>
-                        Excluir Permissão
-                      </h5>
-                      <p className="text-dim">
-                        Esta ação é irreversível. Todos os grupos que usam esta
-                        permissão perderão o acesso.
-                      </p>
-                    </div>
-                    <button
-                      className="btn-delete-permanent"
-                      onClick={() => setShowDeleteModal(true)}
-                      title="Excluir Permissão"
-                    >
-                      <i className="bi bi-trash3-fill me-2"></i>
-                      Excluir Permanentemente
-                    </button>
-                  </div>
+                  <button
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 hover:text-red-300 transition-all hover:-translate-y-0.5"
+                    onClick={() => setShowDeleteModal(true)}
+                    title="Excluir Permissão"
+                  >
+                    🗑️ Excluir Permanentemente
+                  </button>
                 </div>
               </div>
             )}
@@ -380,60 +432,8 @@ export default function PermissionDetail({
         </div>
       </div>
 
-      {/* =========================================================
-          MODAL DE CONFIRMAÇÃO DE EXCLUSÃO
-          ========================================================= */}
-      <Modal
-        show={showDeleteModal}
-        onHide={() => setShowDeleteModal(false)}
-        centered
-        className="permission-modal"
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <i className="bi bi-exclamation-triangle-fill me-2 text-error"></i>
-            Confirmar Exclusão
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p className="text-white">
-            Tem certeza que deseja excluir a permissão
-            <strong className="text-primary d-block mt-2">
-              "{permission.label}"
-            </strong>
-            ?
-          </p>
-          <div className="permission-warning mt-3">
-            <i className="bi bi-exclamation-triangle-fill"></i>
-            <span>
-              Esta ação é <strong>irreversível</strong>. Todos os grupos que
-              utilizam esta permissão perderão o acesso.
-            </span>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <button
-            className="btn-secondary"
-            onClick={() => setShowDeleteModal(false)}
-            disabled={actionLoading}
-          >
-            <i className="bi bi-x-circle me-1"></i>
-            Cancelar
-          </button>
-          <button
-            className="btn-delete-permanent"
-            onClick={handleDelete}
-            disabled={actionLoading}
-          >
-            {actionLoading ? (
-              <Spinner animation="border" size="sm" className="me-2" />
-            ) : (
-              <i className="bi bi-trash3-fill me-2"></i>
-            )}
-            Sim, Excluir Permanentemente
-          </button>
-        </Modal.Footer>
-      </Modal>
+      {/* Modal de Exclusão */}
+      <DeleteModal />
     </div>
   );
 }

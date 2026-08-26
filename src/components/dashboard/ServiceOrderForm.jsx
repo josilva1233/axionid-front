@@ -17,6 +17,11 @@ export default function ServiceOrderForm({ groups, onSuccess, onCancel }) {
     background: "#111214",
     color: "#ffffff",
     confirmButtonColor: "#6366f1",
+    customClass: {
+      popup: "border border-slate-700 rounded-xl",
+      confirmButton: "px-4 py-2 rounded-full font-bold mx-2 bg-indigo-500 hover:bg-indigo-400 transition-colors",
+      cancelButton: "px-4 py-2 rounded-full font-bold mx-2 bg-slate-700 hover:bg-slate-600 transition-colors",
+    },
   });
 
   const handleSubmit = async (e) => {
@@ -35,7 +40,6 @@ export default function ServiceOrderForm({ groups, onSuccess, onCancel }) {
     setLoading(true);
     
     try {
-      // Criar FormData para enviar arquivo
       const data = new FormData();
       data.append("title", formData.title);
       data.append("description", formData.description);
@@ -74,14 +78,12 @@ export default function ServiceOrderForm({ groups, onSuccess, onCancel }) {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validar tamanho (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         AxionAlert.fire("Erro", "Arquivo muito grande. Máximo 5MB.", "error");
         e.target.value = "";
         return;
       }
       
-      // Validar tipo
       const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
       if (!allowedTypes.includes(file.type)) {
         AxionAlert.fire("Erro", "Apenas arquivos PDF, JPG ou PNG são permitidos.", "error");
@@ -94,142 +96,148 @@ export default function ServiceOrderForm({ groups, onSuccess, onCancel }) {
   };
 
   return (
-    <div className="filter-card">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h4 className="card-title mb-0">
-          <i className="bi bi-plus-circle-fill text-primary me-2"></i>
-          Abrir Novo Chamado
+    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-6 transition-colors hover:border-blue-500/30">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <h4 className="text-sm font-bold text-white flex items-center gap-2">
+          ➕ Abrir Novo Chamado
         </h4>
-        <button 
-          className="btn btn-outline-light btn-sm rounded-pill px-3"
+        <button
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-600/50 transition-all"
           onClick={onCancel}
           disabled={loading}
         >
-          <i className="bi bi-x-lg me-1"></i> Fechar
+          ✕ Fechar
         </button>
       </div>
-      
-      <Form onSubmit={handleSubmit}>
-        <Row className="g-3">
-          <Col xs={12}>
-            <Form.Group>
-              <Form.Label className="filter-label">
-                <i className="bi bi-tag-fill me-1"></i> Título do Chamado *
-              </Form.Label>
-              <Form.Control
-                type="text"
-                className="custom-input-dark"
-                placeholder="Ex: Problema com acesso ao sistema, Solicitação de equipamento..."
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                required
-              />
-            </Form.Group>
-          </Col>
 
-          <Col xs={12}>
-            <Form.Group>
-              <Form.Label className="filter-label">
-                <i className="bi bi-chat-text-fill me-1"></i> Descrição *
-              </Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={5}
-                className="custom-input-dark"
-                placeholder="Descreva detalhadamente o problema ou solicitação..."
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                required
-              />
-            </Form.Group>
-          </Col>
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Título */}
+        <div>
+          <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
+            <span className="text-blue-500">●</span>
+            Título do Chamado <span className="text-red-400">*</span>
+          </label>
+          <input
+            type="text"
+            className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            placeholder="Ex: Problema com acesso ao sistema, Solicitação de equipamento..."
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            required
+            disabled={loading}
+          />
+        </div>
 
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label className="filter-label">
-                <i className="bi bi-flag-fill me-1"></i> Prioridade
-              </Form.Label>
-              <Form.Select
-                className="custom-input-dark"
-                value={formData.priority}
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-              >
-                <option value="low">🔵 Baixa</option>
-                <option value="medium">🟡 Média</option>
-                <option value="high">🟠 Alta</option>
-                <option value="urgent">🔴 Urgente</option>
-              </Form.Select>
-            </Form.Group>
-          </Col>
+        {/* Descrição */}
+        <div>
+          <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
+            <span className="text-blue-500">●</span>
+            Descrição <span className="text-red-400">*</span>
+          </label>
+          <textarea
+            rows={5}
+            className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all resize-y disabled:opacity-50 disabled:cursor-not-allowed"
+            placeholder="Descreva detalhadamente o problema ou solicitação..."
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            required
+            disabled={loading}
+          />
+        </div>
 
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label className="filter-label">
-                <i className="bi bi-people-fill me-1"></i> Grupo Responsável
-              </Form.Label>
-              <Form.Select
-                className="custom-input-dark"
-                value={formData.group_id}
-                onChange={(e) => setFormData({ ...formData, group_id: e.target.value })}
-              >
-                <option value="">Selecionar grupo (opcional)</option>
-                {groups && groups.map((group) => (
-                  <option key={group.id} value={group.id}>
-                    {group.name}
-                  </option>
-                ))}
-              </Form.Select>
-            </Form.Group>
-          </Col>
+        {/* Prioridade e Grupo */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
+              <span className="text-blue-500">●</span>
+              Prioridade
+            </label>
+            <select
+              className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
+              value={formData.priority}
+              onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+              disabled={loading}
+            >
+              <option value="low">🔵 Baixa</option>
+              <option value="medium">🟡 Média</option>
+              <option value="high">🟠 Alta</option>
+              <option value="urgent">🔴 Urgente</option>
+            </select>
+          </div>
 
-          <Col xs={12}>
-            <Form.Group>
-              <Form.Label className="filter-label">
-                <i className="bi bi-paperclip me-1"></i> Anexo (PDF, JPG, PNG - máx 5MB)
-              </Form.Label>
-              <Form.Control
-                type="file"
-                className="custom-input-dark"
-                accept=".pdf,.jpg,.jpeg,.png"
-                onChange={handleFileChange}
-              />
-              {formData.attachment && (
-                <div className="mt-2 text-success small">
-                  <i className="bi bi-check-circle-fill me-1"></i>
-                  Arquivo selecionado: {formData.attachment.name}
-                </div>
-              )}
-            </Form.Group>
-          </Col>
+          <div>
+            <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
+              <span className="text-blue-500">●</span>
+              Grupo Responsável
+            </label>
+            <select
+              className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
+              value={formData.group_id}
+              onChange={(e) => setFormData({ ...formData, group_id: e.target.value })}
+              disabled={loading}
+            >
+              <option value="">Selecionar grupo (opcional)</option>
+              {groups && groups.map((group) => (
+                <option key={group.id} value={group.id}>
+                  {group.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
-          <Col xs={12}>
-            <div className="d-flex gap-3 justify-content-end mt-4">
-              <button
-                type="button"
-                className="btn btn-outline-light btn-lg px-5 rounded-pill"
-                onClick={onCancel}
-                disabled={loading}
-              >
-                <i className="bi bi-x-lg me-2"></i> Cancelar
-              </button>
-              
-              <button
-                type="submit"
-                className="btn btn-primary btn-lg px-5 rounded-pill"
-                disabled={loading}
-              >
-                {loading ? (
-                  <Spinner animation="border" size="sm" />
-                ) : (
-                  <>
-                    <i className="bi bi-check-lg me-2"></i> Criar Chamado
-                  </>
-                )}
-              </button>
+        {/* Anexo */}
+        <div>
+          <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
+            <span className="text-blue-500">●</span>
+            Anexo (PDF, JPG, PNG - máx 5MB)
+          </label>
+          <input
+            type="file"
+            className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-500/20 file:text-blue-400 hover:file:bg-blue-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            accept=".pdf,.jpg,.jpeg,.png"
+            onChange={handleFileChange}
+            disabled={loading}
+          />
+          {formData.attachment && (
+            <div className="mt-2 flex items-center gap-2 text-sm text-green-400">
+              <span>✅</span>
+              <span>Arquivo selecionado: <strong>{formData.attachment.name}</strong></span>
             </div>
-          </Col>
-        </Row>
-      </Form>
+          )}
+        </div>
+
+        {/* Ações */}
+        <div className="flex flex-wrap items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-700/50">
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-600/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={onCancel}
+            disabled={loading}
+          >
+            ✕ Cancelar
+          </button>
+          
+          <button
+            type="submit"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 transition-all hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none disabled:hover:shadow-none"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                Criando...
+              </>
+            ) : (
+              <>
+                ✅ Criar Chamado
+              </>
+            )}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
