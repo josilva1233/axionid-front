@@ -80,33 +80,33 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-slate-900 px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#f7f8fa] px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
       <div className="w-full max-w-md">
         {/* Logo e título */}
-        <div className="flex flex-col items-center mb-6 sm:mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl bg-[#4D6BFE] flex items-center justify-center text-white font-black text-2xl sm:text-3xl shadow-md">
+        <div className="flex flex-col items-center mb-8 sm:mb-10">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-[#4D6BFE] flex items-center justify-center text-white font-black text-2xl sm:text-3xl shadow-md">
               A
             </div>
-            <span className="text-2xl sm:text-4xl font-bold text-white tracking-tight">
+            <span className="text-3xl sm:text-4xl font-bold text-slate-800 tracking-tight">
               Axion<span className="text-[#4D6BFE]">ID</span>
             </span>
           </div>
-          <p className="text-slate-400 text-sm sm:text-lg">Entre na sua conta</p>
+          <p className="text-slate-500 text-base sm:text-lg">Entre na sua conta</p>
         </div>
 
-        {/* Cartão com altura máxima e rolagem interna se necessário */}
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-3xl shadow-xl px-5 sm:px-8 lg:px-10 py-6 sm:py-10 space-y-5 sm:space-y-7 max-h-[90vh] overflow-y-auto">
+        {/* Cartão com padding lateral responsivo */}
+        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 px-4 sm:px-8 lg:px-10 py-8 sm:py-10 lg:py-12 space-y-6 sm:space-y-8">
           {error && (
-            <div className="p-3 sm:p-4 bg-red-900/30 border border-red-700/50 rounded-xl text-red-300 text-sm text-center font-medium">
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm text-center font-medium">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-5 sm:space-y-7">
+          <form onSubmit={handleLogin} className="space-y-6 sm:space-y-8">
             {/* Campo Usuário */}
             <div>
-              <label className="block text-sm sm:text-base font-medium text-slate-300 mb-1.5 sm:mb-3">
+              <label className="block text-sm sm:text-base font-medium text-slate-700 mb-2 sm:mb-4">
                 Usuário
               </label>
               <div className="relative">
@@ -117,9 +117,9 @@ export default function Login() {
                   onChange={(e) => setUsername(e.target.value)}
                   required
                   autoFocus
-                  className="w-full pl-4 pr-12 py-3.5 sm:py-5 bg-slate-700/50 border border-slate-600/50 rounded-xl text-base text-white placeholder-slate-400 focus:outline-none focus:bg-slate-700 focus:border-[#4D6BFE] focus:ring-2 focus:ring-[#4D6BFE]/30 transition-all"
+                  className="w-full pl-4 pr-12 py-4 sm:py-5 bg-slate-50 border border-slate-200 rounded-xl text-base text-slate-700 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#4D6BFE] focus:ring-2 focus:ring-[#4D6BFE]/20 transition-all"
                 />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none">
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
                   <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
@@ -129,7 +129,7 @@ export default function Login() {
 
             {/* Campo Senha */}
             <div>
-              <label className="block text-sm sm:text-base font-medium text-slate-300 mb-1.5 sm:mb-3">
+              <label className="block text-sm sm:text-base font-medium text-slate-700 mb-2 sm:mb-4">
                 Senha
               </label>
               <div className="relative">
@@ -139,9 +139,9 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full pl-4 pr-12 py-3.5 sm:py-5 bg-slate-700/50 border border-slate-600/50 rounded-xl text-base text-white placeholder-slate-400 focus:outline-none focus:bg-slate-700 focus:border-[#4D6BFE] focus:ring-2 focus:ring-[#4D6BFE]/30 transition-all"
+                  className="w-full pl-4 pr-12 py-4 sm:py-5 bg-slate-50 border border-slate-200 rounded-xl text-base text-slate-700 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#4D6BFE] focus:ring-2 focus:ring-[#4D6BFE]/20 transition-all"
                 />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none">
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
                   <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
@@ -150,25 +150,25 @@ export default function Login() {
             </div>
 
             {/* Lembrar de mim / Esqueceu a senha */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
-              <label className="flex items-center gap-2 text-sm sm:text-base text-slate-300">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mt-2">
+              <label className="flex items-center gap-2 text-sm sm:text-base text-slate-600">
                 <input
                   type="checkbox"
-                  className="w-4 h-4 sm:w-5 sm:h-5 rounded border-slate-600 bg-slate-700/50 text-[#4D6BFE] focus:ring-[#4D6BFE]"
+                  className="w-4 h-4 sm:w-5 sm:h-5 rounded border-slate-300 text-[#4D6BFE] focus:ring-[#4D6BFE]"
                 />
                 Lembrar de mim
               </label>
               <Link
                 to="/forgot-password"
-                className="text-sm sm:text-base text-[#4D6BFE] hover:text-blue-400 hover:underline font-medium transition-colors"
+                className="text-sm sm:text-base text-[#4D6BFE] hover:text-blue-700 hover:underline font-medium transition-colors"
               >
                 Esqueceu a senha?
               </Link>
             </div>
 
-            {/* reCAPTCHA - com escala ajustada e largura máxima */}
-            <div className="flex justify-center py-1 sm:py-3 overflow-hidden">
-              <div className="w-full max-w-[304px] mx-auto transform scale-90 sm:scale-100 origin-center">
+            {/* reCAPTCHA - com overflow hidden e ajuste de escala em mobile */}
+            <div className="flex justify-center py-2 sm:py-4 overflow-hidden">
+              <div className="transform scale-90 sm:scale-100 origin-center">
                 <ReCAPTCHA
                   ref={recaptchaRef}
                   sitekey="6Lc5n4ksAAAAAEXLVSyq519dGet20T0gaQ2LXzPY"
@@ -183,7 +183,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 sm:py-5 px-4 bg-[#4D6BFE] hover:bg-[#3D5AFE] active:bg-[#2E4BDB] text-white font-semibold text-base sm:text-lg rounded-xl transition-all shadow-md shadow-blue-500/30 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full py-4 sm:py-5 px-4 bg-[#4D6BFE] hover:bg-[#3D5AFE] active:bg-[#2E4BDB] text-white font-semibold text-base sm:text-lg rounded-xl transition-all shadow-md shadow-blue-200 disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
             >
               {loading ? (
                 <>
@@ -196,17 +196,17 @@ export default function Login() {
             </button>
 
             {/* Separador */}
-            <div className="flex items-center gap-4">
-              <div className="flex-1 h-px bg-slate-600"></div>
+            <div className="flex items-center gap-4 py-1">
+              <div className="flex-1 h-px bg-slate-200"></div>
               <span className="text-sm sm:text-base text-slate-400">ou</span>
-              <div className="flex-1 h-px bg-slate-600"></div>
+              <div className="flex-1 h-px bg-slate-200"></div>
             </div>
 
             {/* Botão Google */}
             <button
               type="button"
               onClick={handleGoogleLogin}
-              className="w-full flex items-center justify-center gap-3 py-3.5 sm:py-5 px-4 bg-slate-700/30 hover:bg-slate-700/50 border border-slate-600/50 rounded-xl text-slate-200 text-sm sm:text-base font-medium transition-colors"
+              className="w-full flex items-center justify-center gap-3 py-4 sm:py-5 px-4 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-slate-600 text-sm sm:text-base font-medium transition-colors"
             >
               <img
                 src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
@@ -218,12 +218,12 @@ export default function Login() {
           </form>
 
           {/* Cadastro */}
-          <div className="text-center pt-4 sm:pt-6 border-t border-slate-700/50">
-            <p className="text-sm sm:text-base text-slate-400">
+          <div className="text-center pt-4 sm:pt-6 border-t border-slate-100">
+            <p className="text-sm sm:text-base text-slate-500">
               Ainda não tem acesso?{" "}
               <Link
                 to="/register"
-                className="text-[#4D6BFE] hover:text-blue-400 hover:underline font-semibold ml-1"
+                className="text-[#4D6BFE] hover:text-blue-700 hover:underline font-semibold ml-1"
               >
                 Criar Conta
               </Link>
@@ -232,24 +232,24 @@ export default function Login() {
         </div>
 
         {/* Rodapé */}
-        <div className="text-center text-slate-500 text-xs sm:text-sm mt-6 sm:mt-8 space-y-1 sm:space-y-2">
-          <p className="font-medium text-slate-400">
+        <div className="text-center text-slate-400 text-xs sm:text-sm mt-6 sm:mt-8 space-y-1 sm:space-y-2">
+          <p className="font-medium text-slate-500">
             STI - Sistema de Tecnologia da Informação
           </p>
           <p>
             Suporte:{" "}
-            <a href="tel:21990849204" className="underline hover:text-slate-300">
+            <a href="tel:21990849204" className="underline hover:text-slate-600">
               (21) 990849204
             </a>{" "}
             |{" "}
             <a
               href="mailto:josilva1233@gmail.com"
-              className="underline hover:text-slate-300"
+              className="underline hover:text-slate-600"
             >
               josilva1233@gmail.com
             </a>
           </p>
-          <p className="text-slate-600 text-[10px] sm:text-xs">Versão: 1.2.1</p>
+          <p className="text-slate-300 text-[10px] sm:text-xs">Versão: 1.2.1.1</p>
         </div>
       </div>
     </div>

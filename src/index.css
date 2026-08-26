@@ -330,37 +330,3 @@ body {
 }
 
 
-/* ============================================
-   LOGIN RESPONSIVO
-   ============================================ */
-.login-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: var(--spacing-lg);
-  background: var(--bg-dark);
-}
-
-.login-card {
-  width: 100%;
-  max-width: 420px; /* largura máxima confortável */
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
-  padding: var(--spacing-2xl);
-}
-
-/* Ajuste para telas muito pequenas */
-@media (max-width: 480px) {
-  .login-card {
-    padding: var(--spacing-xl);
-  }
-}
-
-/* Ajuste para telas muito grandes (opcional) */
-@media (min-width: 1440px) {
-  .login-card {
-    max-width: 480px; /* um pouco maior, mas ainda limitado */
-  }
-}
