@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback } from "react";
 import Swal from "sweetalert2";
 import api from "../services/api";
 import { useDashboardData } from "../hooks/useDashboardData";
-
 // Components
 import Sidebar from "../components/dashboard/Sidebar";
 import UserTable from "../components/dashboard/UserTable";
@@ -22,7 +21,6 @@ import ServiceOrderForm from "../components/dashboard/ServiceOrderForm";
 import ServiceOrderDetail from "../components/dashboard/ServiceOrderDetail";
 import Pagination from "../components/dashboard/Pagination";
 import PermissionDetail from "../components/dashboard/PermissionDetail";
-
 // Styles - Tailwind via CSS import
 import '../index.css';
 
@@ -42,14 +40,12 @@ export default function Dashboard() {
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [selectedPermission, setSelectedPermission] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
   // Estados para paginação
   const [usersCurrentPage, setUsersCurrentPage] = useState(1);
   const [groupsCurrentPage, setGroupsCurrentPage] = useState(1);
   const [auditCurrentPage, setAuditCurrentPage] = useState(1);
   const [ordersCurrentPage, setOrdersCurrentPage] = useState(1);
   const [permissionsCurrentPage, setPermissionsCurrentPage] = useState(1);
-
   const AxionAlert = Swal.mixin({
     background: "#111214",
     color: "#ffffff",
