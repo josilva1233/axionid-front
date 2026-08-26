@@ -1,11 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 
-// Sidebar.jsx
-import '../../Sidebar.css';
-
 export default function Sidebar({ activeTab, setActiveTab, role, onLogout, onToggle }) {
   const isAdmin = role === 'admin';
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  // 🔧 MUDANÇA: começa expandida (false) em vez de colapsada (true)
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const timeoutRef = useRef(null);
 
