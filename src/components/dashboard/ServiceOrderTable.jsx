@@ -281,7 +281,7 @@ export default function ServiceOrderTable({ orders, loading, onViewDetail, onEdi
               <th className="px-[18px] py-4 text-center text-[11px] font-semibold uppercase tracking-wide text-slate-400 border-b-2 border-slate-700/50 whitespace-nowrap w-[120px]">
                 Status
               </th>
-              <th className="px-[18px] py-4 text-right text-[11px] font-semibold uppercase tracking-wide text-slate-400 border-b-2 border-slate-700/50 whitespace-nowrap w-[200px]">
+              <th className="px-[18px] py-4 text-right text-[11px] font-semibold uppercase tracking-wide text-slate-400 border-b-2 border-slate-700/50 whitespace-nowrap w-[100px]">
                 Ações
               </th>
             </tr>
@@ -323,32 +323,60 @@ export default function ServiceOrderTable({ orders, loading, onViewDetail, onEdi
                     {getStatusBadge(os.status)}
                   </td>
                   <td className="px-[18px] py-3.5 align-middle text-right">
-                    <div className="flex items-center justify-end gap-1 flex-wrap">
+                    <div className="relative inline-block">
                       <button
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-blue-400 bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 hover:border-blue-500/30 transition-all hover:-translate-y-0.5"
-                        onClick={() => onViewDetail(os.id)}
-                        title="Ver Detalhes"
+                        className="inline-flex items-center justify-center w-9 h-9 rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 transition-all"
+                        onClick={() => {
+                          const dropdown = document.getElementById(`dropdown-${os.id}`);
+                          if (dropdown) {
+                            dropdown.classList.toggle('hidden');
+                          }
+                        }}
+                        aria-label="Ações da Ordem de Serviço"
                       >
-                        👁️ Detalhes
+                        <span className="text-xl">⋯</span>
                       </button>
-                      {isSystemAdmin && (
-                        <>
-                          <button
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-green-400 bg-green-500/10 border border-green-500/20 hover:bg-green-500/20 hover:border-green-500/30 transition-all hover:-translate-y-0.5"
-                            onClick={() => handleEdit(os)}
-                            title="Editar OS"
-                          >
-                            ✏️ Editar
-                          </button>
-                          <button
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 hover:border-red-500/30 transition-all hover:-translate-y-0.5"
-                            onClick={() => handleDelete(os)}
-                            title="Excluir OS"
-                          >
-                            🗑️ Excluir
-                          </button>
-                        </>
-                      )}
+                      <div
+                        id={`dropdown-${os.id}`}
+                        className="absolute right-0 mt-1 w-48 bg-slate-800/95 border border-slate-700/50 rounded-lg shadow-xl hidden z-20 overflow-hidden"
+                      >
+                        <button
+                          onClick={() => {
+                            const dropdown = document.getElementById(`dropdown-${os.id}`);
+                            if (dropdown) dropdown.classList.add('hidden');
+                            onViewDetail(os.id);
+                          }}
+                          className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition-all text-left"
+                        >
+                          👁️ Ver Detalhes
+                        </button>
+
+                        {isSystemAdmin && (
+                          <>
+                            <div className="h-px bg-slate-700/50"></div>
+                            <button
+                              onClick={() => {
+                                const dropdown = document.getElementById(`dropdown-${os.id}`);
+                                if (dropdown) dropdown.classList.add('hidden');
+                                handleEdit(os);
+                              }}
+                              className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 transition-all text-left"
+                            >
+                              ✏️ Editar OS
+                            </button>
+                            <button
+                              onClick={() => {
+                                const dropdown = document.getElementById(`dropdown-${os.id}`);
+                                if (dropdown) dropdown.classList.add('hidden');
+                                handleDelete(os);
+                              }}
+                              className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition-all text-left"
+                            >
+                              🗑️ Excluir OS
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </td>
                 </tr>
@@ -361,7 +389,7 @@ export default function ServiceOrderTable({ orders, loading, onViewDetail, onEdi
                       {loading ? "⏳" : "📋"}
                     </div>
                     <p className="text-center">
-                      {loading ? "Carregando chamados..." : "Nenhuma Ordem de Serviço encontrada."}
+                      {loading ? "Carregando chamados..." : "Nenhum chamado encontrado."}
                     </p>
                   </div>
                 </td>
