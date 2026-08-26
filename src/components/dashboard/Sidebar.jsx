@@ -7,7 +7,7 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout, onTog
   const [isHovered, setIsHovered] = useState(false);
   const timeoutRef = useRef(null);
 
-  // Limpeza do timeout ao desmontar
+  // Limpeza do timeout
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
