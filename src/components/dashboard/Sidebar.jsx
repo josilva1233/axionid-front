@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
 // Sidebar.jsx
-import './../Sidebar.css';
+import '../../Sidebar.css';
 
 export default function Sidebar({ activeTab, setActiveTab, role, onLogout, onToggle }) {
   const isAdmin = role === 'admin';
