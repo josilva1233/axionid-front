@@ -69,26 +69,28 @@ export default function Login() {
       console.error("Erro no login manual", err);
       setCaptchaToken(null);
       recaptchaRef.current?.reset();
-    } finally {
+    } fontally {
       setLoading(false);
     }
   };
 
   const handleGoogleLogin = () => {
     const origin = window.location.origin;
-    window.location.href = `http://163.176.168.224/api/v1/auth/google?origin=${origin}`;
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://163.176.168.224";
+    window.location.href = `${baseUrl}/api/v1/auth/google?origin=${origin}`;
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-slate-900 px-4 py-6">
-      <div className="w-full max-w-sm">
-        {/* Logo e título */}
-        <div className="flex flex-col items-center mb-5">
-          <div className="flex items-center gap-2.5 mb-1.5">
-            <div className="w-9 h-9 rounded-lg bg-[#4D6BFE] flex items-center justify-center text-white font-black text-xl shadow-md">
+    <div className="h-screen w-full flex flex-col justify-between items-center bg-slate-900 px-4 py-3 overflow-y-auto sm:overflow-hidden">
+      {/* Container Centralizado */}
+      <div className="flex-1 flex flex-col justify-center items-center w-full max-w-sm my-auto">
+        {/* Logo e Título */}
+        <div className="flex flex-col items-center mb-4">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-8 h-8 rounded-lg bg-[#4D6BFE] flex items-center justify-center text-white font-black text-lg shadow-md">
               A
             </div>
-            <span className="text-2xl font-bold text-white tracking-tight">
+            <span className="text-xl font-bold text-white tracking-tight">
               Axion<span className="text-[#4D6BFE]">ID</span>
             </span>
           </div>
@@ -96,17 +98,17 @@ export default function Login() {
         </div>
 
         {/* Cartão de Login */}
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl shadow-xl p-5 space-y-4">
+        <div className="w-full bg-slate-800/50 border border-slate-700/50 rounded-2xl shadow-xl p-4 space-y-3">
           {error && (
-            <div className="p-2.5 bg-red-900/30 border border-red-700/50 rounded-lg text-red-300 text-xs text-center font-medium">
+            <div className="p-2 bg-red-900/30 border border-red-700/50 rounded-lg text-red-300 text-[11px] text-center font-medium">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-3">
             {/* Campo Usuário */}
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
+              <label className="block text-[11px] font-medium text-slate-300 mb-1">
                 Usuário
               </label>
               <div className="relative">
@@ -117,7 +119,7 @@ export default function Login() {
                   onChange={(e) => setUsername(e.target.value)}
                   required
                   autoFocus
-                  className="w-full pl-3.5 pr-10 py-2.5 bg-slate-700/50 border border-slate-600/50 rounded-lg text-sm text-white placeholder-slate-400 focus:outline-none focus:bg-slate-700 focus:border-[#4D6BFE] focus:ring-2 focus:ring-[#4D6BFE]/30 transition-all"
+                  className="w-full pl-3 pr-9 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:bg-slate-700 focus:border-[#4D6BFE] transition-all"
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,7 +131,7 @@ export default function Login() {
 
             {/* Campo Senha */}
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
+              <label className="block text-[11px] font-medium text-slate-300 mb-1">
                 Senha
               </label>
               <div className="relative">
@@ -139,7 +141,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full pl-3.5 pr-10 py-2.5 bg-slate-700/50 border border-slate-600/50 rounded-lg text-sm text-white placeholder-slate-400 focus:outline-none focus:bg-slate-700 focus:border-[#4D6BFE] focus:ring-2 focus:ring-[#4D6BFE]/30 transition-all"
+                  className="w-full pl-3 pr-9 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:bg-slate-700 focus:border-[#4D6BFE] transition-all"
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -150,7 +152,7 @@ export default function Login() {
             </div>
 
             {/* Lembrar de mim / Esqueceu a senha */}
-            <div className="flex justify-between items-center text-xs">
+            <div className="flex justify-between items-center text-[11px]">
               <label className="flex items-center gap-1.5 text-slate-300 cursor-pointer">
                 <input
                   type="checkbox"
@@ -174,7 +176,7 @@ export default function Login() {
                   sitekey="6Lc5n4ksAAAAAEXLVSyq519dGet20T0gaQ2LXzPY"
                   onChange={(token) => setCaptchaToken(token)}
                   onExpired={() => setCaptchaToken(null)}
-                  theme="light"
+                  theme="dark"
                 />
               </div>
             </div>
@@ -183,11 +185,11 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 px-4 bg-[#4D6BFE] hover:bg-[#3D5AFE] active:bg-[#2E4BDB] text-white font-medium text-sm rounded-lg transition-all shadow-md shadow-blue-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full py-2 px-4 bg-[#4D6BFE] hover:bg-[#3D5AFE] active:bg-[#2E4BDB] text-white font-medium text-xs rounded-lg transition-all shadow-md shadow-blue-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   <span>Autenticando...</span>
                 </>
               ) : (
@@ -197,16 +199,16 @@ export default function Login() {
 
             {/* Separador */}
             <div className="flex items-center gap-3 py-0.5">
-              <div className="flex-1 h-px bg-slate-700"></div>
-              <span className="text-xs text-slate-400">ou</span>
-              <div className="flex-1 h-px bg-slate-700"></div>
+              <div className="flex-1 h-px bg-slate-700/60"></div>
+              <span className="text-[10px] text-slate-400 uppercase tracking-wider">ou</span>
+              <div className="flex-1 h-px bg-slate-700/60"></div>
             </div>
 
             {/* Botão Google */}
             <button
               type="button"
               onClick={handleGoogleLogin}
-              className="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 bg-slate-700/30 hover:bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-200 text-xs font-medium transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-slate-700/30 hover:bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-200 text-xs font-medium transition-colors"
             >
               <img
                 src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
@@ -217,8 +219,8 @@ export default function Login() {
             </button>
           </form>
 
-          {/* Cadastro */}
-          <div className="text-center pt-3 border-t border-slate-700/50 text-xs">
+          {/* Criar Conta */}
+          <div className="text-center pt-2.5 border-t border-slate-700/50 text-xs">
             <p className="text-slate-400">
               Ainda não tem acesso?{" "}
               <Link
@@ -230,27 +232,27 @@ export default function Login() {
             </p>
           </div>
         </div>
+      </div>
 
-        {/* Rodapé */}
-        <div className="text-center text-slate-500 text-[11px] mt-4 space-y-0.5">
-          <p className="font-medium text-slate-400">
-            STI - Sistema de Tecnologia da Informação e Conhecimento
-          </p>
-          <p>
-            Suporte:{" "}
-            <a href="tel:21990849204" className="underline hover:text-slate-300">
-              (21) 990849204
-            </a>{" "}
-            |{" "}
-            <a
-              href="mailto:josilva1233@gmail.com"
-              className="underline hover:text-slate-300"
-            >
-              josilva1233@gmail.com
-            </a>
-          </p>
-          <p className="text-slate-600 text-[10px]">Versão: 1.2.1</p>
-        </div>
+      {/* Rodapé Fixo */}
+      <div className="text-center text-slate-500 text-[10px] space-y-0.5 pt-2 pb-1">
+        <p className="font-medium text-slate-400">
+          STI - Sistema de Tecnologia da Informação e Conhecimento
+        </p>
+        <p>
+          Suporte:{" "}
+          <a href="tel:21990849204" className="underline hover:text-slate-300">
+            (21) 990849204
+          </a>{" "}
+          |{" "}
+          <a
+            href="mailto:josilva1233@gmail.com"
+            className="underline hover:text-slate-300"
+          >
+            josilva1233@gmail.com
+          </a>
+        </p>
+        <p className="text-slate-600 text-[9px]">Versão: 1.2.1</p>
       </div>
     </div>
   );
