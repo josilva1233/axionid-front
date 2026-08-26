@@ -361,11 +361,11 @@ export default function CompleteProfile() {
 
         {/* Rodapé Institucional */}
         <div className="text-center text-white/80 text-xs leading-relaxed mt-6 z-10 space-y-1">
-          <p className="font-medium">SGA - Secretaria de Tecnologia da Informação</p>
+          <p className="font-medium">STI - Sistema de Tecnologia da Informação</p>
           <p>
             Suporte:{' '}
-            <a href="tel:8534911770" className="underline hover:text-white">
-              (85) 3491-1770
+            <a href="tel:21990849204" className="underline hover:text-white">
+              (21) 990849204
             </a>{' '}
             |{' '}
             <a href="mailto:sti.atendimento@tjce.jus.br" className="underline hover:text-white">
