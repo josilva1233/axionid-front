@@ -249,7 +249,7 @@ export default function Login() {
               josilva1233@gmail.com
             </a>
           </p>
-          <p className="text-slate-300 text-[10px] sm:text-xs">Versão: 1.2.1.1</p>
+          <p className="text-slate-300 text-[10px] sm:text-xs">Versão: 1.2.1</p>
         </div>
       </div>
     </div>
