@@ -80,156 +80,177 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4 sm:p-6">
-      {/* Background Subtle Gradient Glow */}
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-slate-950 to-slate-950 pointer-events-none" />
+    <div className="min-h-screen w-full flex flex-col md:flex-row bg-white overflow-hidden">
+      {/* LADO ESQUERDO: Branding & Grafismo */}
+      <div className="relative w-full md:w-1/2 flex items-center justify-center p-8 lg:p-12 min-h-[300px] md:min-h-screen">
+        {/* Curvas Orgânicas Decorativas em SVG */}
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-none text-slate-300 stroke-current opacity-60"
+          viewBox="0 0 500 500"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M-100 0 C 150 200, 100 400, 300 500" strokeWidth="1.5" />
+          <path d="M-50 -50 C 200 150, 150 350, 400 500" strokeWidth="1.5" />
+          <path d="M0 -100 C 250 100, 200 300, 500 450" strokeWidth="1.5" />
+        </svg>
 
-      <div className="w-full max-w-[440px] relative z-10">
-        {/* Card Container */}
-        <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-3xl shadow-2xl p-6 sm:p-8">
-          
-          {/* Brand Logo & Header */}
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 shadow-lg shadow-blue-500/30 mb-3">
-              <span className="text-xl font-black text-white tracking-wider">A</span>
+        {/* Logo / Marca Principal */}
+        <div className="relative z-10 flex flex-col items-center text-center">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-blue-900 flex items-center justify-center text-white font-black text-2xl shadow-md">
+              A
             </div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">
-              Axion<span className="text-blue-500">ID</span>
-            </h1>
-            <p className="text-slate-400 text-xs mt-1 font-medium">
-              Plataforma Unificada de Identidade
-            </p>
+            <span className="text-4xl lg:text-5xl font-extrabold text-blue-900 tracking-tight">
+              Axion<span className="text-blue-600">ID</span>
+            </span>
           </div>
+          <p className="text-slate-500 text-sm mt-2 font-medium">
+            Plataforma Unificada de Identidade
+          </p>
+        </div>
+      </div>
 
-          <div className="mb-6 text-center">
-            <h2 className="text-base font-semibold text-slate-200">
-              Acessar sua conta
-            </h2>
-            <p className="text-slate-400 text-xs mt-0.5">
-              Informe suas credenciais para continuar
-            </p>
-          </div>
+      {/* LADO DIREITO: Painel Azul & Formulário */}
+      <div className="w-full md:w-1/2 bg-[#1b4b82] rounded-t-[40px] md:rounded-t-none md:rounded-l-[40px] flex flex-col justify-between p-6 sm:p-10 relative overflow-hidden">
+        {/* Marca d'água sutil no canto inferior direito */}
+        <div className="absolute -bottom-10 -right-10 text-white/5 pointer-events-none text-9xl font-black select-none">
+          AXION
+        </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className="flex items-start gap-2.5 p-3.5 mb-5 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs leading-relaxed animate-fade-in">
-              <span className="text-sm flex-shrink-0">⚠️</span>
-              <span>{error}</span>
-            </div>
-          )}
+        {/* Espaçador Superior */}
+        <div className="hidden md:block" />
 
-          {/* Form */}
-          <form onSubmit={handleLogin} className="space-y-4">
-            {/* Username */}
-            <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-slate-300">
-                Identificação / E-mail
-              </label>
-              <input
-                type="text"
-                placeholder="seu@email.com ou CPF"
-                value={username}
-                autoComplete="username"
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                autoFocus
-                className="w-full px-4 py-2.5 bg-slate-950/60 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
-              />
-            </div>
+        {/* Container Centralizado do Card */}
+        <div className="w-full max-w-[420px] mx-auto z-10 my-auto">
+          {/* Subtítulo superior */}
+          <p className="text-white/90 text-xs text-center mb-3 font-normal">
+            Informe suas credenciais para realizar o acesso:
+          </p>
 
-            {/* Password */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="block text-xs font-medium text-slate-300">
-                  Senha
-                </label>
+          {/* Card Branco com Login */}
+          <div className="bg-white rounded-xl shadow-2xl p-6 sm:p-8">
+            {/* Mensagem de Erro */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-xs text-center">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleLogin} className="space-y-4">
+              {/* Campo Usuário com ícone à direita */}
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Login"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  autoFocus
+                  className="w-full pl-4 pr-10 py-3 bg-blue-50/50 border border-slate-200 rounded-md text-slate-700 text-sm placeholder-slate-400 focus:outline-none focus:bg-white focus:border-blue-600 transition-all"
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Campo Senha com ícone à direita */}
+              <div className="relative">
+                <input
+                  type="password"
+                  placeholder="Senha"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full pl-4 pr-10 py-3 bg-blue-50/50 border border-slate-200 rounded-md text-slate-700 text-sm placeholder-slate-400 focus:outline-none focus:bg-white focus:border-blue-600 transition-all"
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Esqueceu a Senha */}
+              <div className="text-right">
                 <Link
                   to="/forgot-password"
-                  className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                  className="text-xs text-blue-600 hover:underline font-medium"
                 >
                   Esqueceu a senha?
                 </Link>
               </div>
-              <input
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                required
-                className="w-full px-4 py-2.5 bg-slate-950/60 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
-              />
-            </div>
 
-            {/* Captcha Wrapper (Centralizado e sem corte) */}
-            <div className="flex justify-center py-2 overflow-x-auto">
-              <ReCAPTCHA
-                ref={recaptchaRef}
-                sitekey="6Lc5n4ksAAAAAEXLVSyq519dGet20T0gaQ2LXzPY"
-                onChange={(token) => setCaptchaToken(token)}
-                onExpired={() => setCaptchaToken(null)}
-                theme="dark"
-              />
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-medium text-sm rounded-xl transition-all shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Autenticando...</span>
-                </>
-              ) : (
-                "Acessar Painel"
-              )}
-            </button>
-
-            {/* Divider */}
-            <div className="relative my-5">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-800" />
+              {/* ReCAPTCHA */}
+              <div className="flex justify-center my-3 overflow-x-auto">
+                <ReCAPTCHA
+                  ref={recaptchaRef}
+                  sitekey="6Lc5n4ksAAAAAEXLVSyq519dGet20T0gaQ2LXzPY"
+                  onChange={(token) => setCaptchaToken(token)}
+                  onExpired={() => setCaptchaToken(null)}
+                  theme="light"
+                />
               </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="px-3 bg-slate-900 text-slate-500">
-                  ou continue com
-                </span>
-              </div>
-            </div>
 
-            {/* Google Button */}
-            <button
-              type="button"
-              onClick={handleGoogleLogin}
-              className="w-full flex items-center justify-center gap-3 py-2.5 px-4 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-xl text-slate-200 text-sm font-medium transition-all group"
-            >
-              <img
-                src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                alt="Google"
-                className="w-5 h-5"
-              />
-              <span className="group-hover:text-white transition-colors">
-                Google Workspace
-              </span>
-            </button>
-          </form>
-
-          {/* Footer */}
-          <div className="text-center mt-6 pt-4 border-t border-slate-800/80">
-            <p className="text-xs text-slate-400">
-              Ainda não tem acesso?{" "}
-              <Link
-                to="/register"
-                className="text-blue-400 hover:text-blue-300 transition-colors font-medium ml-1"
+              {/* Botão Submit principal estilo azul chapado */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 px-4 bg-[#0066cc] hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm rounded-md transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                Criar Conta AxionID
-              </Link>
-            </p>
-          </div>
+                {loading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Autenticando...</span>
+                  </>
+                ) : (
+                  "Login"
+                )}
+              </button>
 
+              {/* Botão Google Workspace */}
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                className="w-full mt-2 flex items-center justify-center gap-2 py-2.5 px-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md text-slate-600 text-xs font-medium transition-colors"
+              >
+                <img
+                  src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                  alt="Google"
+                  className="w-4 h-4"
+                />
+                <span>Continuar com Google</span>
+              </button>
+            </form>
+
+            {/* Cadastro */}
+            <div className="text-center mt-4 pt-3 border-t border-slate-100">
+              <p className="text-xs text-slate-500">
+                Ainda não tem acesso?{" "}
+                <Link to="/register" className="text-blue-600 hover:underline font-semibold">
+                  Criar Conta
+                </Link>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Rodapé Institucional */}
+        <div className="text-center text-white/80 text-[11px] leading-relaxed mt-6 z-10">
+          <p className="font-medium">SGA - Secretaria de Tecnologia da Informação</p>
+          <p>
+            Suporte:{" "}
+            <a href="tel:8534911770" className="underline hover:text-white">
+              (85) 3491-1770
+            </a>{" "}
+            |{" "}
+            <a href="mailto:sti.atendimento@tjce.jus.br" className="underline hover:text-white">
+              sti.atendimento@tjce.jus.br
+            </a>
+          </p>
+          <p className="text-white/40 mt-3 text-[10px]">Versão: 1.2.1</p>
         </div>
       </div>
     </div>
