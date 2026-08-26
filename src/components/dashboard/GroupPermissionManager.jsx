@@ -26,7 +26,9 @@ export default function GroupPermissionManager({
     },
   });
 
-  // Extrai IDs das permissões do grupo (suporta diferentes estruturas)
+  // =========================================================
+  // UTILITÁRIOS – extrair IDs e filtrar permissões
+  // =========================================================
   const getGroupPermissionIds = () => {
     if (!group?.permissions || group.permissions.length === 0) return [];
     return group.permissions.map(gp => {
@@ -38,7 +40,6 @@ export default function GroupPermissionManager({
     }).filter(id => id !== null);
   };
 
-  // Filtra permissões já vinculadas ao grupo
   const getAvailablePermissions = () => {
     if (!permissions || permissions.length === 0) return [];
     const groupIds = getGroupPermissionIds();
@@ -49,7 +50,6 @@ export default function GroupPermissionManager({
     });
   };
 
-  // Filtro por busca
   const getFilteredPermissions = () => {
     const available = getAvailablePermissions();
     if (!searchTerm.trim()) return available;
@@ -61,31 +61,31 @@ export default function GroupPermissionManager({
     );
   };
 
-  const filteredPermissions = getFilteredPermissions();
-  const hasAvailablePermissions = filteredPermissions.length > 0;
-
-  // Normaliza dados da permissão para exibição
   const getPermissionData = (perm) => ({
     id: perm.id || perm.permission_id,
     name: perm.name || perm.permission_name,
     label: perm.label || perm.permission_label || perm.name || 'Sem nome'
   });
 
-  // ===== HANDLERS =====
+  const filteredPermissions = getFilteredPermissions();
+  const hasAvailablePermissions = filteredPermissions.length > 0;
+
+  // =========================================================
+  // HANDLERS
+  // =========================================================
   const handleAddPermission = async () => {
     if (!selectedPermission) {
       AxionAlert.fire("Erro", "Selecione uma permissão para adicionar.", "error");
       return;
     }
 
-    // Busca a permissão selecionada para obter o nome
     const selectedPerm = permissions.find(p => String(p.id) === selectedPermission);
     if (!selectedPerm) {
       AxionAlert.fire("Erro", "Permissão não encontrada.", "error");
       return;
     }
 
-    // Chama a função do pai passando ID e nome
+    // 🔧 Passa o ID e o nome para o pai
     await onAddPermission(selectedPermission, selectedPerm.name);
     setShowAddModal(false);
     setSelectedPermission("");
@@ -101,12 +101,16 @@ export default function GroupPermissionManager({
       confirmButtonText: "Sim, remover",
       cancelButtonText: "Cancelar",
     });
+
     if (result.isConfirmed) {
-      await onRemovePermission(permissionId);
+      // 🔧 CONVERTE PARA NÚMERO e chama o pai
+      await onRemovePermission(Number(permissionId));
     }
   };
 
-  // ===== RENDER ===== (mesmo código original, sem alterações)
+  // =========================================================
+  // RENDER
+  // =========================================================
   return (
     <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
       {/* Header */}
@@ -123,7 +127,6 @@ export default function GroupPermissionManager({
         )}
       </div>
 
-      {/* Lista de permissões atuais */}
       <div className="p-4">
         {!group?.permissions || group.permissions?.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-slate-500">
@@ -143,7 +146,10 @@ export default function GroupPermissionManager({
             {group.permissions.map((perm) => {
               const data = getPermissionData(perm);
               return (
-                <div key={data.id} className="flex items-center justify-between gap-3 p-3 bg-slate-800/30 border border-slate-700/30 rounded-lg hover:bg-slate-700/30 transition-all group">
+                <div
+                  key={data.id}
+                  className="flex items-center justify-between gap-3 p-3 bg-slate-800/30 border border-slate-700/30 rounded-lg hover:bg-slate-700/30 transition-all group"
+                >
                   <div className="flex items-center gap-3 min-w-0">
                     <span className="text-blue-400">🔑</span>
                     <div className="min-w-0">
@@ -168,7 +174,7 @@ export default function GroupPermissionManager({
         )}
       </div>
 
-      {/* Modal de adição (mesmo código original) */}
+      {/* Modal de adição (mesmo) */}
       {showAddModal && (
         <>
           <div
@@ -177,6 +183,7 @@ export default function GroupPermissionManager({
           />
           <div className="fixed inset-0 flex items-center justify-center z-[1060] p-4">
             <div className="bg-slate-800/95 border border-slate-700/50 rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden">
+              {/* Header do modal */}
               <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700/50 bg-slate-800/50">
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">🔑 Adicionar Permissão ao Grupo</h3>
                 <button
