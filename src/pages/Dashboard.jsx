@@ -24,7 +24,7 @@ import Pagination from "../components/dashboard/Pagination";
 import PermissionDetail from "../components/dashboard/PermissionDetail";
 
 // Styles - Tailwind via CSS import
-import '../index.css'; // ← AGORA COM TAILWIND
+import '../index.css';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -85,7 +85,7 @@ export default function Dashboard() {
   const isGlobalAdmin = role === "admin" || currentUser?.is_admin === true;
 
   // ============ HANDLERS PARA TABS E FILTROS ============
-  const handleTabChange = (tab) => {
+  const handleTabChange = useCallback((tab) => {
     setActiveTab(tab);
     setSelectedUser(null);
     setSelectedGroupId(null);
@@ -98,9 +98,9 @@ export default function Dashboard() {
     setAuditCurrentPage(1);
     setOrdersCurrentPage(1);
     setPermissionsCurrentPage(1);
-  };
+  }, []);
 
-  const handleClearFilters = () => {
+  const handleClearFilters = useCallback(() => {
     setFilters({ 
       name: "", 
       completed: "", 
@@ -122,10 +122,10 @@ export default function Dashboard() {
     setAuditCurrentPage(1);
     setOrdersCurrentPage(1);
     setPermissionsCurrentPage(1);
-  };
+  }, [setFilters]);
 
   // ============ HANDLERS DE ORDENS DE SERVIÇO ============
-  const handleOpenOrderDetail = async (orderId) => {
+  const handleOpenOrderDetail = useCallback(async (orderId) => {
     setActionLoading(true);
     setShowOrderForm(false);
     try {
@@ -140,9 +140,9 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [AxionAlert]);
 
-  const onUpdateStatus = async (orderId, newStatus) => {
+  const onUpdateStatus = useCallback(async (orderId, newStatus) => {
     if (!orderId) {
       return AxionAlert.fire(
         "Erro",
@@ -172,9 +172,9 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [AxionAlert, loadServiceOrders, ordersCurrentPage]);
 
-  const handleEditOrder = async (orderId, data) => {
+  const handleEditOrder = useCallback(async (orderId, data) => {
     try {
       setActionLoading(true);
       await api.put(`/api/v1/service-orders/${orderId}`, data);
@@ -190,9 +190,9 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [AxionAlert, loadServiceOrders, ordersCurrentPage]);
 
-  const handleDeleteOrder = async (orderId) => {
+  const handleDeleteOrder = useCallback(async (orderId) => {
     const result = await AxionAlert.fire({
       title: "Excluir OS?",
       text: "Esta ação não pode ser desfeita!",
@@ -223,10 +223,10 @@ export default function Dashboard() {
         setActionLoading(false);
       }
     }
-  };
+  }, [AxionAlert, loadServiceOrders, ordersCurrentPage]);
 
   // ============ HANDLERS DE PERMISSÕES ============
-  const handleCreatePermission = async (data) => {
+  const handleCreatePermission = useCallback(async (data) => {
     setActionLoading(true);
     try {
       await api.post("/api/v1/admin/permissions", data);
@@ -244,9 +244,9 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [AxionAlert, loadPermissions, permissionsCurrentPage]);
 
-  const handleOpenPermissionDetail = async (permissionId) => {
+  const handleOpenPermissionDetail = useCallback(async (permissionId) => {
     try {
       setActionLoading(true);
       const res = await api.get(`/api/v1/admin/permissions/${permissionId}`);
@@ -256,9 +256,9 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [AxionAlert]);
 
-  const handleEditPermission = async (permissionId, data) => {
+  const handleEditPermission = useCallback(async (permissionId, data) => {
     try {
       setActionLoading(true);
       await api.put(`/api/v1/admin/permissions/${permissionId}`, data);
@@ -276,9 +276,9 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [AxionAlert, loadPermissions, permissionsCurrentPage]);
 
-  const handleDeletePermission = async (permissionId) => {
+  const handleDeletePermission = useCallback(async (permissionId) => {
     try {
       setActionLoading(true);
       await api.delete(`/api/v1/admin/permissions/${permissionId}`);
@@ -295,7 +295,7 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [AxionAlert, loadPermissions, permissionsCurrentPage]);
 
   // ============ LOAD PROFILE ============
   useEffect(() => {
@@ -422,28 +422,28 @@ export default function Dashboard() {
   }, [selectedUser]);
 
   // ============ HANDLERS DE PAGINAÇÃO ============
-  const handleUsersPageChange = (page) => {
+  const handleUsersPageChange = useCallback((page) => {
     setUsersCurrentPage(page);
-  };
+  }, []);
 
-  const handleGroupsPageChange = (page) => {
+  const handleGroupsPageChange = useCallback((page) => {
     setGroupsCurrentPage(page);
-  };
+  }, []);
 
-  const handleAuditPageChange = (page) => {
+  const handleAuditPageChange = useCallback((page) => {
     setAuditCurrentPage(page);
-  };
+  }, []);
 
-  const handleOrdersPageChange = (page) => {
+  const handleOrdersPageChange = useCallback((page) => {
     setOrdersCurrentPage(page);
-  };
+  }, []);
 
-  const handlePermissionsPageChange = (page) => {
+  const handlePermissionsPageChange = useCallback((page) => {
     setPermissionsCurrentPage(page);
-  };
+  }, []);
 
   // ============ HANDLERS DE USUÁRIOS ============
-  const handleUpdateUser = async (userId, data) => {
+  const handleUpdateUser = useCallback(async (userId, data) => {
     if (!userId) return;
     setActionLoading(true);
     try {
@@ -468,9 +468,9 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [AxionAlert, loadUsers, usersCurrentPage]);
 
-  const handleDeleteUser = async (userId, userName) => {
+  const handleDeleteUser = useCallback(async (userId, userName) => {
     const result = await AxionAlert.fire({
       title: "Excluir usuário?",
       text: `Deseja realmente remover permanentemente ${userName}?`,
@@ -493,9 +493,9 @@ export default function Dashboard() {
         setActionLoading(false);
       }
     }
-  };
+  }, [AxionAlert, loadUsers, usersCurrentPage]);
 
-  const handleToggleAdmin = async (userId, currentStatus) => {
+  const handleToggleAdmin = useCallback(async (userId, currentStatus) => {
     const endpoint = currentStatus ? "remove-admin" : "promote";
     const actionText = currentStatus
       ? "rebaixar para usuário comum"
@@ -522,9 +522,9 @@ export default function Dashboard() {
         setActionLoading(false);
       }
     }
-  };
+  }, [AxionAlert, loadUsers, usersCurrentPage]);
 
-  const handleToggleStatus = async (userId, currentStatus) => {
+  const handleToggleStatus = useCallback(async (userId, currentStatus) => {
     const action = currentStatus ? "suspender" : "ativar";
 
     const result = await AxionAlert.fire({
@@ -552,10 +552,10 @@ export default function Dashboard() {
         setActionLoading(false);
       }
     }
-  };
+  }, [AxionAlert, loadUsers, usersCurrentPage]);
 
   // ============ HANDLERS DE GRUPOS ============
-  const handleGroupMemberRole = async (userId, type) => {
+  const handleGroupMemberRole = useCallback(async (userId, type) => {
     setActionLoading(true);
     try {
       await api.patch(
@@ -568,9 +568,9 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId]);
 
-  const handleAddUserToGroup = async (email) => {
+  const handleAddUserToGroup = useCallback(async (email) => {
     if (!selectedGroupId) return;
     setActionLoading(true);
     try {
@@ -589,9 +589,9 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId, users]);
 
-  const handleRemoveUserFromGroup = async (userId, userName) => {
+  const handleRemoveUserFromGroup = useCallback(async (userId, userName) => {
     const result = await AxionAlert.fire({
       title: "Remover do grupo?",
       text: `Deseja remover ${userName}?`,
@@ -611,9 +611,9 @@ export default function Dashboard() {
         setActionLoading(false);
       }
     }
-  };
+  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId]);
 
-  const handleAddPermissionToGroup = async (permissionName) => {
+  const handleAddPermissionToGroup = useCallback(async (permissionName) => {
     if (!selectedGroupId || !permissionName) return;
     setActionLoading(true);
     try {
@@ -637,9 +637,9 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId]);
 
-  const handleRemovePermissionFromGroup = async (permissionId) => {
+  const handleRemovePermissionFromGroup = useCallback(async (permissionId) => {
     if (!selectedGroupId) return;
 
     const result = await AxionAlert.fire({
@@ -664,12 +664,12 @@ export default function Dashboard() {
         setActionLoading(false);
       }
     }
-  };
+  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId]);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     localStorage.clear();
     navigate("/login");
-  };
+  }, [navigate]);
 
   // ============ COMPONENTE DE LOADING PERSONALIZADO ============
   const LoadingSpinner = () => (
@@ -677,7 +677,7 @@ export default function Dashboard() {
       <div className="relative">
         <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-6 h-6 border-4 border-blue-400/30 border-t-blue-400 rounded-full animate-spin animation-delay-150"></div>
+          <div className="w-6 h-6 border-4 border-blue-400/30 border-t-blue-400 rounded-full animate-spin" style={{ animationDelay: '150ms' }}></div>
         </div>
       </div>
     </div>
@@ -876,7 +876,7 @@ export default function Dashboard() {
                   )}
 
                   {!showOrderForm && !selectedOrder && (
-                    <div className="animate-fade-in">
+                    <div className="transition-all duration-300 ease-in opacity-100">
                       <ServiceOrderTable
                         orders={serviceOrders}
                         loading={actionLoading || loading}
