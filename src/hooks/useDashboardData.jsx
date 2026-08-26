@@ -1,5 +1,5 @@
 // hooks/useDashboardData.js
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import api from "../services/api";
 
 export function useDashboardData(role) {
@@ -35,20 +35,53 @@ export function useDashboardData(role) {
   });
   
   // Paginação separada para cada tipo
-  const [usersPagination, setUsersPagination] = useState({ current: 1, last: 1, total: 0, perPage: 10 });
-  const [groupsPagination, setGroupsPagination] = useState({ current: 1, last: 1, total: 0, perPage: 15 });
-  const [auditPagination, setAuditPagination] = useState({ current: 1, last: 1, total: 0, perPage: 20 });
-  const [ordersPagination, setOrdersPagination] = useState({ current: 1, last: 1, total: 0, perPage: 10 });
-  const [permissionsPagination, setPermissionsPagination] = useState({ current: 1, last: 1, total: 0, perPage: 10 });
+  const [usersPagination, setUsersPagination] = useState({ 
+    current: 1, 
+    last: 1, 
+    total: 0, 
+    perPage: 10 
+  });
+  const [groupsPagination, setGroupsPagination] = useState({ 
+    current: 1, 
+    last: 1, 
+    total: 0, 
+    perPage: 15 
+  });
+  const [auditPagination, setAuditPagination] = useState({ 
+    current: 1, 
+    last: 1, 
+    total: 0, 
+    perPage: 20 
+  });
+  const [ordersPagination, setOrdersPagination] = useState({ 
+    current: 1, 
+    last: 1, 
+    total: 0, 
+    perPage: 10 
+  });
+  const [permissionsPagination, setPermissionsPagination] = useState({ 
+    current: 1, 
+    last: 1, 
+    total: 0, 
+    perPage: 10 
+  });
+
+  // =========================================================
+  // UTILITÁRIOS
+  // =========================================================
+  const isAdmin = role === "admin";
 
   // =========================================================
   // LISTAR USUÁRIOS
   // =========================================================
   const loadUsers = useCallback(async (page = 1) => {
-    if (role !== "admin") return;
+    if (!isAdmin) return;
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page, per_page: 10 });
+      const params = new URLSearchParams({ 
+        page: String(page), 
+        per_page: String(10) 
+      });
       if (filters.name) params.append("name", filters.name);
       if (filters.completed !== "") params.append("completed", filters.completed);
       
@@ -73,7 +106,7 @@ export function useDashboardData(role) {
         setUsers(allUsers.slice(start, end));
         setUsersPagination({
           current: page,
-          last: lastPage,
+          last: lastPage || 1,
           total: total,
           perPage: perPage
         });
@@ -82,12 +115,12 @@ export function useDashboardData(role) {
         setUsersPagination({ current: 1, last: 1, total: 0, perPage: 10 });
       }
     } catch (err) { 
-      console.error(err); 
+      console.error("Erro ao carregar usuários:", err); 
       setUsers([]);
     } finally { 
       setLoading(false); 
     }
-  }, [role, filters.name, filters.completed]);
+  }, [isAdmin, filters.name, filters.completed]);
 
   // =========================================================
   // LISTAR GRUPOS
@@ -95,7 +128,10 @@ export function useDashboardData(role) {
   const loadGroups = useCallback(async (page = 1) => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page });
+      const params = new URLSearchParams({ 
+        page: String(page), 
+        per_page: String(15) 
+      });
       if (filters.name) params.append("name", filters.name);
       
       const res = await api.get(`/api/v1/groups?${params.toString()}`);
@@ -119,7 +155,7 @@ export function useDashboardData(role) {
         setGroups(allGroups.slice(start, end));
         setGroupsPagination({
           current: page,
-          last: lastPage,
+          last: lastPage || 1,
           total: total,
           perPage: perPage
         });
@@ -139,12 +175,14 @@ export function useDashboardData(role) {
   // LISTAR LOGS DE AUDITORIA (SEGURANÇA)
   // =========================================================
   const loadAuditLogs = useCallback(async (page = 1) => {
-    if (role !== "admin") return;
+    if (!isAdmin) return;
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page: page.toString() });
+      const params = new URLSearchParams({ 
+        page: String(page), 
+        per_page: String(20) 
+      });
       
-      // TODOS OS FILTROS DE AUDITORIA
       if (filters.user) params.append("user", filters.user);
       if (filters.url) params.append("url", filters.url);
       if (filters.method) params.append("method", filters.method);
@@ -174,7 +212,7 @@ export function useDashboardData(role) {
         setAuditLogs(allLogs.slice(start, end));
         setAuditPagination({
           current: page,
-          last: lastPage,
+          last: lastPage || 1,
           total: total,
           perPage: perPage
         });
@@ -189,12 +227,12 @@ export function useDashboardData(role) {
       setLoading(false); 
     }
   }, [
+    isAdmin,
     filters.user,
     filters.url,
     filters.method,
     filters.start_date,
-    filters.end_date,
-    role
+    filters.end_date
   ]);
 
   // =========================================================
@@ -204,8 +242,8 @@ export function useDashboardData(role) {
     setLoading(true);
     try {
       const params = new URLSearchParams({ 
-        page: page.toString(), 
-        per_page: "10" 
+        page: String(page), 
+        per_page: String(10) 
       });
       
       if (filters.protocol) params.append("protocol", filters.protocol);
@@ -237,7 +275,7 @@ export function useDashboardData(role) {
         setServiceOrders(allOrders.slice(start, end));
         setOrdersPagination({
           current: page,
-          last: lastPage,
+          last: lastPage || 1,
           total: total,
           perPage: perPage
         });
@@ -263,15 +301,14 @@ export function useDashboardData(role) {
   // LISTAR PERMISSÕES COM FILTROS
   // =========================================================
   const loadPermissions = useCallback(async (page = 1) => {
-    if (role !== "admin") return;
+    if (!isAdmin) return;
     setLoading(true);
     try {
       const params = new URLSearchParams({ 
-        page: page.toString(), 
-        per_page: "10" 
+        page: String(page), 
+        per_page: String(10) 
       });
       
-      // FILTROS DE PERMISSÕES
       if (filters.label) params.append("label", filters.label);
       if (filters.perm_name) params.append("name", filters.perm_name);
 
@@ -298,7 +335,7 @@ export function useDashboardData(role) {
         setPermissions(allPermissions.slice(start, end));
         setPermissionsPagination({
           current: page,
-          last: lastPage,
+          last: lastPage || 1,
           total: total,
           perPage: perPage
         });
@@ -313,11 +350,14 @@ export function useDashboardData(role) {
       setLoading(false); 
     }
   }, [
+    isAdmin,
     filters.label,
-    filters.perm_name,
-    role
+    filters.perm_name
   ]);
 
+  // =========================================================
+  // RETORNAR
+  // =========================================================
   return { 
     loading, 
     users, 
