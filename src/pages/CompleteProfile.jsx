@@ -369,7 +369,7 @@ export default function CompleteProfile() {
             </a>{' '}
             |{' '}
             <a href="mailto:sti.atendimento@tjce.jus.br" className="underline hover:text-white">
-              sti.atendimento@tjce.jus.br
+              josilva1233@gmail.com
             </a>
           </p>
           <p className="text-white/40 pt-1 text-[11px]">Versão: 1.2.1</p>
