@@ -194,14 +194,14 @@ export default function Login() {
                 "Entrar"
               )}
             </button>
-
+            
             {/* Separador */}
             <div className="flex items-center gap-4 py-2">
               <div className="flex-1 h-px bg-slate-200"></div>
               <span className="text-sm text-slate-400">ou</span>
               <div className="flex-1 h-px bg-slate-200"></div>
             </div>
-
+              <br />
             {/* Botão Google */}
             <button
               type="button"
@@ -234,7 +234,7 @@ export default function Login() {
         {/* Rodapé discreto */}
         <div className="text-center text-slate-400 text-sm mt-8 space-y-2">
           <p className="font-medium text-slate-500">
-            SGA - Secretaria de Tecnologia da Informação
+            STI - Sistema de Tecnologia da Informação
           </p>
           <p>
             Suporte:{" "}
