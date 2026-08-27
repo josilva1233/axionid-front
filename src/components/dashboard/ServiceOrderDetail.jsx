@@ -1,7 +1,3 @@
-import { useState, useEffect, useCallback } from "react";
-import Swal from "sweetalert2";
-import api from "../services/api";
-
 // --- Configurações de status e prioridade (já existentes) ---
 const STATUS_CONFIG = {
   pending: { bg: "bg-yellow-500/15", text: "text-yellow-400", dot: "bg-yellow-400", label: "PENDENTE", icon: "⏳" },
