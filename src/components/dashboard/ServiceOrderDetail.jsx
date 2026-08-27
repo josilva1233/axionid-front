@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Swal from "sweetalert2";
-import api from "../services/api";
 
 
 // --- Configurações de status e prioridade (já existentes) ---
