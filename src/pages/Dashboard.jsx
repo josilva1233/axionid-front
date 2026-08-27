@@ -892,6 +892,7 @@ export default function Dashboard() {
                       onBack={() => setSelectedOrder(null)}
                       onUpdateStatus={onUpdateStatus}
                       isSystemAdmin={isGlobalAdmin}
+                      currentUser={currentUser}
                       onDeleteOrder={async (id) => {
                         const result = await AxionAlert.fire({
                           title: "Excluir OS?",
