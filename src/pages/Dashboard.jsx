@@ -101,7 +101,7 @@ export default function Dashboard() {
 
   const isGlobalAdmin = role === "admin" || currentUser?.is_admin === true;
 
-  // ========== CARREGAR TODAS AS PERMISSÕES (para o modal de grupos) ==========
+  // ========== CARREGAR TODAS AS PERMISSÕES ==========
   useEffect(() => {
     const fetchAllPermissions = async () => {
       try {
@@ -116,7 +116,7 @@ export default function Dashboard() {
     fetchAllPermissions();
   }, []);
 
-  // ============ FUNÇÃO PARA BUSCAR CEP ============
+  // ============ FUNÇÃO PARA BUSCAR ENDEREÇO PELO CEP ============
   const fetchAddressByCep = useCallback(async (cep) => {
     const cleanCep = cep.replace(/\D/g, '');
     if (cleanCep.length !== 8) return;
@@ -215,7 +215,13 @@ export default function Dashboard() {
         showConfirmButton: false,
       });
     } catch (err) {
-      AxionAlert.fire("Erro", "Não foi possível salvar o endereço.", "error");
+      console.error("Erro ao salvar endereço:", err.response?.data || err.message);
+      AxionAlert.fire({
+        icon: "error",
+        title: "Erro ao salvar",
+        text: err.response?.data?.message || "Não foi possível salvar o endereço. Tente novamente.",
+        confirmButtonColor: "#6366f1",
+      });
     } finally {
       setAddressLoading(false);
     }
@@ -238,12 +244,12 @@ export default function Dashboard() {
   }, []);
 
   const handleClearFilters = useCallback(() => {
-    setFilters({ 
-      name: "", 
-      completed: "", 
+    setFilters({
+      name: "",
+      completed: "",
       user: "",
       url: "",
-      method: "", 
+      method: "",
       start_date: "",
       end_date: "",
       protocol: "",
@@ -269,11 +275,7 @@ export default function Dashboard() {
       const res = await api.get(`/api/v1/service-orders/${orderId}`);
       setSelectedOrder(res.data.data || res.data);
     } catch (err) {
-      AxionAlert.fire(
-        "Erro",
-        "Não foi possível carregar os detalhes desta OS.",
-        "error",
-      );
+      AxionAlert.fire("Erro", "Não foi possível carregar os detalhes desta OS.", "error");
     } finally {
       setActionLoading(false);
     }
@@ -281,28 +283,16 @@ export default function Dashboard() {
 
   const onUpdateStatus = useCallback(async (orderId, newStatus) => {
     if (!orderId) {
-      return AxionAlert.fire(
-        "Erro",
-        "Não foi possível identificar o ID da OS.",
-        "error",
-      );
+      return AxionAlert.fire("Erro", "Não foi possível identificar o ID da OS.", "error");
     }
 
     try {
       setActionLoading(true);
-      const res = await api.put(`/api/v1/service-orders/${orderId}`, {
-        status: newStatus,
-      });
+      const res = await api.put(`/api/v1/service-orders/${orderId}`, { status: newStatus });
       const updatedOrder = res.data.data || res.data;
       setSelectedOrder(updatedOrder);
       await loadServiceOrders(ordersCurrentPage);
-      
-      AxionAlert.fire({
-        icon: "success",
-        title: "Status Atualizado!",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      AxionAlert.fire({ icon: "success", title: "Status Atualizado!", timer: 1500, showConfirmButton: false });
     } catch (err) {
       console.error("Erro na API:", err);
       AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao atualizar no servidor.", "error");
@@ -316,12 +306,7 @@ export default function Dashboard() {
       setActionLoading(true);
       await api.put(`/api/v1/service-orders/${orderId}`, data);
       await loadServiceOrders(ordersCurrentPage);
-      AxionAlert.fire({
-        icon: "success",
-        title: "OS atualizada!",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      AxionAlert.fire({ icon: "success", title: "OS atualizada!", timer: 1500, showConfirmButton: false });
     } catch (err) {
       AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao atualizar OS.", "error");
     } finally {
@@ -341,19 +326,12 @@ export default function Dashboard() {
       color: "#ffffff",
       confirmButtonColor: "#6366f1",
     });
-    
     if (result.isConfirmed) {
       try {
         setActionLoading(true);
         await api.delete(`/api/v1/service-orders/${orderId}`);
         await loadServiceOrders(ordersCurrentPage);
-        AxionAlert.fire({
-          icon: "success",
-          title: "Deletado!",
-          text: "Ordem de serviço removida.",
-          timer: 1500,
-          showConfirmButton: false,
-        });
+        AxionAlert.fire({ icon: "success", title: "Deletado!", text: "Ordem de serviço removida.", timer: 1500, showConfirmButton: false });
       } catch (e) {
         AxionAlert.fire("Erro", "Falha ao excluir a OS.", "error");
       } finally {
@@ -362,18 +340,12 @@ export default function Dashboard() {
     }
   }, [AxionAlert, loadServiceOrders, ordersCurrentPage]);
 
-  // ============ HANDLERS DE PERMISSÕES (CRUD) ============
+  // ============ HANDLERS DE PERMISSÕES ============
   const handleCreatePermission = useCallback(async (data) => {
     setActionLoading(true);
     try {
       await api.post("/api/v1/admin/permissions", data);
-      AxionAlert.fire({
-        icon: "success",
-        title: "Criada!",
-        text: "Permissão registrada.",
-        timer: 2000,
-        showConfirmButton: false,
-      });
+      AxionAlert.fire({ icon: "success", title: "Criada!", text: "Permissão registrada.", timer: 2000, showConfirmButton: false });
       setShowPermissionModal(false);
       loadPermissions(permissionsCurrentPage);
       const res = await api.get('/api/v1/admin/permissions?per_page=1000');
@@ -406,12 +378,7 @@ export default function Dashboard() {
       setSelectedPermission(res.data.data || res.data);
       const allRes = await api.get('/api/v1/admin/permissions?per_page=1000');
       setAllPermissions(allRes.data.data || allRes.data);
-      AxionAlert.fire({
-        icon: "success",
-        title: "Permissão atualizada!",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      AxionAlert.fire({ icon: "success", title: "Permissão atualizada!", timer: 1500, showConfirmButton: false });
     } catch (err) {
       AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao atualizar permissão.", "error");
     } finally {
@@ -427,12 +394,7 @@ export default function Dashboard() {
       await loadPermissions(permissionsCurrentPage);
       const res = await api.get('/api/v1/admin/permissions?per_page=1000');
       setAllPermissions(res.data.data || res.data);
-      AxionAlert.fire({
-        icon: "success",
-        title: "Permissão excluída!",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      AxionAlert.fire({ icon: "success", title: "Permissão excluída!", timer: 1500, showConfirmButton: false });
     } catch (err) {
       AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao excluir permissão.", "error");
     } finally {
@@ -440,9 +402,7 @@ export default function Dashboard() {
     }
   }, [AxionAlert, loadPermissions, permissionsCurrentPage]);
 
-  // =========================================================
-  // HANDLERS DE PERMISSÕES EM GRUPOS
-  // =========================================================
+  // ============ HANDLERS DE PERMISSÕES EM GRUPOS ============
   const handleAddPermissionToGroup = useCallback(async (permissionId, permissionName) => {
     if (!selectedGroupId || !permissionName) {
       AxionAlert.fire("Erro", "Dados inválidos para vincular permissão.", "error");
@@ -451,17 +411,8 @@ export default function Dashboard() {
 
     setActionLoading(true);
     try {
-      await api.post(`/api/v1/admin/groups/${selectedGroupId}/permissions`, {
-        permission_name: permissionName,
-      });
-      
-      AxionAlert.fire({
-        icon: "success",
-        title: "Permissão Atribuída",
-        text: "A chave foi vinculada ao grupo.",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      await api.post(`/api/v1/admin/groups/${selectedGroupId}/permissions`, { permission_name: permissionName });
+      AxionAlert.fire({ icon: "success", title: "Permissão Atribuída", text: "A chave foi vinculada ao grupo.", timer: 1500, showConfirmButton: false });
       await loadGroups(groupsCurrentPage);
     } catch (err) {
       console.error("Erro ao vincular permissão:", err.response?.data);
@@ -495,9 +446,7 @@ export default function Dashboard() {
     if (result.isConfirmed) {
       setActionLoading(true);
       try {
-        await api.delete(
-          `/api/v1/admin/groups/${selectedGroupId}/permissions/${numericId}`,
-        );
+        await api.delete(`/api/v1/admin/groups/${selectedGroupId}/permissions/${numericId}`);
         AxionAlert.fire("Removido!", "Permissão desvinculada.", "success");
         await loadGroups(groupsCurrentPage);
       } catch (err) {
@@ -524,7 +473,6 @@ export default function Dashboard() {
         await loadServiceOrders(ordersCurrentPage);
       }
     };
-
     loadData();
   }, [
     activeTab,
@@ -540,23 +488,14 @@ export default function Dashboard() {
     loadServiceOrders,
   ]);
 
-  // ============ RECARREGAR ORDENS QUANDO FILTROS MUDAREM ============
+  // ============ RECARREGAR QUANDO FILTROS MUDAREM ============
   useEffect(() => {
     if (activeTab === "orders") {
       loadServiceOrders(1);
       setOrdersCurrentPage(1);
     }
-  }, [
-    filters.protocol,
-    filters.title,
-    filters.applicant,
-    filters.priority,
-    filters.status,
-    loadServiceOrders,
-    activeTab,
-  ]);
+  }, [filters.protocol, filters.title, filters.applicant, filters.priority, filters.status, loadServiceOrders, activeTab]);
 
-  // ============ RECARREGAR USUÁRIOS QUANDO FILTROS MUDAREM ============
   useEffect(() => {
     if (activeTab === "users") {
       loadUsers(1);
@@ -564,7 +503,6 @@ export default function Dashboard() {
     }
   }, [filters.name, filters.completed, loadUsers, activeTab]);
 
-  // ============ RECARREGAR GRUPOS QUANDO FILTROS MUDAREM ============
   useEffect(() => {
     if (activeTab === "groups") {
       loadGroups(1);
@@ -572,34 +510,19 @@ export default function Dashboard() {
     }
   }, [filters.name, loadGroups, activeTab]);
 
-  // ============ RECARREGAR AUDIT QUANDO FILTROS MUDAREM ============
   useEffect(() => {
     if (activeTab === "audit") {
       loadAuditLogs(1);
       setAuditCurrentPage(1);
     }
-  }, [
-    filters.user,
-    filters.url,
-    filters.method,
-    filters.start_date,
-    filters.end_date,
-    loadAuditLogs,
-    activeTab,
-  ]);
+  }, [filters.user, filters.url, filters.method, filters.start_date, filters.end_date, loadAuditLogs, activeTab]);
 
-  // ============ RECARREGAR PERMISSÕES QUANDO FILTROS MUDAREM ============
   useEffect(() => {
     if (activeTab === "permissions") {
       loadPermissions(1);
       setPermissionsCurrentPage(1);
     }
-  }, [
-    filters.label,
-    filters.perm_name,
-    loadPermissions,
-    activeTab,
-  ]);
+  }, [filters.label, filters.perm_name, loadPermissions, activeTab]);
 
   // ============ ATUALIZAR FORM DATA QUANDO USUÁRIO SELECIONADO ============
   useEffect(() => {
@@ -621,25 +544,11 @@ export default function Dashboard() {
   }, [selectedUser]);
 
   // ============ HANDLERS DE PAGINAÇÃO ============
-  const handleUsersPageChange = useCallback((page) => {
-    setUsersCurrentPage(page);
-  }, []);
-
-  const handleGroupsPageChange = useCallback((page) => {
-    setGroupsCurrentPage(page);
-  }, []);
-
-  const handleAuditPageChange = useCallback((page) => {
-    setAuditCurrentPage(page);
-  }, []);
-
-  const handleOrdersPageChange = useCallback((page) => {
-    setOrdersCurrentPage(page);
-  }, []);
-
-  const handlePermissionsPageChange = useCallback((page) => {
-    setPermissionsCurrentPage(page);
-  }, []);
+  const handleUsersPageChange = useCallback((page) => setUsersCurrentPage(page), []);
+  const handleGroupsPageChange = useCallback((page) => setGroupsCurrentPage(page), []);
+  const handleAuditPageChange = useCallback((page) => setAuditCurrentPage(page), []);
+  const handleOrdersPageChange = useCallback((page) => setOrdersCurrentPage(page), []);
+  const handlePermissionsPageChange = useCallback((page) => setPermissionsCurrentPage(page), []);
 
   // ============ HANDLERS DE USUÁRIOS ============
   const handleUpdateUser = useCallback(async (userId, data) => {
@@ -647,23 +556,13 @@ export default function Dashboard() {
     setActionLoading(true);
     try {
       await api.put(`/api/v1/admin/users/${userId}/update-manual`, data);
-      AxionAlert.fire({
-        icon: "success",
-        title: "Sucesso!",
-        text: "Perfil atualizado.",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      AxionAlert.fire({ icon: "success", title: "Sucesso!", text: "Perfil atualizado.", timer: 1500, showConfirmButton: false });
       const res = await api.get(`/api/v1/admin/users/${userId}`);
       setSelectedUser(res.data.data || res.data);
       setIsEditing(false);
       loadUsers(usersCurrentPage);
     } catch (err) {
-      AxionAlert.fire(
-        "Erro!",
-        "Não foi possível salvar as alterações.",
-        "error",
-      );
+      AxionAlert.fire("Erro!", "Não foi possível salvar as alterações.", "error");
     } finally {
       setActionLoading(false);
     }
@@ -678,7 +577,6 @@ export default function Dashboard() {
       confirmButtonText: "Sim, excluir",
       cancelButtonText: "Cancelar",
     });
-
     if (result.isConfirmed) {
       setActionLoading(true);
       try {
@@ -696,17 +594,13 @@ export default function Dashboard() {
 
   const handleToggleAdmin = useCallback(async (userId, currentStatus) => {
     const endpoint = currentStatus ? "remove-admin" : "promote";
-    const actionText = currentStatus
-      ? "rebaixar para usuário comum"
-      : "promover a administrador";
-
+    const actionText = currentStatus ? "rebaixar para usuário comum" : "promover a administrador";
     const result = await AxionAlert.fire({
       title: "Alterar Privilégios?",
       text: `Deseja realmente ${actionText}?`,
       icon: "question",
       showCancelButton: true,
     });
-
     if (result.isConfirmed) {
       setActionLoading(true);
       try {
@@ -725,23 +619,17 @@ export default function Dashboard() {
 
   const handleToggleStatus = useCallback(async (userId, currentStatus) => {
     const action = currentStatus ? "suspender" : "ativar";
-
     const result = await AxionAlert.fire({
       title: "Status da Conta",
       text: `Deseja ${action} o acesso deste usuário?`,
       icon: "warning",
       showCancelButton: true,
     });
-
     if (result.isConfirmed) {
       setActionLoading(true);
       try {
         await api.patch(`/api/v1/admin/users/${userId}/toggle-status`);
-        AxionAlert.fire(
-          "Concluído!",
-          `Usuário agora está ${currentStatus ? "inativo" : "ativo"}.`,
-          "success",
-        );
+        AxionAlert.fire("Concluído!", `Usuário agora está ${currentStatus ? "inativo" : "ativo"}.`, "success");
         const res = await api.get(`/api/v1/admin/users/${userId}`);
         setSelectedUser(res.data.data || res.data);
         loadUsers(usersCurrentPage);
@@ -757,9 +645,7 @@ export default function Dashboard() {
   const handleGroupMemberRole = useCallback(async (userId, type) => {
     setActionLoading(true);
     try {
-      await api.patch(
-        `/api/v1/groups/${selectedGroupId}/members/${userId}/${type}`,
-      );
+      await api.patch(`/api/v1/groups/${selectedGroupId}/members/${userId}/${type}`);
       AxionAlert.fire("Sucesso!", "Cargo no grupo atualizado.", "success");
       await loadGroups(groupsCurrentPage);
     } catch (err) {
@@ -773,15 +659,11 @@ export default function Dashboard() {
     if (!selectedGroupId) return;
     setActionLoading(true);
     try {
-      const userToInvite = users.find(
-        (u) => u.email.toLowerCase() === email.toLowerCase(),
-      );
+      const userToInvite = users.find(u => u.email.toLowerCase() === email.toLowerCase());
       if (!userToInvite) {
         return AxionAlert.fire("Aviso", "Usuário não encontrado.", "info");
       }
-      await api.post(`/api/v1/groups/${selectedGroupId}/members`, {
-        user_id: userToInvite.id,
-      });
+      await api.post(`/api/v1/groups/${selectedGroupId}/members`, { user_id: userToInvite.id });
       await loadGroups(groupsCurrentPage);
     } catch (err) {
       AxionAlert.fire("Erro", "Erro ao adicionar.", "error");
@@ -797,7 +679,6 @@ export default function Dashboard() {
       icon: "warning",
       showCancelButton: true,
     });
-
     if (result.isConfirmed) {
       setActionLoading(true);
       try {
@@ -840,9 +721,9 @@ export default function Dashboard() {
         onToggle={setSidebarCollapsed}
       />
 
-      <div 
+      <div
         className="flex-1 min-h-screen bg-slate-900 transition-all duration-300"
-        style={{ 
+        style={{
           marginLeft: sidebarCollapsed ? '70px' : '250px',
           width: `calc(100% - ${sidebarCollapsed ? '70px' : '250px'})`
         }}
@@ -851,19 +732,12 @@ export default function Dashboard() {
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-white flex items-center gap-2">
               Axion<span className="text-blue-500">ID</span>
-              <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                role === "admin" 
-                  ? "bg-blue-500/20 text-blue-400" 
-                  : "bg-slate-700 text-slate-300"
-              }`}>
+              <span className={`text-xs font-semibold px-3 py-1 rounded-full ${role === "admin" ? "bg-blue-500/20 text-blue-400" : "bg-slate-700 text-slate-300"}`}>
                 {role === "admin" ? "Admin" : "Comum"}
               </span>
             </h1>
           </div>
-
-          {currentUser && (
-            <UserDropdown user={currentUser} onLogout={handleLogout} />
-          )}
+          {currentUser && <UserDropdown user={currentUser} onLogout={handleLogout} />}
         </header>
 
         <main className="p-6 max-w-7xl mx-auto w-full">
@@ -874,15 +748,10 @@ export default function Dashboard() {
                 <span className="text-yellow-400 text-2xl">⚠️</span>
                 <div>
                   <p className="text-yellow-200 font-semibold">Endereço incompleto</p>
-                  <p className="text-yellow-200/70 text-sm">
-                    Para melhor identificação, complete seu endereço de registro.
-                  </p>
+                  <p className="text-yellow-200/70 text-sm">Para melhor identificação, complete seu endereço de registro.</p>
                 </div>
               </div>
-              <button
-                onClick={handleOpenAddressModal}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-all"
-              >
+              <button onClick={handleOpenAddressModal} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-all">
                 Completar Endereço ➜
               </button>
             </div>
@@ -894,26 +763,17 @@ export default function Dashboard() {
               <div className="bg-slate-800/95 border border-slate-700/50 rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden">
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700/50">
                   <h3 className="text-lg font-bold text-white">📍 Completar Endereço</h3>
-                  <button
-                    onClick={() => setShowAddressModal(false)}
-                    className="text-slate-400 hover:text-slate-200 text-2xl"
-                  >
-                    ✕
-                  </button>
+                  <button onClick={() => setShowAddressModal(false)} className="text-slate-400 hover:text-slate-200 text-2xl">✕</button>
                 </div>
                 <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)] custom-scrollbar">
                   <form className="space-y-4">
                     {/* CEP com auto completar */}
                     <div className="relative">
-                      <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                        CEP
-                      </label>
+                      <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">CEP</label>
                       <input
                         type="text"
                         value={addressForm.zip_code}
-                        onChange={(e) =>
-                          setAddressForm({ ...addressForm, zip_code: e.target.value })
-                        }
+                        onChange={(e) => setAddressForm({ ...addressForm, zip_code: e.target.value })}
                         onBlur={(e) => fetchAddressByCep(e.target.value)}
                         className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                         placeholder="00000-000"
@@ -928,15 +788,11 @@ export default function Dashboard() {
 
                     {/* Rua */}
                     <div>
-                      <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                        Rua
-                      </label>
+                      <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Rua</label>
                       <input
                         type="text"
                         value={addressForm.street}
-                        onChange={(e) =>
-                          setAddressForm({ ...addressForm, street: e.target.value })
-                        }
+                        onChange={(e) => setAddressForm({ ...addressForm, street: e.target.value })}
                         className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                         placeholder="Rua das Flores"
                       />
@@ -945,29 +801,21 @@ export default function Dashboard() {
                     {/* Número e Bairro */}
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                          Número
-                        </label>
+                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Número</label>
                         <input
                           type="text"
                           value={addressForm.number}
-                          onChange={(e) =>
-                            setAddressForm({ ...addressForm, number: e.target.value })
-                          }
+                          onChange={(e) => setAddressForm({ ...addressForm, number: e.target.value })}
                           className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                           placeholder="123"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                          Bairro
-                        </label>
+                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Bairro</label>
                         <input
                           type="text"
                           value={addressForm.neighborhood}
-                          onChange={(e) =>
-                            setAddressForm({ ...addressForm, neighborhood: e.target.value })
-                          }
+                          onChange={(e) => setAddressForm({ ...addressForm, neighborhood: e.target.value })}
                           className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                           placeholder="Centro"
                         />
@@ -977,29 +825,21 @@ export default function Dashboard() {
                     {/* Cidade e Estado */}
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                          Cidade
-                        </label>
+                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Cidade</label>
                         <input
                           type="text"
                           value={addressForm.city}
-                          onChange={(e) =>
-                            setAddressForm({ ...addressForm, city: e.target.value })
-                          }
+                          onChange={(e) => setAddressForm({ ...addressForm, city: e.target.value })}
                           className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                           placeholder="São Paulo"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                          Estado
-                        </label>
+                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Estado</label>
                         <input
                           type="text"
                           value={addressForm.state}
-                          onChange={(e) =>
-                            setAddressForm({ ...addressForm, state: e.target.value })
-                          }
+                          onChange={(e) => setAddressForm({ ...addressForm, state: e.target.value })}
                           className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                           placeholder="SP"
                           maxLength={2}
@@ -1009,15 +849,11 @@ export default function Dashboard() {
 
                     {/* Complemento */}
                     <div>
-                      <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                        Complemento
-                      </label>
+                      <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Complemento</label>
                       <input
                         type="text"
                         value={addressForm.complement}
-                        onChange={(e) =>
-                          setAddressForm({ ...addressForm, complement: e.target.value })
-                        }
+                        onChange={(e) => setAddressForm({ ...addressForm, complement: e.target.value })}
                         className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                         placeholder="Apto 101"
                       />
@@ -1025,18 +861,8 @@ export default function Dashboard() {
                   </form>
                 </div>
                 <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-700/50">
-                  <button
-                    onClick={() => setShowAddressModal(false)}
-                    disabled={addressLoading}
-                    className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-600/50 transition-all"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={handleSaveAddress}
-                    disabled={addressLoading}
-                    className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 transition-all flex items-center gap-2"
-                  >
+                  <button onClick={() => setShowAddressModal(false)} disabled={addressLoading} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-600/50 transition-all">Cancelar</button>
+                  <button onClick={handleSaveAddress} disabled={addressLoading} className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 transition-all flex items-center gap-2">
                     {addressLoading ? (
                       <>
                         <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
@@ -1063,28 +889,14 @@ export default function Dashboard() {
               actionLoading={actionLoading}
               handleSave={() => {
                 const userId = selectedUser?.id;
-                if (!userId) {
-                  return AxionAlert.fire(
-                    "Erro",
-                    "ID do usuário não identificado.",
-                    "error",
-                  );
-                }
+                if (!userId) return AxionAlert.fire("Erro", "ID do usuário não identificado.", "error");
                 handleUpdateUser(userId, formData);
               }}
               onAction={async (type) => {
-                if (type === "promote") {
-                  await handleToggleAdmin(selectedUser.id, false);
-                } else if (type === "remove-admin") {
-                  await handleToggleAdmin(selectedUser.id, true);
-                } else if (type === "toggle-status") {
-                  await handleToggleStatus(
-                    selectedUser.id,
-                    selectedUser.is_active,
-                  );
-                } else if (type === "delete") {
-                  await handleDeleteUser(selectedUser.id, selectedUser.name);
-                }
+                if (type === "promote") await handleToggleAdmin(selectedUser.id, false);
+                else if (type === "remove-admin") await handleToggleAdmin(selectedUser.id, true);
+                else if (type === "toggle-status") await handleToggleStatus(selectedUser.id, selectedUser.is_active);
+                else if (type === "delete") await handleDeleteUser(selectedUser.id, selectedUser.name);
               }}
             />
           ) : selectedGroupId ? (
@@ -1111,17 +923,13 @@ export default function Dashboard() {
             />
           ) : (
             <>
-              {/* Filters */}
               <DashboardFilters
                 activeTab={activeTab}
                 onNewOrder={() => setShowOrderForm(true)}
                 user={selectedUser}
                 role={role}
                 filters={filters}
-                onFilterChange={(e) => {
-                  console.log('Filtro alterado:', e.target.name, e.target.value);
-                  setFilters({ ...filters, [e.target.name]: e.target.value });
-                }}
+                onFilterChange={(e) => setFilters({ ...filters, [e.target.name]: e.target.value })}
                 onClear={handleClearFilters}
                 onNewGroup={() => setShowGroupForm(true)}
                 onNewPermission={() => setShowPermissionModal(true)}
@@ -1130,42 +938,20 @@ export default function Dashboard() {
                 actionLoading={actionLoading}
                 handleSave={() => {
                   const userId = selectedUser?.data?.id || selectedUser?.id;
-                  if (!userId) {
-                    return AxionAlert.fire(
-                      "Erro",
-                      "ID do usuário não identificado.",
-                      "error"
-                    );
-                  }
+                  if (!userId) return AxionAlert.fire("Erro", "ID do usuário não identificado.", "error");
                   handleUpdateUser(userId, formData);
                 }}
-                onBack={() => {
-                  setSelectedUser(null);
-                  setIsEditing(false);
-                }}
+                onBack={() => { setSelectedUser(null); setIsEditing(false); }}
               />
 
-              {/* Permission Modal */}
               {activeTab === "permissions" && showPermissionModal && (
-                <PermissionForm
-                  loading={actionLoading}
-                  onCancel={() => setShowPermissionModal(false)}
-                  onSave={handleCreatePermission}
-                />
+                <PermissionForm loading={actionLoading} onCancel={() => setShowPermissionModal(false)} onSave={handleCreatePermission} />
               )}
 
-              {/* Orders Section */}
               {activeTab === "orders" && (
                 <>
                   {showOrderForm && (
-                    <ServiceOrderForm
-                      groups={groups}
-                      onSuccess={() => {
-                        setShowOrderForm(false);
-                        loadServiceOrders(ordersCurrentPage);
-                      }}
-                      onCancel={() => setShowOrderForm(false)}
-                    />
+                    <ServiceOrderForm groups={groups} onSuccess={() => { setShowOrderForm(false); loadServiceOrders(ordersCurrentPage); }} onCancel={() => setShowOrderForm(false)} />
                   )}
 
                   {!showOrderForm && selectedOrder && selectedOrder.id && (
@@ -1193,13 +979,7 @@ export default function Dashboard() {
                             await api.delete(`/api/v1/service-orders/${id}`);
                             setSelectedOrder(null);
                             loadServiceOrders(ordersCurrentPage);
-                            AxionAlert.fire({
-                              icon: "success",
-                              title: "Deletado!",
-                              text: "Ordem de serviço removida.",
-                              timer: 1500,
-                              showConfirmButton: false,
-                            });
+                            AxionAlert.fire({ icon: "success", title: "Deletado!", text: "Ordem de serviço removida.", timer: 1500, showConfirmButton: false });
                           } catch (e) {
                             AxionAlert.fire("Erro", "Falha ao excluir.", "error");
                           } finally {
@@ -1215,15 +995,11 @@ export default function Dashboard() {
                       <ServiceOrderTable
                         orders={serviceOrders}
                         loading={actionLoading || loading}
-                        onViewDetail={(id) => {
-                          setShowOrderForm(false);
-                          handleOpenOrderDetail(id);
-                        }}
+                        onViewDetail={(id) => { setShowOrderForm(false); handleOpenOrderDetail(id); }}
                         onEdit={handleEditOrder}
                         onDelete={handleDeleteOrder}
                         currentUser={currentUser}
                       />
-
                       {ordersPagination?.last > 1 && (
                         <Pagination
                           currentPage={ordersPagination.current}
@@ -1238,7 +1014,6 @@ export default function Dashboard() {
                 </>
               )}
 
-              {/* Tab Content */}
               <div className={`relative ${loading || actionLoading ? "opacity-60 pointer-events-none" : ""}`}>
                 {(loading || actionLoading) && (
                   <div className="absolute inset-0 flex items-center justify-center bg-slate-900/50 rounded-xl z-10">
@@ -1247,51 +1022,30 @@ export default function Dashboard() {
                 )}
 
                 <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden p-6">
-                  {/* Users Tab */}
                   {activeTab === "users" && (
                     isGlobalAdmin ? (
                       <>
                         <UserTable
                           users={users}
-                          onViewDetail={(id) =>
-                            api
-                              .get(`/api/v1/admin/users/${id}`)
-                              .then((res) =>
-                                setSelectedUser(res.data.data || res.data),
-                              )
-                          }
+                          onViewDetail={(id) => api.get(`/api/v1/admin/users/${id}`).then((res) => setSelectedUser(res.data.data || res.data))}
                           onDeleteUser={handleDeleteUser}
                           onToggleAdmin={handleToggleAdmin}
                           isGlobalAdmin={isGlobalAdmin}
                         />
-                        <Pagination
-                          currentPage={usersPagination?.current || 1}
-                          lastPage={usersPagination?.last || 1}
-                          total={usersPagination?.total || 0}
-                          onPageChange={handleUsersPageChange}
-                          loading={loading}
-                        />
+                        <Pagination currentPage={usersPagination?.current || 1} lastPage={usersPagination?.last || 1} total={usersPagination?.total || 0} onPageChange={handleUsersPageChange} loading={loading} />
                       </>
                     ) : (
                       <OperationView />
                     )
                   )}
 
-                  {/* Audit Tab */}
                   {activeTab === "audit" && (
                     <>
                       <AuditTable logs={auditLogs} />
-                      <Pagination
-                        currentPage={auditPagination?.current || 1}
-                        lastPage={auditPagination?.last || 1}
-                        total={auditPagination?.total || 0}
-                        onPageChange={handleAuditPageChange}
-                        loading={loading}
-                      />
+                      <Pagination currentPage={auditPagination?.current || 1} lastPage={auditPagination?.last || 1} total={auditPagination?.total || 0} onPageChange={handleAuditPageChange} loading={loading} />
                     </>
                   )}
 
-                  {/* Groups Tab */}
                   {activeTab === "groups" && (
                     showGroupForm ? (
                       <GroupForm
@@ -1302,21 +1056,10 @@ export default function Dashboard() {
                             await api.post("/api/v1/groups", data);
                             setShowGroupForm(false);
                             await loadGroups(groupsCurrentPage);
-                            AxionAlert.fire({
-                              icon: "success",
-                              title: "Grupo Criado!",
-                              text: `O grupo "${data.name}" foi criado com sucesso.`,
-                              timer: 1500,
-                              showConfirmButton: false,
-                            });
+                            AxionAlert.fire({ icon: "success", title: "Grupo Criado!", text: `O grupo "${data.name}" foi criado com sucesso.`, timer: 1500, showConfirmButton: false });
                           } catch (err) {
                             console.error("Erro ao criar grupo:", err);
-                            AxionAlert.fire(
-                              "Erro",
-                              err.response?.data?.message ||
-                                "Não foi possível criar o grupo.",
-                              "error",
-                            );
+                            AxionAlert.fire("Erro", err.response?.data?.message || "Não foi possível criar o grupo.", "error");
                           } finally {
                             setActionLoading(false);
                           }
@@ -1325,24 +1068,12 @@ export default function Dashboard() {
                       />
                     ) : (
                       <>
-                        <GroupTable
-                          groups={groups}
-                          onViewDetail={setSelectedGroupId}
-                          isGlobalAdmin={isGlobalAdmin}
-                          currentUser={currentUser}
-                        />
-                        <Pagination
-                          currentPage={groupsPagination?.current || 1}
-                          lastPage={groupsPagination?.last || 1}
-                          total={groupsPagination?.total || 0}
-                          onPageChange={handleGroupsPageChange}
-                          loading={loading}
-                        />
+                        <GroupTable groups={groups} onViewDetail={setSelectedGroupId} isGlobalAdmin={isGlobalAdmin} currentUser={currentUser} />
+                        <Pagination currentPage={groupsPagination?.current || 1} lastPage={groupsPagination?.last || 1} total={groupsPagination?.total || 0} onPageChange={handleGroupsPageChange} loading={loading} />
                       </>
                     )
                   )}
 
-                  {/* Permissions Tab */}
                   {activeTab === "permissions" && (
                     selectedPermission ? (
                       <PermissionDetail
@@ -1355,21 +1086,9 @@ export default function Dashboard() {
                       />
                     ) : (
                       <>
-                        <PermissionTable
-                          permissions={permissions}
-                          loading={loading}
-                          currentUser={currentUser}
-                          onViewDetail={handleOpenPermissionDetail}
-                          onDelete={handleDeletePermission}
-                        />
+                        <PermissionTable permissions={permissions} loading={loading} currentUser={currentUser} onViewDetail={handleOpenPermissionDetail} onDelete={handleDeletePermission} />
                         {permissionsPagination?.last > 1 && (
-                          <Pagination
-                            currentPage={permissionsPagination.current}
-                            lastPage={permissionsPagination.last}
-                            total={permissionsPagination.total}
-                            onPageChange={handlePermissionsPageChange}
-                            loading={loading}
-                          />
+                          <Pagination currentPage={permissionsPagination.current} lastPage={permissionsPagination.last} total={permissionsPagination.total} onPageChange={handlePermissionsPageChange} loading={loading} />
                         )}
                       </>
                     )
