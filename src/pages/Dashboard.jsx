@@ -41,6 +41,20 @@ export default function Dashboard() {
   const [selectedPermission, setSelectedPermission] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
+  // ========== ESTADO PARA ENDEREÇO ==========
+  const [showAddressBanner, setShowAddressBanner] = useState(false);
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [addressForm, setAddressForm] = useState({
+    zip_code: "",
+    street: "",
+    number: "",
+    neighborhood: "",
+    city: "",
+    state: "",
+    complement: "",
+  });
+  const [addressLoading, setAddressLoading] = useState(false);
+
   // ========== ESTADO LOCAL PARA TODAS AS PERMISSÕES ==========
   const [allPermissions, setAllPermissions] = useState([]);
 
@@ -69,7 +83,7 @@ export default function Dashboard() {
     groups,
     auditLogs,
     serviceOrders,
-    permissions, // usado apenas na aba "permissions"
+    permissions,
     usersPagination,
     groupsPagination,
     auditPagination,
@@ -90,7 +104,6 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchAllPermissions = async () => {
       try {
-        // Busca todas as permissões sem paginação (ou com página grande)
         const res = await api.get('/api/v1/admin/permissions?per_page=1000');
         const data = res.data.data || res.data;
         setAllPermissions(Array.isArray(data) ? data : []);
@@ -101,6 +114,66 @@ export default function Dashboard() {
     };
     fetchAllPermissions();
   }, []);
+
+  // ============ LOAD PROFILE ============
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const res = await api.get("/api/v1/me");
+        setCurrentUser(res.data);
+
+        // Verifica se o endereço está vazio e exibe banner para usuários comuns
+        const address = res.data.address || {};
+        const hasAddress = address.street || address.number || address.zip_code;
+        if (!hasAddress && !res.data.is_admin) {
+          setShowAddressBanner(true);
+        } else {
+          setShowAddressBanner(false);
+        }
+      } catch {
+        navigate("/login");
+      }
+    };
+    loadProfile();
+  }, [navigate]);
+
+  // ============ HANDLERS PARA ENDEREÇO ============
+  const handleOpenAddressModal = () => {
+    const address = currentUser?.address || {};
+    setAddressForm({
+      zip_code: address.zip_code || "",
+      street: address.street || "",
+      number: address.number || "",
+      neighborhood: address.neighborhood || "",
+      city: address.city || "",
+      state: address.state || "",
+      complement: address.complement || "",
+    });
+    setShowAddressModal(true);
+    setShowAddressBanner(false); // esconde o banner enquanto edita
+  };
+
+  const handleSaveAddress = async () => {
+    setAddressLoading(true);
+    try {
+      await api.put("/api/v1/update-profile", addressForm);
+      // Atualiza os dados do usuário logado
+      const res = await api.get("/api/v1/me");
+      setCurrentUser(res.data);
+      setShowAddressModal(false);
+      setShowAddressBanner(false);
+      AxionAlert.fire({
+        icon: "success",
+        title: "Endereço atualizado!",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      AxionAlert.fire("Erro", "Não foi possível salvar o endereço.", "error");
+    } finally {
+      setAddressLoading(false);
+    }
+  };
 
   // ============ HANDLERS PARA TABS E FILTROS ============
   const handleTabChange = useCallback((tab) => {
@@ -257,7 +330,6 @@ export default function Dashboard() {
       });
       setShowPermissionModal(false);
       loadPermissions(permissionsCurrentPage);
-      // Atualiza também a lista completa
       const res = await api.get('/api/v1/admin/permissions?per_page=1000');
       setAllPermissions(res.data.data || res.data);
     } catch (err) {
@@ -286,7 +358,6 @@ export default function Dashboard() {
       await loadPermissions(permissionsCurrentPage);
       const res = await api.get(`/api/v1/admin/permissions/${permissionId}`);
       setSelectedPermission(res.data.data || res.data);
-      // Atualiza a lista completa
       const allRes = await api.get('/api/v1/admin/permissions?per_page=1000');
       setAllPermissions(allRes.data.data || allRes.data);
       AxionAlert.fire({
@@ -308,7 +379,6 @@ export default function Dashboard() {
       await api.delete(`/api/v1/admin/permissions/${permissionId}`);
       setSelectedPermission(null);
       await loadPermissions(permissionsCurrentPage);
-      // Atualiza a lista completa
       const res = await api.get('/api/v1/admin/permissions?per_page=1000');
       setAllPermissions(res.data.data || res.data);
       AxionAlert.fire({
@@ -326,7 +396,6 @@ export default function Dashboard() {
 
   // =========================================================
   // 🔧 CORREÇÃO: HANDLERS DE PERMISSÕES EM GRUPOS
-  // URLs agora com /admin/ e validação de ID
   // =========================================================
   const handleAddPermissionToGroup = useCallback(async (permissionId, permissionName) => {
     if (!selectedGroupId || !permissionName) {
@@ -393,19 +462,6 @@ export default function Dashboard() {
       }
     }
   }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId]);
-
-  // ============ LOAD PROFILE ============
-  useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        const res = await api.get("/api/v1/me");
-        setCurrentUser(res.data);
-      } catch {
-        navigate("/login");
-      }
-    };
-    loadProfile();
-  }, [navigate]);
 
   // ============ CARREGAR DADOS POR ABA ============
   useEffect(() => {
@@ -769,6 +825,175 @@ export default function Dashboard() {
 
         {/* Content Area */}
         <main className="p-6 max-w-7xl mx-auto w-full">
+          {/* ========== BANNER DE ENDEREÇO INCOMPLETO ========== */}
+          {showAddressBanner && currentUser && !currentUser.is_admin && (
+            <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-yellow-400 text-2xl">⚠️</span>
+                <div>
+                  <p className="text-yellow-200 font-semibold">Endereço incompleto</p>
+                  <p className="text-yellow-200/70 text-sm">
+                    Para melhor identificação, complete seu endereço de registro.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleOpenAddressModal}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-all"
+              >
+                Completar Endereço ➜
+              </button>
+            </div>
+          )}
+
+          {/* ========== MODAL DE ENDEREÇO ========== */}
+          {showAddressModal && (
+            <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+              <div className="bg-slate-800/95 border border-slate-700/50 rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700/50">
+                  <h3 className="text-lg font-bold text-white">📍 Completar Endereço</h3>
+                  <button
+                    onClick={() => setShowAddressModal(false)}
+                    className="text-slate-400 hover:text-slate-200 text-2xl"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)] custom-scrollbar">
+                  <form className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                        CEP
+                      </label>
+                      <input
+                        type="text"
+                        value={addressForm.zip_code}
+                        onChange={(e) =>
+                          setAddressForm({ ...addressForm, zip_code: e.target.value })
+                        }
+                        className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        placeholder="00000-000"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                        Rua
+                      </label>
+                      <input
+                        type="text"
+                        value={addressForm.street}
+                        onChange={(e) =>
+                          setAddressForm({ ...addressForm, street: e.target.value })
+                        }
+                        className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        placeholder="Rua das Flores"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                          Número
+                        </label>
+                        <input
+                          type="text"
+                          value={addressForm.number}
+                          onChange={(e) =>
+                            setAddressForm({ ...addressForm, number: e.target.value })
+                          }
+                          className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                          placeholder="123"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                          Bairro
+                        </label>
+                        <input
+                          type="text"
+                          value={addressForm.neighborhood}
+                          onChange={(e) =>
+                            setAddressForm({ ...addressForm, neighborhood: e.target.value })
+                          }
+                          className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                          placeholder="Centro"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                          Cidade
+                        </label>
+                        <input
+                          type="text"
+                          value={addressForm.city}
+                          onChange={(e) =>
+                            setAddressForm({ ...addressForm, city: e.target.value })
+                          }
+                          className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                          placeholder="São Paulo"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                          Estado
+                        </label>
+                        <input
+                          type="text"
+                          value={addressForm.state}
+                          onChange={(e) =>
+                            setAddressForm({ ...addressForm, state: e.target.value })
+                          }
+                          className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                          placeholder="SP"
+                          maxLength={2}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                        Complemento
+                      </label>
+                      <input
+                        type="text"
+                        value={addressForm.complement}
+                        onChange={(e) =>
+                          setAddressForm({ ...addressForm, complement: e.target.value })
+                        }
+                        className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        placeholder="Apto 101"
+                      />
+                    </div>
+                  </form>
+                </div>
+                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-700/50">
+                  <button
+                    onClick={() => setShowAddressModal(false)}
+                    disabled={addressLoading}
+                    className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-600/50 transition-all"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleSaveAddress}
+                    disabled={addressLoading}
+                    className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 transition-all flex items-center gap-2"
+                  >
+                    {addressLoading ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                        Salvando...
+                      </>
+                    ) : (
+                      "💾 Salvar Endereço"
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ========== CONTEÚDO PRINCIPAL ========== */}
           {selectedUser ? (
             <UserDetail
               user={selectedUser}
@@ -822,7 +1047,6 @@ export default function Dashboard() {
                   setGroupsCurrentPage(1);
                 })
               }
-              // 🔥 AGORA USA `allPermissions` (TODAS AS PERMISSÕES)
               allAvailablePermissions={allPermissions}
               onAddPermission={handleAddPermissionToGroup}
               onRemovePermission={handleRemovePermissionFromGroup}
