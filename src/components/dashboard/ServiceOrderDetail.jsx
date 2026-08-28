@@ -88,7 +88,7 @@ export default function ServiceOrderDetail({
   const [messages, setMessages] = useState([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [newMessage, setNewMessage] = useState("");
-  const [newAttachment, setNewAttachment] = useState(null); // NOVO: arquivo para anexo
+  const [newAttachment, setNewAttachment] = useState(null);
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [editMessageText, setEditMessageText] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
@@ -99,7 +99,7 @@ export default function ServiceOrderDetail({
   const [hasMore, setHasMore] = useState(false);
 
   // ---- Polling (atualização automática) ----
-  const [polling, setPolling] = useState(true); // ative/desative conforme desejar
+  const [polling, setPolling] = useState(true);
 
   // ---- Carregar mensagens (com paginação) ----
   const loadMessages = useCallback(
@@ -107,7 +107,8 @@ export default function ServiceOrderDetail({
       if (!order?.id) return;
       setLoadingMessages(true);
       try {
-        const res = await api.get(`/api/v1/service-orders/${order.id}/messages`, {
+        // CORREÇÃO: remover "service-orders/" do caminho
+        const res = await api.get(`/${order.id}/messages`, {
           params: { page: pageNum, per_page: 15 },
         });
         const { data, current_page, last_page } = res.data;
@@ -145,7 +146,8 @@ export default function ServiceOrderDetail({
         formData.append("attachment", newAttachment);
       }
 
-      const res = await api.post(`/api/v1/service-orders/${order.id}/messages`, formData, {
+      // CORREÇÃO: remover "service-orders/" do caminho
+      const res = await api.post(`/${order.id}/messages`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       const newMsg = res.data.data || res.data;
@@ -174,7 +176,8 @@ export default function ServiceOrderDetail({
     async (messageId, newText) => {
       if (!newText.trim()) return;
       try {
-        const res = await api.put(`/api/v1/service-orders/${order.id}/messages/${messageId}`, {
+        // CORREÇÃO: remover "service-orders/" do caminho
+        const res = await api.put(`/${order.id}/messages/${messageId}`, {
           message: newText.trim(),
         });
         const updated = res.data.data || res.data;
@@ -212,7 +215,8 @@ export default function ServiceOrderDetail({
       if (!result.isConfirmed) return;
 
       try {
-        await api.delete(`/api/v1/service-orders/${order.id}/messages/${messageId}`);
+        // CORREÇÃO: remover "service-orders/" do caminho
+        await api.delete(`/${order.id}/messages/${messageId}`);
         setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
         Swal.fire({
           icon: "success",
@@ -257,7 +261,6 @@ export default function ServiceOrderDetail({
   useEffect(() => {
     if (!polling || !order?.id) return;
     const interval = setInterval(() => {
-      // Recarrega a primeira página (não anexa) para evitar duplicatas
       loadMessages(1, false);
     }, 10000);
     return () => clearInterval(interval);
@@ -346,7 +349,7 @@ export default function ServiceOrderDetail({
               <AttachmentPreview order={order} baseUrl={baseUrl} />
             </div>
 
-            {/* ======== SEÇÃO DE MENSAGENS (CORRIGIDA) ======== */}
+            {/* ======== SEÇÃO DE MENSAGENS ======== */}
             <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 shadow-lg">
               <h4 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
                 💬 Mensagens
