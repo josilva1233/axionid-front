@@ -3,21 +3,13 @@ import React, { useState, useEffect, useCallback } from "react";
 import api from "../../services/api";
 import Swal from "sweetalert2";
 
-// ---- Configurações de status e prioridade (mantidas) ----
+// ---- Configurações de status e prioridade ----
 const STATUS_CONFIG = {
   pending: { bg: "bg-yellow-500/15", text: "text-yellow-400", dot: "bg-yellow-400", label: "PENDENTE", icon: "⏳" },
   open: { bg: "bg-blue-500/15", text: "text-blue-400", dot: "bg-blue-400", label: "EM ABERTO", icon: "📂" },
   in_progress: { bg: "bg-indigo-500/15", text: "text-indigo-400", dot: "bg-indigo-400", label: "EM ATENDIMENTO", icon: "🔧" },
   resolved: { bg: "bg-green-500/15", text: "text-green-400", dot: "bg-green-400", label: "RESOLVIDO", icon: "✅" },
   closed: { bg: "bg-slate-700/30", text: "text-slate-400", dot: "bg-slate-400", label: "FECHADO", icon: "🔒" },
-};
-
-// ---- Status que podem ser selecionados manualmente (RESOLVIDO removido) ----
-const SELECTABLE_STATUSES = {
-  pending: { label: "⏳ Pendente", value: "pending" },
-  open: { label: "📂 Em Aberto", value: "open" },
-  in_progress: { label: "🔧 Em Atendimento", value: "in_progress" },
-  closed: { label: "🔒 Fechado", value: "closed" },
 };
 
 const PRIORITY_CONFIG = {
@@ -171,7 +163,7 @@ export default function ServiceOrderDetail({
     if (!order?.id || order.status === 'closed') return;
     
     try {
-      await api.put(`/api/v1/orders/${order.id}/status`, {
+      await api.put(`/api/v1/service-orders/${order.id}`, {
         status: 'closed'
       });
       
@@ -257,16 +249,10 @@ export default function ServiceOrderDetail({
         headers: { "Content-Type": "multipart/form-data" },
       });
       
-      // 🔥 CORREÇÃO: O backend retorna a mensagem com o usuário carregado
       const newMsg = res.data.data || res.data;
-      
-      // Log para debug - verificar o que está vindo do backend
-      console.log('Mensagem enviada com sucesso:', newMsg);
-      console.log('Dados do usuário na mensagem:', newMsg.user);
       
       // Adiciona a nova mensagem no topo da lista
       setMessages((prev) => {
-        // Garantir que a mensagem tenha os dados do usuário
         if (newMsg && !newMsg.user && currentUser) {
           newMsg.user = {
             id: currentUser.id,
@@ -400,7 +386,7 @@ export default function ServiceOrderDetail({
     if (!result.isConfirmed) return;
     
     try {
-      await api.put(`/api/v1/orders/${order.id}/status`, {
+      await api.put(`/api/v1/service-orders/${order.id}`, {
         status: 'resolved',
         resolved_at: new Date().toISOString()
       });
@@ -418,7 +404,11 @@ export default function ServiceOrderDetail({
       });
     } catch (error) {
       console.error("Erro ao marcar como resolvido:", error);
-      Swal.fire("Erro", "Não foi possível marcar o chamado como resolvido.", "error");
+      Swal.fire(
+        "Erro", 
+        error.response?.data?.message || "Não foi possível marcar o chamado como resolvido.", 
+        "error"
+      );
     }
   }, [order?.id, onUpdateStatus]);
 
@@ -579,19 +569,10 @@ export default function ServiceOrderDetail({
                 <>
                   <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
                     {messages.map((msg) => {
-                      // 🔥 CORREÇÃO CRÍTICA: Usar o usuário da mensagem, NÃO o usuário do chamado
-                      // Verificar se msg.user existe, caso contrário usar fallback
+                      // 🔥 CORREÇÃO: Usar o usuário da mensagem, NÃO o usuário do chamado
                       const messageUser = msg.user || { name: 'Usuário Desconhecido' };
                       const userName = messageUser.name || 'Usuário Desconhecido';
                       const userInitial = userName.charAt(0)?.toUpperCase() || '?';
-                      
-                      // Log para debug
-                      console.log(`Mensagem ${msg.id}:`, {
-                        messageUser: messageUser,
-                        userName: userName,
-                        msgUserId: msg.user_id,
-                        currentUserId: currentUser?.id
-                      });
                       
                       return (
                         <div
