@@ -12,6 +12,14 @@ const STATUS_CONFIG = {
   closed: { bg: "bg-slate-700/30", text: "text-slate-400", dot: "bg-slate-400", label: "FECHADO", icon: "🔒" },
 };
 
+// ---- Status que podem ser selecionados manualmente (RESOLVIDO removido) ----
+const SELECTABLE_STATUSES = {
+  pending: { label: "⏳ Pendente", value: "pending" },
+  open: { label: "📂 Em Aberto", value: "open" },
+  in_progress: { label: "🔧 Em Atendimento", value: "in_progress" },
+  closed: { label: "🔒 Fechado", value: "closed" },
+};
+
 const PRIORITY_CONFIG = {
   low: { bg: "bg-green-500/15", text: "text-green-400", dot: "bg-green-400", label: "Baixa", icon: "🔵" },
   medium: { bg: "bg-blue-500/15", text: "text-blue-400", dot: "bg-blue-400", label: "Média", icon: "🟡" },
@@ -98,6 +106,10 @@ export default function ServiceOrderDetail({
   const [totalPages, setTotalPages] = useState(1);
   const [hasMore, setHasMore] = useState(false);
 
+  // ---- Estado para controlar se o chamado foi resolvido recentemente ----
+  const [timeUntilClose, setTimeUntilClose] = useState(null);
+  const [isResolved, setIsResolved] = useState(false);
+
   // ---- Carregar mensagens (com paginação) ----
   const loadMessages = useCallback(
     async (pageNum = 1, append = false) => {
@@ -130,6 +142,105 @@ export default function ServiceOrderDetail({
     }
   };
 
+  // ---- Verificar se o chamado está resolvido e calcular tempo restante ----
+  useEffect(() => {
+    if (order?.status === 'resolved' && order?.resolved_at) {
+      setIsResolved(true);
+      
+      const resolvedDate = new Date(order.resolved_at);
+      const twoDaysLater = new Date(resolvedDate);
+      twoDaysLater.setDate(twoDaysLater.getDate() + 2);
+      
+      const now = new Date();
+      const timeDiff = twoDaysLater - now;
+      
+      if (timeDiff > 0) {
+        setTimeUntilClose(timeDiff);
+      } else {
+        setTimeUntilClose(0);
+        handleAutoClose();
+      }
+    } else {
+      setIsResolved(false);
+      setTimeUntilClose(null);
+    }
+  }, [order?.status, order?.resolved_at]);
+
+  // ---- Função para fechar automaticamente o chamado ----
+  const handleAutoClose = useCallback(async () => {
+    if (!order?.id || order.status === 'closed') return;
+    
+    try {
+      await api.put(`/api/v1/orders/${order.id}/status`, {
+        status: 'closed'
+      });
+      
+      if (onUpdateStatus) {
+        onUpdateStatus(order.id, 'closed');
+      }
+      
+      Swal.fire({
+        icon: 'info',
+        title: 'Chamado Fechado Automaticamente',
+        text: 'O chamado foi fechado automaticamente após 2 dias de resolução.',
+        timer: 3000,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      console.error('Erro ao fechar chamado automaticamente:', error);
+    }
+  }, [order?.id, order?.status, onUpdateStatus]);
+
+  // ---- Timer para verificar quando fechar o chamado ----
+  useEffect(() => {
+    if (!isResolved || !timeUntilClose) return;
+
+    if (timeUntilClose <= 0) {
+      handleAutoClose();
+      return;
+    }
+
+    const timer = setInterval(() => {
+      const now = new Date();
+      const resolvedDate = new Date(order.resolved_at);
+      const twoDaysLater = new Date(resolvedDate);
+      twoDaysLater.setDate(twoDaysLater.getDate() + 2);
+      
+      const remaining = twoDaysLater - now;
+      
+      if (remaining <= 0) {
+        setTimeUntilClose(0);
+        handleAutoClose();
+        clearInterval(timer);
+      } else {
+        setTimeUntilClose(remaining);
+      }
+    }, 60000);
+
+    return () => clearInterval(timer);
+  }, [isResolved, timeUntilClose, order?.resolved_at, handleAutoClose]);
+
+  // ---- Formatar tempo restante ----
+  const formatTimeRemaining = (milliseconds) => {
+    if (!milliseconds || milliseconds <= 0) return "Fechando...";
+    
+    const seconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    
+    const remainingHours = hours % 24;
+    const remainingMinutes = minutes % 60;
+    
+    if (days > 0) {
+      return `${days}d ${remainingHours}h ${remainingMinutes}min`;
+    } else if (hours > 0) {
+      return `${hours}h ${remainingMinutes}min`;
+    } else {
+      return `${minutes}min`;
+    }
+  };
+
   // ---- Enviar mensagem (com suporte a anexo) ----
   const sendMessage = useCallback(async () => {
     if (!newMessage.trim() && !newAttachment) return;
@@ -145,24 +256,32 @@ export default function ServiceOrderDetail({
       const res = await api.post(`/api/v1/${order.id}/messages`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+      
+      // 🔥 CORREÇÃO: O backend retorna a mensagem com o usuário carregado
       const newMsg = res.data.data || res.data;
       
-      // 🔥 CORREÇÃO: Garantir que a nova mensagem tenha os dados do usuário
-      // Se o backend não retornar o usuário, adicionamos o currentUser
-      if (!newMsg.user && currentUser) {
-        newMsg.user = {
-          id: currentUser.id,
-          name: currentUser.name,
-          email: currentUser.email
-        };
-      }
+      // Log para debug - verificar o que está vindo do backend
+      console.log('Mensagem enviada com sucesso:', newMsg);
+      console.log('Dados do usuário na mensagem:', newMsg.user);
       
-      // Adiciona a nova mensagem no topo da lista (mais recente)
-      setMessages((prev) => [newMsg, ...prev]);
+      // Adiciona a nova mensagem no topo da lista
+      setMessages((prev) => {
+        // Garantir que a mensagem tenha os dados do usuário
+        if (newMsg && !newMsg.user && currentUser) {
+          newMsg.user = {
+            id: currentUser.id,
+            name: currentUser.name,
+            email: currentUser.email
+          };
+        }
+        return [newMsg, ...prev];
+      });
+      
       setNewMessage("");
       setNewAttachment(null);
       const fileInput = document.getElementById("message-attachment");
       if (fileInput) fileInput.value = "";
+      
       Swal.fire({
         icon: "success",
         title: "Mensagem enviada!",
@@ -254,13 +373,54 @@ export default function ServiceOrderDetail({
     });
   };
 
-  // ---- Carregar mensagens ao montar (apenas uma vez) ----
+  // ---- Carregar mensagens ao montar ----
   useEffect(() => {
     if (order?.id) {
       loadMessages(1, false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [order?.id]);
+
+  // ---- Função para marcar como resolvido (apenas via botão) ----
+  const handleMarkAsResolved = useCallback(async () => {
+    if (!order?.id) return;
+    
+    const result = await Swal.fire({
+      title: "Marcar como Resolvido?",
+      text: "O chamado será marcado como resolvido e será fechado automaticamente em 2 dias.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Sim, resolver",
+      cancelButtonText: "Cancelar",
+      background: "#111214",
+      color: "#ffffff",
+      confirmButtonColor: "#22c55e",
+    });
+    
+    if (!result.isConfirmed) return;
+    
+    try {
+      await api.put(`/api/v1/orders/${order.id}/status`, {
+        status: 'resolved',
+        resolved_at: new Date().toISOString()
+      });
+      
+      if (onUpdateStatus) {
+        onUpdateStatus(order.id, 'resolved');
+      }
+      
+      Swal.fire({
+        icon: "success",
+        title: "Chamado Resolvido!",
+        text: "O chamado será fechado automaticamente em 2 dias.",
+        timer: 3000,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      console.error("Erro ao marcar como resolvido:", error);
+      Swal.fire("Erro", "Não foi possível marcar o chamado como resolvido.", "error");
+    }
+  }, [order?.id, onUpdateStatus]);
 
   // ---- Se não houver ordem, mostra loading ----
   if (!order) {
@@ -332,6 +492,17 @@ export default function ServiceOrderDetail({
               <div className="flex flex-wrap gap-3 mb-4 pb-4 border-b border-slate-700/50">
                 <StatusBadge status={order.status} />
                 <PriorityBadge priority={order.priority} />
+                
+                {isResolved && timeUntilClose > 0 && (
+                  <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold shadow-sm bg-green-500/15 text-green-400">
+                    <span>⏳</span> Fecha em: {formatTimeRemaining(timeUntilClose)}
+                  </span>
+                )}
+                {isResolved && timeUntilClose === 0 && (
+                  <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold shadow-sm bg-yellow-500/15 text-yellow-400 animate-pulse">
+                    <span>⏳</span> Fechando...
+                  </span>
+                )}
               </div>
 
               <div>
@@ -366,7 +537,7 @@ export default function ServiceOrderDetail({
                   placeholder="Digite sua mensagem..."
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  disabled={sendingMessage}
+                  disabled={sendingMessage || order.status === 'closed'}
                 />
                 <div className="flex flex-wrap items-center gap-3">
                   <input
@@ -375,12 +546,12 @@ export default function ServiceOrderDetail({
                     className="flex-1 min-w-[200px] px-3 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-500/20 file:text-blue-400 hover:file:bg-blue-500/30 transition-all"
                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                     onChange={(e) => setNewAttachment(e.target.files[0] || null)}
-                    disabled={sendingMessage}
+                    disabled={sendingMessage || order.status === 'closed'}
                   />
                   <button
                     className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={sendMessage}
-                    disabled={(!newMessage.trim() && !newAttachment) || sendingMessage}
+                    disabled={(!newMessage.trim() && !newAttachment) || sendingMessage || order.status === 'closed'}
                   >
                     {sendingMessage ? "Enviando..." : "📤 Enviar"}
                   </button>
@@ -388,6 +559,11 @@ export default function ServiceOrderDetail({
                 {newAttachment && (
                   <div className="text-sm text-green-400 flex items-center gap-2">
                     <span>✅</span> Anexo selecionado: <strong>{newAttachment.name}</strong>
+                  </div>
+                )}
+                {order.status === 'closed' && (
+                  <div className="text-sm text-yellow-400 flex items-center gap-2">
+                    <span>⚠️</span> Chamado fechado - não é possível enviar mensagens
                   </div>
                 )}
               </div>
@@ -403,9 +579,19 @@ export default function ServiceOrderDetail({
                 <>
                   <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
                     {messages.map((msg) => {
-                      // 🔥 CORREÇÃO: Usar o nome do usuário da mensagem, não do chamado
-                      const userName = msg.user?.name || "Usuário";
-                      const userInitial = userName.charAt(0)?.toUpperCase() || "?";
+                      // 🔥 CORREÇÃO CRÍTICA: Usar o usuário da mensagem, NÃO o usuário do chamado
+                      // Verificar se msg.user existe, caso contrário usar fallback
+                      const messageUser = msg.user || { name: 'Usuário Desconhecido' };
+                      const userName = messageUser.name || 'Usuário Desconhecido';
+                      const userInitial = userName.charAt(0)?.toUpperCase() || '?';
+                      
+                      // Log para debug
+                      console.log(`Mensagem ${msg.id}:`, {
+                        messageUser: messageUser,
+                        userName: userName,
+                        msgUserId: msg.user_id,
+                        currentUserId: currentUser?.id
+                      });
                       
                       return (
                         <div
@@ -422,7 +608,7 @@ export default function ServiceOrderDetail({
                                   <span className="text-white font-bold text-sm">{userName}</span>
                                   <span className="text-slate-500 text-xs">{formatDateTime(msg.created_at)}</span>
                                 </div>
-                                {canModifyMessage(msg) && (
+                                {canModifyMessage(msg) && order.status !== 'closed' && (
                                   <div className="flex items-center gap-1">
                                     <button
                                       className="p-1.5 text-slate-400 hover:text-blue-400 transition-colors rounded-full hover:bg-blue-500/10"
@@ -572,18 +758,45 @@ export default function ServiceOrderDetail({
                 </div>
               </div>
 
+              {/* Botão para marcar como resolvido */}
+              {order.status !== 'resolved' && order.status !== 'closed' && (
+                <div className="mt-4 mb-4">
+                  <button
+                    className="w-full py-2.5 rounded-full bg-green-600 hover:bg-green-500 text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleMarkAsResolved}
+                    disabled={actionLoading}
+                  >
+                    ✅ Marcar como Resolvido
+                  </button>
+                  <p className="text-xs text-slate-400 text-center mt-2">
+                    ⏳ Será fechado automaticamente em 2 dias
+                  </p>
+                </div>
+              )}
+
               <div className="mt-4 pt-4 border-t border-slate-700/50">
                 <label className="text-slate-400 text-xs uppercase font-bold block mb-3">Alterar Status</label>
                 <select
                   className="w-full px-4 py-2.5 bg-slate-800/50 border border-blue-500/30 rounded-full text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all appearance-none cursor-pointer"
                   value={order.status}
-                  onChange={(e) => onUpdateStatus(order.id, e.target.value)}
-                  disabled={actionLoading}
+                  onChange={(e) => {
+                    if (e.target.value === 'resolved') {
+                      Swal.fire({
+                        icon: 'info',
+                        title: 'Ação não permitida',
+                        text: 'O status "Resolvido" não pode ser selecionado manualmente. Use o botão "Marcar como Resolvido".',
+                        timer: 3000,
+                        showConfirmButton: false,
+                      });
+                      return;
+                    }
+                    onUpdateStatus(order.id, e.target.value);
+                  }}
+                  disabled={actionLoading || order.status === 'closed'}
                 >
                   <option value="pending">⏳ Pendente</option>
                   <option value="open">📂 Em Aberto</option>
                   <option value="in_progress">🔧 Em Atendimento</option>
-                  <option value="resolved">✅ Resolvido</option>
                   <option value="closed">🔒 Fechado</option>
                 </select>
               </div>
