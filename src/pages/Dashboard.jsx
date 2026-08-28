@@ -54,6 +54,7 @@ export default function Dashboard() {
     complement: "",
   });
   const [addressLoading, setAddressLoading] = useState(false);
+  const [loadingCep, setLoadingCep] = useState(false);
 
   // ========== ESTADO LOCAL PARA TODAS AS PERMISSÕES ==========
   const [allPermissions, setAllPermissions] = useState([]);
@@ -115,6 +116,53 @@ export default function Dashboard() {
     fetchAllPermissions();
   }, []);
 
+  // ============ FUNÇÃO PARA BUSCAR CEP ============
+  const fetchAddressByCep = useCallback(async (cep) => {
+    const cleanCep = cep.replace(/\D/g, '');
+    if (cleanCep.length !== 8) return;
+
+    setLoadingCep(true);
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+      const data = await response.json();
+
+      if (data.erro) {
+        AxionAlert.fire({
+          icon: "warning",
+          title: "CEP não encontrado",
+          text: "Verifique o número informado.",
+          confirmButtonColor: "#6366f1",
+        });
+        setAddressForm(prev => ({
+          ...prev,
+          street: '',
+          neighborhood: '',
+          city: '',
+          state: '',
+        }));
+        return;
+      }
+
+      setAddressForm(prev => ({
+        ...prev,
+        street: data.logradouro || '',
+        neighborhood: data.bairro || '',
+        city: data.localidade || '',
+        state: data.uf || '',
+      }));
+
+    } catch (error) {
+      AxionAlert.fire({
+        icon: "error",
+        title: "Erro ao buscar CEP",
+        text: "Não foi possível conectar ao serviço de CEP.",
+        confirmButtonColor: "#6366f1",
+      });
+    } finally {
+      setLoadingCep(false);
+    }
+  }, [AxionAlert]);
+
   // ============ LOAD PROFILE ============
   useEffect(() => {
     const loadProfile = async () => {
@@ -122,7 +170,6 @@ export default function Dashboard() {
         const res = await api.get("/api/v1/me");
         setCurrentUser(res.data);
 
-        // Verifica se o endereço está vazio e exibe banner para usuários comuns
         const address = res.data.address || {};
         const hasAddress = address.street || address.number || address.zip_code;
         if (!hasAddress && !res.data.is_admin) {
@@ -150,14 +197,13 @@ export default function Dashboard() {
       complement: address.complement || "",
     });
     setShowAddressModal(true);
-    setShowAddressBanner(false); // esconde o banner enquanto edita
+    setShowAddressBanner(false);
   };
 
   const handleSaveAddress = async () => {
     setAddressLoading(true);
     try {
       await api.put("/api/v1/update-profile", addressForm);
-      // Atualiza os dados do usuário logado
       const res = await api.get("/api/v1/me");
       setCurrentUser(res.data);
       setShowAddressModal(false);
@@ -395,7 +441,7 @@ export default function Dashboard() {
   }, [AxionAlert, loadPermissions, permissionsCurrentPage]);
 
   // =========================================================
-  // 🔧 CORREÇÃO: HANDLERS DE PERMISSÕES EM GRUPOS
+  // HANDLERS DE PERMISSÕES EM GRUPOS
   // =========================================================
   const handleAddPermissionToGroup = useCallback(async (permissionId, permissionName) => {
     if (!selectedGroupId || !permissionName) {
@@ -786,7 +832,6 @@ export default function Dashboard() {
   // ============ RENDER PRINCIPAL ============
   return (
     <div className="flex min-h-screen bg-slate-900">
-      {/* Sidebar */}
       <Sidebar
         activeTab={activeTab}
         role={role}
@@ -795,7 +840,6 @@ export default function Dashboard() {
         onToggle={setSidebarCollapsed}
       />
 
-      {/* Main Content */}
       <div 
         className="flex-1 min-h-screen bg-slate-900 transition-all duration-300"
         style={{ 
@@ -803,7 +847,6 @@ export default function Dashboard() {
           width: `calc(100% - ${sidebarCollapsed ? '70px' : '250px'})`
         }}
       >
-        {/* Header */}
         <header className="flex justify-between items-center px-8 py-4 bg-slate-800/50 border-b border-slate-700/50 min-h-[72px] sticky top-0 z-50 backdrop-blur-sm">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -823,7 +866,6 @@ export default function Dashboard() {
           )}
         </header>
 
-        {/* Content Area */}
         <main className="p-6 max-w-7xl mx-auto w-full">
           {/* ========== BANNER DE ENDEREÇO INCOMPLETO ========== */}
           {showAddressBanner && currentUser && !currentUser.is_admin && (
@@ -861,7 +903,8 @@ export default function Dashboard() {
                 </div>
                 <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)] custom-scrollbar">
                   <form className="space-y-4">
-                    <div>
+                    {/* CEP com auto completar */}
+                    <div className="relative">
                       <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
                         CEP
                       </label>
@@ -871,10 +914,19 @@ export default function Dashboard() {
                         onChange={(e) =>
                           setAddressForm({ ...addressForm, zip_code: e.target.value })
                         }
+                        onBlur={(e) => fetchAddressByCep(e.target.value)}
                         className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                         placeholder="00000-000"
+                        disabled={loadingCep}
                       />
+                      {loadingCep && (
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <span className="w-4 h-4 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin inline-block"></span>
+                        </div>
+                      )}
                     </div>
+
+                    {/* Rua */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
                         Rua
@@ -889,6 +941,8 @@ export default function Dashboard() {
                         placeholder="Rua das Flores"
                       />
                     </div>
+
+                    {/* Número e Bairro */}
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
@@ -919,6 +973,8 @@ export default function Dashboard() {
                         />
                       </div>
                     </div>
+
+                    {/* Cidade e Estado */}
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
@@ -950,6 +1006,8 @@ export default function Dashboard() {
                         />
                       </div>
                     </div>
+
+                    {/* Complemento */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
                         Complemento
