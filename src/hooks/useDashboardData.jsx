@@ -115,7 +115,6 @@ export function useDashboardData(role) {
         setUsersPagination({ current: 1, last: 1, total: 0, perPage: 10 });
       }
     } catch (err) { 
-      console.error("Erro ao carregar usuários:", err); 
       setUsers([]);
     } finally { 
       setLoading(false); 
@@ -164,7 +163,6 @@ export function useDashboardData(role) {
         setGroupsPagination({ current: 1, last: 1, total: 0, perPage: 15 });
       }
     } catch (err) { 
-      console.error("Erro ao carregar grupos:", err); 
       setGroups([]);
     } finally { 
       setLoading(false); 
@@ -284,7 +282,6 @@ export function useDashboardData(role) {
         setOrdersPagination({ current: 1, last: 1, total: 0, perPage: 10 });
       }
     } catch (err) { 
-      console.error("Erro ao carregar ordens de serviço:", err); 
       setServiceOrders([]);
     } finally { 
       setLoading(false); 
@@ -311,8 +308,6 @@ export function useDashboardData(role) {
       
       if (filters.label) params.append("label", filters.label);
       if (filters.perm_name) params.append("name", filters.perm_name);
-
-      console.log("🔍 Parâmetros das Permissões:", params.toString());
 
       const res = await api.get(`/api/v1/admin/permissions?${params.toString()}`);
       const responseData = res.data;
@@ -344,7 +339,6 @@ export function useDashboardData(role) {
         setPermissionsPagination({ current: 1, last: 1, total: 0, perPage: 10 });
       }
     } catch (err) { 
-      console.error("Erro ao carregar permissões:", err); 
       setPermissions([]);
     } finally { 
       setLoading(false); 
