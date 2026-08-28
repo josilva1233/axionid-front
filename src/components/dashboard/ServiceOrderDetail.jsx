@@ -99,7 +99,7 @@ export default function ServiceOrderDetail({
   const [hasMore, setHasMore] = useState(false);
 
   // ---- Polling (atualização automática) ----
-  const [polling, setPolling] = useState(true);
+  const [polling] = useState(true);
 
   // ---- Carregar mensagens (com paginação) ----
   const loadMessages = useCallback(
@@ -107,8 +107,8 @@ export default function ServiceOrderDetail({
       if (!order?.id) return;
       setLoadingMessages(true);
       try {
-        // CORREÇÃO: remover "service-orders/" do caminho
-        const res = await api.get(`/${order.id}/messages`, {
+        // **MANTER O PREFIXO /api/v1**
+        const res = await api.get(`/api/v1/${order.id}/messages`, {
           params: { page: pageNum, per_page: 15 },
         });
         const { data, current_page, last_page } = res.data;
@@ -146,15 +146,13 @@ export default function ServiceOrderDetail({
         formData.append("attachment", newAttachment);
       }
 
-      // CORREÇÃO: remover "service-orders/" do caminho
-      const res = await api.post(`/${order.id}/messages`, formData, {
+      const res = await api.post(`/api/v1/${order.id}/messages`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       const newMsg = res.data.data || res.data;
       setMessages((prev) => [newMsg, ...prev]);
       setNewMessage("");
       setNewAttachment(null);
-      // Resetar o input file
       const fileInput = document.getElementById("message-attachment");
       if (fileInput) fileInput.value = "";
       Swal.fire({
@@ -176,8 +174,7 @@ export default function ServiceOrderDetail({
     async (messageId, newText) => {
       if (!newText.trim()) return;
       try {
-        // CORREÇÃO: remover "service-orders/" do caminho
-        const res = await api.put(`/${order.id}/messages/${messageId}`, {
+        const res = await api.put(`/api/v1/${order.id}/messages/${messageId}`, {
           message: newText.trim(),
         });
         const updated = res.data.data || res.data;
@@ -215,8 +212,7 @@ export default function ServiceOrderDetail({
       if (!result.isConfirmed) return;
 
       try {
-        // CORREÇÃO: remover "service-orders/" do caminho
-        await api.delete(`/${order.id}/messages/${messageId}`);
+        await api.delete(`/api/v1/${order.id}/messages/${messageId}`);
         setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
         Swal.fire({
           icon: "success",
@@ -250,7 +246,7 @@ export default function ServiceOrderDetail({
     });
   };
 
-  // ---- Carregar mensagens ao montar e quando a OS mudar ----
+  // ---- Carregar mensagens ao montar ----
   useEffect(() => {
     if (order?.id) {
       loadMessages(1, false);
@@ -332,7 +328,6 @@ export default function ServiceOrderDetail({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* ============ COLUNA PRINCIPAL ============ */}
           <div className="lg:col-span-2 space-y-6">
-            {/* --- Bloco: Status, Descrição e Anexo --- */}
             <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 shadow-lg">
               <div className="flex flex-wrap gap-3 mb-4 pb-4 border-b border-slate-700/50">
                 <StatusBadge status={order.status} />
@@ -475,7 +470,6 @@ export default function ServiceOrderDetail({
                             ) : (
                               <p className="text-slate-300 text-sm mt-1 whitespace-pre-wrap">{msg.message}</p>
                             )}
-                            {/* Exibir anexo da mensagem, se houver */}
                             {msg.attachment_path && (
                               <div className="mt-2">
                                 <a
@@ -493,7 +487,6 @@ export default function ServiceOrderDetail({
                       </div>
                     ))}
                   </div>
-                  {/* Botão "Carregar mais" */}
                   {hasMore && (
                     <div className="flex justify-center mt-4">
                       <button
