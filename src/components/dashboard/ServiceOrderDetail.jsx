@@ -146,6 +146,17 @@ export default function ServiceOrderDetail({
         headers: { "Content-Type": "multipart/form-data" },
       });
       const newMsg = res.data.data || res.data;
+      
+      // 🔥 CORREÇÃO: Garantir que a nova mensagem tenha os dados do usuário
+      // Se o backend não retornar o usuário, adicionamos o currentUser
+      if (!newMsg.user && currentUser) {
+        newMsg.user = {
+          id: currentUser.id,
+          name: currentUser.name,
+          email: currentUser.email
+        };
+      }
+      
       // Adiciona a nova mensagem no topo da lista (mais recente)
       setMessages((prev) => [newMsg, ...prev]);
       setNewMessage("");
@@ -164,7 +175,7 @@ export default function ServiceOrderDetail({
     } finally {
       setSendingMessage(false);
     }
-  }, [newMessage, newAttachment, order?.id]);
+  }, [newMessage, newAttachment, order?.id, currentUser]);
 
   // ---- Atualizar mensagem ----
   const updateMessage = useCallback(
@@ -249,11 +260,7 @@ export default function ServiceOrderDetail({
       loadMessages(1, false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [order?.id]); // <-- removido loadMessages das dependências para evitar recarga desnecessária
-
-  // =============================================================
-  // POLLING REMOVIDO – Atualização apenas manual via botão
-  // =============================================================
+  }, [order?.id]);
 
   // ---- Se não houver ordem, mostra loading ----
   if (!order) {
@@ -395,90 +402,96 @@ export default function ServiceOrderDetail({
               ) : (
                 <>
                   <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
-                    {messages.map((msg) => (
-                      <div
-                        key={msg.id}
-                        className="bg-slate-800/30 rounded-2xl p-4 border border-slate-700/30 hover:border-slate-600/50 transition-colors"
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 font-bold flex items-center justify-center text-lg flex-shrink-0">
-                            {msg.user?.name?.charAt(0)?.toUpperCase() || "?"}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <div className="flex items-center gap-2">
-                                <span className="text-white font-bold text-sm">{msg.user?.name || "Usuário"}</span>
-                                <span className="text-slate-500 text-xs">{formatDateTime(msg.created_at)}</span>
+                    {messages.map((msg) => {
+                      // 🔥 CORREÇÃO: Usar o nome do usuário da mensagem, não do chamado
+                      const userName = msg.user?.name || "Usuário";
+                      const userInitial = userName.charAt(0)?.toUpperCase() || "?";
+                      
+                      return (
+                        <div
+                          key={msg.id}
+                          className="bg-slate-800/30 rounded-2xl p-4 border border-slate-700/30 hover:border-slate-600/50 transition-colors"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 font-bold flex items-center justify-center text-lg flex-shrink-0">
+                              {userInitial}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-white font-bold text-sm">{userName}</span>
+                                  <span className="text-slate-500 text-xs">{formatDateTime(msg.created_at)}</span>
+                                </div>
+                                {canModifyMessage(msg) && (
+                                  <div className="flex items-center gap-1">
+                                    <button
+                                      className="p-1.5 text-slate-400 hover:text-blue-400 transition-colors rounded-full hover:bg-blue-500/10"
+                                      onClick={() => {
+                                        setEditingMessageId(msg.id);
+                                        setEditMessageText(msg.message);
+                                      }}
+                                      disabled={sendingMessage}
+                                    >
+                                      ✏️
+                                    </button>
+                                    <button
+                                      className="p-1.5 text-slate-400 hover:text-red-400 transition-colors rounded-full hover:bg-red-500/10"
+                                      onClick={() => deleteMessage(msg.id)}
+                                      disabled={sendingMessage}
+                                    >
+                                      🗑️
+                                    </button>
+                                  </div>
+                                )}
                               </div>
-                              {canModifyMessage(msg) && (
-                                <div className="flex items-center gap-1">
-                                  <button
-                                    className="p-1.5 text-slate-400 hover:text-blue-400 transition-colors rounded-full hover:bg-blue-500/10"
-                                    onClick={() => {
-                                      setEditingMessageId(msg.id);
-                                      setEditMessageText(msg.message);
-                                    }}
-                                    disabled={sendingMessage}
+                              {editingMessageId === msg.id ? (
+                                <div className="mt-2 flex flex-col gap-2">
+                                  <textarea
+                                    className="w-full px-3 py-2 bg-slate-700/50 border border-blue-500/30 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all resize-none"
+                                    rows="2"
+                                    value={editMessageText}
+                                    onChange={(e) => setEditMessageText(e.target.value)}
+                                    autoFocus
+                                  />
+                                  <div className="flex justify-end gap-2">
+                                    <button
+                                      className="px-4 py-1.5 rounded-full bg-slate-700 hover:bg-slate-600 text-white text-sm transition-all"
+                                      onClick={() => {
+                                        setEditingMessageId(null);
+                                        setEditMessageText("");
+                                      }}
+                                    >
+                                      Cancelar
+                                    </button>
+                                    <button
+                                      className="px-4 py-1.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-sm transition-all"
+                                      onClick={() => updateMessage(msg.id, editMessageText)}
+                                      disabled={!editMessageText.trim()}
+                                    >
+                                      Salvar
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <p className="text-slate-300 text-sm mt-1 whitespace-pre-wrap">{msg.message}</p>
+                              )}
+                              {msg.attachment_path && (
+                                <div className="mt-2">
+                                  <a
+                                    href={`${baseUrl}/storage/${msg.attachment_path}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 hover:text-blue-300 text-xs flex items-center gap-1"
                                   >
-                                    ✏️
-                                  </button>
-                                  <button
-                                    className="p-1.5 text-slate-400 hover:text-red-400 transition-colors rounded-full hover:bg-red-500/10"
-                                    onClick={() => deleteMessage(msg.id)}
-                                    disabled={sendingMessage}
-                                  >
-                                    🗑️
-                                  </button>
+                                    📎 Ver anexo
+                                  </a>
                                 </div>
                               )}
                             </div>
-                            {editingMessageId === msg.id ? (
-                              <div className="mt-2 flex flex-col gap-2">
-                                <textarea
-                                  className="w-full px-3 py-2 bg-slate-700/50 border border-blue-500/30 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all resize-none"
-                                  rows="2"
-                                  value={editMessageText}
-                                  onChange={(e) => setEditMessageText(e.target.value)}
-                                  autoFocus
-                                />
-                                <div className="flex justify-end gap-2">
-                                  <button
-                                    className="px-4 py-1.5 rounded-full bg-slate-700 hover:bg-slate-600 text-white text-sm transition-all"
-                                    onClick={() => {
-                                      setEditingMessageId(null);
-                                      setEditMessageText("");
-                                    }}
-                                  >
-                                    Cancelar
-                                  </button>
-                                  <button
-                                    className="px-4 py-1.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-sm transition-all"
-                                    onClick={() => updateMessage(msg.id, editMessageText)}
-                                    disabled={!editMessageText.trim()}
-                                  >
-                                    Salvar
-                                  </button>
-                                </div>
-                              </div>
-                            ) : (
-                              <p className="text-slate-300 text-sm mt-1 whitespace-pre-wrap">{msg.message}</p>
-                            )}
-                            {msg.attachment_path && (
-                              <div className="mt-2">
-                                <a
-                                  href={`${baseUrl}/storage/${msg.attachment_path}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-400 hover:text-blue-300 text-xs flex items-center gap-1"
-                                >
-                                  📎 Ver anexo
-                                </a>
-                              </div>
-                            )}
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                   {hasMore && (
                     <div className="flex justify-center mt-4">
