@@ -98,16 +98,12 @@ export default function ServiceOrderDetail({
   const [totalPages, setTotalPages] = useState(1);
   const [hasMore, setHasMore] = useState(false);
 
-  // ---- Polling (atualização automática) ----
-  const [polling] = useState(true);
-
   // ---- Carregar mensagens (com paginação) ----
   const loadMessages = useCallback(
     async (pageNum = 1, append = false) => {
       if (!order?.id) return;
       setLoadingMessages(true);
       try {
-        // **MANTER O PREFIXO /api/v1**
         const res = await api.get(`/api/v1/${order.id}/messages`, {
           params: { page: pageNum, per_page: 15 },
         });
@@ -150,6 +146,7 @@ export default function ServiceOrderDetail({
         headers: { "Content-Type": "multipart/form-data" },
       });
       const newMsg = res.data.data || res.data;
+      // Adiciona a nova mensagem no topo da lista (mais recente)
       setMessages((prev) => [newMsg, ...prev]);
       setNewMessage("");
       setNewAttachment(null);
@@ -246,21 +243,17 @@ export default function ServiceOrderDetail({
     });
   };
 
-  // ---- Carregar mensagens ao montar ----
+  // ---- Carregar mensagens ao montar (apenas uma vez) ----
   useEffect(() => {
     if (order?.id) {
       loadMessages(1, false);
     }
-  }, [order?.id, loadMessages]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [order?.id]); // <-- removido loadMessages das dependências para evitar recarga desnecessária
 
-  // ---- Polling (atualização a cada 10s) ----
-  useEffect(() => {
-    if (!polling || !order?.id) return;
-    const interval = setInterval(() => {
-      loadMessages(1, false);
-    }, 10000);
-    return () => clearInterval(interval);
-  }, [polling, order?.id, loadMessages]);
+  // =============================================================
+  // POLLING REMOVIDO – Atualização apenas manual via botão
+  // =============================================================
 
   // ---- Se não houver ordem, mostra loading ----
   if (!order) {
