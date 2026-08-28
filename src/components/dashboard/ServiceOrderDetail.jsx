@@ -1,6 +1,3 @@
-import React, { useState, useEffect, useCallback } from "react";
-import Swal from "sweetalert2";
-
 
 // --- Configurações de status e prioridade (já existentes) ---
 const STATUS_CONFIG = {
