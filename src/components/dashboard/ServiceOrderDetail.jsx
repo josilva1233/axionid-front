@@ -1,5 +1,5 @@
 // components/dashboard/ServiceOrderDetail.jsx
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import api from "../../services/api";
 import Swal from "sweetalert2";
 
@@ -98,17 +98,24 @@ export default function ServiceOrderDetail({
   const [totalPages, setTotalPages] = useState(1);
   const [hasMore, setHasMore] = useState(false);
 
-  // ---- Estado para controlar se o chamado foi resolvido recentemente ----
+  // ---- Estado LOCAL para controlar o status e tempo ----
+  const [localOrder, setLocalOrder] = useState(order);
   const [timeUntilClose, setTimeUntilClose] = useState(null);
   const [isResolved, setIsResolved] = useState(false);
+  const autoCloseTimerRef = useRef(null);
+
+  // ---- Atualizar estado local quando o order prop mudar ----
+  useEffect(() => {
+    setLocalOrder(order);
+  }, [order]);
 
   // ---- Carregar mensagens (com paginação) ----
   const loadMessages = useCallback(
     async (pageNum = 1, append = false) => {
-      if (!order?.id) return;
+      if (!localOrder?.id) return;
       setLoadingMessages(true);
       try {
-        const res = await api.get(`/api/v1/${order.id}/messages`, {
+        const res = await api.get(`/api/v1/${localOrder.id}/messages`, {
           params: { page: pageNum, per_page: 15 },
         });
         const { data, current_page, last_page } = res.data;
@@ -124,7 +131,7 @@ export default function ServiceOrderDetail({
         setLoadingMessages(false);
       }
     },
-    [order?.id]
+    [localOrder?.id]
   );
 
   // ---- Carregar mais mensagens ----
@@ -135,11 +142,11 @@ export default function ServiceOrderDetail({
   };
 
   // ---- Verificar se o chamado está resolvido e calcular tempo restante ----
-  useEffect(() => {
-    if (order?.status === 'resolved' && order?.resolved_at) {
+  const checkResolvedStatus = useCallback(() => {
+    if (localOrder?.status === 'resolved' && localOrder?.resolved_at) {
       setIsResolved(true);
       
-      const resolvedDate = new Date(order.resolved_at);
+      const resolvedDate = new Date(localOrder.resolved_at);
       const twoDaysLater = new Date(resolvedDate);
       twoDaysLater.setDate(twoDaysLater.getDate() + 2);
       
@@ -148,28 +155,41 @@ export default function ServiceOrderDetail({
       
       if (timeDiff > 0) {
         setTimeUntilClose(timeDiff);
+        return true;
       } else {
         setTimeUntilClose(0);
+        // Fechar automaticamente
         handleAutoClose();
+        return false;
       }
     } else {
       setIsResolved(false);
       setTimeUntilClose(null);
+      return false;
     }
-  }, [order?.status, order?.resolved_at]);
+  }, [localOrder]);
 
   // ---- Função para fechar automaticamente o chamado ----
   const handleAutoClose = useCallback(async () => {
-    if (!order?.id || order.status === 'closed') return;
+    if (!localOrder?.id || localOrder.status === 'closed') return;
     
     try {
-      await api.put(`/api/v1/service-orders/${order.id}`, {
+      const response = await api.put(`/api/v1/service-orders/${localOrder.id}`, {
         status: 'closed'
       });
       
+      const updatedOrder = response.data.data || response.data;
+      
+      // Atualizar estado local
+      setLocalOrder(prev => ({ ...prev, ...updatedOrder }));
+      
+      // Notificar componente pai
       if (onUpdateStatus) {
-        onUpdateStatus(order.id, 'closed');
+        onUpdateStatus(localOrder.id, 'closed', updatedOrder);
       }
+      
+      setIsResolved(false);
+      setTimeUntilClose(null);
       
       Swal.fire({
         icon: 'info',
@@ -181,36 +201,49 @@ export default function ServiceOrderDetail({
     } catch (error) {
       console.error('Erro ao fechar chamado automaticamente:', error);
     }
-  }, [order?.id, order?.status, onUpdateStatus]);
+  }, [localOrder, onUpdateStatus]);
 
-  // ---- Timer para verificar quando fechar o chamado ----
+  // ---- Iniciar timer para verificar quando fechar o chamado ----
   useEffect(() => {
-    if (!isResolved || !timeUntilClose) return;
-
-    if (timeUntilClose <= 0) {
-      handleAutoClose();
-      return;
+    // Limpar timer anterior
+    if (autoCloseTimerRef.current) {
+      clearInterval(autoCloseTimerRef.current);
+      autoCloseTimerRef.current = null;
     }
 
-    const timer = setInterval(() => {
-      const now = new Date();
-      const resolvedDate = new Date(order.resolved_at);
-      const twoDaysLater = new Date(resolvedDate);
-      twoDaysLater.setDate(twoDaysLater.getDate() + 2);
-      
-      const remaining = twoDaysLater - now;
-      
-      if (remaining <= 0) {
-        setTimeUntilClose(0);
-        handleAutoClose();
-        clearInterval(timer);
-      } else {
-        setTimeUntilClose(remaining);
-      }
-    }, 60000);
+    // Verificar status inicial
+    const isResolvedNow = checkResolvedStatus();
 
-    return () => clearInterval(timer);
-  }, [isResolved, timeUntilClose, order?.resolved_at, handleAutoClose]);
+    // Se estiver resolvido e ainda tem tempo, iniciar timer
+    if (isResolvedNow && timeUntilClose > 0) {
+      autoCloseTimerRef.current = setInterval(() => {
+        const resolvedDate = new Date(localOrder.resolved_at);
+        const twoDaysLater = new Date(resolvedDate);
+        twoDaysLater.setDate(twoDaysLater.getDate() + 2);
+        
+        const now = new Date();
+        const remaining = twoDaysLater - now;
+        
+        if (remaining <= 0) {
+          setTimeUntilClose(0);
+          handleAutoClose();
+          if (autoCloseTimerRef.current) {
+            clearInterval(autoCloseTimerRef.current);
+            autoCloseTimerRef.current = null;
+          }
+        } else {
+          setTimeUntilClose(remaining);
+        }
+      }, 60000); // Verificar a cada minuto
+    }
+
+    return () => {
+      if (autoCloseTimerRef.current) {
+        clearInterval(autoCloseTimerRef.current);
+        autoCloseTimerRef.current = null;
+      }
+    };
+  }, [localOrder?.status, localOrder?.resolved_at, checkResolvedStatus, handleAutoClose, timeUntilClose]);
 
   // ---- Formatar tempo restante ----
   const formatTimeRemaining = (milliseconds) => {
@@ -245,13 +278,12 @@ export default function ServiceOrderDetail({
         formData.append("attachment", newAttachment);
       }
 
-      const res = await api.post(`/api/v1/${order.id}/messages`, formData, {
+      const res = await api.post(`/api/v1/${localOrder.id}/messages`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       
       const newMsg = res.data.data || res.data;
       
-      // Adiciona a nova mensagem no topo da lista
       setMessages((prev) => {
         if (newMsg && !newMsg.user && currentUser) {
           newMsg.user = {
@@ -280,14 +312,14 @@ export default function ServiceOrderDetail({
     } finally {
       setSendingMessage(false);
     }
-  }, [newMessage, newAttachment, order?.id, currentUser]);
+  }, [newMessage, newAttachment, localOrder?.id, currentUser]);
 
   // ---- Atualizar mensagem ----
   const updateMessage = useCallback(
     async (messageId, newText) => {
       if (!newText.trim()) return;
       try {
-        const res = await api.put(`/api/v1/${order.id}/messages/${messageId}`, {
+        const res = await api.put(`/api/v1/${localOrder.id}/messages/${messageId}`, {
           message: newText.trim(),
         });
         const updated = res.data.data || res.data;
@@ -305,7 +337,7 @@ export default function ServiceOrderDetail({
         Swal.fire("Erro", error.response?.data?.message || "Falha ao atualizar mensagem.", "error");
       }
     },
-    [order?.id]
+    [localOrder?.id]
   );
 
   // ---- Excluir mensagem ----
@@ -325,7 +357,7 @@ export default function ServiceOrderDetail({
       if (!result.isConfirmed) return;
 
       try {
-        await api.delete(`/api/v1/${order.id}/messages/${messageId}`);
+        await api.delete(`/api/v1/${localOrder.id}/messages/${messageId}`);
         setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
         Swal.fire({
           icon: "success",
@@ -338,7 +370,7 @@ export default function ServiceOrderDetail({
         Swal.fire("Erro", error.response?.data?.message || "Falha ao excluir mensagem.", "error");
       }
     },
-    [order?.id]
+    [localOrder?.id]
   );
 
   // ---- Verifica se o usuário pode modificar a mensagem ----
@@ -361,15 +393,15 @@ export default function ServiceOrderDetail({
 
   // ---- Carregar mensagens ao montar ----
   useEffect(() => {
-    if (order?.id) {
+    if (localOrder?.id) {
       loadMessages(1, false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [order?.id]);
+  }, [localOrder?.id]);
 
-  // ---- Função para marcar como resolvido (apenas via botão) ----
+  // ---- Função para marcar como resolvido ----
   const handleMarkAsResolved = useCallback(async () => {
-    if (!order?.id) return;
+    if (!localOrder?.id) return;
     
     const result = await Swal.fire({
       title: "Marcar como Resolvido?",
@@ -386,18 +418,32 @@ export default function ServiceOrderDetail({
     if (!result.isConfirmed) return;
     
     try {
-      await api.put(`/api/v1/service-orders/${order.id}`, {
+      const now = new Date().toISOString();
+      const response = await api.put(`/api/v1/service-orders/${localOrder.id}`, {
         status: 'resolved',
-        resolved_at: new Date().toISOString()
+        resolved_at: now
       });
       
+      const updatedOrder = response.data.data || response.data;
+      
+      // 🔥 ATUALIZAR ESTADO LOCAL IMEDIATAMENTE
+      setLocalOrder(prev => ({ ...prev, ...updatedOrder }));
+      
+      // 🔥 NOTIFICAR COMPONENTE PAI
       if (onUpdateStatus) {
-        onUpdateStatus(order.id, 'resolved');
+        onUpdateStatus(localOrder.id, 'resolved', updatedOrder);
       }
+      
+      // 🔥 ATUALIZAR STATUS LOCAL
+      setIsResolved(true);
+      const resolvedDate = new Date(now);
+      const twoDaysLater = new Date(resolvedDate);
+      twoDaysLater.setDate(twoDaysLater.getDate() + 2);
+      setTimeUntilClose(twoDaysLater - new Date());
       
       Swal.fire({
         icon: "success",
-        title: "Chamado Resolvido!",
+        title: "✅ Chamado Resolvido!",
         text: "O chamado será fechado automaticamente em 2 dias.",
         timer: 3000,
         showConfirmButton: false,
@@ -410,10 +456,10 @@ export default function ServiceOrderDetail({
         "error"
       );
     }
-  }, [order?.id, onUpdateStatus]);
+  }, [localOrder, onUpdateStatus]);
 
   // ---- Se não houver ordem, mostra loading ----
-  if (!order) {
+  if (!localOrder) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-8">
         <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-4"></div>
@@ -428,7 +474,7 @@ export default function ServiceOrderDetail({
     );
   }
 
-  const formattedDate = new Date(order.created_at).toLocaleString("pt-BR", {
+  const formattedDate = new Date(localOrder.created_at).toLocaleString("pt-BR", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -450,20 +496,20 @@ export default function ServiceOrderDetail({
                 ← Voltar
               </button>
               <div className="bg-blue-500/20 px-4 py-2 rounded-full">
-                <strong className="text-blue-400 text-lg font-mono">#{order.protocol || order.id}</strong>
+                <strong className="text-blue-400 text-lg font-mono">#{localOrder.protocol || localOrder.id}</strong>
               </div>
             </div>
             <div className="flex-1 min-w-[200px]">
-              <h2 className="text-white text-xl font-bold mb-1">{order.title}</h2>
+              <h2 className="text-white text-xl font-bold mb-1">{localOrder.title}</h2>
               <div className="flex flex-wrap gap-3 text-slate-400 text-sm">
                 <span>📅 {formattedDate}</span>
-                <span># ID: {order.id}</span>
+                <span># ID: {localOrder.id}</span>
               </div>
             </div>
             {isSystemAdmin && (
               <button
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-red-500/30 bg-transparent text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all"
-                onClick={() => onDeleteOrder(order.id)}
+                onClick={() => onDeleteOrder(localOrder.id)}
                 disabled={actionLoading}
               >
                 🗑️ Excluir
@@ -480,8 +526,8 @@ export default function ServiceOrderDetail({
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 shadow-lg">
               <div className="flex flex-wrap gap-3 mb-4 pb-4 border-b border-slate-700/50">
-                <StatusBadge status={order.status} />
-                <PriorityBadge priority={order.priority} />
+                <StatusBadge status={localOrder.status} />
+                <PriorityBadge priority={localOrder.priority} />
                 
                 {isResolved && timeUntilClose > 0 && (
                   <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold shadow-sm bg-green-500/15 text-green-400">
@@ -498,11 +544,11 @@ export default function ServiceOrderDetail({
               <div>
                 <h6 className="text-blue-400 font-bold mb-3 flex items-center gap-2">💬 Descrição da Solicitação</h6>
                 <div className="bg-slate-800/30 rounded-2xl p-4">
-                  <p className="text-slate-300 leading-relaxed mb-0">{order.description || "Sem descrição fornecida."}</p>
+                  <p className="text-slate-300 leading-relaxed mb-0">{localOrder.description || "Sem descrição fornecida."}</p>
                 </div>
               </div>
 
-              <AttachmentPreview order={order} baseUrl={baseUrl} />
+              <AttachmentPreview order={localOrder} baseUrl={baseUrl} />
             </div>
 
             {/* ======== SEÇÃO DE MENSAGENS ======== */}
@@ -527,7 +573,7 @@ export default function ServiceOrderDetail({
                   placeholder="Digite sua mensagem..."
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  disabled={sendingMessage || order.status === 'closed'}
+                  disabled={sendingMessage || localOrder.status === 'closed'}
                 />
                 <div className="flex flex-wrap items-center gap-3">
                   <input
@@ -536,12 +582,12 @@ export default function ServiceOrderDetail({
                     className="flex-1 min-w-[200px] px-3 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-500/20 file:text-blue-400 hover:file:bg-blue-500/30 transition-all"
                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                     onChange={(e) => setNewAttachment(e.target.files[0] || null)}
-                    disabled={sendingMessage || order.status === 'closed'}
+                    disabled={sendingMessage || localOrder.status === 'closed'}
                   />
                   <button
                     className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={sendMessage}
-                    disabled={(!newMessage.trim() && !newAttachment) || sendingMessage || order.status === 'closed'}
+                    disabled={(!newMessage.trim() && !newAttachment) || sendingMessage || localOrder.status === 'closed'}
                   >
                     {sendingMessage ? "Enviando..." : "📤 Enviar"}
                   </button>
@@ -551,7 +597,7 @@ export default function ServiceOrderDetail({
                     <span>✅</span> Anexo selecionado: <strong>{newAttachment.name}</strong>
                   </div>
                 )}
-                {order.status === 'closed' && (
+                {localOrder.status === 'closed' && (
                   <div className="text-sm text-yellow-400 flex items-center gap-2">
                     <span>⚠️</span> Chamado fechado - não é possível enviar mensagens
                   </div>
@@ -569,7 +615,6 @@ export default function ServiceOrderDetail({
                 <>
                   <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
                     {messages.map((msg) => {
-                      // 🔥 CORREÇÃO: Usar o usuário da mensagem, NÃO o usuário do chamado
                       const messageUser = msg.user || { name: 'Usuário Desconhecido' };
                       const userName = messageUser.name || 'Usuário Desconhecido';
                       const userInitial = userName.charAt(0)?.toUpperCase() || '?';
@@ -589,7 +634,7 @@ export default function ServiceOrderDetail({
                                   <span className="text-white font-bold text-sm">{userName}</span>
                                   <span className="text-slate-500 text-xs">{formatDateTime(msg.created_at)}</span>
                                 </div>
-                                {canModifyMessage(msg) && order.status !== 'closed' && (
+                                {canModifyMessage(msg) && localOrder.status !== 'closed' && (
                                   <div className="flex items-center gap-1">
                                     <button
                                       className="p-1.5 text-slate-400 hover:text-blue-400 transition-colors rounded-full hover:bg-blue-500/10"
@@ -684,11 +729,11 @@ export default function ServiceOrderDetail({
               <div className="mb-4 p-3 bg-slate-800/30 rounded-2xl">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 font-bold flex items-center justify-center text-lg">
-                    {order.user?.name?.charAt(0)?.toUpperCase() || "?"}
+                    {localOrder.user?.name?.charAt(0)?.toUpperCase() || "?"}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h6 className="text-white font-bold mb-0.5 truncate">{order.user?.name || "Usuário não identificado"}</h6>
-                    <small className="text-slate-400 truncate block">{order.user?.email || "Email não disponível"}</small>
+                    <h6 className="text-white font-bold mb-0.5 truncate">{localOrder.user?.name || "Usuário não identificado"}</h6>
+                    <small className="text-slate-400 truncate block">{localOrder.user?.email || "Email não disponível"}</small>
                   </div>
                 </div>
               </div>
@@ -700,7 +745,7 @@ export default function ServiceOrderDetail({
                   </div>
                   <div>
                     <h6 className="text-slate-400 text-xs uppercase font-semibold mb-0.5">Grupo Responsável</h6>
-                    <p className="text-white font-bold mb-0">{order.group?.name || "Sem grupo vinculado"}</p>
+                    <p className="text-white font-bold mb-0">{localOrder.group?.name || "Sem grupo vinculado"}</p>
                   </div>
                 </div>
               </div>
@@ -712,13 +757,13 @@ export default function ServiceOrderDetail({
                   </div>
                   <div className="flex-1">
                     <h6 className="text-slate-400 text-xs uppercase font-semibold mb-0.5">Técnico Designado</h6>
-                    {order.technician ? (
+                    {localOrder.technician ? (
                       <div className="flex items-center gap-2 mt-1">
                         <div className="w-8 h-8 rounded-full bg-green-500/20 text-green-400 font-bold flex items-center justify-center text-sm">
-                          {order.technician.name?.charAt(0)?.toUpperCase()}
+                          {localOrder.technician.name?.charAt(0)?.toUpperCase()}
                         </div>
                         <div>
-                          <p className="text-white font-bold mb-0 text-sm">{order.technician.name}</p>
+                          <p className="text-white font-bold mb-0 text-sm">{localOrder.technician.name}</p>
                           <small className="text-slate-400 text-xs">Responsável pelo atendimento</small>
                         </div>
                       </div>
@@ -728,7 +773,7 @@ export default function ServiceOrderDetail({
                         <p className="text-slate-400 text-sm mb-3">Aguardando técnico</p>
                         <button
                           className="w-full py-2.5 rounded-full border border-blue-500/30 bg-transparent text-blue-400 hover:bg-blue-500/10 transition-all font-medium"
-                          onClick={() => onUpdateStatus(order.id, "in_progress")}
+                          onClick={() => onUpdateStatus(localOrder.id, "in_progress")}
                           disabled={actionLoading}
                         >
                           ✅ Assumir este chamado
@@ -739,8 +784,8 @@ export default function ServiceOrderDetail({
                 </div>
               </div>
 
-              {/* Botão para marcar como resolvido */}
-              {order.status !== 'resolved' && order.status !== 'closed' && (
+              {/* Botão para marcar como resolvido - APENAS PARA STATUS QUE NÃO SÃO RESOLVIDO OU FECHADO */}
+              {localOrder.status !== 'resolved' && localOrder.status !== 'closed' && (
                 <div className="mt-4 mb-4">
                   <button
                     className="w-full py-2.5 rounded-full bg-green-600 hover:bg-green-500 text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -759,8 +804,9 @@ export default function ServiceOrderDetail({
                 <label className="text-slate-400 text-xs uppercase font-bold block mb-3">Alterar Status</label>
                 <select
                   className="w-full px-4 py-2.5 bg-slate-800/50 border border-blue-500/30 rounded-full text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all appearance-none cursor-pointer"
-                  value={order.status}
+                  value={localOrder.status}
                   onChange={(e) => {
+                    // 🔥 BLOQUEAR seleção manual do status "resolved"
                     if (e.target.value === 'resolved') {
                       Swal.fire({
                         icon: 'info',
@@ -771,9 +817,9 @@ export default function ServiceOrderDetail({
                       });
                       return;
                     }
-                    onUpdateStatus(order.id, e.target.value);
+                    onUpdateStatus(localOrder.id, e.target.value);
                   }}
-                  disabled={actionLoading || order.status === 'closed'}
+                  disabled={actionLoading || localOrder.status === 'closed'}
                 >
                   <option value="pending">⏳ Pendente</option>
                   <option value="open">📂 Em Aberto</option>
