@@ -1,6 +1,6 @@
 // components/dashboard/Sidebar.jsx
 import { useState, useEffect, useRef } from 'react';
-import { usePermissions } from '../hooks/usePermissions';
+import { usePermissions } from '../../hooks/usePermissions';
 
 export default function Sidebar({ activeTab, setActiveTab, role, onLogout, onToggle }) {
   // 🔥 USAR O HOOK DE PERMISSÕES
