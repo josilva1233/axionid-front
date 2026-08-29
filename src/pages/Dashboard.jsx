@@ -27,7 +27,7 @@ import '../index.css';
 export default function Dashboard() {
   const navigate = useNavigate();
   const [role] = useState(localStorage.getItem("@AxionID:role"));
-  const [activeTab, setActiveTab] = useState("users");
+  const [activeTab, setActiveTab] = useState("orders");
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
@@ -100,6 +100,87 @@ export default function Dashboard() {
   } = useDashboardData(role);
 
   const isGlobalAdmin = role === "admin" || currentUser?.is_admin === true;
+
+  // ========== PERSISTÊNCIA DE ESTADO ==========
+  // Salvar estado no localStorage quando mudar
+  useEffect(() => {
+    const stateToSave = {
+      activeTab,
+      selectedOrder: selectedOrder?.id || null,
+      selectedUser: selectedUser?.id || null,
+      selectedGroupId,
+      selectedPermission: selectedPermission?.id || null,
+      showOrderForm,
+      showGroupForm,
+      showPermissionModal,
+      ordersCurrentPage,
+      usersCurrentPage,
+      groupsCurrentPage,
+      auditCurrentPage,
+      permissionsCurrentPage,
+      sidebarCollapsed,
+    };
+    localStorage.setItem('@AxionID:dashboardState', JSON.stringify(stateToSave));
+  }, [
+    activeTab,
+    selectedOrder,
+    selectedUser,
+    selectedGroupId,
+    selectedPermission,
+    showOrderForm,
+    showGroupForm,
+    showPermissionModal,
+    ordersCurrentPage,
+    usersCurrentPage,
+    groupsCurrentPage,
+    auditCurrentPage,
+    permissionsCurrentPage,
+    sidebarCollapsed,
+  ]);
+
+  // Restaurar estado do localStorage ao carregar
+  useEffect(() => {
+    const savedState = localStorage.getItem('@AxionID:dashboardState');
+    if (savedState) {
+      try {
+        const state = JSON.parse(savedState);
+        setActiveTab(state.activeTab || 'orders');
+        setOrdersCurrentPage(state.ordersCurrentPage || 1);
+        setUsersCurrentPage(state.usersCurrentPage || 1);
+        setGroupsCurrentPage(state.groupsCurrentPage || 1);
+        setAuditCurrentPage(state.auditCurrentPage || 1);
+        setPermissionsCurrentPage(state.permissionsCurrentPage || 1);
+        setSidebarCollapsed(state.sidebarCollapsed || false);
+        
+        // Restaurar modais
+        setShowOrderForm(state.showOrderForm || false);
+        setShowGroupForm(state.showGroupForm || false);
+        setShowPermissionModal(state.showPermissionModal || false);
+        
+        // Restaurar seleções (buscar dados novamente)
+        if (state.selectedOrder) {
+          setTimeout(() => {
+            handleOpenOrderDetail(state.selectedOrder);
+          }, 500);
+        }
+        if (state.selectedUser) {
+          api.get(`/api/v1/admin/users/${state.selectedUser}`)
+            .then(res => setSelectedUser(res.data.data || res.data))
+            .catch(() => setSelectedUser(null));
+        }
+        if (state.selectedGroupId) {
+          setSelectedGroupId(state.selectedGroupId);
+        }
+        if (state.selectedPermission) {
+          api.get(`/api/v1/admin/permissions/${state.selectedPermission}`)
+            .then(res => setSelectedPermission(res.data.data || res.data))
+            .catch(() => setSelectedPermission(null));
+        }
+      } catch (e) {
+        console.error('Erro ao restaurar estado:', e);
+      }
+    }
+  }, []);
 
   // ========== CARREGAR TODAS AS PERMISSÕES ==========
   useEffect(() => {
@@ -269,13 +350,16 @@ export default function Dashboard() {
 
   // ============ HANDLERS DE ORDENS DE SERVIÇO ============
   const handleOpenOrderDetail = useCallback(async (orderId) => {
+    if (!orderId) return;
     setActionLoading(true);
     setShowOrderForm(false);
     try {
       const res = await api.get(`/api/v1/service-orders/${orderId}`);
       setSelectedOrder(res.data.data || res.data);
     } catch (err) {
+      console.error("Erro ao carregar detalhes da OS:", err);
       AxionAlert.fire("Erro", "Não foi possível carregar os detalhes desta OS.", "error");
+      setSelectedOrder(null);
     } finally {
       setActionLoading(false);
     }
@@ -331,6 +415,7 @@ export default function Dashboard() {
         setActionLoading(true);
         await api.delete(`/api/v1/service-orders/${orderId}`);
         await loadServiceOrders(ordersCurrentPage);
+        setSelectedOrder(null);
         AxionAlert.fire({ icon: "success", title: "Deletado!", text: "Ordem de serviço removida.", timer: 1500, showConfirmButton: false });
       } catch (e) {
         AxionAlert.fire("Erro", "Falha ao excluir a OS.", "error");
@@ -694,6 +779,7 @@ export default function Dashboard() {
   }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId]);
 
   const handleLogout = useCallback(() => {
+    localStorage.removeItem('@AxionID:dashboardState');
     localStorage.clear();
     navigate("/login");
   }, [navigate]);
@@ -957,7 +1043,10 @@ export default function Dashboard() {
                   {!showOrderForm && selectedOrder && selectedOrder.id && (
                     <ServiceOrderDetail
                       order={selectedOrder}
-                      onBack={() => setSelectedOrder(null)}
+                      onBack={() => {
+                        setSelectedOrder(null);
+                        localStorage.removeItem('@AxionID:dashboardState');
+                      }}
                       onUpdateStatus={onUpdateStatus}
                       isSystemAdmin={isGlobalAdmin}
                       currentUser={currentUser}
