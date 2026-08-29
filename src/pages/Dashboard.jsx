@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Swal from "sweetalert2";
 import api from "../services/api";
 import { useDashboardData } from "../hooks/useDashboardData";
-import { usePermissions } from "../hooks/usePermissions"; // 🔥 ADICIONAR
+import { usePermissions } from "../hooks/usePermissions";
 // Components
 import Sidebar from "../components/dashboard/Sidebar";
 import UserTable from "../components/dashboard/UserTable";
@@ -23,6 +23,8 @@ import ServiceOrderForm from "../components/dashboard/ServiceOrderForm";
 import ServiceOrderDetail from "../components/dashboard/ServiceOrderDetail";
 import Pagination from "../components/dashboard/Pagination";
 import PermissionDetail from "../components/dashboard/PermissionDetail";
+// 🔥 ADICIONAR O AIChat
+import AIChat from "../components/dashboard/AIChat";
 // Styles
 import '../index.css';
 
@@ -97,7 +99,6 @@ export default function Dashboard() {
     if (!permissionsLoading) {
       if (!canAccessAnyTab()) {
         console.warn("Usuário sem permissões de acesso");
-        // Opcional: redirecionar para página de "Sem acesso"
       } else {
         const firstTab = getFirstAvailableTab();
         if (!canAccessTab(activeTab)) {
@@ -1041,6 +1042,13 @@ export default function Dashboard() {
                     </div>
                   )}
                 </>
+              )}
+
+              {/* ========== 🔥 ABA DA IA ========== */}
+              {activeTab === "ai" && (
+                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
+                  <AIChat />
+                </div>
               )}
 
               <div className={`relative ${loading || actionLoading ? "opacity-60 pointer-events-none" : ""}`}>
