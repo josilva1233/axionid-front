@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import api from "../../services/api";
 import Swal from "sweetalert2";
 
-export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCancel }) {
+export default function ServiceOrderForm({ onSuccess, onCancel }) {
   const [loading, setLoading] = useState(false);
   const [loadingGroups, setLoadingGroups] = useState(false);
   const [groups, setGroups] = useState([]);
@@ -28,39 +28,19 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
 
   // 🔥 CARREGAR GRUPOS AO ABRIR O FORMULÁRIO
   useEffect(() => {
-    if (groupsProp && Array.isArray(groupsProp) && groupsProp.length > 0) {
-      console.log("📊 Grupos recebidos via prop:", groupsProp);
-      setGroups(groupsProp);
-      return;
-    }
-
     const fetchGroups = async () => {
       setLoadingGroups(true);
       try {
         console.log("🔄 Buscando grupos disponíveis...");
-        
-        // 🔥 USAR URL COMPLETA PARA EVITAR PROBLEMAS
-        const response = await api.get("http://163.176.168.224/api/v1/service-orders/groups/available");
-        
+        const response = await api.get("/service-orders/groups/available");
         console.log("✅ Resposta da API:", response.data);
         
-        let groupsData = [];
-        if (response.data && response.data.data) {
-          groupsData = response.data.data;
-        } else if (response.data && Array.isArray(response.data)) {
-          groupsData = response.data;
-        } else {
-          groupsData = [];
-        }
-        
-        if (!Array.isArray(groupsData)) {
-          groupsData = [];
-        }
-        
+        const groupsData = response.data.data || response.data || [];
         setGroups(groupsData);
         
         if (groupsData.length === 0) {
           console.warn("⚠️ Nenhum grupo encontrado!");
+          // 🔥 Fallback: dados mock para teste
           setGroups([
             { id: 1, name: "Grupo Financeiro" },
             { id: 2, name: "Suporte Técnico" },
@@ -68,11 +48,13 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
             { id: 4, name: "Infraestrutura" },
             { id: 5, name: "Desenvolvimento" },
           ]);
+        } else {
+          console.log(`📊 ${groupsData.length} grupos carregados`);
         }
       } catch (error) {
         console.error("❌ Erro ao carregar grupos:", error);
-        console.error("❌ Status:", error.response?.status);
-        console.error("❌ Data:", error.response?.data);
+        console.error("Detalhes:", error.response?.data);
+        // 🔥 Fallback: usar dados mock
         setGroups([
           { id: 1, name: "Grupo Financeiro" },
           { id: 2, name: "Suporte Técnico" },
@@ -86,9 +68,7 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
     };
     
     fetchGroups();
-  }, [groupsProp]);
-
-  const groupsArray = Array.isArray(groups) ? groups : [];
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -110,11 +90,15 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
       data.append("title", formData.title);
       data.append("description", formData.description);
       data.append("priority", formData.priority);
-      if (formData.group_id) data.append("group_id", formData.group_id);
-      if (formData.attachment) data.append("attachment", formData.attachment);
+      if (formData.group_id) {
+        data.append("group_id", formData.group_id);
+        console.log("📌 Grupo selecionado:", formData.group_id);
+      }
+      if (formData.attachment) {
+        data.append("attachment", formData.attachment);
+      }
       
-      console.log("📤 Enviando para:", "http://163.176.168.224/api/v1/service-orders");
-      console.log("📤 Dados:", {
+      console.log("📤 Enviando dados:", {
         title: formData.title,
         description: formData.description,
         priority: formData.priority,
@@ -122,14 +106,13 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
         attachment: formData.attachment?.name || "Nenhum"
       });
 
-      // 🔥 USAR URL COMPLETA
-      const response = await api.post("http://163.176.168.224/api/v1/service-orders", data, {
+      const response = await api.post("/service-orders", data, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
       
-      console.log("✅ Resposta:", response.data);
+      console.log("✅ Chamado criado:", response.data);
       
       AxionAlert.fire({
         icon: "success",
@@ -142,22 +125,13 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
       if (onSuccess) onSuccess();
       
     } catch (err) {
-      console.error("❌ Erro:", err);
-      console.error("❌ Response:", err.response);
-      console.error("❌ Data:", err.response?.data);
-      console.error("❌ Status:", err.response?.status);
-      
-      let errorMessage = "Não foi possível criar o chamado.";
-      if (err.response?.data?.message) {
-        errorMessage = err.response.data.message;
-      } else if (err.response?.data?.errors) {
-        const errors = Object.values(err.response.data.errors).flat();
-        errorMessage = errors.join("\n");
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
-      
-      AxionAlert.fire("Erro", errorMessage, "error");
+      console.error("❌ Erro ao criar OS:", err);
+      console.error("Detalhes:", err.response?.data);
+      AxionAlert.fire(
+        "Erro",
+        err.response?.data?.message || "Não foi possível criar o chamado.",
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -185,6 +159,7 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
 
   return (
     <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-6 transition-colors hover:border-blue-500/30">
+      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h4 className="text-sm font-bold text-white flex items-center gap-2">
           ➕ Abrir Novo Chamado
@@ -198,7 +173,9 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
         </button>
       </div>
 
+      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Título */}
         <div>
           <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
             <span className="text-blue-500">●</span>
@@ -207,7 +184,7 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
           <input
             type="text"
             className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            placeholder="Ex: Problema com acesso ao sistema..."
+            placeholder="Ex: Problema com acesso ao sistema, Solicitação de equipamento..."
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             required
@@ -215,6 +192,7 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
           />
         </div>
 
+        {/* Descrição */}
         <div>
           <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
             <span className="text-blue-500">●</span>
@@ -223,7 +201,7 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
           <textarea
             rows={4}
             className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all resize-y disabled:opacity-50 disabled:cursor-not-allowed"
-            placeholder="Descreva detalhadamente o problema..."
+            placeholder="Descreva detalhadamente o problema ou solicitação..."
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             required
@@ -231,6 +209,7 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
           />
         </div>
 
+        {/* Prioridade e Grupo */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
@@ -264,12 +243,12 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
               <option value="">Selecionar grupo (opcional)</option>
               {loadingGroups ? (
                 <option value="" disabled>⏳ Carregando grupos...</option>
-              ) : groupsArray.length === 0 ? (
+              ) : groups.length === 0 ? (
                 <option value="" disabled>❌ Nenhum grupo disponível</option>
               ) : (
-                groupsArray.map((group) => (
+                groups.map((group) => (
                   <option key={group.id} value={group.id}>
-                    {group.name || `Grupo ${group.id}`}
+                    {group.name}
                   </option>
                 ))
               )}
@@ -280,6 +259,7 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
           </div>
         </div>
 
+        {/* Anexo */}
         <div>
           <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
             <span className="text-blue-500">●</span>
@@ -295,7 +275,7 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
           {formData.attachment && (
             <div className="mt-2 flex items-center gap-2 text-sm text-green-400">
               <span>✅</span>
-              <span>Arquivo: <strong>{formData.attachment.name}</strong></span>
+              <span>Arquivo selecionado: <strong>{formData.attachment.name}</strong></span>
               <span className="text-slate-400 text-xs">
                 ({(formData.attachment.size / 1024).toFixed(1)} KB)
               </span>
@@ -303,6 +283,7 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
           )}
         </div>
 
+        {/* Ações */}
         <div className="flex flex-wrap items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-700/50">
           <button
             type="button"
@@ -315,7 +296,7 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
           
           <button
             type="submit"
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 transition-all hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 transition-all hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none disabled:hover:shadow-none"
             disabled={loading}
           >
             {loading ? (
@@ -324,7 +305,9 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
                 Criando...
               </>
             ) : (
-              <>✅ Criar Chamado</>
+              <>
+                ✅ Criar Chamado
+              </>
             )}
           </button>
         </div>
