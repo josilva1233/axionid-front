@@ -96,8 +96,6 @@ export default function ServiceOrderDetail({
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [newAttachment, setNewAttachment] = useState(null);
-  const [editingMessageId, setEditingMessageId] = useState(null);
-  const [editMessageText, setEditMessageText] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
 
   // ---- Paginação das mensagens ----
@@ -141,7 +139,6 @@ export default function ServiceOrderDetail({
           params: { page: pageNum, per_page: 15 },
         });
         
-        // ✅ CORRIGIDO: acessar res.data.messages
         const { data, current_page, last_page } = res.data.messages;
         const newMessages = data || [];
         setMessages((prev) => (append ? [...prev, ...newMessages] : newMessages));
@@ -273,9 +270,7 @@ export default function ServiceOrderDetail({
     }
   };
 
-  // ============================================================
-  // 🔥 CORREÇÃO: Enviar mensagem (com suporte a anexo)
-  // ============================================================
+  // ---- Enviar mensagem (com suporte a anexo) ----
   const sendMessage = useCallback(async () => {
     if (!newMessage.trim() && !newAttachment) return;
 
@@ -284,7 +279,6 @@ export default function ServiceOrderDetail({
       const formData = new FormData();
       formData.append("message", newMessage.trim() || " ");
       
-      // 🔥 CORREÇÃO: Garantir que o anexo seja enviado corretamente
       if (newAttachment) {
         formData.append("attachment", newAttachment);
       }
@@ -297,7 +291,6 @@ export default function ServiceOrderDetail({
       
       const newMsg = res.data.data || res.data;
       
-      // 🔥 CORREÇÃO: Garantir que o usuário seja exibido corretamente
       if (newMsg && !newMsg.user && currentUser) {
         newMsg.user = {
           id: currentUser.id,
@@ -306,10 +299,8 @@ export default function ServiceOrderDetail({
         };
       }
       
-      // 🔥 CORREÇÃO: Adicionar a mensagem ao início da lista
       setMessages((prev) => [newMsg, ...prev]);
       
-      // Limpar campos
       setNewMessage("");
       setNewAttachment(null);
       const fileInput = document.getElementById("message-attachment");
@@ -329,76 +320,11 @@ export default function ServiceOrderDetail({
     }
   }, [newMessage, newAttachment, localOrder?.id, currentUser]);
 
-  // ---- Atualizar mensagem ----
-  const updateMessage = useCallback(
-    async (messageId, newText) => {
-      if (!newText.trim()) return;
-      try {
-        const res = await api.put(`/api/v1/service-orders/${localOrder.id}/messages/${messageId}`, {
-          message: newText.trim(),
-        });
-        const updated = res.data.data || res.data;
-        setMessages((prev) => prev.map((msg) => (msg.id === messageId ? updated : msg)));
-        setEditingMessageId(null);
-        setEditMessageText("");
-        Swal.fire({
-          icon: "success",
-          title: "Mensagem atualizada!",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-      } catch (error) {
-        console.error("Erro ao atualizar mensagem:", error);
-        Swal.fire("Erro", error.response?.data?.message || "Falha ao atualizar mensagem.", "error");
-      }
-    },
-    [localOrder?.id]
-  );
-
-  // ---- Excluir mensagem ----
-  const deleteMessage = useCallback(
-    async (messageId) => {
-      const result = await Swal.fire({
-        title: "Excluir mensagem?",
-        text: "Esta ação não pode ser desfeita.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Sim, excluir",
-        cancelButtonText: "Cancelar",
-        background: "#111214",
-        color: "#ffffff",
-        confirmButtonColor: "#6366f1",
-      });
-      if (!result.isConfirmed) return;
-
-      try {
-        await api.delete(`/api/v1/service-orders/${localOrder.id}/messages/${messageId}`);
-        setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
-        Swal.fire({
-          icon: "success",
-          title: "Mensagem removida!",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-      } catch (error) {
-        console.error("Erro ao excluir mensagem:", error);
-        Swal.fire("Erro", error.response?.data?.message || "Falha ao excluir mensagem.", "error");
-      }
-    },
-    [localOrder?.id]
-  );
-
-  // ---- Verifica se o usuário pode modificar a mensagem ----
-  const canModifyMessage = (message) => {
-    return isSystemAdmin || (message.user_id === currentUser?.id);
-  };
-
-  // 🔥 CORREÇÃO: Formatação de data/hora
+  // ---- Formatação de data/hora ----
   const formatDateTime = (dateString) => {
     if (!dateString) return "Data inválida";
     try {
       const d = new Date(dateString);
-      // Verificar se a data é válida
       if (isNaN(d.getTime())) {
         return "Data inválida";
       }
@@ -603,7 +529,6 @@ export default function ServiceOrderDetail({
                     onChange={(e) => {
                       const file = e.target.files[0];
                       if (file) {
-                        // 🔥 CORREÇÃO: Validar tamanho do arquivo (max 10MB)
                         if (file.size > 10 * 1024 * 1024) {
                           Swal.fire("Erro", "O arquivo não pode ter mais que 10MB.", "error");
                           e.target.value = "";
@@ -637,7 +562,7 @@ export default function ServiceOrderDetail({
                 )}
               </div>
 
-              {/* Lista de mensagens */}
+              {/* Lista de mensagens - SEM BOTÕES DE EDITAR E EXCLUIR */}
               {loadingMessages && messages.length === 0 ? (
                 <div className="flex justify-center py-8">
                   <div className="w-8 h-8 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
@@ -652,7 +577,6 @@ export default function ServiceOrderDetail({
                       const userName = messageUser.name || 'Usuário Desconhecido';
                       const userInitial = userName.charAt(0)?.toUpperCase() || '?';
                       
-                      // 🔥 CORREÇÃO: Usar a data do backend
                       const messageDate = msg.created_at || msg.created_at_human || msg.formatted_date;
                       
                       return (
@@ -669,63 +593,12 @@ export default function ServiceOrderDetail({
                                 <div className="flex items-center gap-2">
                                   <span className="text-white font-bold text-sm">{userName}</span>
                                   <span className="text-slate-500 text-xs">
-                                    {/* 🔥 CORREÇÃO: Exibir data formatada corretamente */}
                                     {formatDateTime(messageDate)}
                                   </span>
                                 </div>
-                                {canModifyMessage(msg) && localOrder.status !== 'closed' && (
-                                  <div className="flex items-center gap-1">
-                                    <button
-                                      className="p-1.5 text-slate-400 hover:text-blue-400 transition-colors rounded-full hover:bg-blue-500/10"
-                                      onClick={() => {
-                                        setEditingMessageId(msg.id);
-                                        setEditMessageText(msg.message);
-                                      }}
-                                      disabled={sendingMessage}
-                                    >
-                                      ✏️
-                                    </button>
-                                    <button
-                                      className="p-1.5 text-slate-400 hover:text-red-400 transition-colors rounded-full hover:bg-red-500/10"
-                                      onClick={() => deleteMessage(msg.id)}
-                                      disabled={sendingMessage}
-                                    >
-                                      🗑️
-                                    </button>
-                                  </div>
-                                )}
+                                {/* 🔥 REMOVIDOS: Botões de editar e excluir */}
                               </div>
-                              {editingMessageId === msg.id ? (
-                                <div className="mt-2 flex flex-col gap-2">
-                                  <textarea
-                                    className="w-full px-3 py-2 bg-slate-700/50 border border-blue-500/30 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all resize-none"
-                                    rows="2"
-                                    value={editMessageText}
-                                    onChange={(e) => setEditMessageText(e.target.value)}
-                                    autoFocus
-                                  />
-                                  <div className="flex justify-end gap-2">
-                                    <button
-                                      className="px-4 py-1.5 rounded-full bg-slate-700 hover:bg-slate-600 text-white text-sm transition-all"
-                                      onClick={() => {
-                                        setEditingMessageId(null);
-                                        setEditMessageText("");
-                                      }}
-                                    >
-                                      Cancelar
-                                    </button>
-                                    <button
-                                      className="px-4 py-1.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-sm transition-all"
-                                      onClick={() => updateMessage(msg.id, editMessageText)}
-                                      disabled={!editMessageText.trim()}
-                                    >
-                                      Salvar
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <p className="text-slate-300 text-sm mt-1 whitespace-pre-wrap">{msg.message}</p>
-                              )}
+                              <p className="text-slate-300 text-sm mt-1 whitespace-pre-wrap">{msg.message}</p>
                               {msg.attachment_path && (
                                 <div className="mt-2">
                                   <a
@@ -863,7 +736,6 @@ export default function ServiceOrderDetail({
                   <option value="pending">⏳ Pendente</option>
                   <option value="open">📂 Em Aberto</option>
                   <option value="in_progress">🔧 Em Atendimento</option>
-                  <option value="closed">🔒 Fechado</option>
                 </select>
               </div>
             </div>
