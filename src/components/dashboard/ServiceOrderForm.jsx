@@ -3,10 +3,10 @@ import { useState, useEffect } from "react";
 import api from "../../services/api";
 import Swal from "sweetalert2";
 
-export default function ServiceOrderForm({ onSuccess, onCancel }) {
+export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCancel }) {
   const [loading, setLoading] = useState(false);
   const [loadingGroups, setLoadingGroups] = useState(false);
-  const [groups, setGroups] = useState([]);
+  const [groups, setGroups] = useState([]); // 🔥 SEMPRE INICIALIZAR COMO ARRAY
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -28,6 +28,14 @@ export default function ServiceOrderForm({ onSuccess, onCancel }) {
 
   // 🔥 CARREGAR GRUPOS AO ABRIR O FORMULÁRIO
   useEffect(() => {
+    // Se recebeu grupos via prop, usar eles
+    if (groupsProp && Array.isArray(groupsProp) && groupsProp.length > 0) {
+      console.log("📊 Grupos recebidos via prop:", groupsProp);
+      setGroups(groupsProp);
+      return;
+    }
+
+    // Senão, buscar da API
     const fetchGroups = async () => {
       setLoadingGroups(true);
       try {
@@ -35,12 +43,27 @@ export default function ServiceOrderForm({ onSuccess, onCancel }) {
         const response = await api.get("/service-orders/groups/available");
         console.log("✅ Resposta da API:", response.data);
         
-        const groupsData = response.data.data || response.data || [];
+        // 🔥 CORREÇÃO: Garantir que é um array
+        let groupsData = [];
+        if (response.data && response.data.data) {
+          groupsData = response.data.data;
+        } else if (response.data && Array.isArray(response.data)) {
+          groupsData = response.data;
+        } else {
+          groupsData = [];
+        }
+        
+        // 🔥 GARANTIR QUE É UM ARRAY
+        if (!Array.isArray(groupsData)) {
+          console.warn("⚠️ groupsData não é um array:", groupsData);
+          groupsData = [];
+        }
+        
         setGroups(groupsData);
         
         if (groupsData.length === 0) {
           console.warn("⚠️ Nenhum grupo encontrado!");
-          // 🔥 Fallback: dados mock para teste
+          // 🔥 Fallback: dados mock
           setGroups([
             { id: 1, name: "Grupo Financeiro" },
             { id: 2, name: "Suporte Técnico" },
@@ -48,13 +71,10 @@ export default function ServiceOrderForm({ onSuccess, onCancel }) {
             { id: 4, name: "Infraestrutura" },
             { id: 5, name: "Desenvolvimento" },
           ]);
-        } else {
-          console.log(`📊 ${groupsData.length} grupos carregados`);
         }
       } catch (error) {
         console.error("❌ Erro ao carregar grupos:", error);
-        console.error("Detalhes:", error.response?.data);
-        // 🔥 Fallback: usar dados mock
+        // 🔥 Fallback: dados mock
         setGroups([
           { id: 1, name: "Grupo Financeiro" },
           { id: 2, name: "Suporte Técnico" },
@@ -68,7 +88,27 @@ export default function ServiceOrderForm({ onSuccess, onCancel }) {
     };
     
     fetchGroups();
-  }, []);
+  }, [groupsProp]);
+
+  // 🔥 FUNÇÃO PARA RENDERIZAR OS GRUPOS COM SEGURANÇA
+  const renderGroups = () => {
+    // Garantir que groups é um array
+    const groupsArray = Array.isArray(groups) ? groups : [];
+    
+    if (loadingGroups) {
+      return <option value="" disabled>⏳ Carregando grupos...</option>;
+    }
+    
+    if (groupsArray.length === 0) {
+      return <option value="" disabled>❌ Nenhum grupo disponível</option>;
+    }
+    
+    return groupsArray.map((group) => (
+      <option key={group.id} value={group.id}>
+        {group.name || `Grupo ${group.id}`}
+      </option>
+    ));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -90,15 +130,10 @@ export default function ServiceOrderForm({ onSuccess, onCancel }) {
       data.append("title", formData.title);
       data.append("description", formData.description);
       data.append("priority", formData.priority);
-      if (formData.group_id) {
-        data.append("group_id", formData.group_id);
-        console.log("📌 Grupo selecionado:", formData.group_id);
-      }
-      if (formData.attachment) {
-        data.append("attachment", formData.attachment);
-      }
+      if (formData.group_id) data.append("group_id", formData.group_id);
+      if (formData.attachment) data.append("attachment", formData.attachment);
       
-      console.log("📤 Enviando dados:", {
+      console.log("📤 Enviando:", {
         title: formData.title,
         description: formData.description,
         priority: formData.priority,
@@ -112,8 +147,6 @@ export default function ServiceOrderForm({ onSuccess, onCancel }) {
         },
       });
       
-      console.log("✅ Chamado criado:", response.data);
-      
       AxionAlert.fire({
         icon: "success",
         title: "Chamado criado!",
@@ -125,8 +158,7 @@ export default function ServiceOrderForm({ onSuccess, onCancel }) {
       if (onSuccess) onSuccess();
       
     } catch (err) {
-      console.error("❌ Erro ao criar OS:", err);
-      console.error("Detalhes:", err.response?.data);
+      console.error("❌ Erro:", err);
       AxionAlert.fire(
         "Erro",
         err.response?.data?.message || "Não foi possível criar o chamado.",
@@ -157,6 +189,9 @@ export default function ServiceOrderForm({ onSuccess, onCancel }) {
     }
   };
 
+  // 🔥 VERIFICAR SE groups É UM ARRAY ANTES DE RENDERIZAR
+  const groupsArray = Array.isArray(groups) ? groups : [];
+
   return (
     <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-6 transition-colors hover:border-blue-500/30">
       {/* Header */}
@@ -184,7 +219,7 @@ export default function ServiceOrderForm({ onSuccess, onCancel }) {
           <input
             type="text"
             className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            placeholder="Ex: Problema com acesso ao sistema, Solicitação de equipamento..."
+            placeholder="Ex: Problema com acesso ao sistema..."
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             required
@@ -201,7 +236,7 @@ export default function ServiceOrderForm({ onSuccess, onCancel }) {
           <textarea
             rows={4}
             className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all resize-y disabled:opacity-50 disabled:cursor-not-allowed"
-            placeholder="Descreva detalhadamente o problema ou solicitação..."
+            placeholder="Descreva detalhadamente o problema..."
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             required
@@ -243,12 +278,12 @@ export default function ServiceOrderForm({ onSuccess, onCancel }) {
               <option value="">Selecionar grupo (opcional)</option>
               {loadingGroups ? (
                 <option value="" disabled>⏳ Carregando grupos...</option>
-              ) : groups.length === 0 ? (
+              ) : groupsArray.length === 0 ? (
                 <option value="" disabled>❌ Nenhum grupo disponível</option>
               ) : (
-                groups.map((group) => (
+                groupsArray.map((group) => (
                   <option key={group.id} value={group.id}>
-                    {group.name}
+                    {group.name || `Grupo ${group.id}`}
                   </option>
                 ))
               )}
@@ -275,10 +310,7 @@ export default function ServiceOrderForm({ onSuccess, onCancel }) {
           {formData.attachment && (
             <div className="mt-2 flex items-center gap-2 text-sm text-green-400">
               <span>✅</span>
-              <span>Arquivo selecionado: <strong>{formData.attachment.name}</strong></span>
-              <span className="text-slate-400 text-xs">
-                ({(formData.attachment.size / 1024).toFixed(1)} KB)
-              </span>
+              <span>Arquivo: <strong>{formData.attachment.name}</strong></span>
             </div>
           )}
         </div>
@@ -305,9 +337,7 @@ export default function ServiceOrderForm({ onSuccess, onCancel }) {
                 Criando...
               </>
             ) : (
-              <>
-                ✅ Criar Chamado
-              </>
+              <>✅ Criar Chamado</>
             )}
           </button>
         </div>
