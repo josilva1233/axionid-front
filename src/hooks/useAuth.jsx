@@ -1,4 +1,4 @@
-// hooks/useAuth.js
+// src/hooks/useAuth.jsx
 import { useState, useEffect, useCallback } from "react";
 import api from "../services/api";
 
@@ -18,7 +18,6 @@ export function useAuth() {
       
       setPermissions(permNames);
       
-      // Salvar no localStorage para cache
       localStorage.setItem('@AxionID:permissions', JSON.stringify(permNames));
       localStorage.setItem('@AxionID:is_admin', response.data.is_admin ? 'true' : 'false');
       
@@ -26,7 +25,6 @@ export function useAuth() {
     } catch (error) {
       console.error("Erro ao carregar permissões:", error);
       
-      // Fallback: carregar do localStorage
       const cached = localStorage.getItem('@AxionID:permissions');
       if (cached) {
         try {
@@ -49,18 +47,15 @@ export function useAuth() {
           return;
         }
 
-        // Carregar usuário do localStorage
         const userData = JSON.parse(localStorage.getItem('@AxionID:user') || '{}');
         setUser(userData);
 
-        // Se não tiver usuário, buscar do /me
         if (!userData?.id) {
           const response = await api.get('/api/v1/me');
           setUser(response.data);
           localStorage.setItem('@AxionID:user', JSON.stringify(response.data));
         }
 
-        // Carregar permissões
         await loadUserPermissions();
         
       } catch (error) {
@@ -91,10 +86,6 @@ export function useAuth() {
     return permissionNames.every(name => permissions.includes(name));
   }, [user, permissions]);
 
-  const refreshPermissions = useCallback(async () => {
-    return await loadUserPermissions();
-  }, [loadUserPermissions]);
-
   return {
     user,
     permissions,
@@ -102,7 +93,5 @@ export function useAuth() {
     hasPermission,
     hasAnyPermission,
     hasAllPermissions,
-    refreshPermissions,
-    loadUserPermissions,
   };
 }

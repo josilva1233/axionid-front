@@ -1,4 +1,4 @@
-// hooks/usePermissions.js
+// src/hooks/usePermissions.jsx
 import { useAuth } from "./useAuth";
 
 export function usePermissions() {
@@ -56,7 +56,6 @@ export function usePermissions() {
   // 🔥 UTILITÁRIOS
   // =========================================================
 
-  // Verificar se o usuário pode ver uma aba específica
   const canAccessTab = (tab) => {
     const tabPermissions = {
       'users': canViewUsers,
@@ -68,12 +67,10 @@ export function usePermissions() {
     return tabPermissions[tab] || false;
   };
 
-  // Verificar se o usuário pode ver alguma aba
   const canAccessAnyTab = () => {
     return canViewUsers || canViewGroups || canViewOrders || canViewAudit || canViewPermissions;
   };
 
-  // Obter a primeira aba disponível
   const getFirstAvailableTab = () => {
     const tabs = ['users', 'groups', 'orders', 'audit', 'permissions'];
     for (const tab of tabs) {
@@ -81,15 +78,10 @@ export function usePermissions() {
         return tab;
       }
     }
-    return 'orders'; // Fallback
+    return 'orders';
   };
 
-  // Verificar se é admin
   const isAdmin = user?.is_admin || false;
-
-  // =========================================================
-  // 🔥 RETORNO
-  // =========================================================
 
   return {
     loading,
@@ -132,6 +124,5 @@ export function usePermissions() {
     hasPermission,
     hasAnyPermission,
     hasAllPermissions,
-    refreshPermissions: useAuth().refreshPermissions,
   };
 }
