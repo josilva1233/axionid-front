@@ -39,8 +39,8 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
       try {
         console.log("🔄 Buscando grupos disponíveis...");
         
-        // 🔥 CORREÇÃO: USAR /api/v1 PARA PASSAR PELO PROXY DO VERCEL
-        const response = await api.get("/api/v1/service-orders/groups/available");
+        // 🔥 USAR URL COMPLETA PARA EVITAR PROBLEMAS
+        const response = await api.get("http://163.176.168.224/api/v1/service-orders/groups/available");
         
         console.log("✅ Resposta da API:", response.data);
         
@@ -54,7 +54,6 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
         }
         
         if (!Array.isArray(groupsData)) {
-          console.warn("⚠️ groupsData não é um array:", groupsData);
           groupsData = [];
         }
         
@@ -114,7 +113,7 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
       if (formData.group_id) data.append("group_id", formData.group_id);
       if (formData.attachment) data.append("attachment", formData.attachment);
       
-      console.log("📤 Enviando para:", "/api/v1/service-orders");
+      console.log("📤 Enviando para:", "http://163.176.168.224/api/v1/service-orders");
       console.log("📤 Dados:", {
         title: formData.title,
         description: formData.description,
@@ -123,8 +122,8 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
         attachment: formData.attachment?.name || "Nenhum"
       });
 
-      // 🔥 CORREÇÃO: USAR /api/v1 PARA PASSAR PELO PROXY DO VERCEL
-      const response = await api.post("/api/v1/service-orders", data, {
+      // 🔥 USAR URL COMPLETA
+      const response = await api.post("http://163.176.168.224/api/v1/service-orders", data, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
