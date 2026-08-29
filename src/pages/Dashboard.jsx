@@ -1,8 +1,10 @@
+// Dashboard.jsx
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import Swal from "sweetalert2";
 import api from "../services/api";
 import { useDashboardData } from "../hooks/useDashboardData";
+import { usePermissions } from "../hooks/usePermissions"; // 🔥 ADICIONAR
 // Components
 import Sidebar from "../components/dashboard/Sidebar";
 import UserTable from "../components/dashboard/UserTable";
@@ -77,6 +79,33 @@ export default function Dashboard() {
       cancelButton: "px-4 py-2 rounded-full font-bold mx-2 bg-gray-700 hover:bg-gray-600 transition-colors",
     },
   });
+
+  // =========================================================
+  // 🔥 HOOK DE PERMISSÕES
+  // =========================================================
+  const {
+    canAccessTab,
+    canAccessAnyTab,
+    getFirstAvailableTab,
+    loading: permissionsLoading,
+  } = usePermissions();
+
+  // =========================================================
+  // 🔥 CONTROLAR ABA INICIAL BASEADA NAS PERMISSÕES
+  // =========================================================
+  useEffect(() => {
+    if (!permissionsLoading) {
+      if (!canAccessAnyTab()) {
+        console.warn("Usuário sem permissões de acesso");
+        // Opcional: redirecionar para página de "Sem acesso"
+      } else {
+        const firstTab = getFirstAvailableTab();
+        if (!canAccessTab(activeTab)) {
+          setActiveTab(firstTab);
+        }
+      }
+    }
+  }, [permissionsLoading, canAccessAnyTab, getFirstAvailableTab, canAccessTab, activeTab]);
 
   const {
     loading,

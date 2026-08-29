@@ -1,8 +1,18 @@
+// components/dashboard/Sidebar.jsx
 import { useState, useEffect, useRef } from 'react';
+import { usePermissions } from '../hooks/usePermissions';
 
 export default function Sidebar({ activeTab, setActiveTab, role, onLogout, onToggle }) {
-  const isAdmin = role === 'admin';
-  // 🔧 MUDANÇA: começa expandida (false) em vez de colapsada (true)
+  // 🔥 USAR O HOOK DE PERMISSÕES
+  const {
+    canViewUsers,
+    canViewGroups,
+    canViewOrders,
+    canViewAudit,
+    canViewPermissions,
+    isAdmin,
+  } = usePermissions();
+
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const timeoutRef = useRef(null);
@@ -44,47 +54,58 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout, onTog
     if (onToggle) onToggle(newState);
   };
 
-  // ============ NAVEGAÇÃO ============
+  // ============ NAVEGAÇÃO COM PERMISSÕES ============
   const navItems = [
     {
       id: 'users',
       icon: '👥',
       label: isAdmin ? 'Gestão de Usuários' : 'Operações',
       section: 'Principal',
-      adminOnly: false,
+      visible: canViewUsers,
     },
     {
       id: 'groups',
       icon: '📁',
       label: isAdmin ? 'Gestão de Grupos' : 'Meus Grupos',
       section: 'Principal',
-      adminOnly: false,
+      visible: canViewGroups,
     },
     {
       id: 'orders',
       icon: '🎫',
       label: isAdmin ? 'Gestão de Chamados' : 'Meus Chamados',
       section: 'Atendimento',
-      adminOnly: false,
+      visible: canViewOrders,
     },
     {
       id: 'audit',
       icon: '📜',
       label: 'Logs de Auditoria',
       section: 'Segurança',
-      adminOnly: true,
+      visible: canViewAudit,
     },
     {
       id: 'permissions',
       icon: '🛡️',
       label: 'Permissões',
       section: 'Segurança',
-      adminOnly: true,
+      visible: canViewPermissions,
     },
   ];
 
-  // Filtra itens por role
-  const filteredNavItems = navItems.filter(item => !item.adminOnly || isAdmin);
+  // 🔥 FILTRAR ITENS POR PERMISSÃO
+  const filteredNavItems = navItems.filter(item => item.visible);
+
+  // Se não houver itens visíveis, mostrar mensagem
+  if (filteredNavItems.length === 0) {
+    return (
+      <aside className="fixed left-0 top-0 h-screen w-[70px] z-[1000] bg-slate-900/95 border-r border-slate-700/50">
+        <div className="flex items-center justify-center h-full">
+          <span className="text-slate-500 text-xs text-center">Sem<br/>acesso</span>
+        </div>
+      </aside>
+    );
+  }
 
   // Agrupa por seção
   const groupedItems = filteredNavItems.reduce((acc, item) => {
