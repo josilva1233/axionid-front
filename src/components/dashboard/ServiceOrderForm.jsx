@@ -1,10 +1,12 @@
 // components/dashboard/ServiceOrderForm.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../../services/api";
 import Swal from "sweetalert2";
 
-export default function ServiceOrderForm({ groups, onSuccess, onCancel }) {
+export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCancel }) {
   const [loading, setLoading] = useState(false);
+  const [loadingGroups, setLoadingGroups] = useState(false);
+  const [groups, setGroups] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -23,6 +25,59 @@ export default function ServiceOrderForm({ groups, onSuccess, onCancel }) {
       cancelButton: "px-4 py-2 rounded-full font-bold mx-2 bg-slate-700 hover:bg-slate-600 transition-colors",
     },
   });
+
+  // 🔥 CARREGAR GRUPOS AO ABRIR O FORMULÁRIO
+  useEffect(() => {
+    // Se recebeu grupos via prop, usar eles
+    if (groupsProp && Array.isArray(groupsProp) && groupsProp.length > 0) {
+      console.log("📊 Grupos recebidos via prop:", groupsProp);
+      setGroups(groupsProp);
+      return;
+    }
+
+    const fetchGroups = async () => {
+      setLoadingGroups(true);
+      try {
+        console.log("🔄 Buscando grupos disponíveis...");
+        
+        // 🔥 USAR URL COMPLETA DIRETO NO BACKEND
+        const response = await api.get("http://163.176.168.224/api/v1/service-orders/groups/available");
+        
+        console.log("✅ Resposta da API:", response.data);
+        
+        let groupsData = [];
+        if (response.data && response.data.data) {
+          groupsData = response.data.data;
+        } else if (response.data && Array.isArray(response.data)) {
+          groupsData = response.data;
+        } else {
+          groupsData = [];
+        }
+        
+        if (!Array.isArray(groupsData)) {
+          groupsData = [];
+        }
+        
+        setGroups(groupsData);
+        
+        if (groupsData.length === 0) {
+          console.warn("⚠️ Nenhum grupo encontrado!");
+        }
+      } catch (error) {
+        console.error("❌ Erro ao carregar grupos:", error);
+        console.error("❌ Status:", error.response?.status);
+        console.error("❌ Data:", error.response?.data);
+        setGroups([]);
+      } finally {
+        setLoadingGroups(false);
+      }
+    };
+    
+    fetchGroups();
+  }, [groupsProp]);
+
+  // 🔥 VERIFICAR SE groups É UM ARRAY
+  const groupsArray = Array.isArray(groups) ? groups : [];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,7 +102,7 @@ export default function ServiceOrderForm({ groups, onSuccess, onCancel }) {
       if (formData.group_id) data.append("group_id", formData.group_id);
       if (formData.attachment) data.append("attachment", formData.attachment);
       
-      const response = await api.post("/api/v1/service-orders", data, {
+      const response = await api.post("http://163.176.168.224/api/v1/service-orders", data, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -56,7 +111,7 @@ export default function ServiceOrderForm({ groups, onSuccess, onCancel }) {
       AxionAlert.fire({
         icon: "success",
         title: "Chamado criado!",
-        text: `Protocolo: ${response.data.protocol}`,
+        text: `Protocolo: ${response.data.protocol || response.data.id}`,
         timer: 2000,
         showConfirmButton: false,
       });
@@ -176,15 +231,24 @@ export default function ServiceOrderForm({ groups, onSuccess, onCancel }) {
               className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
               value={formData.group_id}
               onChange={(e) => setFormData({ ...formData, group_id: e.target.value })}
-              disabled={loading}
+              disabled={loading || loadingGroups}
             >
               <option value="">Selecionar grupo (opcional)</option>
-              {groups && groups.map((group) => (
-                <option key={group.id} value={group.id}>
-                  {group.name}
-                </option>
-              ))}
+              {loadingGroups ? (
+                <option value="" disabled>⏳ Carregando grupos...</option>
+              ) : groupsArray.length === 0 ? (
+                <option value="" disabled>❌ Nenhum grupo disponível</option>
+              ) : (
+                groupsArray.map((group) => (
+                  <option key={group.id} value={group.id}>
+                    {group.name}
+                  </option>
+                ))
+              )}
             </select>
+            {loadingGroups && (
+              <span className="text-xs text-slate-400 ml-1">Carregando...</span>
+            )}
           </div>
         </div>
 
