@@ -6,7 +6,7 @@ import Swal from "sweetalert2";
 export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCancel }) {
   const [loading, setLoading] = useState(false);
   const [loadingGroups, setLoadingGroups] = useState(false);
-  const [groups, setGroups] = useState([]); // 🔥 SEMPRE INICIALIZAR COMO ARRAY
+  const [groups, setGroups] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -28,22 +28,22 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
 
   // 🔥 CARREGAR GRUPOS AO ABRIR O FORMULÁRIO
   useEffect(() => {
-    // Se recebeu grupos via prop, usar eles
     if (groupsProp && Array.isArray(groupsProp) && groupsProp.length > 0) {
       console.log("📊 Grupos recebidos via prop:", groupsProp);
       setGroups(groupsProp);
       return;
     }
 
-    // Senão, buscar da API
     const fetchGroups = async () => {
       setLoadingGroups(true);
       try {
         console.log("🔄 Buscando grupos disponíveis...");
-        const response = await api.get("/service-orders/groups/available");
+        
+        // 🔥 CORREÇÃO: USAR /api/v1 PARA PASSAR PELO PROXY DO VERCEL
+        const response = await api.get("/api/v1/service-orders/groups/available");
+        
         console.log("✅ Resposta da API:", response.data);
         
-        // 🔥 CORREÇÃO: Garantir que é um array
         let groupsData = [];
         if (response.data && response.data.data) {
           groupsData = response.data.data;
@@ -53,7 +53,6 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
           groupsData = [];
         }
         
-        // 🔥 GARANTIR QUE É UM ARRAY
         if (!Array.isArray(groupsData)) {
           console.warn("⚠️ groupsData não é um array:", groupsData);
           groupsData = [];
@@ -63,7 +62,6 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
         
         if (groupsData.length === 0) {
           console.warn("⚠️ Nenhum grupo encontrado!");
-          // 🔥 Fallback: dados mock
           setGroups([
             { id: 1, name: "Grupo Financeiro" },
             { id: 2, name: "Suporte Técnico" },
@@ -74,7 +72,8 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
         }
       } catch (error) {
         console.error("❌ Erro ao carregar grupos:", error);
-        // 🔥 Fallback: dados mock
+        console.error("❌ Status:", error.response?.status);
+        console.error("❌ Data:", error.response?.data);
         setGroups([
           { id: 1, name: "Grupo Financeiro" },
           { id: 2, name: "Suporte Técnico" },
@@ -90,25 +89,7 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
     fetchGroups();
   }, [groupsProp]);
 
-  // 🔥 FUNÇÃO PARA RENDERIZAR OS GRUPOS COM SEGURANÇA
-  const renderGroups = () => {
-    // Garantir que groups é um array
-    const groupsArray = Array.isArray(groups) ? groups : [];
-    
-    if (loadingGroups) {
-      return <option value="" disabled>⏳ Carregando grupos...</option>;
-    }
-    
-    if (groupsArray.length === 0) {
-      return <option value="" disabled>❌ Nenhum grupo disponível</option>;
-    }
-    
-    return groupsArray.map((group) => (
-      <option key={group.id} value={group.id}>
-        {group.name || `Grupo ${group.id}`}
-      </option>
-    ));
-  };
+  const groupsArray = Array.isArray(groups) ? groups : [];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -133,7 +114,8 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
       if (formData.group_id) data.append("group_id", formData.group_id);
       if (formData.attachment) data.append("attachment", formData.attachment);
       
-      console.log("📤 Enviando:", {
+      console.log("📤 Enviando para:", "/api/v1/service-orders");
+      console.log("📤 Dados:", {
         title: formData.title,
         description: formData.description,
         priority: formData.priority,
@@ -141,11 +123,14 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
         attachment: formData.attachment?.name || "Nenhum"
       });
 
-      const response = await api.post("/service-orders", data, {
+      // 🔥 CORREÇÃO: USAR /api/v1 PARA PASSAR PELO PROXY DO VERCEL
+      const response = await api.post("/api/v1/service-orders", data, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
+      
+      console.log("✅ Resposta:", response.data);
       
       AxionAlert.fire({
         icon: "success",
@@ -159,11 +144,21 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
       
     } catch (err) {
       console.error("❌ Erro:", err);
-      AxionAlert.fire(
-        "Erro",
-        err.response?.data?.message || "Não foi possível criar o chamado.",
-        "error"
-      );
+      console.error("❌ Response:", err.response);
+      console.error("❌ Data:", err.response?.data);
+      console.error("❌ Status:", err.response?.status);
+      
+      let errorMessage = "Não foi possível criar o chamado.";
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.data?.errors) {
+        const errors = Object.values(err.response.data.errors).flat();
+        errorMessage = errors.join("\n");
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      AxionAlert.fire("Erro", errorMessage, "error");
     } finally {
       setLoading(false);
     }
@@ -189,12 +184,8 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
     }
   };
 
-  // 🔥 VERIFICAR SE groups É UM ARRAY ANTES DE RENDERIZAR
-  const groupsArray = Array.isArray(groups) ? groups : [];
-
   return (
     <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-6 transition-colors hover:border-blue-500/30">
-      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h4 className="text-sm font-bold text-white flex items-center gap-2">
           ➕ Abrir Novo Chamado
@@ -208,9 +199,7 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
         </button>
       </div>
 
-      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Título */}
         <div>
           <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
             <span className="text-blue-500">●</span>
@@ -227,7 +216,6 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
           />
         </div>
 
-        {/* Descrição */}
         <div>
           <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
             <span className="text-blue-500">●</span>
@@ -244,7 +232,6 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
           />
         </div>
 
-        {/* Prioridade e Grupo */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
@@ -294,7 +281,6 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
           </div>
         </div>
 
-        {/* Anexo */}
         <div>
           <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
             <span className="text-blue-500">●</span>
@@ -311,11 +297,13 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
             <div className="mt-2 flex items-center gap-2 text-sm text-green-400">
               <span>✅</span>
               <span>Arquivo: <strong>{formData.attachment.name}</strong></span>
+              <span className="text-slate-400 text-xs">
+                ({(formData.attachment.size / 1024).toFixed(1)} KB)
+              </span>
             </div>
           )}
         </div>
 
-        {/* Ações */}
         <div className="flex flex-wrap items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-700/50">
           <button
             type="button"
@@ -328,7 +316,7 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
           
           <button
             type="submit"
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 transition-all hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none disabled:hover:shadow-none"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 transition-all hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={loading}
           >
             {loading ? (
