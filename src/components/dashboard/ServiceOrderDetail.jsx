@@ -142,7 +142,8 @@ export default function ServiceOrderDetail({
         const res = await api.get(`/api/v1/service-orders/${localOrder.id}/messages`, {
           params: { page: pageNum, per_page: 15 },
         });
-        const { data, current_page, last_page } = res.data;
+        // ✅ CORRIGIDO: acessar res.data.messages
+        const { data, current_page, last_page } = res.data.messages;
         const newMessages = data || [];
         setMessages((prev) => (append ? [...prev, ...newMessages] : newMessages));
         setPage(current_page);
