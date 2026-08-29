@@ -1,5 +1,5 @@
 // components/dashboard/UserDetail.jsx
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import UserPermissionManager from "./UserPermissionManager";
 import api from "../../services/api";
 import Swal from "sweetalert2";
