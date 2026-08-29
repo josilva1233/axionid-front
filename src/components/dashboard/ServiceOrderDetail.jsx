@@ -139,7 +139,7 @@ export default function ServiceOrderDetail({
       if (!localOrder?.id) return;
       setLoadingMessages(true);
       try {
-        const res = await api.get(`/api/v1/${localOrder.id}/messages`, {
+        const res = await api.get(`/api/v1/service-orders/${localOrder.id}/messages`, {
           params: { page: pageNum, per_page: 15 },
         });
         const { data, current_page, last_page } = res.data;
@@ -292,7 +292,7 @@ export default function ServiceOrderDetail({
         formData.append("attachment", newAttachment);
       }
 
-      const res = await api.post(`/api/v1/${localOrder.id}/messages`, formData, {
+      const res = await api.post(`/api/v1/service-orders/${localOrder.id}/messages`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       
@@ -333,7 +333,7 @@ export default function ServiceOrderDetail({
     async (messageId, newText) => {
       if (!newText.trim()) return;
       try {
-        const res = await api.put(`/api/v1/${localOrder.id}/messages/${messageId}`, {
+        const res = await api.put(`/api/v1/service-orders/${localOrder.id}/messages/${messageId}`, {
           message: newText.trim(),
         });
         const updated = res.data.data || res.data;
@@ -371,7 +371,7 @@ export default function ServiceOrderDetail({
       if (!result.isConfirmed) return;
 
       try {
-        await api.delete(`/api/v1/${localOrder.id}/messages/${messageId}`);
+        await api.delete(`/api/v1/service-orders/${localOrder.id}/messages/${messageId}`);
         setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
         Swal.fire({
           icon: "success",
