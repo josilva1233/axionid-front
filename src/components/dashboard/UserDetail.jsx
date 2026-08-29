@@ -1,5 +1,8 @@
+// components/dashboard/UserDetail.jsx
 import { useEffect } from "react";
 import UserPermissionManager from "./UserPermissionManager";
+import api from "../../services/api";
+import Swal from "sweetalert2";
 
 export default function UserDetail({
   user,
@@ -11,12 +14,106 @@ export default function UserDetail({
   onBack = () => {},
   setIsEditing = () => {},
   handleSave = () => {},
-  // Novas props para permissões
-  userPermissions = [],
-  allAvailablePermissions = [],
-  onAddPermission = () => {},
-  onRemovePermission = () => {},
 }) {
+  // 🔥 Estados para permissões
+  const [userPermissions, setUserPermissions] = useState([]);
+  const [allAvailablePermissions, setAllAvailablePermissions] = useState([]);
+  const [permissionsLoading, setPermissionsLoading] = useState(false);
+
+  // 🔥 Carregar permissões do usuário
+  const loadUserPermissions = async (userId) => {
+    if (!userId) return;
+    setPermissionsLoading(true);
+    try {
+      const response = await api.get(`/api/v1/admin/users/${userId}/permissions`);
+      setUserPermissions(response.data.permissions || []);
+    } catch (error) {
+      console.error("Erro ao carregar permissões do usuário:", error);
+      // Se a rota não existir, buscar do mock ou usar dados do user
+      if (user?.permissions) {
+        setUserPermissions(user.permissions);
+      }
+    } finally {
+      setPermissionsLoading(false);
+    }
+  };
+
+  // 🔥 Carregar todas as permissões disponíveis
+  const loadAllPermissions = async () => {
+    try {
+      const response = await api.get('/api/v1/admin/permissions', {
+        params: { per_page: 100 }
+      });
+      setAllAvailablePermissions(response.data.data || []);
+    } catch (error) {
+      console.error("Erro ao carregar permissões disponíveis:", error);
+      // Fallback: usar permissões do mock
+      setAllAvailablePermissions([
+        { id: 1, name: 'users.view', label: 'Visualizar Usuários', description: 'Permite visualizar usuários' },
+        { id: 2, name: 'users.create', label: 'Criar Usuários', description: 'Permite criar novos usuários' },
+        { id: 3, name: 'users.edit', label: 'Editar Usuários', description: 'Permite editar usuários' },
+        { id: 4, name: 'users.delete', label: 'Excluir Usuários', description: 'Permite excluir usuários' },
+        { id: 5, name: 'groups.manage', label: 'Gerenciar Grupos', description: 'Permite gerenciar grupos' },
+        { id: 6, name: 'orders.view', label: 'Visualizar OS', description: 'Permite visualizar ordens de serviço' },
+        { id: 7, name: 'orders.create', label: 'Criar OS', description: 'Permite criar ordens de serviço' },
+        { id: 8, name: 'orders.edit', label: 'Editar OS', description: 'Permite editar ordens de serviço' },
+      ]);
+    }
+  };
+
+  // 🔥 Adicionar permissão ao usuário
+  const handleAddPermission = async (userId, permissionId) => {
+    try {
+      await api.post(`/api/v1/admin/users/${userId}/permissions`, {
+        permission_id: permissionId
+      });
+      await loadUserPermissions(userId);
+      Swal.fire({
+        icon: "success",
+        title: "Permissão adicionada!",
+        timer: 1500,
+        showConfirmButton: false,
+        background: "#111214",
+        color: "#ffffff",
+      });
+    } catch (error) {
+      console.error("Erro ao adicionar permissão:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Erro",
+        text: error.response?.data?.message || "Não foi possível adicionar a permissão.",
+        background: "#111214",
+        color: "#ffffff",
+      });
+    }
+  };
+
+  // 🔥 Remover permissão do usuário
+  const handleRemovePermission = async (userId, permissionId) => {
+    try {
+      await api.delete(`/api/v1/admin/users/${userId}/permissions/${permissionId}`);
+      await loadUserPermissions(userId);
+      Swal.fire({
+        icon: "success",
+        title: "Permissão removida!",
+        timer: 1500,
+        showConfirmButton: false,
+        background: "#111214",
+        color: "#ffffff",
+      });
+    } catch (error) {
+      console.error("Erro ao remover permissão:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Erro",
+        text: error.response?.data?.message || "Não foi possível remover a permissão.",
+        background: "#111214",
+        color: "#ffffff",
+      });
+    }
+  };
+
+  // 🔥 Carregar dados quando o usuário mudar
   useEffect(() => {
     if (user && setFormData) {
       setFormData({
@@ -32,7 +129,13 @@ export default function UserDetail({
         complement: user.address?.complement || "",
       });
     }
-  }, [user, setFormData]);
+    
+    // 🔥 Carregar permissões quando o usuário mudar
+    if (user?.id) {
+      loadUserPermissions(user.id);
+      loadAllPermissions();
+    }
+  }, [user]);
 
   if (!user) return null;
 
@@ -305,9 +408,9 @@ export default function UserDetail({
           user={user}
           userPermissions={userPermissions}
           allAvailablePermissions={allAvailablePermissions}
-          onAddPermission={onAddPermission}
-          onRemovePermission={onRemovePermission}
-          actionLoading={actionLoading}
+          onAddPermission={handleAddPermission}
+          onRemovePermission={handleRemovePermission}
+          actionLoading={permissionsLoading || actionLoading}
         />
       </div>
 
