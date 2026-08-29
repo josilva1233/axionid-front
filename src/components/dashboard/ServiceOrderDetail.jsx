@@ -12,6 +12,14 @@ const STATUS_CONFIG = {
   closed: { bg: "bg-slate-700/30", text: "text-slate-400", dot: "bg-slate-400", label: "FECHADO", icon: "🔒" },
 };
 
+// ---- Status que podem ser selecionados no dropdown (excluindo RESOLVIDO) ----
+const SELECTABLE_STATUSES = [
+  { value: 'pending', label: '⏳ Pendente' },
+  { value: 'open', label: '📂 Em Aberto' },
+  { value: 'in_progress', label: '🔧 Em Atendimento' },
+  { value: 'closed', label: '🔒 Fechado' },
+];
+
 const PRIORITY_CONFIG = {
   low: { bg: "bg-green-500/15", text: "text-green-400", dot: "bg-green-400", label: "Baixa", icon: "🔵" },
   medium: { bg: "bg-blue-500/15", text: "text-blue-400", dot: "bg-blue-400", label: "Média", icon: "🟡" },
@@ -106,7 +114,23 @@ export default function ServiceOrderDetail({
 
   // ---- Atualizar estado local quando o order prop mudar ----
   useEffect(() => {
-    setLocalOrder(order);
+    if (order) {
+      setLocalOrder(order);
+      // Verificar se o chamado já está resolvido
+      if (order.status === 'resolved' && order.resolved_at) {
+        setIsResolved(true);
+        const resolvedDate = new Date(order.resolved_at);
+        const twoDaysLater = new Date(resolvedDate);
+        twoDaysLater.setDate(twoDaysLater.getDate() + 2);
+        const now = new Date();
+        const timeDiff = twoDaysLater - now;
+        if (timeDiff > 0) {
+          setTimeUntilClose(timeDiff);
+        } else {
+          setTimeUntilClose(0);
+        }
+      }
+    }
   }, [order]);
 
   // ---- Carregar mensagens (com paginação) ----
@@ -141,34 +165,6 @@ export default function ServiceOrderDetail({
     }
   };
 
-  // ---- Verificar se o chamado está resolvido e calcular tempo restante ----
-  const checkResolvedStatus = useCallback(() => {
-    if (localOrder?.status === 'resolved' && localOrder?.resolved_at) {
-      setIsResolved(true);
-      
-      const resolvedDate = new Date(localOrder.resolved_at);
-      const twoDaysLater = new Date(resolvedDate);
-      twoDaysLater.setDate(twoDaysLater.getDate() + 2);
-      
-      const now = new Date();
-      const timeDiff = twoDaysLater - now;
-      
-      if (timeDiff > 0) {
-        setTimeUntilClose(timeDiff);
-        return true;
-      } else {
-        setTimeUntilClose(0);
-        // Fechar automaticamente
-        handleAutoClose();
-        return false;
-      }
-    } else {
-      setIsResolved(false);
-      setTimeUntilClose(null);
-      return false;
-    }
-  }, [localOrder]);
-
   // ---- Função para fechar automaticamente o chamado ----
   const handleAutoClose = useCallback(async () => {
     if (!localOrder?.id || localOrder.status === 'closed') return;
@@ -191,6 +187,12 @@ export default function ServiceOrderDetail({
       setIsResolved(false);
       setTimeUntilClose(null);
       
+      // Limpar timer
+      if (autoCloseTimerRef.current) {
+        clearInterval(autoCloseTimerRef.current);
+        autoCloseTimerRef.current = null;
+      }
+      
       Swal.fire({
         icon: 'info',
         title: 'Chamado Fechado Automaticamente',
@@ -211,30 +213,42 @@ export default function ServiceOrderDetail({
       autoCloseTimerRef.current = null;
     }
 
-    // Verificar status inicial
-    const isResolvedNow = checkResolvedStatus();
-
-    // Se estiver resolvido e ainda tem tempo, iniciar timer
-    if (isResolvedNow && timeUntilClose > 0) {
-      autoCloseTimerRef.current = setInterval(() => {
-        const resolvedDate = new Date(localOrder.resolved_at);
-        const twoDaysLater = new Date(resolvedDate);
-        twoDaysLater.setDate(twoDaysLater.getDate() + 2);
+    // Verificar se está resolvido
+    if (localOrder?.status === 'resolved' && localOrder?.resolved_at) {
+      const resolvedDate = new Date(localOrder.resolved_at);
+      const twoDaysLater = new Date(resolvedDate);
+      twoDaysLater.setDate(twoDaysLater.getDate() + 2);
+      
+      const now = new Date();
+      const remaining = twoDaysLater - now;
+      
+      if (remaining > 0) {
+        setIsResolved(true);
+        setTimeUntilClose(remaining);
         
-        const now = new Date();
-        const remaining = twoDaysLater - now;
-        
-        if (remaining <= 0) {
-          setTimeUntilClose(0);
-          handleAutoClose();
-          if (autoCloseTimerRef.current) {
-            clearInterval(autoCloseTimerRef.current);
-            autoCloseTimerRef.current = null;
+        // Iniciar timer para verificar a cada minuto
+        autoCloseTimerRef.current = setInterval(() => {
+          const now2 = new Date();
+          const remaining2 = twoDaysLater - now2;
+          
+          if (remaining2 <= 0) {
+            setTimeUntilClose(0);
+            handleAutoClose();
+            if (autoCloseTimerRef.current) {
+              clearInterval(autoCloseTimerRef.current);
+              autoCloseTimerRef.current = null;
+            }
+          } else {
+            setTimeUntilClose(remaining2);
           }
-        } else {
-          setTimeUntilClose(remaining);
-        }
-      }, 60000); // Verificar a cada minuto
+        }, 60000);
+      } else {
+        // Já passou dos 2 dias, fechar imediatamente
+        handleAutoClose();
+      }
+    } else {
+      setIsResolved(false);
+      setTimeUntilClose(null);
     }
 
     return () => {
@@ -243,7 +257,7 @@ export default function ServiceOrderDetail({
         autoCloseTimerRef.current = null;
       }
     };
-  }, [localOrder?.status, localOrder?.resolved_at, checkResolvedStatus, handleAutoClose, timeUntilClose]);
+  }, [localOrder?.status, localOrder?.resolved_at, handleAutoClose]);
 
   // ---- Formatar tempo restante ----
   const formatTimeRemaining = (milliseconds) => {
@@ -426,8 +440,13 @@ export default function ServiceOrderDetail({
       
       const updatedOrder = response.data.data || response.data;
       
-      // 🔥 ATUALIZAR ESTADO LOCAL IMEDIATAMENTE
-      setLocalOrder(prev => ({ ...prev, ...updatedOrder }));
+      // 🔥 ATUALIZAR ESTADO LOCAL IMEDIATAMENTE - Forçar o status como 'resolved'
+      setLocalOrder(prev => ({ 
+        ...prev, 
+        ...updatedOrder,
+        status: 'resolved', // Forçar o status
+        resolved_at: now 
+      }));
       
       // 🔥 NOTIFICAR COMPONENTE PAI
       if (onUpdateStatus) {
