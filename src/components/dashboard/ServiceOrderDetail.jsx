@@ -820,7 +820,7 @@ export default function ServiceOrderDetail({
               )}
 
               <div className="mt-4 pt-4 border-t border-slate-700/50">
-                <label className="text-slate-400 text-xs uppercase font-bold block mb-3">Alterar Status</label>
+                <label className="text-slate-400 text-xs uppercase font-bold block mb-3">Status</label>
                 <select
                   className="w-full px-4 py-2.5 bg-slate-800/50 border border-blue-500/30 rounded-full text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all appearance-none cursor-pointer"
                   value={localOrder.status}
