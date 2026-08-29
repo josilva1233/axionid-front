@@ -1,12 +1,10 @@
 // components/dashboard/ServiceOrderForm.jsx
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import api from "../../services/api";
 import Swal from "sweetalert2";
 
-export default function ServiceOrderForm({ onSuccess, onCancel }) {
+export default function ServiceOrderForm({ groups, onSuccess, onCancel }) {
   const [loading, setLoading] = useState(false);
-  const [loadingGroups, setLoadingGroups] = useState(false);
-  const [groups, setGroups] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -25,50 +23,6 @@ export default function ServiceOrderForm({ onSuccess, onCancel }) {
       cancelButton: "px-4 py-2 rounded-full font-bold mx-2 bg-slate-700 hover:bg-slate-600 transition-colors",
     },
   });
-
-  // 🔥 CARREGAR GRUPOS AO ABRIR O FORMULÁRIO
-  useEffect(() => {
-    const fetchGroups = async () => {
-      setLoadingGroups(true);
-      try {
-        console.log("🔄 Buscando grupos disponíveis...");
-        const response = await api.get("/service-orders/groups/available");
-        console.log("✅ Resposta da API:", response.data);
-        
-        const groupsData = response.data.data || response.data || [];
-        setGroups(groupsData);
-        
-        if (groupsData.length === 0) {
-          console.warn("⚠️ Nenhum grupo encontrado!");
-          // 🔥 Fallback: dados mock para teste
-          setGroups([
-            { id: 1, name: "Grupo Financeiro" },
-            { id: 2, name: "Suporte Técnico" },
-            { id: 3, name: "Administrativo" },
-            { id: 4, name: "Infraestrutura" },
-            { id: 5, name: "Desenvolvimento" },
-          ]);
-        } else {
-          console.log(`📊 ${groupsData.length} grupos carregados`);
-        }
-      } catch (error) {
-        console.error("❌ Erro ao carregar grupos:", error);
-        console.error("Detalhes:", error.response?.data);
-        // 🔥 Fallback: usar dados mock
-        setGroups([
-          { id: 1, name: "Grupo Financeiro" },
-          { id: 2, name: "Suporte Técnico" },
-          { id: 3, name: "Administrativo" },
-          { id: 4, name: "Infraestrutura" },
-          { id: 5, name: "Desenvolvimento" },
-        ]);
-      } finally {
-        setLoadingGroups(false);
-      }
-    };
-    
-    fetchGroups();
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -90,34 +44,19 @@ export default function ServiceOrderForm({ onSuccess, onCancel }) {
       data.append("title", formData.title);
       data.append("description", formData.description);
       data.append("priority", formData.priority);
-      if (formData.group_id) {
-        data.append("group_id", formData.group_id);
-        console.log("📌 Grupo selecionado:", formData.group_id);
-      }
-      if (formData.attachment) {
-        data.append("attachment", formData.attachment);
-      }
+      if (formData.group_id) data.append("group_id", formData.group_id);
+      if (formData.attachment) data.append("attachment", formData.attachment);
       
-      console.log("📤 Enviando dados:", {
-        title: formData.title,
-        description: formData.description,
-        priority: formData.priority,
-        group_id: formData.group_id,
-        attachment: formData.attachment?.name || "Nenhum"
-      });
-
-      const response = await api.post("/service-orders", data, {
+      const response = await api.post("/api/v1/service-orders", data, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
       
-      console.log("✅ Chamado criado:", response.data);
-      
       AxionAlert.fire({
         icon: "success",
         title: "Chamado criado!",
-        text: `Protocolo: ${response.data.protocol || response.data.id}`,
+        text: `Protocolo: ${response.data.protocol}`,
         timer: 2000,
         showConfirmButton: false,
       });
@@ -125,8 +64,7 @@ export default function ServiceOrderForm({ onSuccess, onCancel }) {
       if (onSuccess) onSuccess();
       
     } catch (err) {
-      console.error("❌ Erro ao criar OS:", err);
-      console.error("Detalhes:", err.response?.data);
+      console.error("Erro ao criar OS:", err);
       AxionAlert.fire(
         "Erro",
         err.response?.data?.message || "Não foi possível criar o chamado.",
@@ -199,7 +137,7 @@ export default function ServiceOrderForm({ onSuccess, onCancel }) {
             Descrição <span className="text-red-400">*</span>
           </label>
           <textarea
-            rows={4}
+            rows={5}
             className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all resize-y disabled:opacity-50 disabled:cursor-not-allowed"
             placeholder="Descreva detalhadamente o problema ou solicitação..."
             value={formData.description}
@@ -238,24 +176,15 @@ export default function ServiceOrderForm({ onSuccess, onCancel }) {
               className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
               value={formData.group_id}
               onChange={(e) => setFormData({ ...formData, group_id: e.target.value })}
-              disabled={loading || loadingGroups}
+              disabled={loading}
             >
               <option value="">Selecionar grupo (opcional)</option>
-              {loadingGroups ? (
-                <option value="" disabled>⏳ Carregando grupos...</option>
-              ) : groups.length === 0 ? (
-                <option value="" disabled>❌ Nenhum grupo disponível</option>
-              ) : (
-                groups.map((group) => (
-                  <option key={group.id} value={group.id}>
-                    {group.name}
-                  </option>
-                ))
-              )}
+              {groups && groups.map((group) => (
+                <option key={group.id} value={group.id}>
+                  {group.name}
+                </option>
+              ))}
             </select>
-            {loadingGroups && (
-              <span className="text-xs text-slate-400 ml-1">Carregando...</span>
-            )}
           </div>
         </div>
 
@@ -276,9 +205,6 @@ export default function ServiceOrderForm({ onSuccess, onCancel }) {
             <div className="mt-2 flex items-center gap-2 text-sm text-green-400">
               <span>✅</span>
               <span>Arquivo selecionado: <strong>{formData.attachment.name}</strong></span>
-              <span className="text-slate-400 text-xs">
-                ({(formData.attachment.size / 1024).toFixed(1)} KB)
-              </span>
             </div>
           )}
         </div>
