@@ -840,6 +840,7 @@ export default function ServiceOrderDetail({
                   }}
                   disabled={actionLoading || localOrder.status === 'closed'}
                 >
+                  <option value="pending">Selecionar Status</option>
                   <option value="pending">⏳ Pendente</option>
                   <option value="open">📂 Em Aberto</option>
                   <option value="in_progress">🔧 Em Atendimento</option>
