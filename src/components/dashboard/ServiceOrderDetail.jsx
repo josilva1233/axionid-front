@@ -12,7 +12,6 @@ const STATUS_CONFIG = {
   closed: { bg: "bg-slate-700/30", text: "text-slate-400", dot: "bg-slate-400", label: "FECHADO", icon: "🔒" },
 };
 
-// ---- Status que podem ser selecionados no dropdown (excluindo RESOLVIDO) ----
 const SELECTABLE_STATUSES = [
   { value: 'pending', label: '⏳ Pendente' },
   { value: 'open', label: '📂 Em Aberto' },
@@ -116,7 +115,6 @@ export default function ServiceOrderDetail({
   useEffect(() => {
     if (order) {
       setLocalOrder(order);
-      // Verificar se o chamado já está resolvido
       if (order.status === 'resolved' && order.resolved_at) {
         setIsResolved(true);
         const resolvedDate = new Date(order.resolved_at);
@@ -142,6 +140,7 @@ export default function ServiceOrderDetail({
         const res = await api.get(`/api/v1/service-orders/${localOrder.id}/messages`, {
           params: { page: pageNum, per_page: 15 },
         });
+        
         // ✅ CORRIGIDO: acessar res.data.messages
         const { data, current_page, last_page } = res.data.messages;
         const newMessages = data || [];
@@ -177,10 +176,8 @@ export default function ServiceOrderDetail({
       
       const updatedOrder = response.data.data || response.data;
       
-      // Atualizar estado local
       setLocalOrder(prev => ({ ...prev, ...updatedOrder }));
       
-      // Notificar componente pai
       if (onUpdateStatus) {
         onUpdateStatus(localOrder.id, 'closed', updatedOrder);
       }
@@ -188,7 +185,6 @@ export default function ServiceOrderDetail({
       setIsResolved(false);
       setTimeUntilClose(null);
       
-      // Limpar timer
       if (autoCloseTimerRef.current) {
         clearInterval(autoCloseTimerRef.current);
         autoCloseTimerRef.current = null;
@@ -208,13 +204,11 @@ export default function ServiceOrderDetail({
 
   // ---- Iniciar timer para verificar quando fechar o chamado ----
   useEffect(() => {
-    // Limpar timer anterior
     if (autoCloseTimerRef.current) {
       clearInterval(autoCloseTimerRef.current);
       autoCloseTimerRef.current = null;
     }
 
-    // Verificar se está resolvido
     if (localOrder?.status === 'resolved' && localOrder?.resolved_at) {
       const resolvedDate = new Date(localOrder.resolved_at);
       const twoDaysLater = new Date(resolvedDate);
@@ -227,7 +221,6 @@ export default function ServiceOrderDetail({
         setIsResolved(true);
         setTimeUntilClose(remaining);
         
-        // Iniciar timer para verificar a cada minuto
         autoCloseTimerRef.current = setInterval(() => {
           const now2 = new Date();
           const remaining2 = twoDaysLater - now2;
@@ -244,7 +237,6 @@ export default function ServiceOrderDetail({
           }
         }, 60000);
       } else {
-        // Já passou dos 2 dias, fechar imediatamente
         handleAutoClose();
       }
     } else {
@@ -281,7 +273,9 @@ export default function ServiceOrderDetail({
     }
   };
 
-  // ---- Enviar mensagem (com suporte a anexo) ----
+  // ============================================================
+  // 🔥 CORREÇÃO: Enviar mensagem (com suporte a anexo)
+  // ============================================================
   const sendMessage = useCallback(async () => {
     if (!newMessage.trim() && !newAttachment) return;
 
@@ -289,27 +283,33 @@ export default function ServiceOrderDetail({
     try {
       const formData = new FormData();
       formData.append("message", newMessage.trim() || " ");
+      
+      // 🔥 CORREÇÃO: Garantir que o anexo seja enviado corretamente
       if (newAttachment) {
         formData.append("attachment", newAttachment);
       }
 
       const res = await api.post(`/api/v1/service-orders/${localOrder.id}/messages`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: { 
+          "Content-Type": "multipart/form-data",
+        },
       });
       
       const newMsg = res.data.data || res.data;
       
-      setMessages((prev) => {
-        if (newMsg && !newMsg.user && currentUser) {
-          newMsg.user = {
-            id: currentUser.id,
-            name: currentUser.name,
-            email: currentUser.email
-          };
-        }
-        return [newMsg, ...prev];
-      });
+      // 🔥 CORREÇÃO: Garantir que o usuário seja exibido corretamente
+      if (newMsg && !newMsg.user && currentUser) {
+        newMsg.user = {
+          id: currentUser.id,
+          name: currentUser.name,
+          email: currentUser.email
+        };
+      }
       
+      // 🔥 CORREÇÃO: Adicionar a mensagem ao início da lista
+      setMessages((prev) => [newMsg, ...prev]);
+      
+      // Limpar campos
       setNewMessage("");
       setNewAttachment(null);
       const fileInput = document.getElementById("message-attachment");
@@ -393,17 +393,25 @@ export default function ServiceOrderDetail({
     return isSystemAdmin || (message.user_id === currentUser?.id);
   };
 
-  // ---- Formatação de data/hora ----
+  // 🔥 CORREÇÃO: Formatação de data/hora
   const formatDateTime = (dateString) => {
-    if (!dateString) return "";
-    const d = new Date(dateString);
-    return d.toLocaleString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    if (!dateString) return "Data inválida";
+    try {
+      const d = new Date(dateString);
+      // Verificar se a data é válida
+      if (isNaN(d.getTime())) {
+        return "Data inválida";
+      }
+      return d.toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch (error) {
+      return "Data inválida";
+    }
   };
 
   // ---- Carregar mensagens ao montar ----
@@ -441,20 +449,17 @@ export default function ServiceOrderDetail({
       
       const updatedOrder = response.data.data || response.data;
       
-      // 🔥 ATUALIZAR ESTADO LOCAL IMEDIATAMENTE - Forçar o status como 'resolved'
       setLocalOrder(prev => ({ 
         ...prev, 
         ...updatedOrder,
-        status: 'resolved', // Forçar o status
+        status: 'resolved',
         resolved_at: now 
       }));
       
-      // 🔥 NOTIFICAR COMPONENTE PAI
       if (onUpdateStatus) {
         onUpdateStatus(localOrder.id, 'resolved', updatedOrder);
       }
       
-      // 🔥 ATUALIZAR STATUS LOCAL
       setIsResolved(true);
       const resolvedDate = new Date(now);
       const twoDaysLater = new Date(resolvedDate);
@@ -494,13 +499,7 @@ export default function ServiceOrderDetail({
     );
   }
 
-  const formattedDate = new Date(localOrder.created_at).toLocaleString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const formattedDate = formatDateTime(localOrder.created_at);
 
   return (
     <div className="bg-slate-900 rounded-xl min-h-screen">
@@ -601,7 +600,18 @@ export default function ServiceOrderDetail({
                     type="file"
                     className="flex-1 min-w-[200px] px-3 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-500/20 file:text-blue-400 hover:file:bg-blue-500/30 transition-all"
                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                    onChange={(e) => setNewAttachment(e.target.files[0] || null)}
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        // 🔥 CORREÇÃO: Validar tamanho do arquivo (max 10MB)
+                        if (file.size > 10 * 1024 * 1024) {
+                          Swal.fire("Erro", "O arquivo não pode ter mais que 10MB.", "error");
+                          e.target.value = "";
+                          return;
+                        }
+                        setNewAttachment(file);
+                      }
+                    }}
                     disabled={sendingMessage || localOrder.status === 'closed'}
                   />
                   <button
@@ -615,6 +625,9 @@ export default function ServiceOrderDetail({
                 {newAttachment && (
                   <div className="text-sm text-green-400 flex items-center gap-2">
                     <span>✅</span> Anexo selecionado: <strong>{newAttachment.name}</strong>
+                    <span className="text-slate-400">
+                      ({(newAttachment.size / 1024).toFixed(1)} KB)
+                    </span>
                   </div>
                 )}
                 {localOrder.status === 'closed' && (
@@ -639,6 +652,9 @@ export default function ServiceOrderDetail({
                       const userName = messageUser.name || 'Usuário Desconhecido';
                       const userInitial = userName.charAt(0)?.toUpperCase() || '?';
                       
+                      // 🔥 CORREÇÃO: Usar a data do backend
+                      const messageDate = msg.created_at || msg.created_at_human || msg.formatted_date;
+                      
                       return (
                         <div
                           key={msg.id}
@@ -652,7 +668,10 @@ export default function ServiceOrderDetail({
                               <div className="flex flex-wrap items-center justify-between gap-2">
                                 <div className="flex items-center gap-2">
                                   <span className="text-white font-bold text-sm">{userName}</span>
-                                  <span className="text-slate-500 text-xs">{formatDateTime(msg.created_at)}</span>
+                                  <span className="text-slate-500 text-xs">
+                                    {/* 🔥 CORREÇÃO: Exibir data formatada corretamente */}
+                                    {formatDateTime(messageDate)}
+                                  </span>
                                 </div>
                                 {canModifyMessage(msg) && localOrder.status !== 'closed' && (
                                   <div className="flex items-center gap-1">
@@ -804,7 +823,7 @@ export default function ServiceOrderDetail({
                 </div>
               </div>
 
-              {/* Botão para marcar como resolvido - APENAS PARA STATUS QUE NÃO SÃO RESOLVIDO OU FECHADO */}
+              {/* Botão para marcar como resolvido */}
               {localOrder.status !== 'resolved' && localOrder.status !== 'closed' && (
                 <div className="mt-4 mb-4">
                   <button
@@ -826,7 +845,6 @@ export default function ServiceOrderDetail({
                   className="w-full px-4 py-2.5 bg-slate-800/50 border border-blue-500/30 rounded-full text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all appearance-none cursor-pointer"
                   value={localOrder.status}
                   onChange={(e) => {
-                    // 🔥 BLOQUEAR seleção manual do status "resolved"
                     if (e.target.value === 'resolved') {
                       Swal.fire({
                         icon: 'info',
