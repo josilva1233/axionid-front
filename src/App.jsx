@@ -58,7 +58,7 @@ function App() {
 
         {/* Rotas Admin */}
         <Route 
-          path="/dashboard/admin/terms" 
+          path="/dashboard/" 
           element={
             <ProtectedRoute>
               <TermsCheck>
