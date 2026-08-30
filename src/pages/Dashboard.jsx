@@ -26,7 +26,7 @@ import PermissionDetail from "../components/dashboard/PermissionDetail";
 // 🔥 ADICIONAR O AIChat
 import AIChat from "../components/dashboard/AIChat";
 // 🔥 ADICIONAR O TermManagement
-import TermManagement from "../pages/admin/TermManagement";
+import TermManagement from "../pages/TermManagement";
 // Styles
 import '../index.css';
 
