@@ -45,28 +45,34 @@ export default function TermManagement({ onViewUsers }) {
     }
   };
 
-  const loadAcceptanceCounts = async (termsList) => {
-    try {
-      const counts = {};
-      // Usar Promise.all para carregar todas as contagens em paralelo
-      await Promise.all(
-        termsList.map(async (term) => {
-          try {
-            const response = await api.get('/api/v1/admin/terms/acceptances', {
-              params: { term_id: term.id, per_page: 1 }
-            });
-            counts[term.id] = response.data.meta?.total || 0;
-          } catch (err) {
-            console.error(`Erro ao carregar contagem para termo ${term.id}:`, err);
-            counts[term.id] = 0;
-          }
-        })
-      );
-      setAcceptanceCounts(counts);
-    } catch (err) {
-      console.error('Erro ao carregar contagens:', err);
-    }
-  };
+// src/pages/TermManagement.jsx
+// No loadAcceptanceCounts
+
+const loadAcceptanceCounts = async (termsList) => {
+  try {
+    const counts = {};
+    await Promise.all(
+      termsList.map(async (term) => {
+        try {
+          // 🔥 URL CORRETA
+          const response = await api.get('/api/v1/admin/terms/acceptances', {
+            params: { 
+              term_id: term.id, 
+              per_page: 1 
+            }
+          });
+          counts[term.id] = response.data.meta?.total || 0;
+        } catch (err) {
+          console.error(`Erro ao carregar contagem para termo ${term.id}:`, err);
+          counts[term.id] = 0;
+        }
+      })
+    );
+    setAcceptanceCounts(counts);
+  } catch (err) {
+    console.error('Erro ao carregar contagens:', err);
+  }
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
