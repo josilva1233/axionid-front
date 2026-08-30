@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import Swal from 'sweetalert2';
 
 export default function TermManagement({ onViewUsers }) {
   const navigate = useNavigate();
@@ -27,12 +28,9 @@ export default function TermManagement({ onViewUsers }) {
     try {
       const response = await api.get('/api/v1/admin/terms');
       const termsData = response.data.data || response.data;
-      
-      // Garantir que é um array
       const termsArray = Array.isArray(termsData) ? termsData : [];
       setTerms(termsArray);
       
-      // Carregar contagem de aceitações para cada termo
       if (termsArray.length > 0) {
         await loadAcceptanceCounts(termsArray);
       }
@@ -45,34 +43,50 @@ export default function TermManagement({ onViewUsers }) {
     }
   };
 
-// src/pages/TermManagement.jsx
-// No loadAcceptanceCounts
+  const loadAcceptanceCounts = async (termsList) => {
+    try {
+      const counts = {};
+      await Promise.all(
+        termsList.map(async (term) => {
+          try {
+            const response = await api.get('/api/v1/admin/terms/acceptances', {
+              params: { term_id: term.id, per_page: 1 }
+            });
+            counts[term.id] = response.data.meta?.total || 0;
+          } catch (err) {
+            counts[term.id] = 0;
+          }
+        })
+      );
+      setAcceptanceCounts(counts);
+    } catch (err) {
+      console.error('Erro ao carregar contagens:', err);
+    }
+  };
 
-const loadAcceptanceCounts = async (termsList) => {
-  try {
-    const counts = {};
-    await Promise.all(
-      termsList.map(async (term) => {
-        try {
-          // 🔥 URL CORRETA
-          const response = await api.get('/api/v1/admin/terms/acceptances', {
-            params: { 
-              term_id: term.id, 
-              per_page: 1 
-            }
-          });
-          counts[term.id] = response.data.meta?.total || 0;
-        } catch (err) {
-          console.error(`Erro ao carregar contagem para termo ${term.id}:`, err);
-          counts[term.id] = 0;
-        }
-      })
-    );
-    setAcceptanceCounts(counts);
-  } catch (err) {
-    console.error('Erro ao carregar contagens:', err);
-  }
-};
+  // 🔥 FUNÇÃO PARA GERAR PRÓXIMA VERSÃO
+  const getNextVersion = (currentVersion) => {
+    if (!currentVersion) return '1.0.0';
+    
+    // Tenta extrair números da versão
+    const versionMatch = currentVersion.match(/(\d+)\.(\d+)\.(\d+)/);
+    if (versionMatch) {
+      const major = parseInt(versionMatch[1]);
+      const minor = parseInt(versionMatch[2]);
+      const patch = parseInt(versionMatch[3]);
+      // Incrementa o patch (último número)
+      return `${major}.${minor}.${patch + 1}`;
+    }
+    
+    // Se não encontrar formato semântico, incrementa o número
+    const numMatch = currentVersion.match(/(\d+)/);
+    if (numMatch) {
+      const num = parseInt(numMatch[0]);
+      return `${num + 1}`;
+    }
+    
+    return `${currentVersion}.1`;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -80,11 +94,80 @@ const loadAcceptanceCounts = async (termsList) => {
     setError('');
 
     try {
+      let response;
+      
       if (editingTerm) {
-        await api.put(`/api/v1/admin/terms/${editingTerm.id}`, formData);
+        // 🔥 AO EDITAR: CRIAR NOVO TERMO (nova versão)
+        const nextVersion = getNextVersion(editingTerm.version);
+        const newTermData = {
+          content: formData.content,
+          version: nextVersion,
+          is_active: false, // 🔥 Novo termo sempre começa inativo
+        };
+        
+        const confirmResult = await Swal.fire({
+          title: 'Criar Nova Versão?',
+          text: `Você está criando uma nova versão (v${nextVersion}) do termo. O termo atual (v${editingTerm.version}) será mantido como histórico. Deseja continuar?`,
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Sim, criar nova versão',
+          cancelButtonText: 'Cancelar',
+          confirmButtonColor: '#4D6BFE',
+          cancelButtonColor: '#dc3545',
+        });
+        
+        if (!confirmResult.isConfirmed) {
+          setLoading(false);
+          return;
+        }
+        
+        response = await api.post('/api/v1/admin/terms', newTermData);
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Nova Versão Criada!',
+          text: `Termo v${nextVersion} criado com sucesso.`,
+          timer: 2000,
+          showConfirmButton: false,
+        });
       } else {
-        await api.post('/api/v1/admin/terms', formData);
+        // 🔥 NOVO TERMO
+        response = await api.post('/api/v1/admin/terms', formData);
+        Swal.fire({
+          icon: 'success',
+          title: 'Termo Criado!',
+          text: `Termo v${formData.version} criado com sucesso.`,
+          timer: 2000,
+          showConfirmButton: false,
+        });
       }
+      
+      // 🔥 SE O TERMO FOI ATIVADO, PERGUNTA SE QUER FORÇAR REACEITAÇÃO
+      if (formData.is_active && !editingTerm) {
+        const activateResult = await Swal.fire({
+          title: 'Ativar Termo?',
+          text: 'Ao ativar este termo, todos os usuários precisarão aceitar novamente. Deseja continuar?',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Sim, ativar',
+          cancelButtonText: 'Cancelar',
+          confirmButtonColor: '#4D6BFE',
+          cancelButtonColor: '#dc3545',
+        });
+        
+        if (activateResult.isConfirmed) {
+          const termId = response.data.term?.id || response.data.id;
+          await api.patch(`/api/v1/admin/terms/${termId}/toggle`);
+          Swal.fire({
+            icon: 'success',
+            title: 'Termo Ativado!',
+            text: 'Todos os usuários precisarão aceitar os novos termos.',
+            timer: 2000,
+            showConfirmButton: false,
+          });
+        }
+      }
+      
       await loadTerms();
       setShowModal(false);
       resetForm();
@@ -96,28 +179,40 @@ const loadAcceptanceCounts = async (termsList) => {
   };
 
   const handleToggleStatus = async (term) => {
-    setLoading(true);
     try {
       await api.patch(`/api/v1/admin/terms/${term.id}/toggle`);
       await loadTerms();
     } catch (err) {
       setError(err.response?.data?.message || 'Erro ao alterar status');
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Tem certeza que deseja excluir este termo?')) return;
+    const result = await Swal.fire({
+      title: 'Excluir Termo?',
+      text: 'Tem certeza que deseja excluir este termo? Esta ação não pode ser desfeita.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, excluir',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#4D6BFE',
+    });
+    
+    if (!result.isConfirmed) return;
 
-    setLoading(true);
     try {
       await api.delete(`/api/v1/admin/terms/${id}`);
       await loadTerms();
+      Swal.fire({
+        icon: 'success',
+        title: 'Excluído!',
+        text: 'Termo removido com sucesso.',
+        timer: 1500,
+        showConfirmButton: false,
+      });
     } catch (err) {
       setError(err.response?.data?.message || 'Erro ao excluir termo');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -140,6 +235,18 @@ const loadAcceptanceCounts = async (termsList) => {
     } else {
       navigate('/admin/term-acceptances');
     }
+  };
+
+  // 🔥 ABRIR MODAL DE EDIÇÃO
+  const handleEditTerm = (term) => {
+    setEditingTerm(term);
+    // 🔥 NÃO PEGA A VERSÃO ANTIGA - SERÁ GERADA AUTOMATICAMENTE
+    setFormData({
+      content: term.content,
+      version: '', // 🔥 Vazio - será gerado automaticamente
+      is_active: false, // 🔥 Novo termo sempre inativo
+    });
+    setShowModal(true);
   };
 
   const formatDate = (dateString) => {
@@ -321,31 +428,28 @@ const loadAcceptanceCounts = async (termsList) => {
                               {term.is_active ? 'Desativar' : 'Ativar'}
                             </button>
                             <button
-                              onClick={() => {
-                                setEditingTerm(term);
-                                setFormData({
-                                  content: term.content,
-                                  version: term.version,
-                                  is_active: term.is_active,
-                                });
-                                setShowModal(true);
-                              }}
+                              onClick={() => handleEditTerm(term)}
                               className="px-2.5 py-1 text-xs bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 rounded transition-colors"
                             >
                               Editar
                             </button>
                             <button
                               onClick={() => handleDelete(term.id)}
-                              className="px-2.5 py-1 text-xs bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                              disabled={acceptanceCount > 0}
-                              title={acceptanceCount > 0 ? 'Não é possível excluir um termo que já foi aceito' : ''}
+                              className={`px-2.5 py-1 text-xs rounded transition-colors ${
+                                acceptanceCount > 0
+                                  ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                                  : 'bg-gray-500/20 text-gray-500 cursor-not-allowed'
+                              }`}
+                              disabled={acceptanceCount === 0}
+                              title={acceptanceCount === 0 ? 'Não é possível excluir um termo que já foi aceito' : ''}
                             >
                               Excluir
                             </button>
                           </div>
                           {acceptanceCount > 0 && (
-                            <div className="text-[10px] text-slate-500 mt-1">
-                              ⚠️ {acceptanceCount} usuário{acceptanceCount !== 1 ? 's' : ''} aceitaram
+                            <div className="text-[10px] text-slate-500 mt-1 flex items-center gap-1">
+                              <span>⚠️</span>
+                              <span>{acceptanceCount} usuário{acceptanceCount !== 1 ? 's' : ''} aceitaram</span>
                             </div>
                           )}
                         </td>
@@ -365,7 +469,16 @@ const loadAcceptanceCounts = async (termsList) => {
           <div className="bg-slate-800 rounded-2xl border border-slate-700/50 p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-white">
-                {editingTerm ? '✏️ Editar Termo' : '📄 Novo Termo de Uso'}
+                {editingTerm ? (
+                  <div>
+                    <span>✏️ Criar Nova Versão</span>
+                    <p className="text-sm text-slate-400 font-normal mt-1">
+                      Baseado em v{editingTerm.version} → v{getNextVersion(editingTerm.version)}
+                    </p>
+                  </div>
+                ) : (
+                  '📄 Novo Termo de Uso'
+                )}
               </h2>
               <button 
                 onClick={() => setShowModal(false)} 
@@ -378,16 +491,23 @@ const loadAcceptanceCounts = async (termsList) => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1">
-                  Versão *
+                  Versão {editingTerm && <span className="text-xs text-slate-500">(automática)</span>}
                 </label>
                 <input
                   type="text"
-                  value={formData.version}
+                  value={editingTerm ? getNextVersion(editingTerm.version) : formData.version}
                   onChange={(e) => setFormData({ ...formData, version: e.target.value })}
                   className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white text-sm focus:outline-none focus:border-[#4D6BFE] focus:ring-1 focus:ring-[#4D6BFE]"
                   placeholder="Ex: 1.0.0"
                   required
+                  disabled={!!editingTerm}
+                  readOnly={!!editingTerm}
                 />
+                {editingTerm && (
+                  <p className="text-xs text-slate-500 mt-1">
+                    🔒 A versão é gerada automaticamente ao editar um termo existente
+                  </p>
+                )}
               </div>
 
               <div>
@@ -427,13 +547,21 @@ const loadAcceptanceCounts = async (termsList) => {
                 </div>
               )}
 
+              {editingTerm && (
+                <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                  <p className="text-xs text-blue-400">
+                    💡 Você está criando uma nova versão do termo. O termo atual v{editingTerm.version} será mantido como histórico.
+                  </p>
+                </div>
+              )}
+
               <div className="flex gap-3 pt-2">
                 <button
                   type="submit"
                   disabled={loading}
                   className="flex-1 py-2.5 px-4 bg-[#4D6BFE] hover:bg-[#3D5AFE] text-white font-medium text-sm rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? 'Salvando...' : '💾 Salvar'}
+                  {loading ? 'Salvando...' : editingTerm ? '📝 Criar Nova Versão' : '💾 Salvar'}
                 </button>
                 <button
                   type="button"
