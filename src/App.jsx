@@ -7,7 +7,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import { ProtectedRoute } from './components/ProtectedRoute'; 
 import CompleteProfile from './pages/CompleteProfile';
 import TermsCheck from './components/TermsCheck';
-import TermManagement from './pages/admin/TermManagement';
+import TermManagement from './pages/TermManagement';
 import AdminLayout from './components/AdminLayout';
 import './App.css';
 
