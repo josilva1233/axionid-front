@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import Swal from 'sweetalert2';
+import TermTable from '../components/dashboard/TermTable'; // 🔥 IMPORTAR O COMPONENTE
 
 export default function TermManagement({ onViewUsers }) {
   const navigate = useNavigate();
@@ -68,17 +69,14 @@ export default function TermManagement({ onViewUsers }) {
   const getNextVersion = (currentVersion) => {
     if (!currentVersion) return '1.0.0';
     
-    // Tenta extrair números da versão
     const versionMatch = currentVersion.match(/(\d+)\.(\d+)\.(\d+)/);
     if (versionMatch) {
       const major = parseInt(versionMatch[1]);
       const minor = parseInt(versionMatch[2]);
       const patch = parseInt(versionMatch[3]);
-      // Incrementa o patch (último número)
       return `${major}.${minor}.${patch + 1}`;
     }
     
-    // Se não encontrar formato semântico, incrementa o número
     const numMatch = currentVersion.match(/(\d+)/);
     if (numMatch) {
       const num = parseInt(numMatch[0]);
@@ -97,17 +95,25 @@ export default function TermManagement({ onViewUsers }) {
       let response;
       
       if (editingTerm) {
-        // 🔥 AO EDITAR: CRIAR NOVO TERMO (nova versão)
         const nextVersion = getNextVersion(editingTerm.version);
         const newTermData = {
           content: formData.content,
           version: nextVersion,
-          is_active: false, // 🔥 Novo termo sempre começa inativo
+          is_active: false,
         };
         
         const confirmResult = await Swal.fire({
           title: 'Criar Nova Versão?',
-          text: `Você está criando uma nova versão (v${nextVersion}) do termo. O termo atual (v${editingTerm.version}) será mantido como histórico. Deseja continuar?`,
+          html: `
+            <p>Você está criando uma nova versão do termo.</p>
+            <p class="mt-2">
+              <strong>Versão atual:</strong> v${editingTerm.version}<br>
+              <strong>Nova versão:</strong> v${nextVersion}
+            </p>
+            <p class="mt-2 text-sm text-slate-400">
+              O termo atual será mantido como histórico.
+            </p>
+          `,
           icon: 'question',
           showCancelButton: true,
           confirmButtonText: 'Sim, criar nova versão',
@@ -131,7 +137,6 @@ export default function TermManagement({ onViewUsers }) {
           showConfirmButton: false,
         });
       } else {
-        // 🔥 NOVO TERMO
         response = await api.post('/api/v1/admin/terms', formData);
         Swal.fire({
           icon: 'success',
@@ -179,11 +184,49 @@ export default function TermManagement({ onViewUsers }) {
   };
 
   const handleToggleStatus = async (term) => {
+    setLoading(true);
     try {
       await api.patch(`/api/v1/admin/terms/${term.id}/toggle`);
-      await loadTerms();
+      
+      if (!term.is_active) {
+        const result = await Swal.fire({
+          title: 'Ativar Termo',
+          text: 'Ao ativar este termo, todos os usuários precisarão aceitar novamente. Deseja continuar?',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Sim, ativar',
+          cancelButtonText: 'Cancelar',
+          confirmButtonColor: '#4D6BFE',
+          cancelButtonColor: '#dc3545',
+        });
+        
+        if (result.isConfirmed) {
+          await loadTerms();
+          Swal.fire({
+            icon: 'success',
+            title: 'Termo Ativado!',
+            text: 'Todos os usuários precisarão aceitar os novos termos.',
+            timer: 2000,
+            showConfirmButton: false,
+          });
+        } else {
+          await api.patch(`/api/v1/admin/terms/${term.id}/toggle`);
+          await loadTerms();
+        }
+      } else {
+        await loadTerms();
+        Swal.fire({
+          icon: 'info',
+          title: 'Termo Desativado',
+          text: `O termo v${term.version} foi desativado.`,
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Erro ao alterar status');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -201,6 +244,7 @@ export default function TermManagement({ onViewUsers }) {
     
     if (!result.isConfirmed) return;
 
+    setLoading(true);
     try {
       await api.delete(`/api/v1/admin/terms/${id}`);
       await loadTerms();
@@ -213,6 +257,8 @@ export default function TermManagement({ onViewUsers }) {
       });
     } catch (err) {
       setError(err.response?.data?.message || 'Erro ao excluir termo');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -237,25 +283,14 @@ export default function TermManagement({ onViewUsers }) {
     }
   };
 
-  // 🔥 ABRIR MODAL DE EDIÇÃO
   const handleEditTerm = (term) => {
     setEditingTerm(term);
-    // 🔥 NÃO PEGA A VERSÃO ANTIGA - SERÁ GERADA AUTOMATICAMENTE
     setFormData({
       content: term.content,
-      version: '', // 🔥 Vazio - será gerado automaticamente
-      is_active: false, // 🔥 Novo termo sempre inativo
+      version: '',
+      is_active: false,
     });
     setShowModal(true);
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return '—';
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
   };
 
   if (loading && !showModal) {
@@ -321,146 +356,17 @@ export default function TermManagement({ onViewUsers }) {
         </div>
       )}
 
-      {/* Table */}
+      {/* 🔥 TABLE - USANDO O NOVO COMPONENTE */}
       <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden">
-        {terms.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="text-5xl mb-4">📭</div>
-            <p className="text-lg text-slate-400 font-medium">Nenhum termo cadastrado</p>
-            <p className="text-sm text-slate-500 mt-1">Clique em "Novo Termo" para criar o primeiro.</p>
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[800px]">
-                <thead className="bg-slate-700/50 border-b border-slate-700/50">
-                  <tr>
-                    <th className="px-4 md:px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                      Versão
-                    </th>
-                    <th className="px-4 md:px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-4 md:px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider hidden md:table-cell">
-                      Criado por
-                    </th>
-                    <th className="px-4 md:px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider hidden lg:table-cell">
-                      Data
-                    </th>
-                    <th className="px-4 md:px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                      Usuários
-                    </th>
-                    <th className="px-4 md:px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                      Ações
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-700/30">
-                  {terms.map((term) => {
-                    const acceptanceCount = acceptanceCounts[term.id] || 0;
-                    return (
-                      <tr key={term.id} className="hover:bg-slate-700/30 transition-colors group">
-                        <td className="px-4 md:px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-slate-300 font-medium">
-                              v{term.version}
-                            </span>
-                            {term.is_active && (
-                              <span className="inline-block px-2 py-0.5 text-[10px] bg-green-500/20 text-green-400 rounded-full font-medium">
-                                Atual
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 md:px-6 py-4">
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-full ${
-                            term.is_active 
-                              ? 'bg-green-500/20 text-green-400' 
-                              : 'bg-gray-500/20 text-gray-400'
-                          }`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${
-                              term.is_active ? 'bg-green-400 animate-pulse' : 'bg-gray-400'
-                            }`}></span>
-                            {term.is_active ? 'Ativo' : 'Inativo'}
-                          </span>
-                        </td>
-                        <td className="px-4 md:px-6 py-4 text-sm text-slate-300 hidden md:table-cell">
-                          {term.creator?.name || '—'}
-                        </td>
-                        <td className="px-4 md:px-6 py-4 text-sm text-slate-400 hidden lg:table-cell">
-                          {formatDate(term.created_at)}
-                        </td>
-                        <td className="px-4 md:px-6 py-4">
-                          <button
-                            onClick={() => handleViewUsers(term.id)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4D6BFE]/10 hover:bg-[#4D6BFE]/20 text-[#4D6BFE] text-xs rounded-lg transition-colors group"
-                          >
-                            <span className="font-medium">{acceptanceCount}</span>
-                            <span>usuário{acceptanceCount !== 1 ? 's' : ''}</span>
-                            <svg 
-                              className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" 
-                              fill="none" 
-                              stroke="currentColor" 
-                              viewBox="0 0 24 24"
-                            >
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                          </button>
-                        </td>
-                        <td className="px-4 md:px-6 py-4">
-                          <div className="flex flex-wrap gap-1.5">
-                            <button
-                              onClick={() => handleViewUsers(term.id)}
-                              className="px-2.5 py-1 text-xs bg-[#4D6BFE]/20 text-[#4D6BFE] hover:bg-[#4D6BFE]/30 rounded transition-colors flex items-center gap-1"
-                              title="Ver usuários que aceitaram"
-                            >
-                              <span className="text-sm">👥</span>
-                              Ver
-                            </button>
-                            <button
-                              onClick={() => handleToggleStatus(term)}
-                              className={`px-2.5 py-1 text-xs rounded transition-colors ${
-                                term.is_active
-                                  ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30'
-                                  : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
-                              }`}
-                            >
-                              {term.is_active ? 'Desativar' : 'Ativar'}
-                            </button>
-                            <button
-                              onClick={() => handleEditTerm(term)}
-                              className="px-2.5 py-1 text-xs bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 rounded transition-colors"
-                            >
-                              Editar
-                            </button>
-                            <button
-                              onClick={() => handleDelete(term.id)}
-                              className={`px-2.5 py-1 text-xs rounded transition-colors ${
-                                acceptanceCount > 0
-                                  ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
-                                  : 'bg-gray-500/20 text-gray-500 cursor-not-allowed'
-                              }`}
-                              disabled={acceptanceCount === 0}
-                              title={acceptanceCount === 0 ? 'Não é possível excluir um termo que já foi aceito' : ''}
-                            >
-                              Excluir
-                            </button>
-                          </div>
-                          {acceptanceCount > 0 && (
-                            <div className="text-[10px] text-slate-500 mt-1 flex items-center gap-1">
-                              <span>⚠️</span>
-                              <span>{acceptanceCount} usuário{acceptanceCount !== 1 ? 's' : ''} aceitaram</span>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </>
-        )}
+        <TermTable
+          terms={terms}
+          acceptanceCounts={acceptanceCounts}
+          onViewUsers={handleViewUsers}
+          onToggleStatus={handleToggleStatus}
+          onEdit={handleEditTerm}
+          onDelete={handleDelete}
+          loading={loading}
+        />
       </div>
 
       {/* Modal de criação/edição */}
@@ -501,7 +407,6 @@ export default function TermManagement({ onViewUsers }) {
                   placeholder="Ex: 1.0.0"
                   required
                   disabled={!!editingTerm}
-                  readOnly={!!editingTerm}
                 />
                 {editingTerm && (
                   <p className="text-xs text-slate-500 mt-1">
