@@ -56,20 +56,6 @@ function App() {
           } 
         />
 
-        {/* Rotas Admin */}
-        <Route 
-          path="/dashboard/" 
-          element={
-            <ProtectedRoute>
-              <TermsCheck>
-                <AdminLayout>
-                  <TermManagement />
-                </AdminLayout>
-              </TermsCheck>
-            </ProtectedRoute>
-          } 
-        />
-
         {/* Fallback Global */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>

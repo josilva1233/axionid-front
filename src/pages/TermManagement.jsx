@@ -1,5 +1,4 @@
-// src/pages/admin/TermManagement.jsx
-
+// src/pages/TermManagement.jsx
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 
@@ -22,8 +21,9 @@ export default function TermManagement() {
   const loadTerms = async () => {
     try {
       const response = await api.get('/api/v1/admin/terms');
-      setTerms(response.data.data);
+      setTerms(response.data.data || response.data);
     } catch (err) {
+      console.error('Erro ao carregar termos:', err);
       setError('Erro ao carregar termos');
     } finally {
       setLoading(false);
@@ -33,6 +33,7 @@ export default function TermManagement() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
     try {
       if (editingTerm) {
@@ -86,7 +87,7 @@ export default function TermManagement() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-white">Gestão de Termos de Uso</h1>
+        <h1 className="text-2xl font-bold text-white">Termos de Uso</h1>
         <button
           onClick={() => {
             resetForm();
@@ -94,7 +95,7 @@ export default function TermManagement() {
           }}
           className="px-4 py-2 bg-[#4D6BFE] hover:bg-[#3D5AFE] text-white text-sm font-medium rounded-lg transition-colors"
         >
-          Novo Termo
+          + Novo Termo
         </button>
       </div>
 
@@ -105,106 +106,94 @@ export default function TermManagement() {
       )}
 
       <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-slate-700/50 border-b border-slate-700/50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                Versão
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                Criado por
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                Data
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                Ações
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-700/30">
-            {terms.map((term) => (
-              <tr key={term.id} className="hover:bg-slate-700/30 transition-colors">
-                <td className="px-6 py-4 text-sm text-slate-300">
-                  {term.version}
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    term.is_active ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
-                  }`}>
-                    {term.is_active ? 'Ativo' : 'Inativo'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-300">
-                  {term.creator?.name || '—'}
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-400">
-                  {new Date(term.created_at).toLocaleDateString('pt-BR')}
-                </td>
-                <td className="px-6 py-4 text-sm">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleToggleStatus(term)}
-                      className={`px-2 py-1 text-xs rounded transition-colors ${
-                        term.is_active
-                          ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30'
-                          : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
-                      }`}
-                    >
-                      {term.is_active ? 'Desativar' : 'Ativar'}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setEditingTerm(term);
-                        setFormData({
-                          content: term.content,
-                          version: term.version,
-                          is_active: term.is_active,
-                        });
-                        setShowModal(true);
-                      }}
-                      className="px-2 py-1 text-xs bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 rounded transition-colors"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => handleDelete(term.id)}
-                      className="px-2 py-1 text-xs bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded transition-colors"
-                    >
-                      Excluir
-                    </button>
-                  </div>
-                </td>
+        {terms.length === 0 ? (
+          <div className="p-8 text-center text-slate-400">
+            <p className="text-lg">Nenhum termo cadastrado</p>
+            <p className="text-sm mt-1">Clique em "Novo Termo" para criar o primeiro.</p>
+          </div>
+        ) : (
+          <table className="w-full">
+            <thead className="bg-slate-700/50 border-b border-slate-700/50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Versão</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider hidden md:table-cell">Criado por</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider hidden lg:table-cell">Data</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Ações</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-700/30">
+              {terms.map((term) => (
+                <tr key={term.id} className="hover:bg-slate-700/30 transition-colors">
+                  <td className="px-6 py-4 text-sm text-slate-300 font-medium">{term.version}</td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-1 text-xs rounded-full ${
+                      term.is_active ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
+                    }`}>
+                      {term.is_active ? '✅ Ativo' : '❌ Inativo'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-slate-300 hidden md:table-cell">
+                    {term.creator?.name || '—'}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-slate-400 hidden lg:table-cell">
+                    {new Date(term.created_at).toLocaleDateString('pt-BR')}
+                  </td>
+                  <td className="px-6 py-4 text-sm">
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => handleToggleStatus(term)}
+                        className={`px-3 py-1 text-xs rounded transition-colors ${
+                          term.is_active
+                            ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30'
+                            : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
+                        }`}
+                      >
+                        {term.is_active ? 'Desativar' : 'Ativar'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditingTerm(term);
+                          setFormData({
+                            content: term.content,
+                            version: term.version,
+                            is_active: term.is_active,
+                          });
+                          setShowModal(true);
+                        }}
+                        className="px-3 py-1 text-xs bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 rounded transition-colors"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleDelete(term.id)}
+                        className="px-3 py-1 text-xs bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded transition-colors"
+                      >
+                        Excluir
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
-      {/* Modal de criação/edição */}
+      {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
           <div className="bg-slate-800 rounded-2xl border border-slate-700/50 p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-white">
                 {editingTerm ? 'Editar Termo' : 'Novo Termo de Uso'}
               </h2>
-              <button
-                onClick={() => setShowModal(false)}
-                className="text-slate-400 hover:text-white"
-              >
-                ✕
-              </button>
+              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-white">✕</button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">
-                  Versão
-                </label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Versão *</label>
                 <input
                   type="text"
                   value={formData.version}
@@ -216,9 +205,7 @@ export default function TermManagement() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">
-                  Conteúdo
-                </label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Conteúdo *</label>
                 <textarea
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
@@ -234,7 +221,7 @@ export default function TermManagement() {
                   id="is_active"
                   checked={formData.is_active}
                   onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                  className="w-4 h-4 rounded border-slate-600 bg-slate-700/50 text-[#4D6BFE] focus:ring-[#4D6BFE]"
+                  className="w-4 h-4 rounded border-slate-600 bg-slate-700/50 text-[#4D6BFE]"
                 />
                 <label htmlFor="is_active" className="text-sm text-slate-300">
                   Ativar este termo imediatamente
@@ -264,3 +251,4 @@ export default function TermManagement() {
     </div>
   );
 }
+EOF
