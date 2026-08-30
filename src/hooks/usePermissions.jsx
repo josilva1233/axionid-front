@@ -13,6 +13,7 @@ export function usePermissions() {
   const canViewOrders = hasPermission('menu.orders.view');
   const canViewAudit = hasPermission('menu.audit.view');
   const canViewPermissions = hasPermission('menu.permissions.view');
+  const canViewTerms = hasPermission('menu.terms.view'); // 🔥 NOVO
 
   // =========================================================
   // 🔥 PERMISSÕES DE AÇÃO - USUÁRIOS
@@ -53,6 +54,12 @@ export function usePermissions() {
   const canViewAuditLogs = hasPermission('audit.view');
 
   // =========================================================
+  // 🔥 PERMISSÕES DE AÇÃO - TERMOS
+  // =========================================================
+  
+  const canManageTerms = hasPermission('terms.manage'); // 🔥 NOVO
+
+  // =========================================================
   // 🔥 UTILITÁRIOS
   // =========================================================
 
@@ -63,16 +70,17 @@ export function usePermissions() {
       'orders': canViewOrders,
       'audit': canViewAudit,
       'permissions': canViewPermissions,
+      'terms': canViewTerms, // 🔥 NOVO
     };
     return tabPermissions[tab] || false;
   };
 
   const canAccessAnyTab = () => {
-    return canViewUsers || canViewGroups || canViewOrders || canViewAudit || canViewPermissions;
+    return canViewUsers || canViewGroups || canViewOrders || canViewAudit || canViewPermissions || canViewTerms; // 🔥 NOVO
   };
 
   const getFirstAvailableTab = () => {
-    const tabs = ['users', 'groups', 'orders', 'audit', 'permissions'];
+    const tabs = ['users', 'groups', 'orders', 'audit', 'permissions', 'terms']; // 🔥 NOVO
     for (const tab of tabs) {
       if (canAccessTab(tab)) {
         return tab;
@@ -92,6 +100,7 @@ export function usePermissions() {
     canViewOrders,
     canViewAudit,
     canViewPermissions,
+    canViewTerms, // 🔥 NOVO
     
     // Ações - Usuários
     canCreateUser,
@@ -115,6 +124,9 @@ export function usePermissions() {
     
     // Ações - Auditoria
     canViewAuditLogs,
+    
+    // Ações - Termos
+    canManageTerms, // 🔥 NOVO
     
     // Utilitários
     canAccessTab,
