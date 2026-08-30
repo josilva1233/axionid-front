@@ -126,8 +126,7 @@ export default function TermTable({
                       className="px-2.5 py-1 text-xs bg-[#4D6BFE]/20 text-[#4D6BFE] hover:bg-[#4D6BFE]/30 rounded transition-colors flex items-center gap-1"
                       title="Ver usuários que aceitaram"
                     >
-                      <span className="text-sm">👥</span>
-                      Ver
+                      👥 Ver
                     </button>
                     <button
                       onClick={() => onToggleStatus(term)}

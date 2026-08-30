@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import Swal from 'sweetalert2';
-import TermTable from '../components/dashboard/TermTable'; // 🔥 IMPORTAR O COMPONENTE
+import TermTable from '../components/dashboard/TermTable';
 
 export default function TermManagement({ onViewUsers }) {
   const navigate = useNavigate();
@@ -65,7 +65,6 @@ export default function TermManagement({ onViewUsers }) {
     }
   };
 
-  // 🔥 FUNÇÃO PARA GERAR PRÓXIMA VERSÃO
   const getNextVersion = (currentVersion) => {
     if (!currentVersion) return '1.0.0';
     
@@ -147,7 +146,6 @@ export default function TermManagement({ onViewUsers }) {
         });
       }
       
-      // 🔥 SE O TERMO FOI ATIVADO, PERGUNTA SE QUER FORÇAR REACEITAÇÃO
       if (formData.is_active && !editingTerm) {
         const activateResult = await Swal.fire({
           title: 'Ativar Termo?',
@@ -306,7 +304,7 @@ export default function TermManagement({ onViewUsers }) {
 
   return (
     <div className="p-4 md:p-6">
-      {/* Header */}
+      {/* Header com botões */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
@@ -356,7 +354,7 @@ export default function TermManagement({ onViewUsers }) {
         </div>
       )}
 
-      {/* 🔥 TABLE - USANDO O NOVO COMPONENTE */}
+      {/* Table */}
       <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden">
         <TermTable
           terms={terms}
