@@ -8,6 +8,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import CompleteProfile from './pages/CompleteProfile';
 import TermsCheck from './components/TermsCheck';
 import TermManagement from './pages/TermManagement';
+import TermAcceptances from './pages/TermAcceptances'; // <-- IMPORTE A PÁGINA
 import './App.css';
 
 function App() {
@@ -51,6 +52,32 @@ function App() {
             <ProtectedRoute>
               <TermsCheck>
                 <Dashboard />
+              </TermsCheck>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* ===== NOVAS ROTAS ADMIN ===== */}
+        
+        {/* Gestão de Termos */}
+        <Route 
+          path="/term-management" 
+          element={
+            <ProtectedRoute adminOnly>
+              <TermsCheck>
+                <TermManagement />
+              </TermsCheck>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Lista de Usuários que aceitaram os termos */}
+        <Route 
+          path="/term-acceptances" 
+          element={
+            <ProtectedRoute adminOnly>
+              <TermsCheck>
+                <TermAcceptances />
               </TermsCheck>
             </ProtectedRoute>
           } 
