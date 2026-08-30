@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
-export default function TermManagement() {
+export default function TermManagement({ onViewUsers }) {
   const navigate = useNavigate();
   const [terms, setTerms] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,16 +22,24 @@ export default function TermManagement() {
   }, []);
 
   const loadTerms = async () => {
+    setLoading(true);
+    setError('');
     try {
       const response = await api.get('/api/v1/admin/terms');
       const termsData = response.data.data || response.data;
-      setTerms(termsData);
+      
+      // Garantir que é um array
+      const termsArray = Array.isArray(termsData) ? termsData : [];
+      setTerms(termsArray);
       
       // Carregar contagem de aceitações para cada termo
-      await loadAcceptanceCounts(termsData);
+      if (termsArray.length > 0) {
+        await loadAcceptanceCounts(termsArray);
+      }
     } catch (err) {
       console.error('Erro ao carregar termos:', err);
-      setError('Erro ao carregar termos');
+      setError(err.response?.data?.message || 'Erro ao carregar termos');
+      setTerms([]);
     } finally {
       setLoading(false);
     }
@@ -40,16 +48,20 @@ export default function TermManagement() {
   const loadAcceptanceCounts = async (termsList) => {
     try {
       const counts = {};
-      for (const term of termsList) {
-        try {
-          const response = await api.get('/api/v1/admin/terms/acceptances', {
-            params: { term_id: term.id, per_page: 1 }
-          });
-          counts[term.id] = response.data.meta?.total || 0;
-        } catch (err) {
-          counts[term.id] = 0;
-        }
-      }
+      // Usar Promise.all para carregar todas as contagens em paralelo
+      await Promise.all(
+        termsList.map(async (term) => {
+          try {
+            const response = await api.get('/api/v1/admin/terms/acceptances', {
+              params: { term_id: term.id, per_page: 1 }
+            });
+            counts[term.id] = response.data.meta?.total || 0;
+          } catch (err) {
+            console.error(`Erro ao carregar contagem para termo ${term.id}:`, err);
+            counts[term.id] = 0;
+          }
+        })
+      );
       setAcceptanceCounts(counts);
     } catch (err) {
       console.error('Erro ao carregar contagens:', err);
@@ -78,22 +90,28 @@ export default function TermManagement() {
   };
 
   const handleToggleStatus = async (term) => {
+    setLoading(true);
     try {
       await api.patch(`/api/v1/admin/terms/${term.id}/toggle`);
       await loadTerms();
     } catch (err) {
-      setError('Erro ao alterar status');
+      setError(err.response?.data?.message || 'Erro ao alterar status');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
     if (!confirm('Tem certeza que deseja excluir este termo?')) return;
 
+    setLoading(true);
     try {
       await api.delete(`/api/v1/admin/terms/${id}`);
       await loadTerms();
     } catch (err) {
       setError(err.response?.data?.message || 'Erro ao excluir termo');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -103,13 +121,37 @@ export default function TermManagement() {
   };
 
   const handleViewUsers = (termId) => {
-    navigate(`/admin/term-acceptances?term_id=${termId}`);
+    if (onViewUsers) {
+      onViewUsers(termId);
+    } else {
+      navigate(`/admin/term-acceptances?term_id=${termId}`);
+    }
+  };
+
+  const handleViewAllUsers = () => {
+    if (onViewUsers) {
+      onViewUsers(null);
+    } else {
+      navigate('/admin/term-acceptances');
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '—';
+    return new Date(dateString).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
   };
 
   if (loading && !showModal) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="w-8 h-8 border-4 border-[#4D6BFE] border-t-transparent rounded-full animate-spin"></div>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-[#4D6BFE] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-slate-400 text-sm">Carregando termos...</p>
+        </div>
       </div>
     );
   }
@@ -119,17 +161,25 @@ export default function TermManagement() {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">📄 Termos de Uso</h1>
+          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+            📄 Termos de Uso
+            {terms.length > 0 && (
+              <span className="text-sm font-normal text-slate-400">
+                ({terms.length} termo{terms.length !== 1 ? 's' : ''})
+              </span>
+            )}
+          </h1>
           <p className="text-sm text-slate-400 mt-1">
             Gerencie os termos de uso da plataforma
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={() => navigate('/admin/term-acceptances')}
+            onClick={handleViewAllUsers}
             className="px-4 py-2 bg-slate-700/50 hover:bg-slate-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
           >
-            👥 Ver Todos os Usuários
+            <span className="text-lg">👥</span>
+            Ver Todos os Usuários
           </button>
           <button
             onClick={() => {
@@ -138,24 +188,33 @@ export default function TermManagement() {
             }}
             className="px-4 py-2 bg-[#4D6BFE] hover:bg-[#3D5AFE] text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
           >
-            <span>+</span> Novo Termo
+            <span className="text-lg">+</span>
+            Novo Termo
           </button>
         </div>
       </div>
 
       {/* Error */}
       {error && (
-        <div className="mb-4 p-3 bg-red-900/30 border border-red-700/50 rounded-lg text-red-300 text-sm">
-          ⚠️ {error}
+        <div className="mb-4 p-4 bg-red-900/30 border border-red-700/50 rounded-xl text-red-300 text-sm flex items-center gap-2">
+          <span className="text-lg">⚠️</span>
+          <span>{error}</span>
+          <button 
+            onClick={() => setError('')}
+            className="ml-auto text-red-400 hover:text-red-300"
+          >
+            ✕
+          </button>
         </div>
       )}
 
       {/* Table */}
       <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden">
         {terms.length === 0 ? (
-          <div className="p-8 text-center text-slate-400">
-            <p className="text-lg">📭 Nenhum termo cadastrado</p>
-            <p className="text-sm mt-1">Clique em "Novo Termo" para criar o primeiro.</p>
+          <div className="p-12 text-center">
+            <div className="text-5xl mb-4">📭</div>
+            <p className="text-lg text-slate-400 font-medium">Nenhum termo cadastrado</p>
+            <p className="text-sm text-slate-500 mt-1">Clique em "Novo Termo" para criar o primeiro.</p>
           </div>
         ) : (
           <>
@@ -163,22 +222,22 @@ export default function TermManagement() {
               <table className="w-full min-w-[800px]">
                 <thead className="bg-slate-700/50 border-b border-slate-700/50">
                   <tr>
-                    <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    <th className="px-4 md:px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                       Versão
                     </th>
-                    <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    <th className="px-4 md:px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider hidden md:table-cell">
+                    <th className="px-4 md:px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider hidden md:table-cell">
                       Criado por
                     </th>
-                    <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider hidden lg:table-cell">
+                    <th className="px-4 md:px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider hidden lg:table-cell">
                       Data
                     </th>
-                    <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    <th className="px-4 md:px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                       Usuários
                     </th>
-                    <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    <th className="px-4 md:px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                       Ações
                     </th>
                   </tr>
@@ -189,37 +248,42 @@ export default function TermManagement() {
                     return (
                       <tr key={term.id} className="hover:bg-slate-700/30 transition-colors group">
                         <td className="px-4 md:px-6 py-4">
-                          <span className="text-sm text-slate-300 font-medium">
-                            v{term.version}
-                          </span>
-                          {term.is_active && (
-                            <span className="ml-2 inline-block px-2 py-0.5 text-[10px] bg-green-500/20 text-green-400 rounded">
-                              Atual
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-slate-300 font-medium">
+                              v{term.version}
                             </span>
-                          )}
+                            {term.is_active && (
+                              <span className="inline-block px-2 py-0.5 text-[10px] bg-green-500/20 text-green-400 rounded-full font-medium">
+                                Atual
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-4 md:px-6 py-4">
-                          <span className={`px-2 py-1 text-xs rounded-full ${
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-full ${
                             term.is_active 
                               ? 'bg-green-500/20 text-green-400' 
                               : 'bg-gray-500/20 text-gray-400'
                           }`}>
-                            {term.is_active ? '✅ Ativo' : '❌ Inativo'}
+                            <span className={`w-1.5 h-1.5 rounded-full ${
+                              term.is_active ? 'bg-green-400 animate-pulse' : 'bg-gray-400'
+                            }`}></span>
+                            {term.is_active ? 'Ativo' : 'Inativo'}
                           </span>
                         </td>
                         <td className="px-4 md:px-6 py-4 text-sm text-slate-300 hidden md:table-cell">
                           {term.creator?.name || '—'}
                         </td>
                         <td className="px-4 md:px-6 py-4 text-sm text-slate-400 hidden lg:table-cell">
-                          {new Date(term.created_at).toLocaleDateString('pt-BR')}
+                          {formatDate(term.created_at)}
                         </td>
                         <td className="px-4 md:px-6 py-4">
                           <button
                             onClick={() => handleViewUsers(term.id)}
-                            className="flex items-center gap-1.5 px-3 py-1 bg-[#4D6BFE]/10 hover:bg-[#4D6BFE]/20 text-[#4D6BFE] text-xs rounded-lg transition-colors group"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4D6BFE]/10 hover:bg-[#4D6BFE]/20 text-[#4D6BFE] text-xs rounded-lg transition-colors group"
                           >
                             <span className="font-medium">{acceptanceCount}</span>
-                            <span>usuários</span>
+                            <span>usuário{acceptanceCount !== 1 ? 's' : ''}</span>
                             <svg 
                               className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" 
                               fill="none" 
@@ -237,7 +301,8 @@ export default function TermManagement() {
                               className="px-2.5 py-1 text-xs bg-[#4D6BFE]/20 text-[#4D6BFE] hover:bg-[#4D6BFE]/30 rounded transition-colors flex items-center gap-1"
                               title="Ver usuários que aceitaram"
                             >
-                              👥 Ver
+                              <span className="text-sm">👥</span>
+                              Ver
                             </button>
                             <button
                               onClick={() => handleToggleStatus(term)}
@@ -265,7 +330,7 @@ export default function TermManagement() {
                             </button>
                             <button
                               onClick={() => handleDelete(term.id)}
-                              className="px-2.5 py-1 text-xs bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded transition-colors"
+                              className="px-2.5 py-1 text-xs bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                               disabled={acceptanceCount > 0}
                               title={acceptanceCount > 0 ? 'Não é possível excluir um termo que já foi aceito' : ''}
                             >
@@ -274,7 +339,7 @@ export default function TermManagement() {
                           </div>
                           {acceptanceCount > 0 && (
                             <div className="text-[10px] text-slate-500 mt-1">
-                              ⚠️ {acceptanceCount} usuário(s) aceitaram
+                              ⚠️ {acceptanceCount} usuário{acceptanceCount !== 1 ? 's' : ''} aceitaram
                             </div>
                           )}
                         </td>

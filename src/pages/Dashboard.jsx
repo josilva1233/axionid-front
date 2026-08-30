@@ -23,10 +23,9 @@ import ServiceOrderForm from "../components/dashboard/ServiceOrderForm";
 import ServiceOrderDetail from "../components/dashboard/ServiceOrderDetail";
 import Pagination from "../components/dashboard/Pagination";
 import PermissionDetail from "../components/dashboard/PermissionDetail";
-// 🔥 ADICIONAR O AIChat
 import AIChat from "../components/dashboard/AIChat";
-// 🔥 ADICIONAR O TermManagement
 import TermManagement from "./TermManagement";
+import TermAcceptances from "./TermAcceptances";
 // Styles
 import '../index.css';
 
@@ -46,6 +45,10 @@ export default function Dashboard() {
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [selectedPermission, setSelectedPermission] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // ========== ESTADO PARA TERMOS DE USO ==========
+  const [showTermAcceptances, setShowTermAcceptances] = useState(false);
+  const [selectedTermId, setSelectedTermId] = useState(null);
 
   // ========== ESTADO PARA ENDEREÇO ==========
   const [showAddressBanner, setShowAddressBanner] = useState(false);
@@ -268,11 +271,25 @@ export default function Dashboard() {
     setShowGroupForm(false);
     setSelectedOrder(null);
     setSelectedPermission(null);
+    setShowTermAcceptances(false);
+    setSelectedTermId(null);
     setUsersCurrentPage(1);
     setGroupsCurrentPage(1);
     setAuditCurrentPage(1);
     setOrdersCurrentPage(1);
     setPermissionsCurrentPage(1);
+  }, []);
+
+  // ============ HANDLERS PARA TERMOS DE USO ============
+  const handleViewTermAcceptances = useCallback((termId) => {
+    setSelectedTermId(termId);
+    setShowTermAcceptances(true);
+    setActiveTab('terms');
+  }, []);
+
+  const handleBackFromAcceptances = useCallback(() => {
+    setShowTermAcceptances(false);
+    setSelectedTermId(null);
   }, []);
 
   const handleClearFilters = useCallback(() => {
@@ -821,8 +838,7 @@ export default function Dashboard() {
                     {/* Rua */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Rua</label>
-                      <input
-                        type="text"
+                      <input                        type="text"
                         value={addressForm.street}
                         onChange={(e) => setAddressForm({ ...addressForm, street: e.target.value })}
                         className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
@@ -1049,7 +1065,16 @@ export default function Dashboard() {
               {/* ========== 🔥 TERMOS DE USO ========== */}
               {activeTab === "terms" && isGlobalAdmin && (
                 <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
-                  <TermManagement />
+                  {showTermAcceptances ? (
+                    <TermAcceptances 
+                      termId={selectedTermId}
+                      onBack={handleBackFromAcceptances}
+                    />
+                  ) : (
+                    <TermManagement 
+                      onViewUsers={handleViewTermAcceptances}
+                    />
+                  )}
                 </div>
               )}
 
