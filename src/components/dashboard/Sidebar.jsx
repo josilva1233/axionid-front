@@ -91,6 +91,14 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout, onTog
       section: 'Segurança',
       visible: canViewPermissions,
     },
+    // 🔥 NOVO: TERMOS DE USO
+    {
+      id: 'terms',
+      icon: '📄',
+      label: 'Termos de Uso',
+      section: 'Segurança',
+      visible: isAdmin, // Apenas admin pode ver
+    },
   ];
 
   // 🔥 FILTRAR ITENS POR PERMISSÃO
@@ -210,6 +218,13 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout, onTog
                 {/* Indicador de ativo */}
                 {activeTab === item.id && (
                   <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-8 bg-blue-500 rounded-r"></span>
+                )}
+
+                {/* Badge para Termos de Uso (se houver termos pendentes) */}
+                {item.id === 'terms' && !isCollapsed && (
+                  <span className="ml-auto text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">
+                    Novo
+                  </span>
                 )}
               </button>
             ))}

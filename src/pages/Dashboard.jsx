@@ -25,6 +25,8 @@ import Pagination from "../components/dashboard/Pagination";
 import PermissionDetail from "../components/dashboard/PermissionDetail";
 // 🔥 ADICIONAR O AIChat
 import AIChat from "../components/dashboard/AIChat";
+// 🔥 ADICIONAR O TermManagement
+import TermManagement from "../pages/admin/TermManagement";
 // Styles
 import '../index.css';
 
@@ -1042,6 +1044,13 @@ export default function Dashboard() {
                     </div>
                   )}
                 </>
+              )}
+
+              {/* ========== 🔥 TERMOS DE USO ========== */}
+              {activeTab === "terms" && isGlobalAdmin && (
+                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
+                  <TermManagement />
+                </div>
               )}
 
               {/* ========== 🔥 ABA DA IA ========== */}

@@ -1,3 +1,4 @@
+// src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -6,6 +7,8 @@ import ForgotPassword from './pages/ForgotPassword';
 import { ProtectedRoute } from './components/ProtectedRoute'; 
 import CompleteProfile from './pages/CompleteProfile';
 import TermsCheck from './components/TermsCheck';
+import TermManagement from './pages/admin/TermManagement';
+import AdminLayout from './components/AdminLayout';
 import './App.css';
 
 function App() {
@@ -18,7 +21,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/" element={<Navigate to="/login" replace />} />
 
-        {/* 🔥 Rota de Verificação de Termos de Uso */}
+        {/* Rota de Verificação de Termos */}
         <Route 
           path="/terms-check" 
           element={
@@ -42,13 +45,27 @@ function App() {
           } 
         />
 
-        {/* Dashboard Protegido com verificação de termos */}
+        {/* Dashboard Protegido */}
         <Route 
           path="/dashboard/*" 
           element={
             <ProtectedRoute>
               <TermsCheck>
                 <Dashboard />
+              </TermsCheck>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Rotas Admin */}
+        <Route 
+          path="/dashboard/admin/terms" 
+          element={
+            <ProtectedRoute>
+              <TermsCheck>
+                <AdminLayout>
+                  <TermManagement />
+                </AdminLayout>
               </TermsCheck>
             </ProtectedRoute>
           } 
