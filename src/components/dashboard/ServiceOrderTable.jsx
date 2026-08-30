@@ -23,11 +23,13 @@ export default function ServiceOrderTable({
     },
   });
 
+  // 🔥 CORRIGIDO: Adicionar 'completed' e 'resolved' (ambos com mesmo estilo)
   const getStatusBadge = (status) => {
     const styles = {
       open: { bg: "bg-blue-500/15", text: "text-blue-400", dot: "bg-blue-400", label: "Aberto" },
       in_progress: { bg: "bg-yellow-500/15", text: "text-yellow-400", dot: "bg-yellow-400", label: "Em Atendimento" },
       resolved: { bg: "bg-green-500/15", text: "text-green-400", dot: "bg-green-400", label: "Resolvido" },
+      completed: { bg: "bg-green-500/15", text: "text-green-400", dot: "bg-green-400", label: "Resolvido" }, // ✅ ADICIONADO
       closed: { bg: "bg-slate-700/30", text: "text-slate-400", dot: "bg-slate-400", label: "Fechado" },
       canceled: { bg: "bg-red-500/15", text: "text-red-400", dot: "bg-red-400", label: "Cancelado" },
     };
@@ -110,7 +112,7 @@ export default function ServiceOrderTable({
           </tr>
         </thead>
         <tbody>
-          {orders.length > 0 ? (
+          {orders && orders.length > 0 ? (
             orders.map((os) => (
               <tr
                 key={os.id}
@@ -127,7 +129,7 @@ export default function ServiceOrderTable({
                 <td className="px-[18px] py-3.5 align-middle">
                   <div>
                     <strong className="text-blue-400 block text-sm">
-                      {os.title.toUpperCase()}
+                      {os.title?.toUpperCase() || 'SEM TÍTULO'}
                     </strong>
                     <small className="text-slate-500 text-xs">
                       {new Date(os.created_at).toLocaleDateString("pt-BR")}

@@ -9,6 +9,7 @@ const STATUS_CONFIG = {
   open: { bg: "bg-blue-500/15", text: "text-blue-400", dot: "bg-blue-400", label: "EM ABERTO", icon: "📂" },
   in_progress: { bg: "bg-indigo-500/15", text: "text-indigo-400", dot: "bg-indigo-400", label: "EM ATENDIMENTO", icon: "🔧" },
   resolved: { bg: "bg-green-500/15", text: "text-green-400", dot: "bg-green-400", label: "RESOLVIDO", icon: "✅" },
+  completed: { bg: "bg-green-500/15", text: "text-green-400", dot: "bg-green-400", label: "RESOLVIDO", icon: "✅" }, // ✅ ADICIONADO
   closed: { bg: "bg-slate-700/30", text: "text-slate-400", dot: "bg-slate-400", label: "FECHADO", icon: "🔒" },
 };
 
@@ -16,6 +17,7 @@ const SELECTABLE_STATUSES = [
   { value: 'pending', label: '⏳ Pendente' },
   { value: 'open', label: '📂 Em Aberto' },
   { value: 'in_progress', label: '🔧 Em Atendimento' },
+  { value: 'completed', label: '✅ Resolvido' },
   { value: 'closed', label: '🔒 Fechado' },
 ];
 
@@ -27,7 +29,9 @@ const PRIORITY_CONFIG = {
 };
 
 const StatusBadge = ({ status }) => {
-  const item = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
+  // 🔥 Compatibilidade: se for 'completed' ou 'resolved', usa o mesmo estilo
+  const normalizedStatus = (status === 'completed' || status === 'resolved') ? 'resolved' : status;
+  const item = STATUS_CONFIG[normalizedStatus] || STATUS_CONFIG.pending;
   return (
     <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold shadow-sm ${item.bg} ${item.text}`}>
       <span>{item.icon}</span> {item.label}
@@ -113,7 +117,8 @@ export default function ServiceOrderDetail({
   useEffect(() => {
     if (order) {
       setLocalOrder(order);
-      if (order.status === 'resolved' && order.resolved_at) {
+      // 🔥 Verificar tanto 'completed' quanto 'resolved'
+      if ((order.status === 'completed' || order.status === 'resolved') && order.resolved_at) {
         setIsResolved(true);
         const resolvedDate = new Date(order.resolved_at);
         const twoDaysLater = new Date(resolvedDate);
@@ -206,35 +211,38 @@ export default function ServiceOrderDetail({
       autoCloseTimerRef.current = null;
     }
 
-    if (localOrder?.status === 'resolved' && localOrder?.resolved_at) {
-      const resolvedDate = new Date(localOrder.resolved_at);
-      const twoDaysLater = new Date(resolvedDate);
-      twoDaysLater.setDate(twoDaysLater.getDate() + 2);
-      
-      const now = new Date();
-      const remaining = twoDaysLater - now;
-      
-      if (remaining > 0) {
-        setIsResolved(true);
-        setTimeUntilClose(remaining);
+    // 🔥 Verificar tanto 'completed' quanto 'resolved'
+    if (localOrder?.status === 'resolved' || localOrder?.status === 'completed') {
+      if (localOrder?.resolved_at) {
+        const resolvedDate = new Date(localOrder.resolved_at);
+        const twoDaysLater = new Date(resolvedDate);
+        twoDaysLater.setDate(twoDaysLater.getDate() + 2);
         
-        autoCloseTimerRef.current = setInterval(() => {
-          const now2 = new Date();
-          const remaining2 = twoDaysLater - now2;
+        const now = new Date();
+        const remaining = twoDaysLater - now;
+        
+        if (remaining > 0) {
+          setIsResolved(true);
+          setTimeUntilClose(remaining);
           
-          if (remaining2 <= 0) {
-            setTimeUntilClose(0);
-            handleAutoClose();
-            if (autoCloseTimerRef.current) {
-              clearInterval(autoCloseTimerRef.current);
-              autoCloseTimerRef.current = null;
+          autoCloseTimerRef.current = setInterval(() => {
+            const now2 = new Date();
+            const remaining2 = twoDaysLater - now2;
+            
+            if (remaining2 <= 0) {
+              setTimeUntilClose(0);
+              handleAutoClose();
+              if (autoCloseTimerRef.current) {
+                clearInterval(autoCloseTimerRef.current);
+                autoCloseTimerRef.current = null;
+              }
+            } else {
+              setTimeUntilClose(remaining2);
             }
-          } else {
-            setTimeUntilClose(remaining2);
-          }
-        }, 60000);
-      } else {
-        handleAutoClose();
+          }, 60000);
+        } else {
+          handleAutoClose();
+        }
       }
     } else {
       setIsResolved(false);
@@ -348,7 +356,9 @@ export default function ServiceOrderDetail({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [localOrder?.id]);
 
-  // ---- Função para marcar como resolvido ----
+  // =========================================================
+  // 🔥 FUNÇÃO PARA MARCAR COMO RESOLVIDO - CORRIGIDA
+  // =========================================================
   const handleMarkAsResolved = useCallback(async () => {
     if (!localOrder?.id) return;
     
@@ -368,8 +378,9 @@ export default function ServiceOrderDetail({
     
     try {
       const now = new Date().toISOString();
+      // 🔥 CORRIGIDO: Usar 'completed' em vez de 'resolved'
       const response = await api.put(`/api/v1/service-orders/${localOrder.id}`, {
-        status: 'resolved',
+        status: 'completed',
         resolved_at: now
       });
       
@@ -378,12 +389,12 @@ export default function ServiceOrderDetail({
       setLocalOrder(prev => ({ 
         ...prev, 
         ...updatedOrder,
-        status: 'resolved',
+        status: 'completed',
         resolved_at: now 
       }));
       
       if (onUpdateStatus) {
-        onUpdateStatus(localOrder.id, 'resolved', updatedOrder);
+        onUpdateStatus(localOrder.id, 'completed', updatedOrder);
       }
       
       setIsResolved(true);
@@ -426,6 +437,9 @@ export default function ServiceOrderDetail({
   }
 
   const formattedDate = formatDateTime(localOrder.created_at);
+
+  // 🔥 Verificar se está resolvido (completed ou resolved)
+  const isResolvedStatus = localOrder.status === 'completed' || localOrder.status === 'resolved';
 
   return (
     <div className="bg-slate-900 rounded-xl min-h-screen">
@@ -562,7 +576,7 @@ export default function ServiceOrderDetail({
                 )}
               </div>
 
-              {/* Lista de mensagens - SEM BOTÕES DE EDITAR E EXCLUIR */}
+              {/* Lista de mensagens */}
               {loadingMessages && messages.length === 0 ? (
                 <div className="flex justify-center py-8">
                   <div className="w-8 h-8 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
@@ -596,7 +610,6 @@ export default function ServiceOrderDetail({
                                     {formatDateTime(messageDate)}
                                   </span>
                                 </div>
-                                {/* 🔥 REMOVIDOS: Botões de editar e excluir */}
                               </div>
                               <p className="text-slate-300 text-sm mt-1 whitespace-pre-wrap">{msg.message}</p>
                               {msg.attachment_path && (
@@ -696,8 +709,8 @@ export default function ServiceOrderDetail({
                 </div>
               </div>
 
-              {/* Botão para marcar como resolvido */}
-              {localOrder.status !== 'resolved' && localOrder.status !== 'closed' && (
+              {/* 🔥 Botão para marcar como resolvido - verifica 'completed' e 'resolved' */}
+              {!isResolvedStatus && localOrder.status !== 'closed' && (
                 <div className="mt-4 mb-4">
                   <button
                     className="w-full py-2.5 rounded-full bg-green-600 hover:bg-green-500 text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -712,13 +725,27 @@ export default function ServiceOrderDetail({
                 </div>
               )}
 
+              {/* 🔥 Se já estiver resolvido, mostra mensagem */}
+              {isResolvedStatus && (
+                <div className="mt-4 mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-xl">
+                  <p className="text-green-400 text-sm text-center font-medium">
+                    ✅ Chamado resolvido em {formatDateTime(localOrder.resolved_at)}
+                  </p>
+                  {timeUntilClose > 0 && (
+                    <p className="text-green-300/70 text-xs text-center mt-1">
+                      ⏳ Fecha em: {formatTimeRemaining(timeUntilClose)}
+                    </p>
+                  )}
+                </div>
+              )}
+
               <div className="mt-4 pt-4 border-t border-slate-700/50">
                 <label className="text-slate-400 text-xs uppercase font-bold block mb-3">Status</label>
                 <select
                   className="w-full px-4 py-2.5 bg-slate-800/50 border border-blue-500/30 rounded-full text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all appearance-none cursor-pointer"
                   value={localOrder.status}
                   onChange={(e) => {
-                    if (e.target.value === 'resolved') {
+                    if (e.target.value === 'resolved' || e.target.value === 'completed') {
                       Swal.fire({
                         icon: 'info',
                         title: 'Ação não permitida',
@@ -730,7 +757,7 @@ export default function ServiceOrderDetail({
                     }
                     onUpdateStatus(localOrder.id, e.target.value);
                   }}
-                  disabled={actionLoading || localOrder.status === 'closed'}
+                  disabled={actionLoading || localOrder.status === 'closed' || isResolvedStatus}
                 >
                   <option value="pending">Selecionar Status</option>
                   <option value="pending">⏳ Pendente</option>
