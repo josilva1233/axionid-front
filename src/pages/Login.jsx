@@ -28,10 +28,14 @@ export default function Login() {
             user.is_admin === 1 || user.is_admin === true ? "admin" : "user";
           localStorage.setItem("@AxionID:role", role);
           window.history.replaceState({}, document.title, "/login");
-          navigate("/dashboard", { replace: true });
+          
+          // 🔥 CORREÇÃO: Redireciona para verificar termos
+          navigate("/terms-check", { replace: true });
         })
         .catch((err) => {
           console.error("Erro ao buscar perfil do Google login", err);
+          localStorage.removeItem("@AxionID:token");
+          localStorage.removeItem("@AxionID:role");
           navigate("/login", { replace: true });
         });
     }
@@ -63,7 +67,9 @@ export default function Login() {
       localStorage.setItem("@AxionID:role", role);
 
       api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      navigate("/dashboard", { replace: true });
+      
+      // 🔥 CORREÇÃO: Redireciona para verificar termos
+      navigate("/terms-check", { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Usuário ou senha incorretos.");
       console.error("Erro no login manual", err);
