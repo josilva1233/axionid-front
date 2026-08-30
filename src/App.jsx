@@ -8,7 +8,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import CompleteProfile from './pages/CompleteProfile';
 import TermsCheck from './components/TermsCheck';
 import TermManagement from './pages/TermManagement';
-import TermAcceptances from './pages/TermAcceptances'; // <-- IMPORTE A PÁGINA
+import TermAcceptances from './pages/TermAcceptances'; // <-- VERIFIQUE SE ESTÁ IMPORTADO
 import './App.css';
 
 function App() {
@@ -57,8 +57,6 @@ function App() {
           } 
         />
 
-        {/* ===== NOVAS ROTAS ADMIN ===== */}
-        
         {/* Gestão de Termos */}
         <Route 
           path="/term-management" 
@@ -71,7 +69,7 @@ function App() {
           } 
         />
 
-        {/* Lista de Usuários que aceitaram os termos */}
+        {/* LISTA DE USUÁRIOS QUE ACEITARAM - ROTA CORRETA */}
         <Route 
           path="/term-acceptances" 
           element={
