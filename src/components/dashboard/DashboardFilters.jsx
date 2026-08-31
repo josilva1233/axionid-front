@@ -1,5 +1,5 @@
 // src/components/dashboard/DashboardFilters.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 export default function DashboardFilters({
   activeTab,
@@ -34,7 +34,14 @@ export default function DashboardFilters({
         value={filters[name] !== undefined && filters[name] !== null ? filters[name] : ""}
         onChange={(e) => {
           console.log(`🔍 Input ${name} alterado:`, e.target.value);
-          onFilterChange(e);
+          // Criar um evento sintético com o nome e valor
+          const syntheticEvent = {
+            target: {
+              name: name,
+              value: e.target.value
+            }
+          };
+          onFilterChange(syntheticEvent);
         }}
         className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-[#4D6BFE]/50 focus:border-[#4D6BFE]/50 transition-all"
         placeholder={placeholder}
@@ -54,7 +61,14 @@ export default function DashboardFilters({
         value={filters[name] !== undefined && filters[name] !== null ? filters[name] : ""}
         onChange={(e) => {
           console.log(`🔍 Select ${name} alterado:`, e.target.value);
-          onFilterChange(e);
+          // Criar um evento sintético com o nome e valor
+          const syntheticEvent = {
+            target: {
+              name: name,
+              value: e.target.value
+            }
+          };
+          onFilterChange(syntheticEvent);
         }}
         className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4D6BFE]/50 focus:border-[#4D6BFE]/50 transition-all appearance-none"
         disabled={actionLoading}
