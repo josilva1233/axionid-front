@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import Swal from 'sweetalert2';
 import TermTable from '../components/dashboard/TermTable';
+import DashboardFilters from '../components/dashboard/DashboardFilters';
 
 export default function TermManagement({ onViewUsers }) {
   const navigate = useNavigate();
@@ -355,7 +356,7 @@ export default function TermManagement({ onViewUsers }) {
 
   return (
     <div className="p-4 md:p-6">
-      {/* Header com TODOS os botões */}
+      {/* Header - APENAS título e botão "Ver Todos os Usuários" */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
@@ -378,20 +379,6 @@ export default function TermManagement({ onViewUsers }) {
             <span className="text-lg">👥</span>
             Ver Todos os Usuários
           </button>
-          <button
-            onClick={handleNewTerm}
-            className="px-4 py-2 bg-[#4D6BFE] hover:bg-[#3B5DE8] text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-[#4D6BFE]/20 hover:shadow-[#4D6BFE]/40"
-          >
-            <span className="text-lg">➕</span>
-            Novo Termo
-          </button>
-          <button
-            onClick={handleClearFilters}
-            className="px-4 py-2 bg-red-600/10 hover:bg-red-600/20 text-red-400 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 border border-red-600/20"
-          >
-            <span className="text-lg">🧹</span>
-            Limpar
-          </button>
         </div>
       </div>
 
@@ -409,63 +396,25 @@ export default function TermManagement({ onViewUsers }) {
         </div>
       )}
 
-      {/* Filters - APENAS campos de busca, IGUAL AO PERMISSÕES */}
-      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-6 transition-colors hover:border-[#4D6BFE]/30">
-        <div className="flex flex-wrap gap-3 items-end">
-          {/* Buscar por Versão */}
-          <div className="flex-1 min-w-[160px] max-w-[240px]">
-            <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
-              <span className="text-[#4D6BFE]">●</span>
-              Buscar por Versão
-            </label>
-            <input
-              type="text"
-              name="version"
-              value={filters.version || ""}
-              onChange={handleFilterChange}
-              className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-[#4D6BFE]/50 focus:border-[#4D6BFE]/50 transition-all"
-              placeholder="Ex: 1.0.0..."
-              disabled={loading}
-            />
-          </div>
-
-          {/* Status */}
-          <div className="flex-1 min-w-[160px] max-w-[240px]">
-            <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
-              <span className="text-[#4D6BFE]">●</span>
-              Status
-            </label>
-            <select
-              name="status"
-              value={filters.status || ""}
-              onChange={handleFilterChange}
-              className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4D6BFE]/50 focus:border-[#4D6BFE]/50 transition-all appearance-none"
-              disabled={loading}
-            >
-              <option value="">Todos</option>
-              <option value="active">✅ Ativo</option>
-              <option value="inactive">⛔ Inativo</option>
-            </select>
-          </div>
-
-          {/* Criado por */}
-          <div className="flex-1 min-w-[160px] max-w-[240px]">
-            <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
-              <span className="text-[#4D6BFE]">●</span>
-              Criado por
-            </label>
-            <input
-              type="text"
-              name="creator"
-              value={filters.creator || ""}
-              onChange={handleFilterChange}
-              className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-[#4D6BFE]/50 focus:border-[#4D6BFE]/50 transition-all"
-              placeholder="Digite o nome..."
-              disabled={loading}
-            />
-          </div>
-        </div>
-      </div>
+      {/* Filters - Usando DashboardFilters */}
+      <DashboardFilters
+        activeTab="terms"
+        role="admin"
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onClear={handleClearFilters}
+        onNewTerm={handleNewTerm}
+        actionLoading={loading}
+        // Props obrigatórias (não usadas)
+        onNewGroup={() => {}}
+        onNewPermission={() => {}}
+        onNewOrder={() => {}}
+        isEditing={false}
+        onBack={() => {}}
+        setIsEditing={() => {}}
+        handleSave={() => {}}
+        user={null}
+      />
 
       {/* Table */}
       <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden">

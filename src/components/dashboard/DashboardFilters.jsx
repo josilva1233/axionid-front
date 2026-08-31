@@ -10,7 +10,7 @@ export default function DashboardFilters({
   onNewGroup,
   onNewPermission,
   onNewOrder,
-  onNewTerm, // Nova prop
+  onNewTerm,
   isEditing,
   onBack,
   setIsEditing,
@@ -142,7 +142,7 @@ export default function DashboardFilters({
         </div>
       </>
     ),
-    terms: ( // Nova aba de termos
+    terms: (
       <>
         {renderInput("Buscar por Versão", "version", "Ex: 1.0.0...")}
         {renderSelect("Status", "status", [
@@ -150,9 +150,7 @@ export default function DashboardFilters({
           { value: "inactive", label: "⛔ Inativo" },
         ])}
         {renderInput("Criado por", "creator", "Digite o nome...")}
-        <div className="flex-1 min-w-[160px] max-w-[240px]">
-          {renderButton(onNewTerm, "➕", "Novo Termo", "primary")}
-        </div>
+        {/* ❌ Botão "Novo Termo" REMOVIDO - está no header do TermManagement */}
       </>
     ),
     audit: role === "admin" && (
