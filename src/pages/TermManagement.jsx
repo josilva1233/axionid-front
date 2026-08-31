@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import Swal from 'sweetalert2';
 import TermTable from '../components/dashboard/TermTable';
-import DashboardFilters from '../components/dashboard/DashboardFilters';
+//import DashboardFilters from '../components/dashboard/DashboardFilters';
 
 export default function TermManagement({ onViewUsers }) {
   const navigate = useNavigate();
