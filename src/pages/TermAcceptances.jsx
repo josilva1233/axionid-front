@@ -1,159 +1,364 @@
-// src/pages/TermAcceptances.jsx
+// src/pages/TermManagement.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import Swal from 'sweetalert2';
+import TermTable from '../components/dashboard/TermTable';
+import DashboardFilters from '../components/dashboard/DashboardFilters';
 
-export default function TermAcceptances({ termId, onBack }) {
+export default function TermManagement({ onViewUsers }) {
   const navigate = useNavigate();
-  
-  const [acceptances, setAcceptances] = useState([]);
+  const [terms, setTerms] = useState([]);
+  const [filteredTerms, setFilteredTerms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [termInfo, setTermInfo] = useState(null);
-  const [total, setTotal] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [lastPage, setLastPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
+  const [showModal, setShowModal] = useState(false);
+  const [editingTerm, setEditingTerm] = useState(null);
+  const [acceptanceCounts, setAcceptanceCounts] = useState({});
+  const [filters, setFilters] = useState({
+    version: '',
+    status: '',
+    creator: '',
+  });
+  const [formData, setFormData] = useState({
+    content: '',
+    version: '',
+    is_active: false,
+  });
 
   useEffect(() => {
-    loadAcceptances();
-  }, [termId, currentPage]);
+    loadTerms();
+  }, []);
 
-  const loadAcceptances = async () => {
+  useEffect(() => {
+    applyFilters();
+  }, [terms, filters]);
+
+  const loadTerms = async () => {
     setLoading(true);
     setError('');
     try {
-      // 🔥 URL CORRETA: /api/v1/admin/terms/acceptances
-      const url = '/api/v1/admin/terms/acceptances';
+      const response = await api.get('/api/v1/admin/terms');
+      const termsData = response.data.data || response.data;
+      const termsArray = Array.isArray(termsData) ? termsData : [];
+      setTerms(termsArray);
       
-      const response = await api.get(url, {
-        params: {
-          term_id: termId || undefined,
-          page: currentPage,
-          per_page: perPage,
-        }
-      });
-      
-      const data = response.data;
-      
-      setAcceptances(data.data || []);
-      setTotal(data.meta?.total || 0);
-      setLastPage(data.meta?.last_page || 1);
-      setPerPage(data.meta?.per_page || 10);
-      
-      // Se tiver termId, buscar informações do termo
-      if (termId) {
-        try {
-          const termResponse = await api.get(`/api/v1/admin/terms/${termId}`);
-          setTermInfo(termResponse.data);
-        } catch (err) {
-          console.error('Erro ao buscar termo:', err);
-        }
+      if (termsArray.length > 0) {
+        await loadAcceptanceCounts(termsArray);
       }
     } catch (err) {
-      console.error('Erro ao carregar aceitações:', err);
-      
-      // 🔥 Melhor tratamento de erro
-      if (err.response?.status === 405) {
-        setError('Erro 405: Método não permitido. Verifique a URL da requisição.');
-      } else if (err.response?.status === 403) {
-        setError('Você não tem permissão para visualizar estas informações.');
-      } else if (err.response?.status === 404) {
-        setError('Rota não encontrada. Verifique a configuração do servidor.');
-      } else if (err.response?.status === 401) {
-        setError('Sessão expirada. Faça login novamente.');
-        // Opcional: redirecionar para login
-        // navigate('/login');
-      } else {
-        setError(err.response?.data?.message || 'Erro ao carregar usuários');
-      }
+      console.error('Erro ao carregar termos:', err);
+      setError(err.response?.data?.message || 'Erro ao carregar termos');
+      setTerms([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleBack = () => {
-    if (onBack) {
-      onBack();
-    } else {
-      navigate('/admin/term-management');
+  const loadAcceptanceCounts = async (termsList) => {
+    try {
+      const counts = {};
+      await Promise.all(
+        termsList.map(async (term) => {
+          try {
+            const response = await api.get('/api/v1/admin/terms/acceptances', {
+              params: { term_id: term.id, per_page: 1 }
+            });
+            counts[term.id] = response.data.meta?.total || 0;
+          } catch (err) {
+            counts[term.id] = 0;
+          }
+        })
+      );
+      setAcceptanceCounts(counts);
+    } catch (err) {
+      console.error('Erro ao carregar contagens:', err);
     }
   };
 
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= lastPage) {
-      setCurrentPage(page);
+  const applyFilters = () => {
+    let filtered = [...terms];
+
+    if (filters.version) {
+      filtered = filtered.filter(term => 
+        term.version.toLowerCase().includes(filters.version.toLowerCase())
+      );
     }
+
+    if (filters.status) {
+      const isActive = filters.status === 'active';
+      filtered = filtered.filter(term => term.is_active === isActive);
+    }
+
+    if (filters.creator) {
+      filtered = filtered.filter(term => 
+        term.creator?.name?.toLowerCase().includes(filters.creator.toLowerCase())
+      );
+    }
+
+    setFilteredTerms(filtered);
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return '—';
-    return new Date(dateString).toLocaleString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      version: '',
+      status: '',
+      creator: '',
     });
   };
 
-  if (loading) {
+  const getNextVersion = (currentVersion) => {
+    if (!currentVersion) return '1.0.0';
+    
+    const versionMatch = currentVersion.match(/(\d+)\.(\d+)\.(\d+)/);
+    if (versionMatch) {
+      const major = parseInt(versionMatch[1]);
+      const minor = parseInt(versionMatch[2]);
+      const patch = parseInt(versionMatch[3]);
+      return `${major}.${minor}.${patch + 1}`;
+    }
+    
+    const numMatch = currentVersion.match(/(\d+)/);
+    if (numMatch) {
+      const num = parseInt(numMatch[0]);
+      return `${num + 1}`;
+    }
+    
+    return `${currentVersion}.1`;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      let response;
+      
+      if (editingTerm) {
+        const nextVersion = getNextVersion(editingTerm.version);
+        const newTermData = {
+          content: formData.content,
+          version: nextVersion,
+          is_active: false,
+        };
+        
+        const confirmResult = await Swal.fire({
+          title: 'Criar Nova Versão?',
+          html: `
+            <p>Você está criando uma nova versão do termo.</p>
+            <p class="mt-2">
+              <strong>Versão atual:</strong> v${editingTerm.version}<br>
+              <strong>Nova versão:</strong> v${nextVersion}
+            </p>
+            <p class="mt-2 text-sm text-slate-400">
+              O termo atual será mantido como histórico.
+            </p>
+          `,
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Sim, criar nova versão',
+          cancelButtonText: 'Cancelar',
+          confirmButtonColor: '#4D6BFE',
+          cancelButtonColor: '#dc3545',
+        });
+        
+        if (!confirmResult.isConfirmed) {
+          setLoading(false);
+          return;
+        }
+        
+        response = await api.post('/api/v1/admin/terms', newTermData);
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Nova Versão Criada!',
+          text: `Termo v${nextVersion} criado com sucesso.`,
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      } else {
+        response = await api.post('/api/v1/admin/terms', formData);
+        Swal.fire({
+          icon: 'success',
+          title: 'Termo Criado!',
+          text: `Termo v${formData.version} criado com sucesso.`,
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      }
+      
+      if (formData.is_active && !editingTerm) {
+        const activateResult = await Swal.fire({
+          title: 'Ativar Termo?',
+          text: 'Ao ativar este termo, todos os usuários precisarão aceitar novamente. Deseja continuar?',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Sim, ativar',
+          cancelButtonText: 'Cancelar',
+          confirmButtonColor: '#4D6BFE',
+          cancelButtonColor: '#dc3545',
+        });
+        
+        if (activateResult.isConfirmed) {
+          const termId = response.data.term?.id || response.data.id;
+          await api.patch(`/api/v1/admin/terms/${termId}/toggle`);
+          Swal.fire({
+            icon: 'success',
+            title: 'Termo Ativado!',
+            text: 'Todos os usuários precisarão aceitar os novos termos.',
+            timer: 2000,
+            showConfirmButton: false,
+          });
+        }
+      }
+      
+      await loadTerms();
+      setShowModal(false);
+      resetForm();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erro ao salvar termo');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleStatus = async (term) => {
+    setLoading(true);
+    try {
+      await api.patch(`/api/v1/admin/terms/${term.id}/toggle`);
+      
+      if (!term.is_active) {
+        const result = await Swal.fire({
+          title: 'Ativar Termo',
+          text: 'Ao ativar este termo, todos os usuários precisarão aceitar novamente. Deseja continuar?',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Sim, ativar',
+          cancelButtonText: 'Cancelar',
+          confirmButtonColor: '#4D6BFE',
+          cancelButtonColor: '#dc3545',
+        });
+        
+        if (result.isConfirmed) {
+          await loadTerms();
+          Swal.fire({
+            icon: 'success',
+            title: 'Termo Ativado!',
+            text: 'Todos os usuários precisarão aceitar os novos termos.',
+            timer: 2000,
+            showConfirmButton: false,
+          });
+        } else {
+          await api.patch(`/api/v1/admin/terms/${term.id}/toggle`);
+          await loadTerms();
+        }
+      } else {
+        await loadTerms();
+        Swal.fire({
+          icon: 'info',
+          title: 'Termo Desativado',
+          text: `O termo v${term.version} foi desativado.`,
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erro ao alterar status');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    const result = await Swal.fire({
+      title: 'Excluir Termo?',
+      text: 'Tem certeza que deseja excluir este termo? Esta ação não pode ser desfeita.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, excluir',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#4D6BFE',
+    });
+    
+    if (!result.isConfirmed) return;
+
+    setLoading(true);
+    try {
+      await api.delete(`/api/v1/admin/terms/${id}`);
+      await loadTerms();
+      Swal.fire({
+        icon: 'success',
+        title: 'Excluído!',
+        text: 'Termo removido com sucesso.',
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erro ao excluir termo');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({ content: '', version: '', is_active: false });
+    setEditingTerm(null);
+  };
+
+  const handleViewUsers = (termId) => {
+    if (onViewUsers) {
+      onViewUsers(termId);
+    } else {
+      navigate(`/admin/term-acceptances?term_id=${termId}`);
+    }
+  };
+
+  const handleViewAllUsers = () => {
+    if (onViewUsers) {
+      onViewUsers(null);
+    } else {
+      navigate('/admin/term-acceptances');
+    }
+  };
+
+  const handleEditTerm = (term) => {
+    setEditingTerm(term);
+    setFormData({
+      content: term.content,
+      version: '',
+      is_active: false,
+    });
+    setShowModal(true);
+  };
+
+  const handleNewTerm = () => {
+    resetForm();
+    setShowModal(true);
+  };
+
+  if (loading && !showModal) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-4 border-[#4D6BFE] border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-slate-400 text-sm">Carregando usuários...</p>
+          <p className="text-slate-400 text-sm">Carregando termos...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      {/* Header com botão voltar */}
+    <div className="p-4 md:p-6">
+      {/* Header - APENAS título */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={handleBack}
-            className="px-4 py-2 bg-slate-700/50 hover:bg-slate-700 text-white rounded-lg transition-colors flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Voltar
-          </button>
-          <div>
-            <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-              👥 Usuários que aceitaram os termos
-              {total > 0 && (
-                <span className="text-sm font-normal text-slate-400">
-                  ({total} usuário{total !== 1 ? 's' : ''})
-                </span>
-              )}
-            </h1>
-            {termInfo && (
-              <p className="text-sm text-slate-400 mt-1">
-                Termo v{termInfo.version} - {termInfo.is_active ? '⭐ Ativo' : '📌 Inativo'}
-              </p>
-            )}
-            {!termInfo && (
-              <p className="text-sm text-slate-400 mt-1">
-                Visualizando todas as aceitações
-              </p>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={loadAcceptances}
-            className="px-3 py-2 bg-slate-700/30 hover:bg-slate-700/50 text-slate-300 text-sm rounded-lg transition-colors flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Atualizar
-          </button>
-        </div>
+        {/* NENHUM botão aqui - todos estão no DashboardFilters */}
       </div>
 
       {/* Error */}
@@ -170,156 +375,151 @@ export default function TermAcceptances({ termId, onBack }) {
         </div>
       )}
 
-      {/* Tabela */}
+      {/* Filters - Tudo no DashboardFilters */}
+      <DashboardFilters
+        activeTab="terms"
+        role="admin"
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onClear={handleClearFilters}
+        onNewTerm={handleNewTerm}
+        onViewAllUsers={handleViewAllUsers}
+        actionLoading={loading}
+        // Props obrigatórias
+        onNewGroup={() => {}}
+        onNewPermission={() => {}}
+        onNewOrder={() => {}}
+        isEditing={false}
+        onBack={() => {}}
+        setIsEditing={() => {}}
+        handleSave={() => {}}
+        user={null}
+      />
+
+      {/* Table */}
       <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden">
-        {acceptances.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="text-5xl mb-4">📭</div>
-            <p className="text-lg text-slate-400 font-medium">Nenhum usuário aceitou os termos ainda</p>
-            <p className="text-sm text-slate-500 mt-1">Aguardando aceitações dos usuários</p>
-            {termInfo && (
-              <p className="text-xs text-slate-600 mt-3">
-                Termo v{termInfo.version} criado em {formatDate(termInfo.created_at)}
-              </p>
-            )}
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-slate-700/50 border-b border-slate-700/50">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                      Usuário
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider hidden sm:table-cell">
-                      Email
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider hidden md:table-cell">
-                      Versão
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider hidden lg:table-cell">
-                      Data de Aceitação
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-700/30">
-                  {acceptances.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-700/30 transition-colors group">
-                      <td className="px-6 py-4">
-                        <div>
-                          <p className="text-sm text-slate-300 font-medium">
-                            {item.user?.name || '—'}
-                          </p>
-                          <div className="flex flex-wrap gap-1.5 mt-1">
-                            {item.user?.is_admin && (
-                              <span className="inline-block px-2 py-0.5 text-[10px] bg-purple-500/20 text-purple-400 rounded">
-                                Admin
-                              </span>
-                            )}
-                            {!item.user?.is_active && (
-                              <span className="inline-block px-2 py-0.5 text-[10px] bg-red-500/20 text-red-400 rounded">
-                                Inativo
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-400 hidden sm:table-cell">
-                        {item.user?.email || '—'}
-                      </td>
-                      <td className="px-6 py-4 hidden md:table-cell">
-                        <span className="px-2.5 py-1 text-xs bg-[#4D6BFE]/20 text-[#4D6BFE] rounded-full font-medium">
-                          v{item.term?.version || '—'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-400 hidden lg:table-cell">
-                        {formatDate(item.accepted_at)}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs bg-green-500/20 text-green-400 rounded-full">
-                          <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
-                          Aceito
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        <TermTable
+          terms={filteredTerms}
+          acceptanceCounts={acceptanceCounts}
+          onViewUsers={handleViewUsers}
+          onToggleStatus={handleToggleStatus}
+          onEdit={handleEditTerm}
+          onDelete={handleDelete}
+          loading={loading}
+        />
+      </div>
+
+      {/* Modal de criação/edição */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-800 rounded-2xl border border-slate-700/50 p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-white">
+                {editingTerm ? (
+                  <div>
+                    <span>✏️ Criar Nova Versão</span>
+                    <p className="text-sm text-slate-400 font-normal mt-1">
+                      Baseado em v{editingTerm.version} → v{getNextVersion(editingTerm.version)}
+                    </p>
+                  </div>
+                ) : (
+                  '📄 Novo Termo de Uso'
+                )}
+              </h2>
+              <button 
+                onClick={() => setShowModal(false)} 
+                className="text-slate-400 hover:text-white text-xl transition-colors"
+              >
+                ✕
+              </button>
             </div>
-            
-            {/* Footer com paginação */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-6 py-4 border-t border-slate-700/30">
-              <div className="flex items-center gap-4">
-                <p className="text-sm text-slate-400">
-                  <span className="font-medium text-slate-300">{total}</span> usuário{total !== 1 ? 's' : ''}
-                  {total > 0 && (
-                    <span className="text-slate-500 ml-1">
-                      (página {currentPage} de {lastPage})
-                    </span>
-                  )}
-                </p>
-                <div className="flex items-center gap-2">
-                  <select
-                    value={perPage}
-                    onChange={(e) => {
-                      setPerPage(Number(e.target.value));
-                      setCurrentPage(1);
-                    }}
-                    className="px-2 py-1 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-300 text-sm focus:outline-none focus:border-[#4D6BFE]"
-                  >
-                    <option value={10}>10</option>
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
-                    <option value={100}>100</option>
-                  </select>
-                </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1">
+                  Versão {editingTerm && <span className="text-xs text-slate-500">(automática)</span>}
+                </label>
+                <input
+                  type="text"
+                  value={editingTerm ? getNextVersion(editingTerm.version) : formData.version}
+                  onChange={(e) => setFormData({ ...formData, version: e.target.value })}
+                  className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white text-sm focus:outline-none focus:border-[#4D6BFE] focus:ring-1 focus:ring-[#4D6BFE]"
+                  placeholder="Ex: 1.0.0"
+                  required
+                  disabled={!!editingTerm}
+                />
+                {editingTerm && (
+                  <p className="text-xs text-slate-500 mt-1">
+                    🔒 A versão é gerada automaticamente ao editar um termo existente
+                  </p>
+                )}
               </div>
-              
-              {lastPage > 1 && (
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => handlePageChange(1)}
-                    disabled={currentPage === 1}
-                    className="px-3 py-1.5 bg-slate-700/30 hover:bg-slate-700/50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 text-sm rounded-lg transition-colors"
-                  >
-                    «
-                  </button>
-                  <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="px-3 py-1.5 bg-slate-700/30 hover:bg-slate-700/50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 text-sm rounded-lg transition-colors"
-                  >
-                    ‹
-                  </button>
-                  
-                  <span className="px-4 py-1.5 bg-[#4D6BFE]/20 text-[#4D6BFE] text-sm font-medium rounded-lg">
-                    {currentPage}
-                  </span>
-                  
-                  <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === lastPage}
-                    className="px-3 py-1.5 bg-slate-700/30 hover:bg-slate-700/50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 text-sm rounded-lg transition-colors"
-                  >
-                    ›
-                  </button>
-                  <button
-                    onClick={() => handlePageChange(lastPage)}
-                    disabled={currentPage === lastPage}
-                    className="px-3 py-1.5 bg-slate-700/30 hover:bg-slate-700/50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 text-sm rounded-lg transition-colors"
-                  >
-                    »
-                  </button>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1">
+                  Conteúdo *
+                </label>
+                <textarea
+                  value={formData.content}
+                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white text-sm focus:outline-none focus:border-[#4D6BFE] focus:ring-1 focus:ring-[#4D6BFE] h-64 resize-y"
+                  placeholder="Digite os termos de uso..."
+                  required
+                />
+                <p className="text-xs text-slate-500 mt-1">
+                  {formData.content.length} caracteres
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="is_active"
+                  checked={formData.is_active}
+                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                  className="w-4 h-4 rounded border-slate-600 bg-slate-700/50 text-[#4D6BFE] focus:ring-[#4D6BFE] focus:ring-offset-0"
+                />
+                <label htmlFor="is_active" className="text-sm text-slate-300">
+                  Ativar este termo imediatamente
+                </label>
+              </div>
+
+              {formData.is_active && (
+                <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                  <p className="text-xs text-green-400">
+                    ✅ Ao ativar este termo, todos os outros serão desativados automaticamente.
+                  </p>
                 </div>
               )}
-            </div>
-          </>
-        )}
-      </div>
+
+              {editingTerm && (
+                <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                  <p className="text-xs text-blue-400">
+                    💡 Você está criando uma nova versão do termo. O termo atual v{editingTerm.version} será mantido como histórico.
+                  </p>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 py-2.5 px-4 bg-[#4D6BFE] hover:bg-[#3B5DE8] text-white font-medium text-sm rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Salvando...' : editingTerm ? '📝 Criar Nova Versão' : '💾 Salvar'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="flex-1 py-2.5 px-4 bg-slate-700/30 hover:bg-slate-700/50 text-slate-300 font-medium text-sm rounded-lg transition-colors"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
