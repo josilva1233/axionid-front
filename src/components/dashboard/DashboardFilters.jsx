@@ -87,7 +87,7 @@ export default function DashboardFilters({
       case "terms":
         return (
           <>
-            {renderInput("Buscar por Versão", "version", "Ex: 1.0.0....")}
+            {renderInput("Buscar por Versão", "version", "Ex: 1.0.0.....")}
             {renderSelect("Status", "status", [
               { value: "active", label: "✅ Ativo" },
               { value: "inactive", label: "⛔ Inativo" },
