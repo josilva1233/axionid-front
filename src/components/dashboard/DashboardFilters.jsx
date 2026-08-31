@@ -11,6 +11,7 @@ export default function DashboardFilters({
   onNewPermission,
   onNewOrder,
   onNewTerm,
+  onViewAllUsers,  // NOVO: callback para ver todos os usuários
   isEditing,
   onBack,
   setIsEditing,
@@ -71,6 +72,7 @@ export default function DashboardFilters({
       primary: "bg-[#4D6BFE] hover:bg-[#3B5DE8] text-white shadow-lg shadow-[#4D6BFE]/20 hover:shadow-[#4D6BFE]/40",
       secondary: "bg-slate-700/50 hover:bg-slate-600/50 text-slate-300",
       danger: "bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-600/20",
+      info: "bg-slate-700/50 hover:bg-slate-700 text-white", // NOVO: estilo para info
     };
 
     return (
@@ -150,7 +152,10 @@ export default function DashboardFilters({
           { value: "inactive", label: "⛔ Inativo" },
         ])}
         {renderInput("Criado por", "creator", "Digite o nome...")}
-        {/* ❌ Botão "Novo Termo" REMOVIDO - está no header do TermManagement */}
+        {/* NOVO: Botão "Ver Todos os Usuários" */}
+        <div className="flex-1 min-w-[160px] max-w-[240px]">
+          {renderButton(onViewAllUsers, "👥", "Ver Todos os Usuários", "info")}
+        </div>
       </>
     ),
     audit: role === "admin" && (

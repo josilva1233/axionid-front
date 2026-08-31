@@ -356,7 +356,7 @@ export default function TermManagement({ onViewUsers }) {
 
   return (
     <div className="p-4 md:p-6">
-      {/* Header - APENAS título e botão "Ver Todos os Usuários" */}
+      {/* Header - APENAS título */} {/* REMOVIDO o botão "Ver Todos os Usuários" daqui */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
@@ -371,15 +371,7 @@ export default function TermManagement({ onViewUsers }) {
             Gerencie os termos de uso da plataforma
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={handleViewAllUsers}
-            className="px-4 py-2 bg-slate-700/50 hover:bg-slate-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
-          >
-            <span className="text-lg">👥</span>
-            Ver Todos os Usuários
-          </button>
-        </div>
+        {/* ❌ Botão "Ver Todos os Usuários" REMOVIDO - agora está no DashboardFilters */}
       </div>
 
       {/* Error */}
@@ -396,7 +388,7 @@ export default function TermManagement({ onViewUsers }) {
         </div>
       )}
 
-      {/* Filters - Usando DashboardFilters */}
+      {/* Filters - Usando DashboardFilters com onViewAllUsers */}
       <DashboardFilters
         activeTab="terms"
         role="admin"
@@ -404,6 +396,7 @@ export default function TermManagement({ onViewUsers }) {
         onFilterChange={handleFilterChange}
         onClear={handleClearFilters}
         onNewTerm={handleNewTerm}
+        onViewAllUsers={handleViewAllUsers} 
         actionLoading={loading}
         // Props obrigatórias (não usadas)
         onNewGroup={() => {}}
