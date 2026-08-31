@@ -160,15 +160,7 @@ export default function DashboardFilters({
     ),
     terms: (
       <>
-        {renderInput("Buscar por Versão", "version", "Ex: 1.0.0...")}
-        {renderSelect("Status", "status", [
-          { value: "active", label: "✅ Ativo" },
-          { value: "inactive", label: "⛔ Inativo" },
-        ])}
-        {renderInput("Criado por", "creator", "Digite o nome...")}
-        <div className="flex-1 min-w-[160px] max-w-[240px]">
-          {renderButton(onViewAllUsers, "👥", "Ver Todos os Usuários", "info")}
-        </div>
+
       </>
     ),
     audit: role === "admin" && (
