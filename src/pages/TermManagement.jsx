@@ -4,15 +4,22 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import Swal from 'sweetalert2';
 import TermTable from '../components/dashboard/TermTable';
+import TermFilters from '../components/dashboard/TermFilters';
 
 export default function TermManagement({ onViewUsers }) {
   const navigate = useNavigate();
   const [terms, setTerms] = useState([]);
+  const [filteredTerms, setFilteredTerms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingTerm, setEditingTerm] = useState(null);
   const [acceptanceCounts, setAcceptanceCounts] = useState({});
+  const [filters, setFilters] = useState({
+    version: '',
+    status: '',
+    creator: '',
+  });
   const [formData, setFormData] = useState({
     content: '',
     version: '',
@@ -22,6 +29,10 @@ export default function TermManagement({ onViewUsers }) {
   useEffect(() => {
     loadTerms();
   }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [terms, filters]);
 
   const loadTerms = async () => {
     setLoading(true);
@@ -63,6 +74,42 @@ export default function TermManagement({ onViewUsers }) {
     } catch (err) {
       console.error('Erro ao carregar contagens:', err);
     }
+  };
+
+  const applyFilters = () => {
+    let filtered = [...terms];
+
+    if (filters.version) {
+      filtered = filtered.filter(term => 
+        term.version.toLowerCase().includes(filters.version.toLowerCase())
+      );
+    }
+
+    if (filters.status) {
+      const isActive = filters.status === 'active';
+      filtered = filtered.filter(term => term.is_active === isActive);
+    }
+
+    if (filters.creator) {
+      filtered = filtered.filter(term => 
+        term.creator?.name?.toLowerCase().includes(filters.creator.toLowerCase())
+      );
+    }
+
+    setFilteredTerms(filtered);
+  };
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      version: '',
+      status: '',
+      creator: '',
+    });
   };
 
   const getNextVersion = (currentVersion) => {
@@ -309,9 +356,9 @@ export default function TermManagement({ onViewUsers }) {
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
             📄 Termos de Uso
-            {terms.length > 0 && (
+            {filteredTerms.length > 0 && (
               <span className="text-sm font-normal text-slate-400">
-                ({terms.length} termo{terms.length !== 1 ? 's' : ''})
+                ({filteredTerms.length} termo{filteredTerms.length !== 1 ? 's' : ''})
               </span>
             )}
           </h1>
@@ -354,10 +401,22 @@ export default function TermManagement({ onViewUsers }) {
         </div>
       )}
 
+      {/* Filters */}
+      <TermFilters
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onClear={handleClearFilters}
+        onNewTerm={() => {
+          resetForm();
+          setShowModal(true);
+        }}
+        loading={loading}
+      />
+
       {/* Table */}
       <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden">
         <TermTable
-          terms={terms}
+          terms={filteredTerms}
           acceptanceCounts={acceptanceCounts}
           onViewUsers={handleViewUsers}
           onToggleStatus={handleToggleStatus}
