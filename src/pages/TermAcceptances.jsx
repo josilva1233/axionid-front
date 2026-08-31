@@ -14,16 +14,24 @@ export default function TermAcceptances({ termId, onBack }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
+  const [filters, setFilters] = useState({
+    user_name: '',
+    email: '',
+  });
+  const [filteredAcceptances, setFilteredAcceptances] = useState([]);
 
   useEffect(() => {
     loadAcceptances();
   }, [termId, currentPage]);
 
+  useEffect(() => {
+    applyFilters();
+  }, [acceptances, filters]);
+
   const loadAcceptances = async () => {
     setLoading(true);
     setError('');
     try {
-      // 🔥 URL CORRETA: /api/v1/admin/terms/acceptances
       const url = '/api/v1/admin/terms/acceptances';
       
       const response = await api.get(url, {
@@ -41,7 +49,6 @@ export default function TermAcceptances({ termId, onBack }) {
       setLastPage(data.meta?.last_page || 1);
       setPerPage(data.meta?.per_page || 10);
       
-      // Se tiver termId, buscar informações do termo
       if (termId) {
         try {
           const termResponse = await api.get(`/api/v1/admin/terms/${termId}`);
@@ -53,7 +60,6 @@ export default function TermAcceptances({ termId, onBack }) {
     } catch (err) {
       console.error('Erro ao carregar aceitações:', err);
       
-      // 🔥 Melhor tratamento de erro
       if (err.response?.status === 405) {
         setError('Erro 405: Método não permitido. Verifique a URL da requisição.');
       } else if (err.response?.status === 403) {
@@ -62,14 +68,44 @@ export default function TermAcceptances({ termId, onBack }) {
         setError('Rota não encontrada. Verifique a configuração do servidor.');
       } else if (err.response?.status === 401) {
         setError('Sessão expirada. Faça login novamente.');
-        // Opcional: redirecionar para login
-        // navigate('/login');
       } else {
         setError(err.response?.data?.message || 'Erro ao carregar usuários');
       }
     } finally {
       setLoading(false);
     }
+  };
+
+  const applyFilters = () => {
+    let filtered = [...acceptances];
+
+    // Filtro por nome do usuário
+    if (filters.user_name && filters.user_name.trim() !== '') {
+      filtered = filtered.filter(item => 
+        item.user?.name?.toLowerCase().includes(filters.user_name.toLowerCase().trim())
+      );
+    }
+
+    // Filtro por email
+    if (filters.email && filters.email.trim() !== '') {
+      filtered = filtered.filter(item => 
+        item.user?.email?.toLowerCase().includes(filters.email.toLowerCase().trim())
+      );
+    }
+
+    setFilteredAcceptances(filtered);
+  };
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      user_name: '',
+      email: '',
+    });
   };
 
   const handleBack = () => {
@@ -109,7 +145,7 @@ export default function TermAcceptances({ termId, onBack }) {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
       {/* Header com botão voltar */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div className="flex items-center gap-4">
@@ -170,14 +206,69 @@ export default function TermAcceptances({ termId, onBack }) {
         </div>
       )}
 
+      {/* Filters */}
+      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-6 transition-colors hover:border-[#4D6BFE]/30">
+        <div className="flex flex-wrap gap-3 items-end">
+          <div className="flex-1 min-w-[160px] max-w-[240px]">
+            <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
+              <span className="text-[#4D6BFE]">●</span>
+              Nome do Usuário
+            </label>
+            <input
+              type="text"
+              name="user_name"
+              value={filters.user_name}
+              onChange={handleFilterChange}
+              className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-[#4D6BFE]/50 focus:border-[#4D6BFE]/50 transition-all"
+              placeholder="Buscar por nome..."
+            />
+          </div>
+
+          <div className="flex-1 min-w-[160px] max-w-[240px]">
+            <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
+              <span className="text-[#4D6BFE]">●</span>
+              Email
+            </label>
+            <input
+              type="text"
+              name="email"
+              value={filters.email}
+              onChange={handleFilterChange}
+              className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-[#4D6BFE]/50 focus:border-[#4D6BFE]/50 transition-all"
+              placeholder="Buscar por email..."
+            />
+          </div>
+
+          <div className="flex-1 min-w-[160px] max-w-[240px]">
+            <button
+              onClick={handleClearFilters}
+              className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-600/20"
+            >
+              <span>🧹</span>
+              Limpar
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Tabela */}
       <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden">
-        {acceptances.length === 0 ? (
+        {filteredAcceptances.length === 0 ? (
           <div className="p-12 text-center">
             <div className="text-5xl mb-4">📭</div>
-            <p className="text-lg text-slate-400 font-medium">Nenhum usuário aceitou os termos ainda</p>
-            <p className="text-sm text-slate-500 mt-1">Aguardando aceitações dos usuários</p>
-            {termInfo && (
+            <p className="text-lg text-slate-400 font-medium">
+              {acceptances.length === 0 
+                ? 'Nenhum usuário aceitou os termos ainda'
+                : 'Nenhum usuário encontrado com os filtros aplicados'
+              }
+            </p>
+            <p className="text-sm text-slate-500 mt-1">
+              {acceptances.length === 0 
+                ? 'Aguardando aceitações dos usuários'
+                : 'Tente ajustar os filtros para encontrar o usuário'
+              }
+            </p>
+            {termInfo && acceptances.length === 0 && (
               <p className="text-xs text-slate-600 mt-3">
                 Termo v{termInfo.version} criado em {formatDate(termInfo.created_at)}
               </p>
@@ -207,7 +298,7 @@ export default function TermAcceptances({ termId, onBack }) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-700/30">
-                  {acceptances.map((item) => (
+                  {filteredAcceptances.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-700/30 transition-colors group">
                       <td className="px-6 py-4">
                         <div>
@@ -255,10 +346,11 @@ export default function TermAcceptances({ termId, onBack }) {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-6 py-4 border-t border-slate-700/30">
               <div className="flex items-center gap-4">
                 <p className="text-sm text-slate-400">
-                  <span className="font-medium text-slate-300">{total}</span> usuário{total !== 1 ? 's' : ''}
+                  <span className="font-medium text-slate-300">{filteredAcceptances.length}</span> 
+                  {filteredAcceptances.length !== 1 ? ' usuários' : ' usuário'} 
                   {total > 0 && (
                     <span className="text-slate-500 ml-1">
-                      (página {currentPage} de {lastPage})
+                      (total: {total} - página {currentPage} de {lastPage})
                     </span>
                   )}
                 </p>
