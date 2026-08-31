@@ -20,6 +20,7 @@ export default function TermManagement({ onViewUsers }) {
     status: '',
     creator: '',
   });
+
   const [formData, setFormData] = useState({
     content: '',
     version: '',
@@ -30,7 +31,9 @@ export default function TermManagement({ onViewUsers }) {
     loadTerms();
   }, []);
 
+  // Quando terms ou filters mudarem, aplicar filtros
   useEffect(() => {
+    console.log('🔍 Aplicando filtros:', filters);
     applyFilters();
   }, [terms, filters]);
 
@@ -41,6 +44,7 @@ export default function TermManagement({ onViewUsers }) {
       const response = await api.get('/api/v1/admin/terms');
       const termsData = response.data.data || response.data;
       const termsArray = Array.isArray(termsData) ? termsData : [];
+      console.log('📋 Termos carregados:', termsArray);
       setTerms(termsArray);
       
       if (termsArray.length > 0) {
@@ -77,37 +81,62 @@ export default function TermManagement({ onViewUsers }) {
   };
 
   const applyFilters = () => {
+    console.log('🔄 Iniciando applyFilters com:', { terms: terms.length, filters });
+    
     let filtered = [...terms];
+    console.log('📊 Inicial filtered:', filtered.length);
 
     // Filtro por versão
     if (filters.version && filters.version.trim() !== '') {
-      filtered = filtered.filter(term => 
-        term.version.toLowerCase().includes(filters.version.toLowerCase().trim())
-      );
+      const searchTerm = filters.version.toLowerCase().trim();
+      filtered = filtered.filter(term => {
+        const match = term.version.toLowerCase().includes(searchTerm);
+        console.log(`  🔍 Versão "${term.version}" contém "${searchTerm}": ${match}`);
+        return match;
+      });
+      console.log('  📊 Após filtro versão:', filtered.length);
     }
 
     // Filtro por status
     if (filters.status && filters.status !== '') {
       const isActive = filters.status === 'active';
-      filtered = filtered.filter(term => term.is_active === isActive);
+      console.log(`  🔍 Filtrando status: "${filters.status}" -> isActive: ${isActive}`);
+      filtered = filtered.filter(term => {
+        const match = term.is_active === isActive;
+        console.log(`    - Termo v${term.version} is_active: ${term.is_active}, match: ${match}`);
+        return match;
+      });
+      console.log('  📊 Após filtro status:', filtered.length);
     }
 
     // Filtro por criador
     if (filters.creator && filters.creator.trim() !== '') {
-      filtered = filtered.filter(term => 
-        term.creator?.name?.toLowerCase().includes(filters.creator.toLowerCase().trim())
-      );
+      const searchTerm = filters.creator.toLowerCase().trim();
+      filtered = filtered.filter(term => {
+        const creatorName = term.creator?.name?.toLowerCase() || '';
+        const match = creatorName.includes(searchTerm);
+        console.log(`  🔍 Criador "${creatorName}" contém "${searchTerm}": ${match}`);
+        return match;
+      });
+      console.log('  📊 Após filtro criador:', filtered.length);
     }
 
+    console.log('✅ Filtered final:', filtered.length);
     setFilteredTerms(filtered);
   };
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }));
+    console.log(`🔍 Input alterado: ${name} = "${value}"`);
+    setFilters(prev => {
+      const newFilters = { ...prev, [name]: value };
+      console.log('📝 Novos filtros:', newFilters);
+      return newFilters;
+    });
   };
 
   const handleClearFilters = () => {
+    console.log('🧹 Limpando filtros');
     setFilters({
       version: '',
       status: '',
@@ -324,6 +353,7 @@ export default function TermManagement({ onViewUsers }) {
   };
 
   const handleViewAllUsers = () => {
+    console.log('👥 Ver todos os usuários');
     if (onViewUsers) {
       onViewUsers(null);
     } else {
@@ -367,6 +397,11 @@ export default function TermManagement({ onViewUsers }) {
             {filteredTerms.length > 0 && (
               <span className="text-sm font-normal text-slate-400">
                 ({filteredTerms.length} termo{filteredTerms.length !== 1 ? 's' : ''})
+              </span>
+            )}
+            {filters.status && (
+              <span className="text-xs bg-slate-700/50 px-2 py-1 rounded-full text-slate-400">
+                Filtro ativo
               </span>
             )}
           </h1>
