@@ -239,15 +239,6 @@ export default function TermAcceptances({ termId, onBack }) {
             />
           </div>
 
-          <div className="flex-1 min-w-[160px] max-w-[240px]">
-            <button
-              onClick={handleClearFilters}
-              className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-600/20"
-            >
-              <span>🧹</span>
-              Limpar
-            </button>
-          </div>
         </div>
       </div>
 
