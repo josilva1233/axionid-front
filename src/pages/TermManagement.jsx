@@ -1,4 +1,4 @@
-// src/pages/TermManagement.jsx
+// src/pages/TermManagement.jsx//teste
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
@@ -356,7 +356,7 @@ export default function TermManagement({ onViewUsers }) {
 
   return (
     <div className="p-4 md:p-6">
-      {/* Header - Título e botão "Ver Todos os Usuários" */}
+      {/* Header - APENAS título e botão "Ver Todos os Usuários" */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
@@ -379,13 +379,6 @@ export default function TermManagement({ onViewUsers }) {
             <span className="text-lg">👥</span>
             Ver Todos os Usuários
           </button>
-          <button
-            onClick={handleNewTerm}
-            className="px-4 py-2 bg-[#4D6BFE] hover:bg-[#3B5DE8] text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-[#4D6BFE]/20 hover:shadow-[#4D6BFE]/40"
-          >
-            <span className="text-lg">➕</span>
-            Novo Termo
-          </button>
         </div>
       </div>
 
@@ -403,20 +396,7 @@ export default function TermManagement({ onViewUsers }) {
         </div>
       )}
 
-      {/* TABELA - Parte Superior */}
-      <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden mb-6">
-        <TermTable
-          terms={filteredTerms}
-          acceptanceCounts={acceptanceCounts}
-          onViewUsers={handleViewUsers}
-          onToggleStatus={handleToggleStatus}
-          onEdit={handleEditTerm}
-          onDelete={handleDelete}
-          loading={loading}
-        />
-      </div>
-
-      {/* FILTROS - Parte Inferior */}
+      {/* Filters - Usando DashboardFilters */}
       <DashboardFilters
         activeTab="terms"
         role="admin"
@@ -435,6 +415,19 @@ export default function TermManagement({ onViewUsers }) {
         handleSave={() => {}}
         user={null}
       />
+
+      {/* Table */}
+      <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden">
+        <TermTable
+          terms={filteredTerms}
+          acceptanceCounts={acceptanceCounts}
+          onViewUsers={handleViewUsers}
+          onToggleStatus={handleToggleStatus}
+          onEdit={handleEditTerm}
+          onDelete={handleDelete}
+          loading={loading}
+        />
+      </div>
 
       {/* Modal de criação/edição */}
       {showModal && (

@@ -1,4 +1,3 @@
-// src/components/dashboard/DashboardFilters.jsx
 import React from "react";
 
 export default function DashboardFilters({
@@ -10,21 +9,24 @@ export default function DashboardFilters({
   onNewGroup,
   onNewPermission,
   onNewOrder,
-  onNewTerm,
   isEditing,
   onBack,
   setIsEditing,
   handleSave,
   actionLoading,
-  user
+  user,
+  terms,                
+  onNewTerm,            
+  onViewAllUsers,       
+  isViewingAllUsers,    
 }) {
-  const isUserDetailView = !!user;
+  const isUserDetailView = !!user || isViewingAllUsers;
 
   // ============ RENDERIZADORES ============
   const renderInput = (label, name, placeholder = "") => (
     <div className="flex-1 min-w-[160px] max-w-[240px]">
       <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
-        <span className="text-[#4D6BFE]">●</span>
+        <span className="text-blue-500">●</span>
         {label}
       </label>
       <input
@@ -35,9 +37,8 @@ export default function DashboardFilters({
           console.log(`🔍 Input ${name} alterado:`, e.target.value);
           onFilterChange(e);
         }}
-        className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-[#4D6BFE]/50 focus:border-[#4D6BFE]/50 transition-all"
+        className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
         placeholder={placeholder}
-        disabled={actionLoading}
       />
     </div>
   );
@@ -45,7 +46,7 @@ export default function DashboardFilters({
   const renderSelect = (label, name, options) => (
     <div className="flex-1 min-w-[160px] max-w-[240px]">
       <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
-        <span className="text-[#4D6BFE]">●</span>
+        <span className="text-blue-500">●</span>
         {label}
       </label>
       <select
@@ -55,8 +56,7 @@ export default function DashboardFilters({
           console.log(`🔍 Select ${name} alterado:`, e.target.value);
           onFilterChange(e);
         }}
-        className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4D6BFE]/50 focus:border-[#4D6BFE]/50 transition-all appearance-none"
-        disabled={actionLoading}
+        className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all appearance-none"
       >
         <option value="">Todos</option>
         {options.map((opt) => (
@@ -68,7 +68,7 @@ export default function DashboardFilters({
 
   const renderButton = (onClick, icon, label, variant = "primary") => {
     const styles = {
-      primary: "bg-[#4D6BFE] hover:bg-[#3B5DE8] text-white shadow-lg shadow-[#4D6BFE]/20 hover:shadow-[#4D6BFE]/40",
+      primary: "bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 hover:shadow-blue-600/40",
       secondary: "bg-slate-700/50 hover:bg-slate-600/50 text-slate-300",
       danger: "bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-600/20",
     };
@@ -142,17 +142,6 @@ export default function DashboardFilters({
         </div>
       </>
     ),
-    terms: (
-      <>
-        {renderInput("Buscar por Versão", "version", "Ex: 1.0.0...")}
-        {renderSelect("Status", "status", [
-          { value: "active", label: "✅ Ativo" },
-          { value: "inactive", label: "⛔ Inativo" },
-        ])}
-        {renderInput("Criado por", "creator", "Digite o nome...")}
-        {/* Botão "Novo Termo" removido - está no header do TermManagement */}
-      </>
-    ),
     audit: role === "admin" && (
       <>
         {renderInput("Usuário / E-mail", "user", "Ex: joao@email.com...")}
@@ -168,34 +157,74 @@ export default function DashboardFilters({
         {renderInput("Data Fim", "end_date", "YYYY-MM-DD")}
       </>
     ),
+    terms: role === "admin" && !isUserDetailView && (
+      <>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+          <div>
+            <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+              📄 Termos de Uso
+              {terms?.length > 0 && (
+                <span className="text-sm font-normal text-slate-400">
+                  ({terms.length} termo{terms.length !== 1 ? 's' : ''})
+                </span>
+              )}
+            </h1>
+            <p className="text-sm text-slate-400 mt-1">
+              Gerencie os termos de uso da plataforma
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={onViewAllUsers}
+              className="px-4 py-2 bg-slate-700/50 hover:bg-slate-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+            >
+              <span className="text-lg">👥</span>
+              Gerenciar Termos
+            </button>
+            <button
+              onClick={onNewTerm}
+              className="px-4 py-2 bg-[#4D6BFE] hover:bg-[#3D5AFE] text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+            >
+              <span className="text-lg">+</span>
+              Novo Termo
+            </button>
+          </div>
+        </div>
+      </>
+    ),
   };
 
   const hasConfig = tabConfigs[activeTab];
 
   // ============ RENDER ============
   return (
-    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-6 transition-colors hover:border-[#4D6BFE]/30">
+    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-6 transition-colors hover:border-blue-500/30">
       <div className="flex flex-wrap gap-3 items-end">
+        
+        {/* SE ESTIVER VISUALIZANDO USUÁRIOS (ou um usuário específico) */}
         {isUserDetailView ? (
           <>
-            {/* Visualização de Usuário */}
             <div className="flex-1 min-w-[160px] max-w-[240px]">
               {renderButton(onBack, "←", "Voltar", "secondary")}
             </div>
-            <div className="flex-1 min-w-[160px] max-w-[240px]">
-              {!isEditing ? (
-                renderButton(() => setIsEditing(true), "✏️", "Editar", "primary")
-              ) : (
-                <div className="flex gap-2">
-                  {renderButton(() => setIsEditing(false), "✕", "Cancelar", "secondary")}
-                  {renderButton(handleSave, "💾", actionLoading ? "..." : "Salvar", "primary")}
-                </div>
-              )}
-            </div>
+            
+            {/* SÓ MOSTRA O BOTÃO EDITAR SE FOR UM USUÁRIO ESPECÍFICO, NÃO NA LISTA DE ACEITES */}
+            {!isViewingAllUsers && (
+              <div className="flex-1 min-w-[160px] max-w-[240px]">
+                {!isEditing ? (
+                  renderButton(() => setIsEditing(true), "✏️", "Editar", "primary")
+                ) : (
+                  <div className="flex gap-2">
+                    {renderButton(() => setIsEditing(false), "✕", "Cancelar", "secondary")}
+                    {renderButton(handleSave, "💾", actionLoading ? "..." : "Salvar", "primary")}
+                  </div>
+                )}
+              </div>
+            )}
           </>
         ) : (
           <>
-            {/* Filtros por Aba */}
+            {/* Renderiza o conteúdo da aba ativa */}
             {hasConfig}
 
             {/* Botão Limpar */}
@@ -203,8 +232,7 @@ export default function DashboardFilters({
               <div className="flex-1 min-w-[160px] max-w-[240px]">
                 <button
                   onClick={onClear}
-                  className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-                  disabled={actionLoading}
+                  className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-600/20"
                 >
                   <span>🧹</span>
                   Limpar
