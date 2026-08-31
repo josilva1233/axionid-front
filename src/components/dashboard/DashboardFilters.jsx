@@ -16,7 +16,12 @@ export default function DashboardFilters({
   setIsEditing,
   handleSave,
   actionLoading,
-  user
+  user,
+  // Novas props que podem ser úteis
+  onViewAllUsers, // Para o botão "Ver Todos os Usuários"
+  termsCount, // Para exibir a contagem de termos
+  error, // Para exibir erros
+  setError // Para limpar erros
 }) {
   const isUserDetailView = !!user;
 
@@ -142,7 +147,7 @@ export default function DashboardFilters({
         </div>
       </>
     ),
-    terms:role === "admin" && (
+    terms: role === "admin" && (
       <>
         {renderInput("Buscar por Versão", "version", "Ex: 1.0.0...")}
         {renderSelect("Status", "status", [
@@ -150,47 +155,10 @@ export default function DashboardFilters({
           { value: "inactive", label: "⛔ Inativo" },
         ])}
         {renderInput("Criado por", "creator", "Digite o nome...")}
-        {/* ❌ Botão "Novo Termo" REMOVIDO - está no header do TermManagement */}
-
-              {/* Header - APENAS título e botão "Ver Todos os Usuários" */}
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                <div>
-                  <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-                    📄 Termos de Uso
-                    {filteredTerms.length > 0 && (
-                      <span className="text-sm font-normal text-slate-400">
-                        ({filteredTerms.length} termo{filteredTerms.length !== 1 ? 's' : ''})
-                      </span>
-                    )}
-                  </h1>
-                  <p className="text-sm text-slate-400 mt-1">
-                    Gerencie os termos de uso da plataforma
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={handleViewAllUsers}
-                    className="px-4 py-2 bg-slate-700/50 hover:bg-slate-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
-                  >
-                    <span className="text-lg">👥</span>
-                    Ver Todos os Usuários
-                  </button>
-                </div>
-              </div>
-        
-              {/* Error */}
-              {error && (
-                <div className="mb-4 p-4 bg-red-900/30 border border-red-700/50 rounded-xl text-red-300 text-sm flex items-center gap-2">
-                  <span className="text-lg">⚠️</span>
-                  <span>{error}</span>
-                  <button 
-                    onClick={() => setError('')}
-                    className="ml-auto text-red-400 hover:text-red-300"
-                  >
-                    ✕
-                  </button>
-                </div>
-              )}
+        {/* Se quiser adicionar um botão para criar termo, descomente a linha abaixo */}
+        {/* <div className="flex-1 min-w-[160px] max-w-[240px]">
+          {renderButton(onNewTerm, "📄", "Novo Termo", "primary")}
+        </div> */}
       </>
     ),
     audit: role === "admin" && (
@@ -215,6 +183,22 @@ export default function DashboardFilters({
   // ============ RENDER ============
   return (
     <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-6 transition-colors hover:border-[#4D6BFE]/30">
+      {/* Exibir erro se existir */}
+      {error && (
+        <div className="mb-4 p-3 bg-red-900/30 border border-red-700/50 rounded-lg text-red-300 text-sm flex items-center gap-2">
+          <span className="text-lg">⚠️</span>
+          <span>{error}</span>
+          {setError && (
+            <button 
+              onClick={() => setError('')}
+              className="ml-auto text-red-400 hover:text-red-300"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="flex flex-wrap gap-3 items-end">
         {isUserDetailView ? (
           <>
