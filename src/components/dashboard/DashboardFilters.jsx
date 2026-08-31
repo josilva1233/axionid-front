@@ -11,7 +11,6 @@ export default function DashboardFilters({
   onNewPermission,
   onNewOrder,
   onNewTerm,
-  onViewAllUsers,  // NOVO: callback para ver todos os usuários
   isEditing,
   onBack,
   setIsEditing,
@@ -32,10 +31,7 @@ export default function DashboardFilters({
         type="text"
         name={name}
         value={filters[name] || ""}
-        onChange={(e) => {
-          console.log(`🔍 Input ${name} alterado:`, e.target.value);
-          onFilterChange(e);
-        }}
+        onChange={onFilterChange}
         className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-[#4D6BFE]/50 focus:border-[#4D6BFE]/50 transition-all"
         placeholder={placeholder}
         disabled={actionLoading}
@@ -52,10 +48,7 @@ export default function DashboardFilters({
       <select
         name={name}
         value={filters[name] || ""}
-        onChange={(e) => {
-          console.log(`🔍 Select ${name} alterado:`, e.target.value);
-          onFilterChange(e);
-        }}
+        onChange={onFilterChange}
         className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4D6BFE]/50 focus:border-[#4D6BFE]/50 transition-all appearance-none"
         disabled={actionLoading}
       >
@@ -72,7 +65,6 @@ export default function DashboardFilters({
       primary: "bg-[#4D6BFE] hover:bg-[#3B5DE8] text-white shadow-lg shadow-[#4D6BFE]/20 hover:shadow-[#4D6BFE]/40",
       secondary: "bg-slate-700/50 hover:bg-slate-600/50 text-slate-300",
       danger: "bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-600/20",
-      info: "bg-slate-700/50 hover:bg-slate-700 text-white", // NOVO: estilo para info
     };
 
     return (
@@ -96,86 +88,101 @@ export default function DashboardFilters({
   };
 
   // ============ CONFIGURAÇÃO DAS ABAS ============
-  const tabConfigs = {
-    users: role === "admin" && (
-      <>
-        {renderInput("Buscar por Nome", "name", "Ex: João Silva...")}
-        {renderSelect("Status Perfil", "completed", [
-          { value: "1", label: "✅ Completo" },
-          { value: "0", label: "⚠️ Incompleto" },
-        ])}
-      </>
-    ),
-    groups: (
-      <>
-        {renderInput("Buscar Grupos/Membros", "name", "Digite o nome do grupo...")}
-        <div className="flex-1 min-w-[160px] max-w-[240px]">
-          {renderButton(onNewGroup, "➕", "Novo Grupo", "primary")}
-        </div>
-      </>
-    ),
-    permissions: (
-      <>
-        {renderInput("Buscar Permissão", "label", "Ex: Criar Usuários...")}
-        <div className="flex-1 min-w-[160px] max-w-[240px]">
-          {renderButton(onNewPermission, "➕", "Nova Permissão", "primary")}
-        </div>
-      </>
-    ),
-    orders: (
-      <>
-        {renderInput("Protocolo", "protocol", "Digite o protocolo...")}
-        {renderInput("Título / Assunto", "title", "Digite o título...")}
-        {renderInput("Solicitante", "applicant", "Digite o nome do solicitante...")}
-        {renderSelect("Prioridade", "priority", [
-          { value: "low", label: "Baixa" },
-          { value: "medium", label: "Média" },
-          { value: "high", label: "Alta" },
-          { value: "urgent", label: "Urgente" },
-        ])}
-        {renderSelect("Status", "status", [
-          { value: "open", label: "Aberto" },
-          { value: "in_progress", label: "Em Andamento" },
-          { value: "completed", label: "Fechado / Concluído" },
-          { value: "canceled", label: "Cancelado" },
-        ])}
-        <div className="flex-1 min-w-[160px] max-w-[240px]">
-          {renderButton(onNewOrder, "📢", "Abrir Chamado", "primary")}
-        </div>
-      </>
-    ),
-    terms: (
-      <>
-        {renderInput("Buscar por Versão", "version", "Ex: 1.0.0...")}
-        {renderSelect("Status", "status", [
-          { value: "active", label: "✅ Ativo" },
-          { value: "inactive", label: "⛔ Inativo" },
-        ])}
-        {renderInput("Criado por", "creator", "Digite o nome...")}
-        {/* NOVO: Botão "Ver Todos os Usuários" */}
-        <div className="flex-1 min-w-[160px] max-w-[240px]">
-          {renderButton(onViewAllUsers, "👥", "Ver Todos os Usuários", "info")}
-        </div>
-      </>
-    ),
-    audit: role === "admin" && (
-      <>
-        {renderInput("Usuário / E-mail", "user", "Ex: joao@email.com...")}
-        {renderInput("Endpoint / URL", "url", "Ex: /api/users...")}
-        {renderSelect("Método HTTP", "method", [
-          { value: "GET", label: "GET" },
-          { value: "POST", label: "POST" },
-          { value: "PUT", label: "PUT" },
-          { value: "PATCH", label: "PATCH" },
-          { value: "DELETE", label: "DELETE" },
-        ])}
-        {renderInput("Data Início", "start_date", "YYYY-MM-DD")}
-        {renderInput("Data Fim", "end_date", "YYYY-MM-DD")}
-      </>
-    ),
+  const getTabConfig = () => {
+    switch(activeTab) {
+      case 'users':
+        if (role !== 'admin') return null;
+        return (
+          <>
+            {renderInput("Buscar por Nome", "name", "Ex: João Silva...")}
+            {renderSelect("Status Perfil", "completed", [
+              { value: "1", label: "✅ Completo" },
+              { value: "0", label: "⚠️ Incompleto" },
+            ])}
+          </>
+        );
+      
+      case 'groups':
+        return (
+          <>
+            {renderInput("Buscar Grupos/Membros", "name", "Digite o nome do grupo...")}
+            <div className="flex-1 min-w-[160px] max-w-[240px]">
+              {renderButton(onNewGroup, "➕", "Novo Grupo", "primary")}
+            </div>
+          </>
+        );
+      
+      case 'permissions':
+        return (
+          <>
+            {renderInput("Buscar Permissão", "label", "Ex: Criar Usuários...")}
+            <div className="flex-1 min-w-[160px] max-w-[240px]">
+              {renderButton(onNewPermission, "➕", "Nova Permissão", "primary")}
+            </div>
+          </>
+        );
+      
+      case 'orders':
+        return (
+          <>
+            {renderInput("Protocolo", "protocol", "Digite o protocolo...")}
+            {renderInput("Título / Assunto", "title", "Digite o título...")}
+            {renderInput("Solicitante", "applicant", "Digite o nome do solicitante...")}
+            {renderSelect("Prioridade", "priority", [
+              { value: "low", label: "Baixa" },
+              { value: "medium", label: "Média" },
+              { value: "high", label: "Alta" },
+              { value: "urgent", label: "Urgente" },
+            ])}
+            {renderSelect("Status", "status", [
+              { value: "open", label: "Aberto" },
+              { value: "in_progress", label: "Em Andamento" },
+              { value: "completed", label: "Fechado / Concluído" },
+              { value: "canceled", label: "Cancelado" },
+            ])}
+            <div className="flex-1 min-w-[160px] max-w-[240px]">
+              {renderButton(onNewOrder, "📢", "Abrir Chamado", "primary")}
+            </div>
+          </>
+        );
+      
+      case 'terms':
+        return (
+          <>
+            {renderInput("Buscar por Versão", "version", "Ex: 1.0.0...")}
+            {renderSelect("Status", "status", [
+              { value: "active", label: "✅ Ativo" },
+              { value: "inactive", label: "⛔ Inativo" },
+            ])}
+            {renderInput("Criado por", "creator", "Digite o nome...")}
+            {/* Botão Novo Termo - foi movido para o header do TermManagement */}
+          </>
+        );
+      
+      case 'audit':
+        if (role !== 'admin') return null;
+        return (
+          <>
+            {renderInput("Usuário / E-mail", "user", "Ex: joao@email.com...")}
+            {renderInput("Endpoint / URL", "url", "Ex: /api/users...")}
+            {renderSelect("Método HTTP", "method", [
+              { value: "GET", label: "GET" },
+              { value: "POST", label: "POST" },
+              { value: "PUT", label: "PUT" },
+              { value: "PATCH", label: "PATCH" },
+              { value: "DELETE", label: "DELETE" },
+            ])}
+            {renderInput("Data Início", "start_date", "YYYY-MM-DD")}
+            {renderInput("Data Fim", "end_date", "YYYY-MM-DD")}
+          </>
+        );
+      
+      default:
+        return null;
+    }
   };
 
-  const hasConfig = tabConfigs[activeTab];
+  const tabContent = getTabConfig();
 
   // ============ RENDER ============
   return (
@@ -201,21 +208,19 @@ export default function DashboardFilters({
         ) : (
           <>
             {/* Filtros por Aba */}
-            {hasConfig}
+            {tabContent}
 
-            {/* Botão Limpar */}
-            {!isUserDetailView && (
-              <div className="flex-1 min-w-[160px] max-w-[240px]">
-                <button
-                  onClick={onClear}
-                  className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-                  disabled={actionLoading}
-                >
-                  <span>🧹</span>
-                  Limpar
-                </button>
-              </div>
-            )}
+            {/* Botão Limpar - SEMPRE no final */}
+            <div className="flex-1 min-w-[160px] max-w-[240px]">
+              <button
+                onClick={onClear}
+                className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                disabled={actionLoading}
+              >
+                <span>🧹</span>
+                Limpar
+              </button>
+            </div>
           </>
         )}
       </div>
