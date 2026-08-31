@@ -1,3 +1,4 @@
+// src/pages/TermAcceptances.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
@@ -78,12 +79,14 @@ export default function TermAcceptances({ termId, onBack }) {
   const applyFilters = () => {
     let filtered = [...acceptances];
 
+    // Filtro por nome do usuário
     if (filters.user_name && filters.user_name.trim() !== '') {
       filtered = filtered.filter(item => 
         item.user?.name?.toLowerCase().includes(filters.user_name.toLowerCase().trim())
       );
     }
 
+    // Filtro por email
     if (filters.email && filters.email.trim() !== '') {
       filtered = filtered.filter(item => 
         item.user?.email?.toLowerCase().includes(filters.email.toLowerCase().trim())
@@ -203,7 +206,7 @@ export default function TermAcceptances({ termId, onBack }) {
         </div>
       )}
 
-      {/* Filtros Integrados via Componente Central ou Linha Única */}
+      {/* Filters */}
       <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-6 transition-colors hover:border-[#4D6BFE]/30">
         <div className="flex flex-wrap gap-3 items-end">
           <div className="flex-1 min-w-[160px] max-w-[240px]">
@@ -259,43 +262,154 @@ export default function TermAcceptances({ termId, onBack }) {
                 : 'Nenhum usuário encontrado com os filtros aplicados'
               }
             </p>
+            <p className="text-sm text-slate-500 mt-1">
+              {acceptances.length === 0 
+                ? 'Aguardando aceitações dos usuários'
+                : 'Tente ajustar os filtros para encontrar o usuário'
+              }
+            </p>
+            {termInfo && acceptances.length === 0 && (
+              <p className="text-xs text-slate-600 mt-3">
+                Termo v{termInfo.version} criado em {formatDate(termInfo.created_at)}
+              </p>
+            )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-700/50 border-b border-slate-700/50">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Usuário</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider hidden sm:table-cell">Email</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider hidden md:table-cell">Versão</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider hidden lg:table-cell">Data de Aceitação</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-700/30">
-                {filteredAcceptances.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-700/30 transition-colors group">
-                    <td className="px-6 py-4">
-                      <p className="text-sm text-slate-300 font-medium">{item.user?.name || '—'}</p>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-400 hidden sm:table-cell">{item.user?.email || '—'}</td>
-                    <td className="px-6 py-4 hidden md:table-cell">
-                      <span className="px-2.5 py-1 text-xs bg-[#4D6BFE]/20 text-[#4D6BFE] rounded-full font-medium">
-                        v{item.term?.version || '—'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-400 hidden lg:table-cell">{formatDate(item.accepted_at)}</td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs bg-green-500/20 text-green-400 rounded-full">
-                        <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
-                        Aceito
-                      </span>
-                    </td>
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-700/50 border-b border-slate-700/50">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                      Usuário
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider hidden sm:table-cell">
+                      Email
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider hidden md:table-cell">
+                      Versão
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider hidden lg:table-cell">
+                      Data de Aceitação
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                      Status
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-700/30">
+                  {filteredAcceptances.map((item) => (
+                    <tr key={item.id} className="hover:bg-slate-700/30 transition-colors group">
+                      <td className="px-6 py-4">
+                        <div>
+                          <p className="text-sm text-slate-300 font-medium">
+                            {item.user?.name || '—'}
+                          </p>
+                          <div className="flex flex-wrap gap-1.5 mt-1">
+                            {item.user?.is_admin && (
+                              <span className="inline-block px-2 py-0.5 text-[10px] bg-purple-500/20 text-purple-400 rounded">
+                                Admin
+                              </span>
+                            )}
+                            {!item.user?.is_active && (
+                              <span className="inline-block px-2 py-0.5 text-[10px] bg-red-500/20 text-red-400 rounded">
+                                Inativo
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-400 hidden sm:table-cell">
+                        {item.user?.email || '—'}
+                      </td>
+                      <td className="px-6 py-4 hidden md:table-cell">
+                        <span className="px-2.5 py-1 text-xs bg-[#4D6BFE]/20 text-[#4D6BFE] rounded-full font-medium">
+                          v{item.term?.version || '—'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-400 hidden lg:table-cell">
+                        {formatDate(item.accepted_at)}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs bg-green-500/20 text-green-400 rounded-full">
+                          <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
+                          Aceito
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            {/* Footer com paginação */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-6 py-4 border-t border-slate-700/30">
+              <div className="flex items-center gap-4">
+                <p className="text-sm text-slate-400">
+                  <span className="font-medium text-slate-300">{filteredAcceptances.length}</span> 
+                  {filteredAcceptances.length !== 1 ? ' usuários' : ' usuário'} 
+                  {total > 0 && (
+                    <span className="text-slate-500 ml-1">
+                      (total: {total} - página {currentPage} de {lastPage})
+                    </span>
+                  )}
+                </p>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={perPage}
+                    onChange={(e) => {
+                      setPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="px-2 py-1 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-300 text-sm focus:outline-none focus:border-[#4D6BFE]"
+                  >
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                  </select>
+                </div>
+              </div>
+              
+              {lastPage > 1 && (
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => handlePageChange(1)}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1.5 bg-slate-700/30 hover:bg-slate-700/50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 text-sm rounded-lg transition-colors"
+                  >
+                    «
+                  </button>
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1.5 bg-slate-700/30 hover:bg-slate-700/50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 text-sm rounded-lg transition-colors"
+                  >
+                    ‹
+                  </button>
+                  
+                  <span className="px-4 py-1.5 bg-[#4D6BFE]/20 text-[#4D6BFE] text-sm font-medium rounded-lg">
+                    {currentPage}
+                  </span>
+                  
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === lastPage}
+                    className="px-3 py-1.5 bg-slate-700/30 hover:bg-slate-700/50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 text-sm rounded-lg transition-colors"
+                  >
+                    ›
+                  </button>
+                  <button
+                    onClick={() => handlePageChange(lastPage)}
+                    disabled={currentPage === lastPage}
+                    className="px-3 py-1.5 bg-slate-700/30 hover:bg-slate-700/50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 text-sm rounded-lg transition-colors"
+                  >
+                    »
+                  </button>
+                </div>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>
