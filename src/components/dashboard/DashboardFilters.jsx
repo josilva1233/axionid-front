@@ -150,7 +150,7 @@ export default function DashboardFilters({
           { value: "inactive", label: "⛔ Inativo" },
         ])}
         {renderInput("Criado por", "creator", "Digite o nome...")}
-        {/* ❌ Botão "Novo Termo" REMOVIDO - está no header do TermManagement */}
+        {/* Botão "Novo Termo" removido - está no header do TermManagement */}
       </>
     ),
     audit: role === "admin" && (
