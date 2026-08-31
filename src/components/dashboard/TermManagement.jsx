@@ -79,20 +79,23 @@ export default function TermManagement({ onViewUsers }) {
   const applyFilters = () => {
     let filtered = [...terms];
 
-    if (filters.version) {
+    // Filtro por versão
+    if (filters.version && filters.version.trim() !== '') {
       filtered = filtered.filter(term => 
-        term.version.toLowerCase().includes(filters.version.toLowerCase())
+        term.version.toLowerCase().includes(filters.version.toLowerCase().trim())
       );
     }
 
-    if (filters.status) {
+    // Filtro por status
+    if (filters.status && filters.status !== '') {
       const isActive = filters.status === 'active';
       filtered = filtered.filter(term => term.is_active === isActive);
     }
 
-    if (filters.creator) {
+    // Filtro por criador
+    if (filters.creator && filters.creator.trim() !== '') {
       filtered = filtered.filter(term => 
-        term.creator?.name?.toLowerCase().includes(filters.creator.toLowerCase())
+        term.creator?.name?.toLowerCase().includes(filters.creator.toLowerCase().trim())
       );
     }
 
@@ -356,7 +359,7 @@ export default function TermManagement({ onViewUsers }) {
 
   return (
     <div className="p-4 md:p-6">
-      {/* Header - APENAS título */} {/* REMOVIDO o botão "Ver Todos os Usuários" daqui */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
@@ -371,7 +374,6 @@ export default function TermManagement({ onViewUsers }) {
             Gerencie os termos de uso da plataforma
           </p>
         </div>
-        {/* ❌ Botão "Ver Todos os Usuários" REMOVIDO - agora está no DashboardFilters */}
       </div>
 
       {/* Error */}
@@ -388,7 +390,7 @@ export default function TermManagement({ onViewUsers }) {
         </div>
       )}
 
-      {/* Filters - Usando DashboardFilters com onViewAllUsers */}
+      {/* Filters */}
       <DashboardFilters
         activeTab="terms"
         role="admin"
@@ -396,9 +398,7 @@ export default function TermManagement({ onViewUsers }) {
         onFilterChange={handleFilterChange}
         onClear={handleClearFilters}
         onNewTerm={handleNewTerm}
-        onViewAllUsers={handleViewAllUsers} 
-        actionLoading={loading}
-        // Props obrigatórias (não usadas)
+        onViewAllUsers={handleViewAllUsers}
         onNewGroup={() => {}}
         onNewPermission={() => {}}
         onNewOrder={() => {}}
@@ -407,6 +407,7 @@ export default function TermManagement({ onViewUsers }) {
         setIsEditing={() => {}}
         handleSave={() => {}}
         user={null}
+        actionLoading={loading}
       />
 
       {/* Table */}
