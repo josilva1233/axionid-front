@@ -1,4 +1,4 @@
-// src/pages/TermManagement.jsx
+// src/pages/TermManagement.jsx//teste
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
