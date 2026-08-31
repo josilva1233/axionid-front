@@ -1,10 +1,10 @@
 // src/pages/TermManagement.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import api from '../../services/api';
 import Swal from 'sweetalert2';
-import TermTable from './dashboard/TermTable';
-import DashboardFilters from './dashboard/DashboardFilters';
+import TermTable from './TermTable';
+import DashboardFilters from './DashboardFilters';
 
 export default function TermManagement({ onViewUsers }) {
   const navigate = useNavigate();

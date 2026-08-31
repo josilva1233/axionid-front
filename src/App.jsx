@@ -7,7 +7,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import { ProtectedRoute } from './components/ProtectedRoute'; 
 import CompleteProfile from './pages/CompleteProfile';
 import TermsCheck from './components/TermsCheck';
-import TermManagement from './components/TermManagement';
+import TermManagement from './components/dashboard/TermManagement';
 import TermAcceptances from './pages/TermAcceptances'; // <-- VERIFIQUE SE ESTÁ IMPORTADO
 import './App.css';
 
