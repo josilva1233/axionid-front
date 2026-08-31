@@ -16,12 +16,7 @@ export default function DashboardFilters({
   setIsEditing,
   handleSave,
   actionLoading,
-  user,
-  // Novas props que podem ser úteis
-  onViewAllUsers, // Para o botão "Ver Todos os Usuários"
-  termsCount, // Para exibir a contagem de termos
-  error, // Para exibir erros
-  setError // Para limpar erros
+  user
 }) {
   const isUserDetailView = !!user;
 
@@ -147,7 +142,7 @@ export default function DashboardFilters({
         </div>
       </>
     ),
-    terms: role === "admin" && (
+    terms: (
       <>
         {renderInput("Buscar por Versão", "version", "Ex: 1.0.0...")}
         {renderSelect("Status", "status", [
@@ -155,10 +150,7 @@ export default function DashboardFilters({
           { value: "inactive", label: "⛔ Inativo" },
         ])}
         {renderInput("Criado por", "creator", "Digite o nome...")}
-        {/* Se quiser adicionar um botão para criar termo, descomente a linha abaixo */}
-        {/* <div className="flex-1 min-w-[160px] max-w-[240px]">
-          {renderButton(onNewTerm, "📄", "Novo Termo", "primary")}
-        </div> */}
+        {/* ❌ Botão "Novo Termo" REMOVIDO - está no header do TermManagement */}
       </>
     ),
     audit: role === "admin" && (
@@ -183,22 +175,6 @@ export default function DashboardFilters({
   // ============ RENDER ============
   return (
     <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-6 transition-colors hover:border-[#4D6BFE]/30">
-      {/* Exibir erro se existir */}
-      {error && (
-        <div className="mb-4 p-3 bg-red-900/30 border border-red-700/50 rounded-lg text-red-300 text-sm flex items-center gap-2">
-          <span className="text-lg">⚠️</span>
-          <span>{error}</span>
-          {setError && (
-            <button 
-              onClick={() => setError('')}
-              className="ml-auto text-red-400 hover:text-red-300"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-      )}
-
       <div className="flex flex-wrap gap-3 items-end">
         {isUserDetailView ? (
           <>
