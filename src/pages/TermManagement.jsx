@@ -356,45 +356,7 @@ export default function TermManagement({ onViewUsers }) {
 
   return (
     <div className="p-4 md:p-6">
-      {/* Header - APENAS título e botão "Ver Todos os Usuários" */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-            📄 Termos de Uso
-            {filteredTerms.length > 0 && (
-              <span className="text-sm font-normal text-slate-400">
-                ({filteredTerms.length} termo{filteredTerms.length !== 1 ? 's' : ''})
-              </span>
-            )}
-          </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Gerencie os termos de uso da plataforma
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={handleViewAllUsers}
-            className="px-4 py-2 bg-slate-700/50 hover:bg-slate-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
-          >
-            <span className="text-lg">👥</span>
-            Ver Todos os Usuários
-          </button>
-        </div>
-      </div>
 
-      {/* Error */}
-      {error && (
-        <div className="mb-4 p-4 bg-red-900/30 border border-red-700/50 rounded-xl text-red-300 text-sm flex items-center gap-2">
-          <span className="text-lg">⚠️</span>
-          <span>{error}</span>
-          <button 
-            onClick={() => setError('')}
-            className="ml-auto text-red-400 hover:text-red-300"
-          >
-            ✕
-          </button>
-        </div>
-      )}
 
       {/* Filters - Usando DashboardFilters */}
       <DashboardFilters
