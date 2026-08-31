@@ -142,7 +142,7 @@ export default function DashboardFilters({
         </div>
       </>
     ),
-    terms: (
+    terms:role === "admin" && (
       <>
         {renderInput("Buscar por Versão", "version", "Ex: 1.0.0...")}
         {renderSelect("Status", "status", [
