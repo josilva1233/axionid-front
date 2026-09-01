@@ -29,7 +29,6 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
   // 🔥 CARREGAR GRUPOS AO ABRIR O FORMULÁRIO
   useEffect(() => {
     if (groupsProp && Array.isArray(groupsProp) && groupsProp.length > 0) {
-      console.log("📊 Grupos recebidos via prop:", groupsProp);
       setGroups(groupsProp);
       return;
     }
@@ -37,12 +36,10 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
     const fetchGroups = async () => {
       setLoadingGroups(true);
       try {
-        console.log("🔄 Buscando grupos disponíveis...");
         
         // 🔥 USAR /api/v1 (O VERCEL FAZ O PROXY)
         const response = await api.get("/api/v1/service-orders/groups/available");
         
-        console.log("✅ Resposta da API:", response.data);
         
         let groupsData = [];
         if (response.data && response.data.data) {
@@ -59,13 +56,9 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
         
         setGroups(groupsData);
         
-        if (groupsData.length === 0) {
-          console.warn("⚠️ Nenhum grupo encontrado!");
+        if (groupsData.length === 0) {;
         }
       } catch (error) {
-        console.error("❌ Erro ao carregar grupos:", error);
-        console.error("❌ Status:", error.response?.status);
-        console.error("❌ Data:", error.response?.data);
         setGroups([]);
       } finally {
         setLoadingGroups(false);
@@ -118,9 +111,6 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
       if (onSuccess) onSuccess();
       
     } catch (err) {
-      console.error("❌ Erro ao criar OS:", err);
-      console.error("❌ Status:", err.response?.status);
-      console.error("❌ Data:", err.response?.data);
       AxionAlert.fire(
         "Erro",
         err.response?.data?.message || "Não foi possível criar o chamado.",

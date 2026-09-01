@@ -58,7 +58,6 @@ export function useDashboardData(role) {
         setUsers([]);
       }
     } catch (err) {
-      console.error("Erro ao carregar usuários:", err);
       setUsers([]);
     } finally {
       setLoading(false);
@@ -85,8 +84,6 @@ export function useDashboardData(role) {
       } else {
         setGroups([]);
       }
-    } catch (err) {
-      console.error("Erro ao carregar grupos:", err);
       setGroups([]);
     } finally {
       setLoading(false);
@@ -119,9 +116,7 @@ export function useDashboardData(role) {
         setAuditLogs([]);
       }
     } catch (err) {
-      console.error("Erro ao carregar logs:", err);
       if (err.response) {
-        console.error("Resposta do servidor:", err.response.data);
       }
       setAuditLogs([]);
     } finally {
@@ -154,7 +149,6 @@ export function useDashboardData(role) {
         setServiceOrders([]);
       }
     } catch (err) {
-      console.error("Erro ao carregar ordens de serviço:", err);
       setServiceOrders([]);
     } finally {
       setLoading(false);
@@ -184,7 +178,6 @@ export function useDashboardData(role) {
         setPermissions([]);
       }
     } catch (err) {
-      console.error("Erro ao carregar permissões:", err);
       setPermissions([]);
     } finally {
       setLoading(false);

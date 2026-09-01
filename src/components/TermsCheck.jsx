@@ -39,7 +39,7 @@ export default function TermsCheck({ children }) {
         setNeedsAcceptance(false);
       }
     } catch (err) {
-      console.error('Erro ao verificar termos:', err);
+
       // Se não autenticado, não bloqueia
       if (err.response?.status === 401) {
         setNeedsAcceptance(false);

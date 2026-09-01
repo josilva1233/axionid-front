@@ -21,7 +21,7 @@ export default function Onboarding() {
       navigate('/dashboard', { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || 'Ocorreu um erro ao salvar seus dados. Verifique o formato do documento.');
-      console.error("Erro no onboarding", err);
+   
     } finally {
       setLoading(false);
     }

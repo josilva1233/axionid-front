@@ -89,7 +89,7 @@ useImperativeHandle(ref, () => ({
         await loadAcceptanceCounts(termsArray);
       }
     } catch (err) {
-      console.error('Erro ao carregar termos:', err);
+      
       setError(err.response?.data?.message || 'Erro ao carregar termos');
       setTerms([]);
     } finally {
@@ -114,7 +114,7 @@ useImperativeHandle(ref, () => ({
       );
       setAcceptanceCounts(counts);
     } catch (err) {
-      console.error('Erro ao carregar contagens:', err);
+
     }
   };
 

@@ -151,7 +151,6 @@ export default function ServiceOrderDetail({
         setTotalPages(last_page);
         setHasMore(current_page < last_page);
       } catch (error) {
-        console.error("Erro ao carregar mensagens:", error);
         Swal.fire("Erro", "Não foi possível carregar as mensagens.", "error");
       } finally {
         setLoadingMessages(false);
@@ -200,7 +199,6 @@ export default function ServiceOrderDetail({
         showConfirmButton: false,
       });
     } catch (error) {
-      console.error('Erro ao fechar chamado automaticamente:', error);
     }
   }, [localOrder, onUpdateStatus]);
 
@@ -321,7 +319,6 @@ export default function ServiceOrderDetail({
         showConfirmButton: false,
       });
     } catch (error) {
-      console.error("Erro ao enviar mensagem:", error);
       Swal.fire("Erro", error.response?.data?.message || "Falha ao enviar mensagem.", "error");
     } finally {
       setSendingMessage(false);
@@ -411,7 +408,6 @@ export default function ServiceOrderDetail({
         showConfirmButton: false,
       });
     } catch (error) {
-      console.error("Erro ao marcar como resolvido:", error);
       Swal.fire(
         "Erro", 
         error.response?.data?.message || "Não foi possível marcar o chamado como resolvido.", 

@@ -28,8 +28,6 @@ export default function UserDetail({
       const response = await api.get(`/api/v1/admin/users/${userId}/permissions`);
       setUserPermissions(response.data.permissions || []);
     } catch (error) {
-      console.error("Erro ao carregar permissões do usuário:", error);
-      // Se a rota não existir, buscar do mock ou usar dados do user
       if (user?.permissions) {
         setUserPermissions(user.permissions);
       }
@@ -46,7 +44,6 @@ export default function UserDetail({
       });
       setAllAvailablePermissions(response.data.data || []);
     } catch (error) {
-      console.error("Erro ao carregar permissões disponíveis:", error);
       // Fallback: usar permissões do mock
       setAllAvailablePermissions([
         { id: 1, name: 'users.view', label: 'Visualizar Usuários', description: 'Permite visualizar usuários' },
@@ -77,7 +74,6 @@ export default function UserDetail({
         color: "#ffffff",
       });
     } catch (error) {
-      console.error("Erro ao adicionar permissão:", error);
       Swal.fire({
         icon: "error",
         title: "Erro",
@@ -102,7 +98,6 @@ export default function UserDetail({
         color: "#ffffff",
       });
     } catch (error) {
-      console.error("Erro ao remover permissão:", error);
       Swal.fire({
         icon: "error",
         title: "Erro",
@@ -155,7 +150,6 @@ export default function UserDetail({
           }));
         }
       } catch (error) {
-        console.error("Erro ao buscar CEP:", error);
       }
     }
   };

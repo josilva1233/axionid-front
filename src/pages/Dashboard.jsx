@@ -104,7 +104,6 @@ export default function Dashboard() {
   useEffect(() => {
     if (!permissionsLoading) {
       if (!canAccessAnyTab()) {
-        console.warn("Usuário sem permissões de acesso");
       } else {
         const firstTab = getFirstAvailableTab();
         if (!canAccessTab(activeTab)) {
@@ -145,7 +144,6 @@ export default function Dashboard() {
         const data = res.data.data || res.data;
         setAllPermissions(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error("Erro ao carregar todas as permissões:", err);
         setAllPermissions([]);
       }
     };
@@ -251,7 +249,6 @@ export default function Dashboard() {
         showConfirmButton: false,
       });
     } catch (err) {
-      console.error("Erro ao salvar endereço:", err.response?.data || err.message);
       AxionAlert.fire({
         icon: "error",
         title: "Erro ao salvar",
@@ -346,7 +343,7 @@ export default function Dashboard() {
       await loadServiceOrders(ordersCurrentPage);
       AxionAlert.fire({ icon: "success", title: "Status Atualizado!", timer: 1500, showConfirmButton: false });
     } catch (err) {
-      console.error("Erro na API:", err);
+  
       AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao atualizar no servidor.", "error");
     } finally {
       setActionLoading(false);
@@ -467,7 +464,6 @@ export default function Dashboard() {
       AxionAlert.fire({ icon: "success", title: "Permissão Atribuída", text: "A chave foi vinculada ao grupo.", timer: 1500, showConfirmButton: false });
       await loadGroups(groupsCurrentPage);
     } catch (err) {
-      console.error("Erro ao vincular permissão:", err.response?.data);
       const message = err.response?.data?.message || "Não foi possível vincular a permissão.";
       AxionAlert.fire("Erro", message, "error");
     } finally {
@@ -502,7 +498,6 @@ export default function Dashboard() {
         AxionAlert.fire("Removido!", "Permissão desvinculada.", "success");
         await loadGroups(groupsCurrentPage);
       } catch (err) {
-        console.error("Erro ao remover permissão:", err.response?.data);
         AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao remover permissão.", "error");
       } finally {
         setActionLoading(false);
@@ -1138,7 +1133,7 @@ export default function Dashboard() {
                             await loadGroups(groupsCurrentPage);
                             AxionAlert.fire({ icon: "success", title: "Grupo Criado!", text: `O grupo "${data.name}" foi criado com sucesso.`, timer: 1500, showConfirmButton: false });
                           } catch (err) {
-                            console.error("Erro ao criar grupo:", err);
+              
                             AxionAlert.fire("Erro", err.response?.data?.message || "Não foi possível criar o grupo.", "error");
                           } finally {
                             setActionLoading(false);

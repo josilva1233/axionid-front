@@ -33,7 +33,6 @@ export default function Login() {
           navigate("/terms-check", { replace: true });
         })
         .catch((err) => {
-          console.error("Erro ao buscar perfil do Google login", err);
           localStorage.removeItem("@AxionID:token");
           localStorage.removeItem("@AxionID:role");
           navigate("/login", { replace: true });
@@ -72,7 +71,6 @@ export default function Login() {
       navigate("/terms-check", { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Usuário ou senha incorretos.");
-      console.error("Erro no login manual", err);
       setCaptchaToken(null);
       recaptchaRef.current?.reset();
     } finally {

@@ -73,11 +73,11 @@ export default function TermAcceptances({ termId, onBack, filters: externalFilte
           const termResponse = await api.get(`/api/v1/admin/terms/${termId}`);
           setTermInfo(termResponse.data);
         } catch (err) {
-          console.error('Erro ao buscar termo:', err);
+         
         }
       }
     } catch (err) {
-      console.error('Erro ao carregar aceitações:', err);
+  
       
       if (err.response?.status === 405) {
         setError('Erro 405: Método não permitido. Verifique a URL da requisição.');

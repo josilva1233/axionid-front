@@ -23,7 +23,6 @@ export function useAuth() {
       
       return permNames;
     } catch (error) {
-      console.error("Erro ao carregar permissões:", error);
       
       const cached = localStorage.getItem('@AxionID:permissions');
       if (cached) {
@@ -59,7 +58,7 @@ export function useAuth() {
         await loadUserPermissions();
         
       } catch (error) {
-        console.error("Erro ao carregar usuário:", error);
+  
       } finally {
         setLoading(false);
       }
