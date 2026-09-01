@@ -86,17 +86,23 @@ export default function TermManagement({ onViewUsers, filters = {} }) {
   const applyFilters = () => {
     let filtered = [...terms];
 
+    // Filtro por Versão
     if (filters.version) {
       filtered = filtered.filter(term => 
-        term.version.toLowerCase().includes(filters.version.toLowerCase())
+        term.version?.toLowerCase().includes(filters.version.toLowerCase())
       );
     }
 
+    // Filtro por Status (compatível com boolean, 1/0, '1'/'0')
     if (filters.status) {
-      const isActive = filters.status === 'active';
-      filtered = filtered.filter(term => term.is_active === isActive);
+      const targetIsActive = filters.status === 'active';
+      filtered = filtered.filter(term => {
+        const termActive = Boolean(Number(term.is_active));
+        return termActive === targetIsActive;
+      });
     }
 
+    // Filtro por Criador
     if (filters.creator) {
       filtered = filtered.filter(term => 
         term.creator?.name?.toLowerCase().includes(filters.creator.toLowerCase())
@@ -359,11 +365,9 @@ export default function TermManagement({ onViewUsers, filters = {} }) {
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
             📄 Termos de Uso
-            {filteredTerms.length > 0 && (
-              <span className="text-sm font-normal text-slate-400">
-                ({filteredTerms.length} termo{filteredTerms.length !== 1 ? 's' : ''})
-              </span>
-            )}
+            <span className="text-sm font-normal text-slate-400">
+              ({filteredTerms.length} de {terms.length} termo{terms.length !== 1 ? 's' : ''})
+            </span>
           </h1>
           <p className="text-sm text-slate-400 mt-1">
             Gerencie os termos de uso da plataforma
@@ -398,8 +402,6 @@ export default function TermManagement({ onViewUsers, filters = {} }) {
           </button>
         </div>
       )}
-
-      {/* ❌ REMOVIDO o DashboardFilters duplicado daqui, pois o Dashboard.jsx já o renderiza acima. */}
 
       {/* Table */}
       <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden transition-colors hover:border-blue-500/30">
