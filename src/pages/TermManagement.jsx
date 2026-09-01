@@ -417,13 +417,13 @@ export default function TermManagement({ onViewUsers }) {
 
       {/* Filters */}
       <DashboardFilters
-        //activeTab="terms"
-        //role="admin"
-        //filters={filters}
-        //onFilterChange={handleFilterChange}
-        //onClear={handleClearFilters}
-        //onNewTerm={handleNewTerm}
-        //actionLoading={actionLoading}
+        activeTab="terms"
+        role="admin"
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onClear={handleClearFilters}
+        onNewTerm={handleNewTerm}
+        actionLoading={actionLoading}
         // Props obrigatórias (não usadas)
         onNewGroup={() => {}}
         onNewPermission={() => {}}
