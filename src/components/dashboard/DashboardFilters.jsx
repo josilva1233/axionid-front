@@ -1,4 +1,4 @@
-// src/components/dashboard/DashboardFilters.jsx
+// src/components/dashboard/DashboardFilters.jsx nova versão
 import React from "react";
 
 export default function DashboardFilters({
