@@ -1,6 +1,6 @@
 /// Dashboard.jsx
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Swal from "sweetalert2";
 import api from "../services/api";
 import { useDashboardData } from "../hooks/useDashboardData";
@@ -45,6 +45,7 @@ export default function Dashboard() {
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [selectedPermission, setSelectedPermission] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const termManagementRef = useRef(null);
 
   // ========== ESTADO PARA TERMOS DE USO ==========
   const [showTermAcceptances, setShowTermAcceptances] = useState(false);
@@ -986,6 +987,8 @@ export default function Dashboard() {
                 isEditing={isEditing}
                 setIsEditing={setIsEditing}
                 actionLoading={actionLoading}
+                onNewTerm={() => termManagementRef.current?.openNewTermModal()}
+                onViewAllTerms={() => termManagementRef.current?.showAllUsers()}
                 handleSave={() => {
                   const userId = selectedUser?.data?.id || selectedUser?.id;
                   if (!userId) return AxionAlert.fire("Erro", "ID do usuário não identificado.", "error");
@@ -1074,6 +1077,7 @@ export default function Dashboard() {
                     />
                   ) : (
                     <TermManagement 
+                      ref={termManagementRef} 
                       onViewUsers={handleViewTermAcceptances}
                       filters={filters}
                     />

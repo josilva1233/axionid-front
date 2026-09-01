@@ -1,11 +1,12 @@
 // src/pages/TermManagement.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import Swal from 'sweetalert2';
 import TermTable from '../components/dashboard/TermTable';
 
-export default function TermManagement({ onViewUsers, filters: externalFilters = {} }) {
+
+const TermManagement = forwardRef(({ onViewUsers, filters: externalFilters = {} }, ref) => {
   const navigate = useNavigate();
   const [terms, setTerms] = useState([]);
   const [filteredTerms, setFilteredTerms] = useState([]);
@@ -38,6 +39,16 @@ useEffect(() => {
     }));
   }
 }, [externalFilters]);
+
+useImperativeHandle(ref, () => ({
+  openNewTermModal() {
+    resetForm();
+    setShowModal(true);
+  },
+  showAllUsers() {
+    handleViewAllUsers();
+  }
+}));
 
   const [formData, setFormData] = useState({
     content: '',
@@ -397,20 +408,6 @@ useEffect(() => {
             Gerencie os termos de uso da plataforma
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => { resetForm(); setShowModal(true); }}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-all hover:-translate-y-0.5 shadow-lg shadow-blue-600/20"
-          >
-            ➕ Novo Termo
-          </button>
-          <button
-            onClick={handleViewAllUsers}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 font-semibold rounded-lg transition-all hover:-translate-y-0.5"
-          >
-            👥 Ver Todos os Usuários
-          </button>
-        </div>
       </div>
 
       {/* Error */}
@@ -576,4 +573,5 @@ useEffect(() => {
       )}
     </div>
   );
-}
+});
+export default TermManagement;

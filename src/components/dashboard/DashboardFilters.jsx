@@ -10,7 +10,8 @@ export default function DashboardFilters({
   onNewGroup,
   onNewPermission,
   onNewOrder,
-  onNewTerm,
+  onNewTerm,       // <-- ADICIONE
+  onViewAllTerms,  // <-- ADICIONE
   isEditing,
   onBack,
   setIsEditing,
@@ -142,16 +143,22 @@ export default function DashboardFilters({
         </div>
       </>
     ),
-    terms: (
-      <>
-        {renderInput("Buscar por Versão", "version", "Ex: 1.0.0...")}
-        {renderSelect("Status", "status", [
-          { value: "active", label: "✅ Ativo" },
-          { value: "inactive", label: "⛔ Inativo" },
-        ])}
-        {renderInput("Criado por", "creator", "Digite o nome...")}
-      </>
-    ),
+terms: (
+  <>
+    {renderInput("Buscar por Versão", "version", "Ex: 1.0.0...")}
+    {renderSelect("Status", "status", [
+      { value: "active", label: "✅ Ativo" },
+      { value: "inactive", label: "⛔ Inativo" },
+    ])}
+    {renderInput("Criado por", "creator", "Digite o nome...")}
+    <div className="flex-1 min-w-[160px] max-w-[240px]">
+      {renderButton(onNewTerm, "➕", "Novo Termo", "primary")}
+    </div>
+    <div className="flex-1 min-w-[160px] max-w-[240px]">
+      {renderButton(onViewAllTerms, "👥", "Ver Todos", "secondary")}
+    </div>
+  </>
+),
     audit: role === "admin" && (
       <>
         {renderInput("Usuário / E-mail", "user", "Ex: joao@email.com...")}
