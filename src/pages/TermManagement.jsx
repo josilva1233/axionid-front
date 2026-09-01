@@ -4,9 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import Swal from 'sweetalert2';
 import TermTable from '../components/dashboard/TermTable';
-import DashboardFilters from '../components/dashboard/DashboardFilters';
 
-export default function TermManagement({ onViewUsers }) {
+export default function TermManagement({ onViewUsers, filters = {} }) {
   const navigate = useNavigate();
   const [terms, setTerms] = useState([]);
   const [filteredTerms, setFilteredTerms] = useState([]);
@@ -16,11 +15,6 @@ export default function TermManagement({ onViewUsers }) {
   const [editingTerm, setEditingTerm] = useState(null);
   const [acceptanceCounts, setAcceptanceCounts] = useState({});
   const [actionLoading, setActionLoading] = useState(false);
-  const [filters, setFilters] = useState({
-    version: '',
-    status: '',
-    creator: '',
-  });
   const [formData, setFormData] = useState({
     content: '',
     version: '',
@@ -110,19 +104,6 @@ export default function TermManagement({ onViewUsers }) {
     }
 
     setFilteredTerms(filtered);
-  };
-
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleClearFilters = () => {
-    setFilters({
-      version: '',
-      status: '',
-      creator: '',
-    });
   };
 
   const getNextVersion = (currentVersion) => {
@@ -358,11 +339,6 @@ export default function TermManagement({ onViewUsers }) {
     setShowModal(true);
   };
 
-  const handleNewTerm = () => {
-    resetForm();
-    setShowModal(true);
-  };
-
   if (loading && !showModal) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -393,12 +369,20 @@ export default function TermManagement({ onViewUsers }) {
             Gerencie os termos de uso da plataforma
           </p>
         </div>
-        <button
-          onClick={handleViewAllUsers}
-          className="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 font-semibold rounded-lg transition-all hover:-translate-y-0.5"
-        >
-          👥 Ver Todos os Usuários
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => { resetForm(); setShowModal(true); }}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-all hover:-translate-y-0.5 shadow-lg shadow-blue-600/20"
+          >
+            ➕ Novo Termo
+          </button>
+          <button
+            onClick={handleViewAllUsers}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 font-semibold rounded-lg transition-all hover:-translate-y-0.5"
+          >
+            👥 Ver Todos os Usuários
+          </button>
+        </div>
       </div>
 
       {/* Error */}
@@ -415,25 +399,7 @@ export default function TermManagement({ onViewUsers }) {
         </div>
       )}
 
-      {/* Filters */}
-      <DashboardFilters
-        activeTab="terms"
-        role="admin"
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        onClear={handleClearFilters}
-        onNewTerm={handleNewTerm}
-        actionLoading={actionLoading}
-        // Props obrigatórias (não usadas)
-        onNewGroup={() => {}}
-        onNewPermission={() => {}}
-        onNewOrder={() => {}}
-        isEditing={false}
-        onBack={() => {}}
-        setIsEditing={() => {}}
-        handleSave={() => {}}
-        user={null}
-      />
+      {/* ❌ REMOVIDO o DashboardFilters duplicado daqui, pois o Dashboard.jsx já o renderiza acima. */}
 
       {/* Table */}
       <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden transition-colors hover:border-blue-500/30">
