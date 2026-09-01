@@ -139,18 +139,19 @@ export default function Dashboard() {
 
   const isGlobalAdmin = role === "admin" || currentUser?.is_admin === true;
 
-  // =========================================================
-  // 🔥 VERIFICAR PERMISSÃO DE ACESSO AO SISTEMA
-  // =========================================================
-  useEffect(() => {
-    if (currentUser && !permissionsLoading) {
-      const access = hasAnyPermission();
-      setHasAccess(access);
-      if (!access) {
-        navigate('/access-denied', { replace: true });
-      }
+// =========================================================
+// 🔥 VERIFICAR PERMISSÃO DE ACESSO AO SISTEMA
+// =========================================================
+useEffect(() => {
+  if (currentUser && !permissionsLoading) {
+    // Usa canAccessAnyTab() em vez de hasAnyPermission()
+    const access = canAccessAnyTab();
+    setHasAccess(access);
+    if (!access) {
+      navigate('/access-denied', { replace: true });
     }
-  }, [currentUser, permissionsLoading, hasAnyPermission, navigate]);
+  }
+}, [currentUser, permissionsLoading, canAccessAnyTab, navigate]);
 
   // =========================================================
   // 🔥 CONTROLAR ABA INICIAL BASEADA NAS PERMISSÕES
