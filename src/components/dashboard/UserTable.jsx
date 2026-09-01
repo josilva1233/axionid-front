@@ -17,7 +17,7 @@ return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
       <div>
         <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-          Usuários
+          👥 Usuários
           <span className="text-sm font-normal text-slate-400">
             ({users?.length || 0} {users?.length !== 1 ? 'usuários' : 'usuário'})
           </span>
