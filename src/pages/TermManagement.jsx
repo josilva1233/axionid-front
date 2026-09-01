@@ -1,7 +1,7 @@
 // src/components/dashboard/TermManagement.jsx (ou DashboardManagement.jsx)
 import React, { useState, useEffect } from "react";
 import DashboardFilters from "../components/dashboard/DashboardFilters";
-import TermTable from "./TermTable"; 
+import TermTable from "../components/dashboard/TermTable";
 // Importe outras tabelas se necessário para as outras abas:
 // import UserTable from "./UserTable";
 // import GroupTable from "./GroupTable";
