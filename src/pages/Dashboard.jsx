@@ -530,6 +530,7 @@ export default function Dashboard() {
     auditCurrentPage,
     ordersCurrentPage,
     permissionsCurrentPage,
+    filters, // <--- ADICIONADO AQUI
     loadUsers,
     loadGroups,
     loadAuditLogs,
@@ -537,41 +538,14 @@ export default function Dashboard() {
     loadServiceOrders,
   ]);
 
-  // ============ RECARREGAR QUANDO FILTROS MUDAREM ============
+  // ============ RESETAR PÁGINA PARA 1 QUANDO FILTROS MUDAREM ============
   useEffect(() => {
-    if (activeTab === "orders") {
-      loadServiceOrders(1);
-      setOrdersCurrentPage(1);
-    }
-  }, [filters.protocol, filters.title, filters.applicant, filters.priority, filters.status, loadServiceOrders, activeTab]);
-
-  useEffect(() => {
-    if (activeTab === "users") {
-      loadUsers(1);
-      setUsersCurrentPage(1);
-    }
-  }, [filters.name, filters.completed, loadUsers, activeTab]);
-
-  useEffect(() => {
-    if (activeTab === "groups") {
-      loadGroups(1);
-      setGroupsCurrentPage(1);
-    }
-  }, [filters.name, loadGroups, activeTab]);
-
-  useEffect(() => {
-    if (activeTab === "audit") {
-      loadAuditLogs(1);
-      setAuditCurrentPage(1);
-    }
-  }, [filters.user, filters.url, filters.method, filters.start_date, filters.end_date, loadAuditLogs, activeTab]);
-
-  useEffect(() => {
-    if (activeTab === "permissions") {
-      loadPermissions(1);
-      setPermissionsCurrentPage(1);
-    }
-  }, [filters.label, filters.perm_name, loadPermissions, activeTab]);
+    setUsersCurrentPage(1);
+    setGroupsCurrentPage(1);
+    setAuditCurrentPage(1);
+    setOrdersCurrentPage(1);
+    setPermissionsCurrentPage(1);
+  }, [filters]);
 
   // ============ ATUALIZAR FORM DATA QUANDO USUÁRIO SELECIONADO ============
   useEffect(() => {
@@ -838,7 +812,8 @@ export default function Dashboard() {
                     {/* Rua */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Rua</label>
-                      <input                        type="text"
+                      <input
+                        type="text"
                         value={addressForm.street}
                         onChange={(e) => setAddressForm({ ...addressForm, street: e.target.value })}
                         className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
