@@ -1073,6 +1073,7 @@ export default function Dashboard() {
                   ) : (
                     <TermManagement 
                       onViewUsers={handleViewTermAcceptances}
+                      ilters={filters}
                     />
                   )}
                 </div>
