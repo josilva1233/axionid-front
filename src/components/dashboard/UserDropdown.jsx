@@ -1,10 +1,61 @@
+// components/dashboard/UserDropdown.jsx
 import React, { useState, useEffect, useRef } from 'react';
+import api from '../services/api'; // 🔥 IMPORTAR A API
 
 const UserDropdown = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const dropdownRef = useRef(null);
 
+  // 🔥 Estado do tema inicializado com o valor do banco (ou dark como fallback)
+  const [isDark, setIsDark] = useState(() => {
+    // Se o user já tiver a preferência, usa ela; senão, dark
+    return user?.theme_preference ? user.theme_preference === 'dark' : true;
+  });
+
+  // 🔥 Quando o usuário mudar (ex: recarregar), atualiza o estado
+  useEffect(() => {
+    if (user?.theme_preference) {
+      const dark = user.theme_preference === 'dark';
+      setIsDark(dark);
+      document.documentElement.classList.toggle('dark', dark);
+    }
+  }, [user]);
+
+  // 🔥 Aplica o tema ao carregar o componente (caso o usuário já tenha preferência)
+  useEffect(() => {
+    if (user?.theme_preference) {
+      document.documentElement.classList.toggle('dark', isDark);
+    }
+  }, []);
+
+  // 🔥 Alterna o tema e salva no banco via API
+  const toggleTheme = async () => {
+    const newIsDark = !isDark;
+    const newTheme = newIsDark ? 'dark' : 'light';
+
+    // Atualiza localmente (UI imediata)
+    setIsDark(newIsDark);
+    document.documentElement.classList.toggle('dark', newIsDark);
+
+    // 🔥 SALVA NO BANCO VIA API
+    try {
+      await api.put('/theme', { theme: newTheme });
+    } catch (error) {
+      console.error('Erro ao salvar preferência de tema:', error);
+      // Reverte em caso de erro (opcional)
+      setIsDark(!newIsDark);
+      document.documentElement.classList.toggle('dark', !newIsDark);
+    }
+  };
+
+  // ============ AVATAR ============
+  const getInitials = (name) => {
+    if (!name) return 'U';
+    return name.charAt(0).toUpperCase();
+  };
+
+  // ============ Fechar ao clicar fora ============
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -15,12 +66,6 @@ const UserDropdown = ({ user, onLogout }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  // ============ AVATAR ============
-  const getInitials = (name) => {
-    if (!name) return 'U';
-    return name.charAt(0).toUpperCase();
-  };
 
   // ============ RENDER ============
   return (
@@ -77,6 +122,7 @@ const UserDropdown = ({ user, onLogout }) => {
 
           {/* Body */}
           <nav className="p-2 space-y-0.5">
+            {/* Meus Detalhes */}
             <button
               type="button"
               className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all text-left"
@@ -89,6 +135,23 @@ const UserDropdown = ({ user, onLogout }) => {
               Meus Detalhes
             </button>
 
+            {/* 🔥 CONFIGURAÇÕES (toggle tema) */}
+            <button
+              type="button"
+              className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all text-left"
+              role="menuitem"
+              onClick={toggleTheme}
+            >
+              <span className="text-lg w-7 text-center flex-shrink-0" aria-hidden="true">
+                ⚙️
+              </span>
+              <span className="flex-1">Configurações</span>
+              <span className="text-xs bg-slate-700/50 px-2 py-0.5 rounded-full text-slate-300">
+                {isDark ? '🌙 Escuro' : '☀️ Claro'}
+              </span>
+            </button>
+
+            {/* Encerrar Sessão */}
             <button
               type="button"
               className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all text-left border-t border-slate-700/50 mt-1 pt-3"
@@ -104,7 +167,7 @@ const UserDropdown = ({ user, onLogout }) => {
         </div>
       )}
 
-      {/* ============ PAINEL DE DETALHES ============ */}
+      {/* ============ PAINEL DE DETALHES (inalterado) ============ */}
       {showDetails && (
         <div
           className="absolute right-0 top-[calc(100%+8px)] z-[1050] min-w-[320px] max-w-[420px] bg-slate-800/95 border border-slate-700/50 rounded-xl shadow-2xl overflow-hidden animate-[dropdownSlideIn_0.25s_cubic-bezier(0.4,0,0.2,1)_forwards] backdrop-blur-sm"
