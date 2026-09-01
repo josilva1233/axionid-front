@@ -4,18 +4,15 @@
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
 }
-
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
-
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: var(--border-color);
   border-radius: 4px;
 }
-
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #3b82f6;
+  background: var(--primary);
 }
 
 /* Animações suaves */
@@ -23,9 +20,16 @@
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Efeito glassmorphism */
+/* Efeito glassmorphism – usa variáveis de tema */
 .glass-sidebar {
-  background: rgba(15, 23, 42, 0.95);
+  background: var(--bg-sidebar);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  border-right: 1px solid var(--border-color);
+}
+
+/* Ajuste para o modo claro */
+html:not(.dark) .glass-sidebar {
+  background: var(--bg-sidebar);
+  border-right-color: var(--border-color);
 }

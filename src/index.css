@@ -1,330 +1,256 @@
 /* ==========================================================
    AXIONID - INDEX.CSS
-   Configuração do Tailwind + Estilos Globais
+   Tema Claro/Escuro via Variáveis CSS
    ========================================================== */
 
-/* ============================================
-   1. IMPORTAÇÃO DO TAILWIND
-   ============================================ */
 @import "tailwindcss";
 
 /* ============================================
-   2. VARIÁVEIS CSS (para fallback e compatibilidade)
+   VARIÁVEIS PARA TEMA ESCURO (padrão)
    ============================================ */
 :root {
-  /* Cores Primárias (fallback) */
-  --primary: #3b82f6;
-  --primary-hover: #2563eb;
-  --primary-light: rgba(59, 130, 246, 0.15);
-  --primary-dark: #1d4ed8;
-  
-  /* Cores de Fundo (fallback) */
-  --bg-dark: #0f172a;
+  /* Fundos */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
   --bg-card: #1e293b;
   --bg-sidebar: #0f172a;
   --bg-input: #1e293b;
   --bg-hover: #334155;
-  
-  /* Cores de Texto (fallback) */
-  --text-main: #e2e8f0;
-  --text-dim: #94a3b8;
-  --text-muted: #64748b;
-  
-  /* Bordas (fallback) */
-  --border: #334155;
+  --bg-dropdown: rgba(30, 41, 59, 0.95);
+  --bg-dropdown-header: rgba(30, 41, 59, 0.5);
+  --bg-dropdown-address: rgba(30, 41, 59, 0.3);
+  --bg-dropdown-hover: rgba(51, 65, 85, 0.5);
+  --bg-dropdown-badge: rgba(51, 65, 85, 0.5);
+
+  /* Textos */
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-dim: #64748b;
+  --text-dropdown: #e2e8f0;
+  --text-dropdown-dim: #94a3b8;
+  --text-dropdown-muted: #64748b;
+  --text-dropdown-hover: #ffffff;
+
+  /* Bordas */
+  --border-color: #334155;
   --border-light: #1e293b;
-  
-  /* Status (fallback) */
-  --success: #22c55e;
-  --error: #ef4444;
-  --warning: #f59e0b;
-  --info: #3b82f6;
-  
-  /* Sombras (fallback) */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --border-dropdown: rgba(51, 65, 85, 0.5);
+
+  /* Cores primárias */
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --primary-light: rgba(59, 130, 246, 0.15);
+
+  /* Sombras */
   --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
   --shadow-primary: 0 4px 12px rgba(59, 130, 246, 0.3);
-  
-  /* Transições (fallback) */
+
+  /* Transições */
   --transition-fast: 0.2s ease;
   --transition-normal: 0.3s ease;
-  
-  /* Bordas Arredondadas (fallback) */
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
+
+  /* Bordas arredondadas */
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
-  --radius-2xl: 1.25rem;
-  
-  /* Espaçamentos (fallback) */
-  --spacing-sm: 8px;
-  --spacing-md: 12px;
-  --spacing-lg: 16px;
-  --spacing-xl: 24px;
-  --spacing-2xl: 32px;
 }
 
 /* ============================================
-   3. RESET E ESTILOS BASE
+   VARIÁVEIS PARA TEMA CLARO
+   ============================================ */
+html:not(.dark) {
+  --bg-primary: #f1f5f9;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-sidebar: #f8fafc;
+  --bg-input: #ffffff;
+  --bg-hover: #e2e8f0;
+  --bg-dropdown: rgba(255, 255, 255, 0.95);
+  --bg-dropdown-header: rgba(241, 245, 249, 0.5);
+  --bg-dropdown-address: rgba(241, 245, 249, 0.3);
+  --bg-dropdown-hover: rgba(226, 232, 240, 0.5);
+  --bg-dropdown-badge: rgba(226, 232, 240, 0.5);
+
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-dim: #64748b;
+  --text-dropdown: #0f172a;
+  --text-dropdown-dim: #334155;
+  --text-dropdown-muted: #64748b;
+  --text-dropdown-hover: #0f172a;
+
+  --border-color: #e2e8f0;
+  --border-light: #f1f5f9;
+  --border-dropdown: rgba(226, 232, 240, 0.7);
+
+  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   RESET E ESTILOS BASE
    ============================================ */
 * {
-
   box-sizing: border-box;
 }
 
 body {
-  background: var(--bg-dark);
-  color: var(--text-main);
+  background: var(--bg-primary);
+  color: var(--text-primary);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
   overflow-x: hidden;
+  transition: background var(--transition-normal), color var(--transition-normal);
 }
 
 /* ============================================
-   4. SCROLLBAR PERSONALIZADA
+   SCROLLBAR
    ============================================ */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
-
 ::-webkit-scrollbar-track {
-  background: var(--bg-dark);
+  background: var(--bg-primary);
   border-radius: 10px;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--border-color);
   border-radius: 10px;
-  transition: background var(--transition-fast);
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: var(--text-dim);
 }
-
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--border) var(--bg-dark);
+  scrollbar-color: var(--border-color) var(--bg-primary);
 }
 
 /* ============================================
-   5. ANIMAÇÕES PERSONALIZADAS
+   CLASSES UTILITÁRIAS DE TEMA
+   ============================================ */
+.bg-dropdown {
+  background: var(--bg-dropdown);
+}
+.bg-dropdown-header {
+  background: var(--bg-dropdown-header);
+}
+.bg-dropdown-address-bg {
+  background: var(--bg-dropdown-address);
+}
+.bg-dropdown-hover-bg {
+  background: var(--bg-dropdown-hover);
+}
+.bg-dropdown-badge {
+  background: var(--bg-dropdown-badge);
+}
+.text-dropdown-text {
+  color: var(--text-dropdown);
+}
+.text-dropdown-dim {
+  color: var(--text-dropdown-dim);
+}
+.text-dropdown-muted {
+  color: var(--text-dropdown-muted);
+}
+.text-dropdown-hover {
+  color: var(--text-dropdown-hover);
+}
+.border-dropdown-border {
+  border-color: var(--border-dropdown);
+}
+
+/* Outras classes úteis */
+.bg-card {
+  background: var(--bg-card);
+}
+.bg-sidebar {
+  background: var(--bg-sidebar);
+}
+.border-theme {
+  border-color: var(--border-color);
+}
+.text-secondary {
+  color: var(--text-secondary);
+}
+.text-dim {
+  color: var(--text-dim);
+}
+
+/* ============================================
+   ANIMAÇÕES (mantidas)
    ============================================ */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes pulse-dot {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(1.3);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.3); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes dropdownSlideIn {
+  from { opacity: 0; transform: scale(0.95) translateY(-8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+.animate-in { animation: fadeIn 0.3s ease-out; }
+.animate-in-up { animation: fadeInUp 0.4s ease-out; }
+.animate-in-down { animation: fadeInDown 0.3s ease-out; }
+.animate-pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
 
 /* ============================================
-   6. CLASSES DE ANIMAÇÃO
+   SCROLLBAR PERSONALIZADA (custom-scrollbar)
    ============================================ */
-.animate-in {
-  animation: fadeIn 0.3s ease-out;
-}
-
-.animate-in-up {
-  animation: fadeInUp 0.4s ease-out;
-}
-
-.animate-in-down {
-  animation: fadeInDown 0.3s ease-out;
-}
-
-.animate-pulse-dot {
-  animation: pulse-dot 2s ease-in-out infinite;
-}
-
-/* ============================================
-   7. UTILITÁRIOS PERSONALIZADOS (Tailwind não cobre)
-   ============================================ */
-/* Text truncate com ellipsis */
-.text-truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 100%;
-}
-
-/* Smooth transition para hover */
-.hover-lift {
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.hover-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-/* Glassmorphism */
-.glass {
-  background: rgba(30, 41, 59, 0.5);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(51, 65, 85, 0.3);
-}
-
-/* Scrollbar customizada para containers */
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
   height: 4px;
 }
-
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: var(--bg-dark);
-  border-radius: 4px;
+  background: transparent;
 }
-
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--border-color);
   border-radius: 4px;
 }
-
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: var(--primary);
 }
 
 /* ============================================
-   8. RESPONSIVIDADE GLOBAL (Correções)
+   RESPONSIVIDADE (mantida)
    ============================================ */
 @media (max-width: 768px) {
-  .hide-on-mobile {
-    display: none !important;
-  }
-  
-  .stack-on-mobile {
-    flex-direction: column !important;
-  }
-  
-  .full-width-mobile {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
+  .hide-on-mobile { display: none !important; }
+  .stack-on-mobile { flex-direction: column !important; }
+  .full-width-mobile { width: 100% !important; max-width: 100% !important; }
 }
-
 @media (max-width: 480px) {
-  .hide-on-small {
-    display: none !important;
-  }
-  
-  .text-small {
-    font-size: 0.875rem !important;
-  }
-  
-  .padding-small {
-    padding: 0.75rem !important;
-  }
+  .hide-on-small { display: none !important; }
+  .text-small { font-size: 0.875rem !important; }
+  .padding-small { padding: 0.75rem !important; }
 }
 
-/* ============================================
-   9. IMPRESSÃO (Print)
-   ============================================ */
 @media print {
-  .no-print {
-    display: none !important;
-  }
-  
-  .print-only {
-    display: block !important;
-  }
-  
-  body {
-    background: #ffffff !important;
-    color: #000000 !important;
-  }
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  body { background: #ffffff !important; color: #000000 !important; }
 }
 
-/* ============================================
-   10. REDUCED MOTION
-   ============================================ */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  
-  .animate-in,
-  .animate-in-up,
-  .animate-in-down {
-    animation: none !important;
-  }
-  
-  .animate-pulse-dot {
-    animation: none !important;
-  }
-}
-
-/* ============================================
-   11. HIGH CONTRAST
-   ============================================ */
-@media (prefers-contrast: high) {
-  * {
-    border-width: 2px !important;
-  }
-  
-  body {
-    background: #000000 !important;
-    color: #ffffff !important;
-  }
-  
-  .glass {
-    background: #1a1a1a !important;
-    backdrop-filter: none !important;
-    border: 2px solid #ffffff !important;
-  }
+  .animate-in, .animate-in-up, .animate-in-down { animation: none !important; }
+  .animate-pulse-dot { animation: none !important; }
 }
