@@ -1,65 +1,65 @@
-// src/components/dashboard/TermManagement.jsx (ou DashboardManagement.jsx)
+// src/pages/TermManagement.jsx
 import React, { useState, useEffect } from "react";
 import DashboardFilters from "../components/dashboard/DashboardFilters";
 import TermTable from "../components/dashboard/TermTable";
-// Importe outras tabelas se necessário para as outras abas:
-// import UserTable from "./UserTable";
-// import GroupTable from "./GroupTable";
+import api from "../services/api"; // Certifique-se de que o caminho do seu axios instance está correto
 
 export default function TermManagement({ role = "admin" }) {
-  // Estado para controlar qual aba está ativa ("terms", "users", "groups", etc.)
   const [activeTab, setActiveTab] = useState("terms");
 
-  // Estados de dados gerais
+  // Estados de dados
   const [terms, setTerms] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [acceptanceCounts, setAcceptanceCounts] = useState({});
 
-  // Estados de visualização detalhada (ex: detalhe de um usuário)
+  // Estados de controle e modais / visualização
   const [selectedUser, setSelectedUser] = useState(null);
   const [isEditingUser, setIsEditingUser] = useState(false);
 
-  // Estado unificado de filtros para todas as abas
+  // Estados de Filtros alinhados com o backend e DashboardFilters
   const [filters, setFilters] = useState({
-    // Filtros de Terms
     version: "",
     status: "",
     creator: "",
-    // Filtros de Users
     name: "",
     completed: "",
-    // Filtros de Groups
-    // (adicionais se houver)
   });
 
-  // Carregamento inicial de dados (Simulado/Integrável com sua API)
+  // Carregar dados iniciais da API
   useEffect(() => {
-    fetchAllData();
+    fetchTerms();
   }, []);
 
-  const fetchAllData = async () => {
+  const fetchTerms = async () => {
     setLoading(true);
     try {
-      // Substitua pelas chamadas reais da sua API
-      // const termsRes = await api.get('/terms');
-      // setTerms(termsRes.data);
+      // Consumindo a rota protegida do admin: GET /v1/admin/terms
+      const response = await api.get("/admin/terms");
+      
+      // Ajuste conforme o formato de retorno do seu TermController (ex: response.data.data ou response.data)
+      const termsData = response.data.data || response.data || [];
+      setTerms(termsData);
 
-      // Dados de exemplo para teste imediato
-      setTerms([
-        { id: 1, version: "1.0.0", is_active: true, creator: { name: "Administrador" } },
-        { id: 2, version: "1.1.0", is_active: false, creator: { name: "João Silva" } },
-      ]);
+      // Opcional: Buscar estatísticas de aceitação para popular o contador na tabela
+      try {
+        const statsRes = await api.get("/admin/terms/acceptances/stats");
+        // Espera-se um objeto mapeado por term_id, ex: { 1: 15, 2: 8 }
+        if (statsRes.data) {
+          setAcceptanceCounts(statsRes.data);
+        }
+      } catch (err) {
+        console.warn("Não foi possível carregar as estatísticas de aceitação:", err);
+      }
+
     } catch (error) {
-      console.error("Erro ao carregar dados:", error);
+      console.error("Erro ao buscar termos da API:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Manipulador genérico de mudança de filtros
+  // Manipulador de mudança de filtros
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({
@@ -68,7 +68,7 @@ export default function TermManagement({ role = "admin" }) {
     }));
   };
 
-  // Botão Limpar Filtros (Limpa apenas o contexto da aba ativa ou todos)
+  // Limpar Filtros
   const handleClearFilters = () => {
     setFilters({
       version: "",
@@ -79,11 +79,7 @@ export default function TermManagement({ role = "admin" }) {
     });
   };
 
-  // ==========================================
-  // LÓGICA DE FILTRAGEM POR ABA
-  // ==========================================
-
-  // 1. Filtro para a aba de Termos
+  // Lógica de Filtro Frontend baseada nos estados locais
   const filteredTerms = terms.filter((term) => {
     const matchesVersion = filters.version
       ? term.version?.toLowerCase().includes(filters.version.toLowerCase())
@@ -108,35 +104,59 @@ export default function TermManagement({ role = "admin" }) {
     return matchesVersion && matchesStatus && matchesCreator;
   });
 
-  // ==========================================
-  // FUNÇÕES DE AÇÃO (Callbacks)
-  // ==========================================
-  const handleViewUsers = (term) => {
-    console.log("Visualizar usuários do termo:", term);
+  // Ações conectadas com a API
+  const handleViewUsers = (termId) => {
+    console.log("Visualizar usuários que aceitaram o termo ID:", termId);
+    // Aqui você pode redirecionar para uma rota ou abrir um modal chamando:
+    // api.get(`/admin/terms/acceptances?term_id=${termId}`)
   };
 
-  const handleToggleStatus = async (termId) => {
-    console.log("Alternar status do termo ID:", termId);
-    // Exemplo de atualização otimista ou re-fetch
-    setTerms(prev => prev.map(t => t.id === termId ? { ...t, is_active: !t.is_active } : t));
+  const handleToggleStatus = async (term) => {
+    setActionLoading(true);
+    try {
+      // Rota correspondente: PATCH /v1/admin/terms/{id}/toggle
+      await api.patch(`/admin/terms/${term.id}/toggle`);
+      
+      // Atualiza o estado localmente após sucesso no backend
+      setTerms((prev) =>
+        prev.map((t) => (t.id === term.id ? { ...t, is_active: !t.is_active } : t))
+      );
+    } catch (error) {
+      console.error("Erro ao alterar status do termo:", error);
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleEditTerm = (term) => {
     console.log("Editar termo:", term);
+    // Lógica para abrir modal de edição e enviar via PUT /v1/admin/terms/{id}
   };
 
   const handleDeleteTerm = async (termId) => {
-    console.log("Excluir termo ID:", termId);
-    setTerms(prev => prev.filter(t => t.id !== termId));
+    if (!window.confirm("Tem certeza que deseja excluir este termo?")) return;
+
+    setActionLoading(true);
+    try {
+      // Rota correspondente: DELETE /v1/admin/terms/{id}
+      await api.delete(`/admin/terms/${termId}`);
+      
+      setTerms((prev) => prev.filter((t) => t.id !== termId));
+    } catch (error) {
+      console.error("Erro ao excluir termo:", error);
+      alert(error.response?.data?.message || "Erro ao excluir termo.");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleNewTerm = () => {
-    console.log("Abrir modal de novo termo");
+    console.log("Abrir modal de criação de novo termo (POST /v1/admin/terms)");
   };
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      {/* Navegação de Abas (Opcional caso seu layout principal já controle, mas útil se for independente) */}
+      {/* Abas de Navegação do Painel */}
       <div className="flex gap-4 border-b border-slate-700/50 pb-4 mb-6">
         <button
           onClick={() => setActiveTab("terms")}
@@ -158,17 +178,16 @@ export default function TermManagement({ role = "admin" }) {
         >
           👥 Usuários
         </button>
-        {/* Adicione outras abas conforme necessário */}
       </div>
 
-      {/* Cabeçalho dinâmico baseado na aba */}
+      {/* Cabeçalho */}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-white capitalize">
             Gerenciamento de {activeTab}
           </h1>
           <p className="text-sm text-slate-400">
-            Gerencie e filtre os registros do sistema em tempo real.
+            Gerencie e filtre os registros do sistema diretamente da base de dados.
           </p>
         </div>
         {activeTab === "terms" && (
@@ -181,14 +200,14 @@ export default function TermManagement({ role = "admin" }) {
         )}
       </div>
 
-      {/* Componente de Filtros Unificado */}
+      {/* Filtros Unificados */}
       <DashboardFilters
         activeTab={activeTab}
         role={role}
         filters={filters}
         onFilterChange={handleFilterChange}
         onClear={handleClearFilters}
-        actionLoading={actionLoading}
+        actionLoading={actionLoading || loading}
         user={selectedUser}
         isEditing={isEditingUser}
         setIsEditing={setIsEditingUser}
@@ -196,7 +215,7 @@ export default function TermManagement({ role = "admin" }) {
         handleSave={() => console.log("Salvando...")}
       />
 
-      {/* Renderização Condicional da Tabela baseada na Aba Ativa */}
+      {/* Exibição da Tabela baseada na Aba Ativa */}
       <div className="mt-6">
         {activeTab === "terms" && (
           <TermTable
@@ -212,8 +231,7 @@ export default function TermManagement({ role = "admin" }) {
 
         {activeTab === "users" && (
           <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-8 text-center text-slate-400">
-            {/* Aqui entra a sua <UserTable /> se houver */}
-            <p>Tabela de Usuários carregada aqui (conectada aos filtros de `name` e `completed`).</p>
+            <p>Módulo de listagem de usuários conectado à rota `/v1/admin/users`.</p>
           </div>
         )}
       </div>
