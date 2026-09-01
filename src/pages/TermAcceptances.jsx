@@ -223,7 +223,7 @@ export default function TermAcceptances({ termId, onBack, filters: externalFilte
                   </tr>
                 </thead>
                 <tbody>
-                  {acceptances.map((item) => (
+                  {filteredAcceptances.map((item) => (
                     <tr key={item.id} className="border-b border-slate-700/30 hover:bg-slate-800/30 transition-all">
                       <td className="px-[18px] py-3.5 align-middle">
                         <div>
