@@ -24,7 +24,20 @@ export default function TermManagement({ onViewUsers, filters: externalFilters =
   });
 
   // Mescla os filtros externos com os locais
-  const filters = { ...localFilters, ...externalFilters };
+ // Mescla os filtros externos com os locais
+const filters = { ...localFilters, ...externalFilters };
+
+// 🔄 Sincroniza os filtros externos com os locais (para garantir reatividade)
+useEffect(() => {
+  if (externalFilters) {
+    setLocalFilters(prev => ({
+      ...prev,
+      version: externalFilters.version ?? prev.version,
+      status: externalFilters.status ?? prev.status,
+      creator: externalFilters.creator ?? prev.creator,
+    }));
+  }
+}, [externalFilters]);
 
   const [formData, setFormData] = useState({
     content: '',

@@ -307,7 +307,9 @@ export default function Dashboard() {
       priority: "",
       status: "",
       label: "",
-      perm_name: ""
+      perm_name: "",
+      version: "",   // ✅ Adicionei
+      creator: ""    // ✅ Adicionei
     });
     setUsersCurrentPage(1);
     setGroupsCurrentPage(1);
