@@ -82,16 +82,14 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout, onTog
       icon: '📜',
       label: 'Logs de Auditoria',
       section: 'Segurança',
-      visible: canViewAudit,
-      visible: isAdmin, 
+      visible: canViewAudit || isAdmin,
     },
     {
       id: 'permissions',
       icon: '🛡️',
       label: 'Permissões',
       section: 'Segurança',
-      visible: canViewPermissions,
-      visible: isAdmin, 
+      visible: canViewPermissions || isAdmin,
     },
     // 🔥 NOVO: TERMOS DE USO
     {
