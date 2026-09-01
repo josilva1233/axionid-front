@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
-export default function TermAcceptances({ termId, onBack }) {
+export default function TermAcceptances({ termId, onBack, filters: externalFilters = {} }) {
   const navigate = useNavigate();
   
   const [acceptances, setAcceptances] = useState([]);
@@ -14,10 +14,38 @@ export default function TermAcceptances({ termId, onBack }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
+  const [filteredAcceptances, setFilteredAcceptances] = useState([]);
 
   useEffect(() => {
     loadAcceptances();
   }, [termId, currentPage, perPage]);
+
+    useEffect(() => {
+    let filtered = [...acceptances];
+
+    // Filtro por Nome ou E-mail do usuário
+    if (externalFilters.user) {
+      const term = externalFilters.user.toLowerCase();
+      filtered = filtered.filter(item => 
+        item.user?.name?.toLowerCase().includes(term) ||
+        item.user?.email?.toLowerCase().includes(term)
+      );
+    }
+        // Filtro por Data Início
+    if (externalFilters.start_date) {
+      const start = new Date(externalFilters.start_date).setHours(0,0,0,0);
+      filtered = filtered.filter(item => new Date(item.accepted_at).getTime() >= start);
+    }
+
+    // Filtro por Data Fim
+    if (externalFilters.end_date) {
+      const end = new Date(externalFilters.end_date).setHours(23,59,59,999);
+      filtered = filtered.filter(item => new Date(item.accepted_at).getTime() <= end);
+    }
+
+    setFilteredAcceptances(filtered);
+  }, [acceptances, externalFilters]);
+
 
   const loadAcceptances = async () => {
     setLoading(true);

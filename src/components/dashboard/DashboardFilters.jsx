@@ -12,6 +12,7 @@ export default function DashboardFilters({
   onNewOrder,
   onNewTerm,       // <-- ADICIONE
   onViewAllTerms,  // <-- ADICIONE
+  showTermAcceptances ,
   isEditing,
   onBack,
   setIsEditing,
@@ -143,21 +144,32 @@ export default function DashboardFilters({
         </div>
       </>
     ),
+// Modifique a aba "terms" dentro do objeto tabConfigs:
 terms: (
-  <>
-    {renderInput("Buscar por Versão", "version", "Ex: 1.0.0...")}
-    {renderSelect("Status", "status", [
-      { value: "active", label: "✅ Ativo" },
-      { value: "inactive", label: "⛔ Inativo" },
-    ])}
-    {renderInput("Criado por", "creator", "Digite o nome...")}
-    <div className="flex-1 min-w-[160px] max-w-[240px]">
-      {renderButton(onNewTerm, "➕", "Novo Termo", "primary")}
-    </div>
-    <div className="flex-1 min-w-[160px] max-w-[240px]">
-      {renderButton(onViewAllTerms, "👥", "Ver Todos", "secondary")}
-    </div>
-  </>
+  showTermAcceptances ? (
+    // Filtros para a tela de Usuários que aceitaram
+    <>
+      {renderInput("Buscar Usuário", "user", "Digite o nome...")}
+      {renderInput("Data Início", "start_date", "YYYY-MM-DD")}
+      {renderInput("Data Fim", "end_date", "YYYY-MM-DD")}
+    </>
+  ) : (
+    // Filtros originais da tela de Termos
+    <>
+      {renderInput("Buscar por Versão", "version", "Ex: 1.0.0...")}
+      {renderSelect("Status", "status", [
+        { value: "active", label: "✅ Ativo" },
+        { value: "inactive", label: "⛔ Inativo" },
+      ])}
+      {renderInput("Criado por", "creator", "Digite o nome...")}
+      <div className="flex-1 min-w-[160px] max-w-[240px]">
+        {renderButton(onNewTerm, "➕", "Novo Termo", "primary")}
+      </div>
+      <div className="flex-1 min-w-[160px] max-w-[240px]">
+        {renderButton(onViewAllTerms, "👥", "Ver Todos", "secondary")}
+      </div>
+    </>
+  )
 ),
     audit: role === "admin" && (
       <>

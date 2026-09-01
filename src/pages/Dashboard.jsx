@@ -989,6 +989,7 @@ export default function Dashboard() {
                 actionLoading={actionLoading}
                 onNewTerm={() => termManagementRef.current?.openNewTermModal()}
                 onViewAllTerms={() => termManagementRef.current?.showAllUsers()}
+                showTermAcceptances={showTermAcceptances}
                 handleSave={() => {
                   const userId = selectedUser?.data?.id || selectedUser?.id;
                   if (!userId) return AxionAlert.fire("Erro", "ID do usuário não identificado.", "error");
@@ -1074,6 +1075,7 @@ export default function Dashboard() {
                     <TermAcceptances 
                       termId={selectedTermId}
                       onBack={handleBackFromAcceptances}
+                      filters={filters}
                     />
                   ) : (
                     <TermManagement 
