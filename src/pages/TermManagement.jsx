@@ -15,6 +15,7 @@ export default function TermManagement({ onViewUsers }) {
   const [showModal, setShowModal] = useState(false);
   const [editingTerm, setEditingTerm] = useState(null);
   const [acceptanceCounts, setAcceptanceCounts] = useState({});
+  const [actionLoading, setActionLoading] = useState(false);
   const [filters, setFilters] = useState({
     version: '',
     status: '',
@@ -24,6 +25,18 @@ export default function TermManagement({ onViewUsers }) {
     content: '',
     version: '',
     is_active: false,
+  });
+
+  const AxionAlert = Swal.mixin({
+    background: "#111214",
+    color: "#ffffff",
+    confirmButtonColor: "#6366f1",
+    cancelButtonColor: "#343a40",
+    customClass: {
+      popup: "border border-slate-700 rounded-xl",
+      confirmButton: "px-4 py-2 rounded-full font-bold mx-2 bg-indigo-500 hover:bg-indigo-400 transition-colors",
+      cancelButton: "px-4 py-2 rounded-full font-bold mx-2 bg-slate-700 hover:bg-slate-600 transition-colors",
+    },
   });
 
   useEffect(() => {
@@ -134,7 +147,7 @@ export default function TermManagement({ onViewUsers }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setActionLoading(true);
     setError('');
 
     try {
@@ -148,15 +161,15 @@ export default function TermManagement({ onViewUsers }) {
           is_active: false,
         };
         
-        const confirmResult = await Swal.fire({
+        const confirmResult = await AxionAlert.fire({
           title: 'Criar Nova Versão?',
           html: `
-            <p>Você está criando uma nova versão do termo.</p>
-            <p class="mt-2">
-              <strong>Versão atual:</strong> v${editingTerm.version}<br>
-              <strong>Nova versão:</strong> v${nextVersion}
+            <p class="text-slate-300">Você está criando uma nova versão do termo.</p>
+            <p class="mt-3">
+              <strong class="text-white">Versão atual:</strong> <span class="text-blue-400">v${editingTerm.version}</span><br>
+              <strong class="text-white">Nova versão:</strong> <span class="text-green-400">v${nextVersion}</span>
             </p>
-            <p class="mt-2 text-sm text-slate-400">
+            <p class="mt-3 text-sm text-slate-400">
               O termo atual será mantido como histórico.
             </p>
           `,
@@ -164,18 +177,16 @@ export default function TermManagement({ onViewUsers }) {
           showCancelButton: true,
           confirmButtonText: 'Sim, criar nova versão',
           cancelButtonText: 'Cancelar',
-          confirmButtonColor: '#4D6BFE',
-          cancelButtonColor: '#dc3545',
         });
         
         if (!confirmResult.isConfirmed) {
-          setLoading(false);
+          setActionLoading(false);
           return;
         }
         
         response = await api.post('/api/v1/admin/terms', newTermData);
         
-        Swal.fire({
+        AxionAlert.fire({
           icon: 'success',
           title: 'Nova Versão Criada!',
           text: `Termo v${nextVersion} criado com sucesso.`,
@@ -184,7 +195,7 @@ export default function TermManagement({ onViewUsers }) {
         });
       } else {
         response = await api.post('/api/v1/admin/terms', formData);
-        Swal.fire({
+        AxionAlert.fire({
           icon: 'success',
           title: 'Termo Criado!',
           text: `Termo v${formData.version} criado com sucesso.`,
@@ -194,21 +205,19 @@ export default function TermManagement({ onViewUsers }) {
       }
       
       if (formData.is_active && !editingTerm) {
-        const activateResult = await Swal.fire({
+        const activateResult = await AxionAlert.fire({
           title: 'Ativar Termo?',
           text: 'Ao ativar este termo, todos os usuários precisarão aceitar novamente. Deseja continuar?',
           icon: 'warning',
           showCancelButton: true,
           confirmButtonText: 'Sim, ativar',
           cancelButtonText: 'Cancelar',
-          confirmButtonColor: '#4D6BFE',
-          cancelButtonColor: '#dc3545',
         });
         
         if (activateResult.isConfirmed) {
           const termId = response.data.term?.id || response.data.id;
           await api.patch(`/api/v1/admin/terms/${termId}/toggle`);
-          Swal.fire({
+          AxionAlert.fire({
             icon: 'success',
             title: 'Termo Ativado!',
             text: 'Todos os usuários precisarão aceitar os novos termos.',
@@ -223,31 +232,34 @@ export default function TermManagement({ onViewUsers }) {
       resetForm();
     } catch (err) {
       setError(err.response?.data?.message || 'Erro ao salvar termo');
+      AxionAlert.fire({
+        icon: 'error',
+        title: 'Erro!',
+        text: err.response?.data?.message || 'Erro ao salvar termo',
+      });
     } finally {
-      setLoading(false);
+      setActionLoading(false);
     }
   };
 
   const handleToggleStatus = async (term) => {
-    setLoading(true);
+    setActionLoading(true);
     try {
       await api.patch(`/api/v1/admin/terms/${term.id}/toggle`);
       
       if (!term.is_active) {
-        const result = await Swal.fire({
+        const result = await AxionAlert.fire({
           title: 'Ativar Termo',
           text: 'Ao ativar este termo, todos os usuários precisarão aceitar novamente. Deseja continuar?',
           icon: 'warning',
           showCancelButton: true,
           confirmButtonText: 'Sim, ativar',
           cancelButtonText: 'Cancelar',
-          confirmButtonColor: '#4D6BFE',
-          cancelButtonColor: '#dc3545',
         });
         
         if (result.isConfirmed) {
           await loadTerms();
-          Swal.fire({
+          AxionAlert.fire({
             icon: 'success',
             title: 'Termo Ativado!',
             text: 'Todos os usuários precisarão aceitar os novos termos.',
@@ -260,7 +272,7 @@ export default function TermManagement({ onViewUsers }) {
         }
       } else {
         await loadTerms();
-        Swal.fire({
+        AxionAlert.fire({
           icon: 'info',
           title: 'Termo Desativado',
           text: `O termo v${term.version} foi desativado.`,
@@ -270,30 +282,33 @@ export default function TermManagement({ onViewUsers }) {
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Erro ao alterar status');
+      AxionAlert.fire({
+        icon: 'error',
+        title: 'Erro!',
+        text: err.response?.data?.message || 'Erro ao alterar status',
+      });
     } finally {
-      setLoading(false);
+      setActionLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    const result = await Swal.fire({
+    const result = await AxionAlert.fire({
       title: 'Excluir Termo?',
       text: 'Tem certeza que deseja excluir este termo? Esta ação não pode ser desfeita.',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Sim, excluir',
       cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#dc3545',
-      cancelButtonColor: '#4D6BFE',
     });
     
     if (!result.isConfirmed) return;
 
-    setLoading(true);
+    setActionLoading(true);
     try {
       await api.delete(`/api/v1/admin/terms/${id}`);
       await loadTerms();
-      Swal.fire({
+      AxionAlert.fire({
         icon: 'success',
         title: 'Excluído!',
         text: 'Termo removido com sucesso.',
@@ -302,8 +317,13 @@ export default function TermManagement({ onViewUsers }) {
       });
     } catch (err) {
       setError(err.response?.data?.message || 'Erro ao excluir termo');
+      AxionAlert.fire({
+        icon: 'error',
+        title: 'Erro!',
+        text: err.response?.data?.message || 'Erro ao excluir termo',
+      });
     } finally {
-      setLoading(false);
+      setActionLoading(false);
     }
   };
 
@@ -346,9 +366,11 @@ export default function TermManagement({ onViewUsers }) {
   if (loading && !showModal) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-[#4D6BFE] border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-slate-400 text-sm">Carregando termos...</p>
+        <div className="relative">
+          <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-6 h-6 border-4 border-blue-400/30 border-t-blue-400 rounded-full animate-spin" style={{ animationDelay: '150ms' }}></div>
+          </div>
         </div>
       </div>
     );
@@ -356,7 +378,7 @@ export default function TermManagement({ onViewUsers }) {
 
   return (
     <div className="p-4 md:p-6">
-      {/* Header - APENAS título e botão "Ver Todos os Usuários" */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
@@ -371,20 +393,17 @@ export default function TermManagement({ onViewUsers }) {
             Gerencie os termos de uso da plataforma
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={handleViewAllUsers}
-            className="px-4 py-2 bg-slate-700/50 hover:bg-slate-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
-          >
-            <span className="text-lg">👥</span>
-            Ver Todos os Usuários
-          </button>
-        </div>
+        <button
+          onClick={handleViewAllUsers}
+          className="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 font-semibold rounded-lg transition-all hover:-translate-y-0.5"
+        >
+          👥 Ver Todos os Usuários
+        </button>
       </div>
 
       {/* Error */}
       {error && (
-        <div className="mb-4 p-4 bg-red-900/30 border border-red-700/50 rounded-xl text-red-300 text-sm flex items-center gap-2">
+        <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center gap-2">
           <span className="text-lg">⚠️</span>
           <span>{error}</span>
           <button 
@@ -396,7 +415,7 @@ export default function TermManagement({ onViewUsers }) {
         </div>
       )}
 
-      {/* Filters - Usando DashboardFilters */}
+      {/* Filters */}
       <DashboardFilters
         activeTab="terms"
         role="admin"
@@ -404,7 +423,7 @@ export default function TermManagement({ onViewUsers }) {
         onFilterChange={handleFilterChange}
         onClear={handleClearFilters}
         onNewTerm={handleNewTerm}
-        actionLoading={loading}
+        actionLoading={actionLoading}
         // Props obrigatórias (não usadas)
         onNewGroup={() => {}}
         onNewPermission={() => {}}
@@ -417,7 +436,7 @@ export default function TermManagement({ onViewUsers }) {
       />
 
       {/* Table */}
-      <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden">
+      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden transition-colors hover:border-blue-500/30">
         <TermTable
           terms={filteredTerms}
           acceptanceCounts={acceptanceCounts}
@@ -429,116 +448,139 @@ export default function TermManagement({ onViewUsers }) {
         />
       </div>
 
-      {/* Modal de criação/edição */}
+      {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-800 rounded-2xl border border-slate-700/50 p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-white">
-                {editingTerm ? (
-                  <div>
-                    <span>✏️ Criar Nova Versão</span>
-                    <p className="text-sm text-slate-400 font-normal mt-1">
-                      Baseado em v{editingTerm.version} → v{getNextVersion(editingTerm.version)}
-                    </p>
-                  </div>
-                ) : (
-                  '📄 Novo Termo de Uso'
-                )}
-              </h2>
-              <button 
-                onClick={() => setShowModal(false)} 
-                className="text-slate-400 hover:text-white text-xl transition-colors"
-              >
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">
-                  Versão {editingTerm && <span className="text-xs text-slate-500">(automática)</span>}
-                </label>
-                <input
-                  type="text"
-                  value={editingTerm ? getNextVersion(editingTerm.version) : formData.version}
-                  onChange={(e) => setFormData({ ...formData, version: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white text-sm focus:outline-none focus:border-[#4D6BFE] focus:ring-1 focus:ring-[#4D6BFE]"
-                  placeholder="Ex: 1.0.0"
-                  required
-                  disabled={!!editingTerm}
-                />
-                {editingTerm && (
-                  <p className="text-xs text-slate-500 mt-1">
-                    🔒 A versão é gerada automaticamente ao editar um termo existente
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">
-                  Conteúdo *
-                </label>
-                <textarea
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-white text-sm focus:outline-none focus:border-[#4D6BFE] focus:ring-1 focus:ring-[#4D6BFE] h-64 resize-y"
-                  placeholder="Digite os termos de uso..."
-                  required
-                />
-                <p className="text-xs text-slate-500 mt-1">
-                  {formData.content.length} caracteres
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="is_active"
-                  checked={formData.is_active}
-                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                  className="w-4 h-4 rounded border-slate-600 bg-slate-700/50 text-[#4D6BFE] focus:ring-[#4D6BFE] focus:ring-offset-0"
-                />
-                <label htmlFor="is_active" className="text-sm text-slate-300">
-                  Ativar este termo imediatamente
-                </label>
-              </div>
-
-              {formData.is_active && (
-                <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                  <p className="text-xs text-green-400">
-                    ✅ Ao ativar este termo, todos os outros serão desativados automaticamente.
-                  </p>
-                </div>
-              )}
-
-              {editingTerm && (
-                <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                  <p className="text-xs text-blue-400">
-                    💡 Você está criando uma nova versão do termo. O termo atual v{editingTerm.version} será mantido como histórico.
-                  </p>
-                </div>
-              )}
-
-              <div className="flex gap-3 pt-2">
+        <>
+          <div
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[1050]"
+            onClick={() => { setShowModal(false); resetForm(); }}
+          />
+          <div className="fixed inset-0 flex items-center justify-center z-[1060] p-4">
+            <div className="bg-slate-800/95 border border-slate-700/50 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+              {/* Header do modal */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700/50 bg-slate-800/50">
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  {editingTerm ? '✏️ Criar Nova Versão' : '📄 Novo Termo de Uso'}
+                </h3>
                 <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 py-2.5 px-4 bg-[#4D6BFE] hover:bg-[#3B5DE8] text-white font-medium text-sm rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => { setShowModal(false); resetForm(); }}
+                  className="text-slate-400 hover:text-slate-200 transition-colors"
                 >
-                  {loading ? 'Salvando...' : editingTerm ? '📝 Criar Nova Versão' : '💾 Salvar'}
+                  <span className="text-2xl">✕</span>
                 </button>
+              </div>
+
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)] custom-scrollbar">
+                {editingTerm && (
+                  <div className="flex items-start gap-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-400 text-sm mb-4">
+                    <span className="text-lg">ℹ️</span>
+                    <span>
+                      Baseado em <strong className="text-white">v{editingTerm.version}</strong> →{' '}
+                      <strong className="text-white">v{getNextVersion(editingTerm.version)}</strong>
+                    </span>
+                  </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
+                      <span className="text-blue-500">●</span>
+                      Versão {editingTerm && <span className="text-xs text-slate-500 normal-case">(automática)</span>}
+                    </label>
+                    <input
+                      type="text"
+                      value={editingTerm ? getNextVersion(editingTerm.version) : formData.version}
+                      onChange={(e) => setFormData({ ...formData, version: e.target.value })}
+                      className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      placeholder="Ex: 1.0.0"
+                      required
+                      disabled={!!editingTerm}
+                    />
+                    {editingTerm && (
+                      <small className="block text-xs text-slate-500 mt-1">
+                        🔒 A versão é gerada automaticamente ao editar um termo existente
+                      </small>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
+                      <span className="text-blue-500">●</span>
+                      Conteúdo <span className="text-red-400">*</span>
+                    </label>
+                    <textarea
+                      value={formData.content}
+                      onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                      className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all resize-y h-64"
+                      placeholder="Digite os termos de uso..."
+                      required
+                      disabled={actionLoading}
+                    />
+                    <small className="block text-xs text-slate-500 mt-1">
+                      {formData.content.length} caracteres
+                    </small>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="is_active"
+                      checked={formData.is_active}
+                      onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                      className="w-4 h-4 rounded border-slate-600 bg-slate-700/50 text-blue-500 focus:ring-blue-500 focus:ring-offset-0"
+                      disabled={actionLoading}
+                    />
+                    <label htmlFor="is_active" className="text-sm text-slate-300">
+                      Ativar este termo imediatamente
+                    </label>
+                  </div>
+
+                  {formData.is_active && (
+                    <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                      <p className="text-xs text-green-400">
+                        ✅ Ao ativar este termo, todos os outros serão desativados automaticamente.
+                      </p>
+                    </div>
+                  )}
+
+                  {editingTerm && (
+                    <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                      <p className="text-xs text-blue-400">
+                        💡 Você está criando uma nova versão do termo. O termo atual v{editingTerm.version} será mantido como histórico.
+                      </p>
+                    </div>
+                  )}
+                </form>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-700/50 bg-slate-800/50">
                 <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 py-2.5 px-4 bg-slate-700/30 hover:bg-slate-700/50 text-slate-300 font-medium text-sm rounded-lg transition-colors"
+                  onClick={() => { setShowModal(false); resetForm(); }}
+                  disabled={actionLoading}
+                  className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-600/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancelar
                 </button>
+                <button
+                  onClick={handleSubmit}
+                  disabled={actionLoading || !formData.content.trim()}
+                  className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 transition-all hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none disabled:hover:shadow-none flex items-center gap-2"
+                >
+                  {actionLoading ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      {editingTerm ? '📝 Criar Nova Versão' : '💾 Salvar'}
+                    </>
+                  )}
+                </button>
               </div>
-            </form>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

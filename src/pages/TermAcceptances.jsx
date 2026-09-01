@@ -17,13 +17,12 @@ export default function TermAcceptances({ termId, onBack }) {
 
   useEffect(() => {
     loadAcceptances();
-  }, [termId, currentPage]);
+  }, [termId, currentPage, perPage]);
 
   const loadAcceptances = async () => {
     setLoading(true);
     setError('');
     try {
-      // 🔥 URL CORRETA: /api/v1/admin/terms/acceptances
       const url = '/api/v1/admin/terms/acceptances';
       
       const response = await api.get(url, {
@@ -41,7 +40,6 @@ export default function TermAcceptances({ termId, onBack }) {
       setLastPage(data.meta?.last_page || 1);
       setPerPage(data.meta?.per_page || 10);
       
-      // Se tiver termId, buscar informações do termo
       if (termId) {
         try {
           const termResponse = await api.get(`/api/v1/admin/terms/${termId}`);
@@ -53,7 +51,6 @@ export default function TermAcceptances({ termId, onBack }) {
     } catch (err) {
       console.error('Erro ao carregar aceitações:', err);
       
-      // 🔥 Melhor tratamento de erro
       if (err.response?.status === 405) {
         setError('Erro 405: Método não permitido. Verifique a URL da requisição.');
       } else if (err.response?.status === 403) {
@@ -62,8 +59,6 @@ export default function TermAcceptances({ termId, onBack }) {
         setError('Rota não encontrada. Verifique a configuração do servidor.');
       } else if (err.response?.status === 401) {
         setError('Sessão expirada. Faça login novamente.');
-        // Opcional: redirecionar para login
-        // navigate('/login');
       } else {
         setError(err.response?.data?.message || 'Erro ao carregar usuários');
       }
@@ -100,9 +95,11 @@ export default function TermAcceptances({ termId, onBack }) {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-[#4D6BFE] border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-slate-400 text-sm">Carregando usuários...</p>
+        <div className="relative">
+          <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-6 h-6 border-4 border-blue-400/30 border-t-blue-400 rounded-full animate-spin" style={{ animationDelay: '150ms' }}></div>
+          </div>
         </div>
       </div>
     );
@@ -110,17 +107,14 @@ export default function TermAcceptances({ termId, onBack }) {
 
   return (
     <div className="p-6">
-      {/* Header com botão voltar */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div className="flex items-center gap-4">
           <button
             onClick={handleBack}
-            className="px-4 py-2 bg-slate-700/50 hover:bg-slate-700 text-white rounded-lg transition-colors flex items-center gap-2"
+            className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 font-semibold rounded-lg transition-all hover:-translate-y-0.5"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Voltar
+            ← Voltar
           </button>
           <div>
             <h1 className="text-2xl font-bold text-white flex items-center gap-3">
@@ -143,22 +137,17 @@ export default function TermAcceptances({ termId, onBack }) {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={loadAcceptances}
-            className="px-3 py-2 bg-slate-700/30 hover:bg-slate-700/50 text-slate-300 text-sm rounded-lg transition-colors flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Atualizar
-          </button>
-        </div>
+        <button
+          onClick={loadAcceptances}
+          className="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 font-semibold rounded-lg transition-all hover:-translate-y-0.5"
+        >
+          🔄 Atualizar
+        </button>
       </div>
 
       {/* Error */}
       {error && (
-        <div className="mb-4 p-4 bg-red-900/30 border border-red-700/50 rounded-xl text-red-300 text-sm flex items-center gap-2">
+        <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center gap-2">
           <span className="text-lg">⚠️</span>
           <span>{error}</span>
           <button 
@@ -171,14 +160,13 @@ export default function TermAcceptances({ termId, onBack }) {
       )}
 
       {/* Tabela */}
-      <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden">
+      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden transition-colors hover:border-blue-500/30">
         {acceptances.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="text-5xl mb-4">📭</div>
-            <p className="text-lg text-slate-400 font-medium">Nenhum usuário aceitou os termos ainda</p>
-            <p className="text-sm text-slate-500 mt-1">Aguardando aceitações dos usuários</p>
+          <div className="flex flex-col items-center justify-center py-12 text-slate-500">
+            <span className="text-5xl mb-4 opacity-60">📭</span>
+            <p className="text-sm">Nenhum usuário aceitou os termos ainda.</p>
             {termInfo && (
-              <p className="text-xs text-slate-600 mt-3">
+              <p className="text-xs text-slate-600 mt-2">
                 Termo v{termInfo.version} criado em {formatDate(termInfo.created_at)}
               </p>
             )}
@@ -186,61 +174,59 @@ export default function TermAcceptances({ termId, onBack }) {
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-slate-700/50 border-b border-slate-700/50">
+              <table className="w-full min-w-[800px]">
+                <thead className="bg-slate-800/80 sticky top-0 z-10">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    <th className="px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-400 border-b-2 border-slate-700/50 whitespace-nowrap">
                       Usuário
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider hidden sm:table-cell">
+                    <th className="px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-400 border-b-2 border-slate-700/50 whitespace-nowrap hidden sm:table-cell">
                       Email
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider hidden md:table-cell">
+                    <th className="px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-400 border-b-2 border-slate-700/50 whitespace-nowrap hidden md:table-cell">
                       Versão
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider hidden lg:table-cell">
+                    <th className="px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-400 border-b-2 border-slate-700/50 whitespace-nowrap hidden lg:table-cell">
                       Data de Aceitação
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    <th className="px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-400 border-b-2 border-slate-700/50 whitespace-nowrap">
                       Status
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-700/30">
+                <tbody>
                   {acceptances.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-700/30 transition-colors group">
-                      <td className="px-6 py-4">
+                    <tr key={item.id} className="border-b border-slate-700/30 hover:bg-slate-800/30 transition-all">
+                      <td className="px-[18px] py-3.5 align-middle">
                         <div>
-                          <p className="text-sm text-slate-300 font-medium">
-                            {item.user?.name || '—'}
-                          </p>
+                          <span className="text-slate-300 block">{item.user?.name || '—'}</span>
                           <div className="flex flex-wrap gap-1.5 mt-1">
                             {item.user?.is_admin && (
-                              <span className="inline-block px-2 py-0.5 text-[10px] bg-purple-500/20 text-purple-400 rounded">
+                              <span className="text-[10px] font-semibold text-purple-400 bg-purple-500/15 px-2 py-0.5 rounded-full">
                                 Admin
                               </span>
                             )}
                             {!item.user?.is_active && (
-                              <span className="inline-block px-2 py-0.5 text-[10px] bg-red-500/20 text-red-400 rounded">
+                              <span className="text-[10px] font-semibold text-red-400 bg-red-500/15 px-2 py-0.5 rounded-full">
                                 Inativo
                               </span>
                             )}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-400 hidden sm:table-cell">
+                      <td className="px-[18px] py-3.5 align-middle text-slate-400 hidden sm:table-cell">
                         {item.user?.email || '—'}
                       </td>
-                      <td className="px-6 py-4 hidden md:table-cell">
-                        <span className="px-2.5 py-1 text-xs bg-[#4D6BFE]/20 text-[#4D6BFE] rounded-full font-medium">
+                      <td className="px-[18px] py-3.5 align-middle hidden md:table-cell">
+                        <span className="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400">
                           v{item.term?.version || '—'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-400 hidden lg:table-cell">
+                      <td className="px-[18px] py-3.5 align-middle text-slate-400 hidden lg:table-cell">
                         {formatDate(item.accepted_at)}
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs bg-green-500/20 text-green-400 rounded-full">
+                      <td className="px-[18px] py-3.5 align-middle">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-400">
                           <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
                           Aceito
                         </span>
@@ -252,31 +238,29 @@ export default function TermAcceptances({ termId, onBack }) {
             </div>
             
             {/* Footer com paginação */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-6 py-4 border-t border-slate-700/30">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-6 py-4 border-t border-slate-700/50 bg-slate-800/30">
               <div className="flex items-center gap-4">
                 <p className="text-sm text-slate-400">
-                  <span className="font-medium text-slate-300">{total}</span> usuário{total !== 1 ? 's' : ''}
+                  <span className="font-semibold text-slate-300">{total}</span> usuário{total !== 1 ? 's' : ''}
                   {total > 0 && (
                     <span className="text-slate-500 ml-1">
                       (página {currentPage} de {lastPage})
                     </span>
                   )}
                 </p>
-                <div className="flex items-center gap-2">
-                  <select
-                    value={perPage}
-                    onChange={(e) => {
-                      setPerPage(Number(e.target.value));
-                      setCurrentPage(1);
-                    }}
-                    className="px-2 py-1 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-300 text-sm focus:outline-none focus:border-[#4D6BFE]"
-                  >
-                    <option value={10}>10</option>
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
-                    <option value={100}>100</option>
-                  </select>
-                </div>
+                <select
+                  value={perPage}
+                  onChange={(e) => {
+                    setPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="px-3 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+                >
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
               </div>
               
               {lastPage > 1 && (
@@ -284,33 +268,33 @@ export default function TermAcceptances({ termId, onBack }) {
                   <button
                     onClick={() => handlePageChange(1)}
                     disabled={currentPage === 1}
-                    className="px-3 py-1.5 bg-slate-700/30 hover:bg-slate-700/50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 text-sm rounded-lg transition-colors"
+                    className="px-3 py-1.5 bg-slate-700/50 hover:bg-slate-600/50 disabled:opacity-50 disabled:cursor-not-allowed text-slate-300 text-sm rounded-lg transition-all"
                   >
                     «
                   </button>
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="px-3 py-1.5 bg-slate-700/30 hover:bg-slate-700/50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 text-sm rounded-lg transition-colors"
+                    className="px-3 py-1.5 bg-slate-700/50 hover:bg-slate-600/50 disabled:opacity-50 disabled:cursor-not-allowed text-slate-300 text-sm rounded-lg transition-all"
                   >
                     ‹
                   </button>
                   
-                  <span className="px-4 py-1.5 bg-[#4D6BFE]/20 text-[#4D6BFE] text-sm font-medium rounded-lg">
+                  <span className="px-4 py-1.5 bg-blue-500/20 text-blue-400 text-sm font-semibold rounded-lg">
                     {currentPage}
                   </span>
                   
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === lastPage}
-                    className="px-3 py-1.5 bg-slate-700/30 hover:bg-slate-700/50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 text-sm rounded-lg transition-colors"
+                    className="px-3 py-1.5 bg-slate-700/50 hover:bg-slate-600/50 disabled:opacity-50 disabled:cursor-not-allowed text-slate-300 text-sm rounded-lg transition-all"
                   >
                     ›
                   </button>
                   <button
                     onClick={() => handlePageChange(lastPage)}
                     disabled={currentPage === lastPage}
-                    className="px-3 py-1.5 bg-slate-700/30 hover:bg-slate-700/50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 text-sm rounded-lg transition-colors"
+                    className="px-3 py-1.5 bg-slate-700/50 hover:bg-slate-600/50 disabled:opacity-50 disabled:cursor-not-allowed text-slate-300 text-sm rounded-lg transition-all"
                   >
                     »
                   </button>
