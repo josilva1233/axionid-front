@@ -5,7 +5,7 @@ import api from '../services/api';
 import Swal from 'sweetalert2';
 import TermTable from '../components/dashboard/TermTable';
 
-export default function TermManagement({ onViewUsers, filters = {} }) {
+export default function TermManagement({ onViewUsers, filters: externalFilters = {} }) {
   const navigate = useNavigate();
   const [terms, setTerms] = useState([]);
   const [filteredTerms, setFilteredTerms] = useState([]);
@@ -15,6 +15,17 @@ export default function TermManagement({ onViewUsers, filters = {} }) {
   const [editingTerm, setEditingTerm] = useState(null);
   const [acceptanceCounts, setAcceptanceCounts] = useState({});
   const [actionLoading, setActionLoading] = useState(false);
+  
+  // Estado local para garantir reatividade caso o componente pai não repasse os filtros corretamente
+  const [localFilters, setLocalFilters] = useState({
+    version: '',
+    status: '',
+    creator: ''
+  });
+
+  // Mescla os filtros externos com os locais
+  const filters = { ...localFilters, ...externalFilters };
+
   const [formData, setFormData] = useState({
     content: '',
     version: '',
@@ -93,9 +104,9 @@ export default function TermManagement({ onViewUsers, filters = {} }) {
       );
     }
 
-    // Filtro por Status (compatível com boolean, 1/0, '1'/'0')
-    if (filters.status) {
-      const targetIsActive = filters.status === 'active';
+    // Filtro por Status robusto (suporta 'active', 'inactive', boolean, 1/0)
+    if (filters.status && filters.status !== '') {
+      const targetIsActive = filters.status === 'active' || filters.status === true || filters.status === '1';
       filtered = filtered.filter(term => {
         const termActive = Boolean(Number(term.is_active));
         return termActive === targetIsActive;
