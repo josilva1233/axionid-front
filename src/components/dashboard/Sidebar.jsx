@@ -91,7 +91,6 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout, onTog
       label: 'Permissões',
       section: 'Segurança',
       visible: canViewPermissions,
-      visible: isAdmin, 
     },
     // 🔥 NOVO: TERMOS DE USO
     {
@@ -99,7 +98,7 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout, onTog
       icon: '📄',
       label: 'Termos de Uso',
       section: 'Segurança',
-      //visible: isAdmin, // Apenas admin pode ver
+      visible: isAdmin, // Apenas admin pode ver
     },
   ];
 
