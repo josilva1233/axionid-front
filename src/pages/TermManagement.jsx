@@ -395,35 +395,6 @@ useImperativeHandle(ref, () => ({
 
   return (
     <div className="p-4 md:p-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-            📄 Termos de Uso
-            <span className="text-sm font-normal text-slate-400">
-              ({filteredTerms.length} de {terms.length} termo{terms.length !== 1 ? 's' : ''})
-            </span>
-          </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Gerencie os termos de uso da plataforma
-          </p>
-        </div>
-      </div>
-
-      {/* Error */}
-      {error && (
-        <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center gap-2">
-          <span className="text-lg">⚠️</span>
-          <span>{error}</span>
-          <button 
-            onClick={() => setError('')}
-            className="ml-auto text-red-400 hover:text-red-300"
-          >
-            ✕
-          </button>
-        </div>
-      )}
-
       {/* Table */}
       <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden transition-colors hover:border-blue-500/30">
         <TermTable
