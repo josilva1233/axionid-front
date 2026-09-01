@@ -1,18 +1,19 @@
 // components/dashboard/UserDropdown.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import api from '../../services/api'; 
+import api from '../../services/api';
 
 const UserDropdown = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [showSettings, setShowSettings] = useState(false); // 🔥 NOVO
   const dropdownRef = useRef(null);
 
-  // 🔥 Tema – inicializado com a preferência do banco ou dark
+  // Tema – preferência do banco
   const [isDark, setIsDark] = useState(() => {
     return user?.theme_preference ? user.theme_preference === 'dark' : true;
   });
 
-  // 🔥 Aplica o tema ao carregar o componente
+  // Aplica o tema ao carregar
   useEffect(() => {
     if (user?.theme_preference) {
       const dark = user.theme_preference === 'dark';
@@ -21,12 +22,11 @@ const UserDropdown = ({ user, onLogout }) => {
     }
   }, [user]);
 
-  // 🔥 Alterna o tema e salva no banco via API
+  // Alterna o tema e salva no banco
   const toggleTheme = async () => {
     const newIsDark = !isDark;
     const newTheme = newIsDark ? 'dark' : 'light';
 
-    // Atualiza UI imediatamente
     setIsDark(newIsDark);
     document.documentElement.classList.toggle('dark', newIsDark);
 
@@ -34,7 +34,6 @@ const UserDropdown = ({ user, onLogout }) => {
       await api.put('/theme', { theme: newTheme });
     } catch (error) {
       console.error('Erro ao salvar tema:', error);
-      // Reverte em caso de erro
       setIsDark(!newIsDark);
       document.documentElement.classList.toggle('dark', !newIsDark);
     }
@@ -46,6 +45,7 @@ const UserDropdown = ({ user, onLogout }) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
         setShowDetails(false);
+        setShowSettings(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -70,20 +70,24 @@ const UserDropdown = ({ user, onLogout }) => {
           transition-all duration-300
           shadow-lg shadow-blue-500/20
           flex items-center justify-center uppercase
-          ${isOpen || showDetails ? 'ring-2 ring-blue-500/50 ring-offset-2 ring-offset-slate-900' : ''}
+          ${isOpen || showDetails || showSettings ? 'ring-2 ring-blue-500/50 ring-offset-2 ring-offset-slate-900' : ''}
         `}
         onClick={() => {
-          if (showDetails) setShowDetails(false);
-          else setIsOpen(!isOpen);
+          if (showDetails || showSettings) {
+            setShowDetails(false);
+            setShowSettings(false);
+          } else {
+            setIsOpen(!isOpen);
+          }
         }}
         type="button"
-        aria-expanded={isOpen || showDetails}
+        aria-expanded={isOpen || showDetails || showSettings}
       >
         {getInitials(user?.name)}
       </button>
 
-      {/* Menu Principal */}
-      {isOpen && !showDetails && (
+      {/* ============ MENU PRINCIPAL ============ */}
+      {isOpen && !showDetails && !showSettings && (
         <div
           className="absolute right-0 top-[calc(100%+8px)] z-[1050] min-w-[280px] max-w-[380px] 
                      bg-dropdown border border-dropdown-border rounded-xl shadow-2xl 
@@ -115,19 +119,16 @@ const UserDropdown = ({ user, onLogout }) => {
               Meus Detalhes
             </button>
 
-            {/* Configurações com toggle de tema */}
+            {/* 🔥 CONFIGURAÇÕES – agora abre submenu em vez de alternar diretamente */}
             <button
               type="button"
               className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-sm font-medium 
                          text-dropdown-text hover:text-dropdown-hover hover:bg-dropdown-hover-bg 
                          transition-all text-left"
-              onClick={toggleTheme}
+              onClick={() => setShowSettings(true)}
             >
               <span className="text-lg w-7 text-center">⚙️</span>
-              <span className="flex-1">Configurações</span>
-              <span className="text-xs bg-dropdown-badge px-2 py-0.5 rounded-full text-dropdown-dim">
-                {isDark ? '🌙 Escuro' : '☀️ Claro'}
-              </span>
+              Configurações
             </button>
 
             <button
@@ -144,12 +145,80 @@ const UserDropdown = ({ user, onLogout }) => {
         </div>
       )}
 
-      {/* Painel de Detalhes (inalterado) */}
+      {/* ============ PAINEL DE CONFIGURAÇÕES (SUBMENU) ============ */}
+      {showSettings && (
+        <div
+          className="absolute right-0 top-[calc(100%+8px)] z-[1050] min-w-[280px] max-w-[380px] 
+                     bg-dropdown border border-dropdown-border rounded-xl shadow-2xl 
+                     overflow-hidden backdrop-blur-sm
+                     animate-[dropdownSlideIn_0.25s_cubic-bezier(0.4,0,0.2,1)_forwards]"
+        >
+          <header className="flex items-center justify-between px-6 py-4 bg-dropdown-header border-b border-dropdown-border">
+            <h5 className="text-sm font-bold text-dropdown-text flex items-center gap-2">
+              <span>⚙️</span> Configurações
+            </h5>
+            <button
+              className="text-dropdown-dim hover:text-dropdown-text transition-colors"
+              onClick={() => setShowSettings(false)}
+            >
+              ✕
+            </button>
+          </header>
+
+          <main className="p-6 space-y-4">
+            {/* 🔥 SWITCH DE TEMA */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-dropdown-text">Tema</p>
+                <p className="text-xs text-dropdown-dim">
+                  {isDark ? 'Escuro (atual)' : 'Claro (atual)'}
+                </p>
+              </div>
+              <button
+                onClick={toggleTheme}
+                className={`
+                  relative w-14 h-8 rounded-full transition-colors duration-300
+                  ${isDark ? 'bg-blue-600' : 'bg-slate-600'}
+                  focus:outline-none focus:ring-2 focus:ring-blue-500/50
+                `}
+                role="switch"
+                aria-checked={isDark}
+              >
+                <span
+                  className={`
+                    absolute top-1 left-1 w-6 h-6 bg-white rounded-full 
+                    transition-transform duration-300 shadow-md
+                    ${isDark ? 'translate-x-6' : 'translate-x-0'}
+                  `}
+                />
+                <span className="sr-only">
+                  {isDark ? 'Ativar modo claro' : 'Ativar modo escuro'}
+                </span>
+              </button>
+            </div>
+
+            {/* Aqui você pode adicionar mais configurações no futuro */}
+          </main>
+
+          <footer className="px-6 py-4 border-t border-dropdown-border bg-dropdown-header">
+            <button
+              type="button"
+              className="w-full px-4 py-2.5 rounded-lg text-sm font-medium 
+                         text-dropdown-text hover:text-dropdown-hover 
+                         bg-dropdown-hover-bg hover:bg-dropdown-hover-bg/80 transition-all"
+              onClick={() => setShowSettings(false)}
+            >
+              ↩️ Voltar ao Menu
+            </button>
+          </footer>
+        </div>
+      )}
+
+      {/* ============ PAINEL DE DETALHES (inalterado) ============ */}
       {showDetails && (
         <div className="absolute right-0 top-[calc(100%+8px)] z-[1050] min-w-[320px] max-w-[420px] 
                         bg-dropdown border border-dropdown-border rounded-xl shadow-2xl 
                         overflow-hidden backdrop-blur-sm">
-          {/* ... conteúdo igual ao original ... */}
           <header className="flex items-center justify-between px-6 py-4 bg-dropdown-header border-b border-dropdown-border">
             <h5 className="text-sm font-bold text-dropdown-text flex items-center gap-2">
               <span>🪪</span> Minha Identidade
