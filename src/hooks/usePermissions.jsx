@@ -13,7 +13,8 @@ export function usePermissions() {
   const canViewOrders = hasPermission('menu.orders.view');
   const canViewAudit = hasPermission('menu.audit.view');
   const canViewPermissions = hasPermission('menu.permissions.view');
-  const canViewTerms = hasPermission('menu.terms.view'); // 🔥 NOVO
+  const canViewTerms = hasPermission('menu.terms.view');
+  const canViewAi = true; // 🔥 TODOS PODEM VER O ASSISTENTE
 
   // =========================================================
   // 🔥 PERMISSÕES DE AÇÃO - USUÁRIOS
@@ -57,7 +58,7 @@ export function usePermissions() {
   // 🔥 PERMISSÕES DE AÇÃO - TERMOS
   // =========================================================
   
-  const canManageTerms = hasPermission('terms.manage'); // 🔥 NOVO
+  const canManageTerms = hasPermission('terms.manage');
 
   // =========================================================
   // 🔥 UTILITÁRIOS
@@ -70,17 +71,18 @@ export function usePermissions() {
       'orders': canViewOrders,
       'audit': canViewAudit,
       'permissions': canViewPermissions,
-      'terms': canViewTerms, // 🔥 NOVO
+      'terms': canViewTerms,
+      'ai': canViewAi, // 🔥 ADICIONADO
     };
     return tabPermissions[tab] || false;
   };
 
   const canAccessAnyTab = () => {
-    return canViewUsers || canViewGroups || canViewOrders || canViewAudit || canViewPermissions || canViewTerms; // 🔥 NOVO
+    return canViewUsers || canViewGroups || canViewOrders || canViewAudit || canViewPermissions || canViewTerms || canViewAi; // 🔥 ADICIONADO
   };
 
   const getFirstAvailableTab = () => {
-    const tabs = ['users', 'groups', 'orders', 'audit', 'permissions', 'terms']; // 🔥 NOVO
+    const tabs = ['users', 'groups', 'orders', 'ai', 'audit', 'permissions', 'terms']; // 🔥 INCLUIR 'ai'
     for (const tab of tabs) {
       if (canAccessTab(tab)) {
         return tab;
@@ -100,7 +102,8 @@ export function usePermissions() {
     canViewOrders,
     canViewAudit,
     canViewPermissions,
-    canViewTerms, // 🔥 NOVO
+    canViewTerms,
+    canViewAi, // 🔥 EXPORTADO
     
     // Ações - Usuários
     canCreateUser,
@@ -126,7 +129,7 @@ export function usePermissions() {
     canViewAuditLogs,
     
     // Ações - Termos
-    canManageTerms, // 🔥 NOVO
+    canManageTerms,
     
     // Utilitários
     canAccessTab,
