@@ -25,7 +25,7 @@ export default function OperationView({ isDark = false }) {
     setIsTyping(true);
 
     try {
-      const response = await api.post("/ai/chat", { message: input });
+      const response = await api.post("/api/v1/ai/chat", { message: input });
       const aiMsg = response.data.message || "Desculpe, não consegui processar sua pergunta.";
       
       const aiResponse = { role: 'ai', content: aiMsg };
