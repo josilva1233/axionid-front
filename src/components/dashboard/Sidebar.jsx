@@ -2,7 +2,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { usePermissions } from '../../hooks/usePermissions';
 
-export default function Sidebar({ activeTab, setActiveTab, role, onLogout, onToggle }) {
+export default function Sidebar({ 
+  activeTab, 
+  setActiveTab, 
+  role, 
+  onLogout, 
+  onToggle,
+  isDark = false, // 🔥 NOVA PROP
+}) {
   // 🔥 USAR O HOOK DE PERMISSÕES
   const {
     canViewUsers,
@@ -53,6 +60,25 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout, onTog
     setIsCollapsed(newState);
     if (onToggle) onToggle(newState);
   };
+
+  // ============ CLASSES DE TEMA ============
+  const bgSidebar = isDark 
+    ? 'bg-slate-900/95 border-slate-700/50' 
+    : 'bg-white/95 border-gray-200/80';
+  const textBrand = isDark ? 'text-white' : 'text-gray-800';
+  const textBrandSpan = isDark ? 'text-blue-500' : 'text-blue-600';
+  const badgeRole = isDark 
+    ? 'bg-slate-800 text-slate-400' 
+    : 'bg-gray-200 text-gray-600';
+  const borderSubtle = isDark ? 'border-slate-700/50' : 'border-gray-200';
+  const textSection = isDark ? 'text-slate-500' : 'text-gray-400';
+  const textNavDefault = isDark ? 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700';
+  const textNavActive = isDark 
+    ? 'bg-blue-500/15 text-blue-400' 
+    : 'bg-blue-50 text-blue-700';
+  const indicatorActive = isDark ? 'bg-blue-500' : 'bg-blue-600';
+  const textFooter = isDark ? 'text-red-400 hover:text-red-300 hover:bg-red-500/10' : 'text-red-600 hover:text-red-700 hover:bg-red-50';
+  const textVersion = isDark ? 'text-slate-500' : 'text-gray-400';
 
   // ============ NAVEGAÇÃO COM PERMISSÕES ============
   const navItems = [
@@ -107,9 +133,11 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout, onTog
   // Se não houver itens visíveis, mostrar mensagem
   if (filteredNavItems.length === 0) {
     return (
-      <aside className="fixed left-0 top-0 h-screen w-[70px] z-[1000] bg-slate-900/95 border-r border-slate-700/50">
+      <aside className={`fixed left-0 top-0 h-screen w-[70px] z-[1000] ${bgSidebar} border-r`}>
         <div className="flex items-center justify-center h-full">
-          <span className="text-slate-500 text-xs text-center">Sem<br/>acesso</span>
+          <span className={`text-xs text-center ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
+            Sem<br/>acesso
+          </span>
         </div>
       </aside>
     );
@@ -127,9 +155,8 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout, onTog
     <aside 
       className={`
         fixed left-0 top-0 h-screen z-[1000]
-        bg-slate-900/95 backdrop-blur-sm
-        border-r border-slate-700/50
-        shadow-2xl
+        ${bgSidebar} backdrop-blur-sm
+        border-r shadow-2xl
         transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
         overflow-hidden
         flex flex-col
@@ -139,17 +166,17 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout, onTog
       onMouseLeave={handleMouseLeave}
     >
       {/* ============ BRAND ============ */}
-      <div className="relative px-6 py-4 min-h-[70px] border-b border-slate-700/50 flex items-center justify-between">
+      <div className={`relative px-6 py-4 min-h-[70px] border-b ${borderSubtle} flex items-center justify-between`}>
         <div className="flex items-center">
           {!isCollapsed ? (
-            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-              Axion<span className="text-blue-500">ID</span>
-              <small className="text-[10px] font-semibold uppercase bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">
+            <h1 className={`text-2xl font-bold ${textBrand} flex items-center gap-2`}>
+              Axion<span className={textBrandSpan}>ID</span>
+              <small className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full ${badgeRole}`}>
                 {isAdmin ? 'ADMIN' : 'USER'}
               </small>
             </h1>
           ) : (
-            <span className="text-3xl font-bold text-blue-500">⚡</span>
+            <span className={`text-3xl font-bold ${textBrandSpan}`}>⚡</span>
           )}
         </div>
 
@@ -179,7 +206,7 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout, onTog
           <div key={section} className="mb-3">
             {/* Título da seção */}
             {!isCollapsed && (
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 px-3 py-2">
+              <p className={`text-[10px] font-semibold uppercase tracking-wider ${textSection} px-3 py-2`}>
                 {section}
               </p>
             )}
@@ -196,8 +223,8 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout, onTog
                   relative
                   ${isCollapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5'}
                   ${activeTab === item.id 
-                    ? 'bg-blue-500/15 text-blue-400' 
-                    : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                    ? textNavActive
+                    : textNavDefault
                   }
                 `}
                 onClick={() => setActiveTab(item.id)}
@@ -217,12 +244,16 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout, onTog
 
                 {/* Indicador de ativo */}
                 {activeTab === item.id && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-8 bg-blue-500 rounded-r"></span>
+                  <span className={`absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-8 ${indicatorActive} rounded-r`}></span>
                 )}
 
                 {/* Badge para Termos de Uso (se houver termos pendentes) */}
                 {item.id === 'terms' && !isCollapsed && (
-                  <span className="ml-auto text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">
+                  <span className={`ml-auto text-[10px] px-2 py-0.5 rounded-full ${
+                    isDark 
+                      ? 'bg-blue-500/20 text-blue-400' 
+                      : 'bg-blue-100 text-blue-700'
+                  }`}>
                     Novo
                   </span>
                 )}
@@ -234,7 +265,7 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout, onTog
 
       {/* ============ FOOTER ============ */}
       <div className={`
-        border-t border-slate-700/50
+        border-t ${borderSubtle}
         ${isCollapsed ? 'px-2 py-3' : 'px-4 py-4'}
       `}>
         <button
@@ -243,8 +274,7 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout, onTog
             flex items-center gap-3
             w-full rounded-md
             transition-all duration-200
-            text-red-400 hover:text-red-300
-            hover:bg-red-500/10
+            ${textFooter}
             ${isCollapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5'}
           `}
           title={isCollapsed ? 'Sair do Sistema' : ''}
@@ -258,7 +288,7 @@ export default function Sidebar({ activeTab, setActiveTab, role, onLogout, onTog
         </button>
 
         {!isCollapsed && (
-          <div className="text-center text-[10px] text-slate-500 mt-3">
+          <div className={`text-center text-[10px] ${textVersion} mt-3`}>
             v1.0.4-stable
           </div>
         )}

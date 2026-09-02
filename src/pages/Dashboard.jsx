@@ -844,6 +844,7 @@ export default function Dashboard() {
         onLogout={handleLogout}
         setActiveTab={handleTabChange}
         onToggle={setSidebarCollapsed}
+        isDark={isDark} 
       />
 
       <div
@@ -1037,6 +1038,7 @@ export default function Dashboard() {
               allAvailablePermissions={allPermissions}
               onAddPermission={handleAddPermissionToGroup}
               onRemovePermission={handleRemovePermissionFromGroup}
+              isDark={isDark}
             />
           ) : (
             <>
@@ -1062,16 +1064,17 @@ export default function Dashboard() {
                   handleUpdateUser(userId, formData);
                 }}
                 onBack={() => { setSelectedUser(null); setIsEditing(false); }}
+                isDark={isDark}
               />
 
               {activeTab === "permissions" && showPermissionModal && (
-                <PermissionForm loading={actionLoading} onCancel={() => setShowPermissionModal(false)} onSave={handleCreatePermission} />
+                <PermissionForm loading={actionLoading} onCancel={() => setShowPermissionModal(false)} onSave={handleCreatePermission} isDark={isDark} />
               )}
 
               {activeTab === "orders" && (
                 <>
                   {showOrderForm && (
-                    <ServiceOrderForm groups={groups} onSuccess={() => { setShowOrderForm(false); loadServiceOrders(ordersCurrentPage); }} onCancel={() => setShowOrderForm(false)} />
+                    <ServiceOrderForm groups={groups} onSuccess={() => { setShowOrderForm(false); loadServiceOrders(ordersCurrentPage); }} onCancel={() => setShowOrderForm(false)} isDark={isDark}/>
                   )}
 
                   {!showOrderForm && selectedOrder && selectedOrder.id && (
@@ -1106,7 +1109,7 @@ export default function Dashboard() {
                             setActionLoading(false);
                           }
                         }
-                      }}
+                      }}isDark={isDark} 
                     />
                   )}
 
@@ -1119,6 +1122,7 @@ export default function Dashboard() {
                         onEdit={handleEditOrder}
                         onDelete={handleDeleteOrder}
                         currentUser={currentUser}
+                        isDark={isDark}
                       />
                       {ordersPagination?.last > 1 && (
                         <Pagination
@@ -1127,6 +1131,7 @@ export default function Dashboard() {
                           total={ordersPagination.total}
                           onPageChange={handleOrdersPageChange}
                           loading={loading}
+                          isDark={isDark} 
                         />
                       )}
                     </div>
@@ -1141,22 +1146,24 @@ export default function Dashboard() {
                       termId={selectedTermId}
                       onBack={handleBackFromAcceptances}
                       filters={filters}
+                      isDark={isDark}
                     />
                   ) : (
                     <TermManagement 
                       ref={termManagementRef} 
                       onViewUsers={handleViewTermAcceptances}
                       filters={filters}
+                      isDark={isDark}
                     />
                   )}
                 </div>
               )}
 
-              {activeTab === "ai" && (
-                <div className={`${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/50 border-gray-200'} border rounded-xl overflow-hidden`}>
-                  <AIChat />
-                </div>
-              )}
+{activeTab === "ai" && (
+  <div className={`${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200'} border rounded-xl overflow-hidden`}>
+    <AIChat isDark={isDark} />
+  </div>
+)}
 
               <div className={`relative ${loading || actionLoading ? "opacity-60 pointer-events-none" : ""}`}>
                 {(loading || actionLoading) && (
@@ -1186,7 +1193,7 @@ export default function Dashboard() {
 
                   {activeTab === "audit" && (
                     <>
-                      <AuditTable logs={auditLogs} />
+                      <AuditTable logs={auditLogs} isDark={isDark}  />
                       <Pagination currentPage={auditPagination?.current || 1} lastPage={auditPagination?.last || 1} total={auditPagination?.total || 0} onPageChange={handleAuditPageChange} loading={loading} />
                     </>
                   )}
@@ -1209,10 +1216,11 @@ export default function Dashboard() {
                           }
                         }}
                         loading={actionLoading}
+                        isDark={isDark}
                       />
                     ) : (
                       <>
-                        <GroupTable groups={groups} onViewDetail={setSelectedGroupId} isGlobalAdmin={isGlobalAdmin} currentUser={currentUser} />
+                        <GroupTable groups={groups} onViewDetail={setSelectedGroupId} isGlobalAdmin={isGlobalAdmin} currentUser={currentUser} isDark={isDark} />
                         <Pagination currentPage={groupsPagination?.current || 1} lastPage={groupsPagination?.last || 1} total={groupsPagination?.total || 0} onPageChange={handleGroupsPageChange} loading={loading} />
                       </>
                     )
@@ -1230,7 +1238,7 @@ export default function Dashboard() {
                       />
                     ) : (
                       <>
-                        <PermissionTable permissions={permissions} loading={loading} currentUser={currentUser} onViewDetail={handleOpenPermissionDetail} onDelete={handleDeletePermission} />
+                        <PermissionTable permissions={permissions} loading={loading} currentUser={currentUser} onViewDetail={handleOpenPermissionDetail} onDelete={handleDeletePermission} isDark={isDark} />
                         {permissionsPagination?.last > 1 && (
                           <Pagination currentPage={permissionsPagination.current} lastPage={permissionsPagination.last} total={permissionsPagination.total} onPageChange={handlePermissionsPageChange} loading={loading} />
                         )}

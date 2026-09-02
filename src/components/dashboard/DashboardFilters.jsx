@@ -10,22 +10,36 @@ export default function DashboardFilters({
   onNewGroup,
   onNewPermission,
   onNewOrder,
-  onNewTerm,       // <-- ADICIONE
-  onViewAllTerms,  // <-- ADICIONE
-  showTermAcceptances ,
+  onNewTerm,
+  onViewAllTerms,
+  showTermAcceptances,
   isEditing,
   onBack,
   setIsEditing,
   handleSave,
   actionLoading,
-  user
+  user,
+  isDark = false, // 🔥 NOVA PROP
 }) {
   const isUserDetailView = !!user;
+
+  // ============ CLASSES DE TEMA ============
+  const containerBg = isDark
+    ? 'bg-slate-800/50 border-slate-700/50'
+    : 'bg-white/80 border-gray-200';
+  const labelClass = isDark ? 'text-slate-400' : 'text-gray-500';
+  const inputBg = isDark
+    ? 'bg-slate-800/50 border-slate-700/50 text-slate-200 placeholder-slate-500'
+    : 'bg-white border-gray-300 text-gray-800 placeholder-gray-400';
+  const selectBg = isDark
+    ? 'bg-slate-800/50 border-slate-700/50 text-slate-200'
+    : 'bg-white border-gray-300 text-gray-800';
+  const focusRing = 'focus:ring-2 focus:ring-[#4D6BFE]/50 focus:border-[#4D6BFE]/50';
 
   // ============ RENDERIZADORES ============
   const renderInput = (label, name, placeholder = "") => (
     <div className="flex-1 min-w-[160px] max-w-[240px]" key={name}>
-      <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
+      <label className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide mb-2 ${labelClass}`}>
         <span className="text-[#4D6BFE]">●</span>
         {label}
       </label>
@@ -36,7 +50,7 @@ export default function DashboardFilters({
         onChange={(e) => {
           if (onFilterChange) onFilterChange(e);
         }}
-        className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-[#4D6BFE]/50 focus:border-[#4D6BFE]/50 transition-all"
+        className={`w-full px-3 py-2.5 ${inputBg} rounded-lg text-sm ${focusRing} transition-all`}
         placeholder={placeholder}
         disabled={actionLoading}
       />
@@ -45,7 +59,7 @@ export default function DashboardFilters({
 
   const renderSelect = (label, name, options) => (
     <div className="flex-1 min-w-[160px] max-w-[240px]" key={name}>
-      <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
+      <label className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide mb-2 ${labelClass}`}>
         <span className="text-[#4D6BFE]">●</span>
         {label}
       </label>
@@ -55,7 +69,7 @@ export default function DashboardFilters({
         onChange={(e) => {
           if (onFilterChange) onFilterChange(e);
         }}
-        className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4D6BFE]/50 focus:border-[#4D6BFE]/50 transition-all appearance-none"
+        className={`w-full px-3 py-2.5 ${selectBg} rounded-lg text-sm ${focusRing} transition-all appearance-none`}
         disabled={actionLoading}
       >
         <option value="">Todos</option>
@@ -68,9 +82,14 @@ export default function DashboardFilters({
 
   const renderButton = (onClick, icon, label, variant = "primary") => {
     const styles = {
-      primary: "bg-[#4D6BFE] hover:bg-[#3B5DE8] text-white shadow-lg shadow-[#4D6BFE]/20 hover:shadow-[#4D6BFE]/40",
-      secondary: "bg-slate-700/50 hover:bg-slate-600/50 text-slate-300",
-      danger: "bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-600/20",
+      primary:
+        "bg-[#4D6BFE] hover:bg-[#3B5DE8] text-white shadow-lg shadow-[#4D6BFE]/20 hover:shadow-[#4D6BFE]/40",
+      secondary: isDark
+        ? "bg-slate-700/50 hover:bg-slate-600/50 text-slate-300"
+        : "bg-gray-200 hover:bg-gray-300 text-gray-700",
+      danger: isDark
+        ? "bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-600/20"
+        : "bg-red-50 hover:bg-red-100 text-red-600 border border-red-200",
     };
 
     return (
@@ -142,33 +161,28 @@ export default function DashboardFilters({
         </div>
       </>
     ),
-// Modifique a aba "terms" dentro do objeto tabConfigs:
-terms: (
-  showTermAcceptances ? (
-    // Filtros para a tela de Usuários que aceitaram
-    <>
-      {renderInput("Buscar Usuário", "user", "Digite o nome...")}
-      {renderInput("Data Início", "start_date", "YYYY-MM-DD")}
-      {renderInput("Data Fim", "end_date", "YYYY-MM-DD")}
-    </>
-  ) : (
-    // Filtros originais da tela de Termos
-    <>
-      {renderInput("Buscar por Versão", "version", "Ex: 1.0.0...")}
-      {renderSelect("Status", "status", [
-        { value: "active", label: "✅ Ativo" },
-        { value: "inactive", label: "⛔ Inativo" },
-      ])}
-      {renderInput("Criado por", "creator", "Digite o nome...")}
-      <div className="flex-1 min-w-[160px] max-w-[240px]">
-        {renderButton(onNewTerm, "➕", "Novo Termo", "primary")}
-      </div>
-      <div className="flex-1 min-w-[160px] max-w-[240px]">
-        {renderButton(onViewAllTerms, "👥", "Ver Todos", "secondary")}
-      </div>
-    </>
-  )
-),
+    terms: showTermAcceptances ? (
+      <>
+        {renderInput("Buscar Usuário", "user", "Digite o nome...")}
+        {renderInput("Data Início", "start_date", "YYYY-MM-DD")}
+        {renderInput("Data Fim", "end_date", "YYYY-MM-DD")}
+      </>
+    ) : (
+      <>
+        {renderInput("Buscar por Versão", "version", "Ex: 1.0.0...")}
+        {renderSelect("Status", "status", [
+          { value: "active", label: "✅ Ativo" },
+          { value: "inactive", label: "⛔ Inativo" },
+        ])}
+        {renderInput("Criado por", "creator", "Digite o nome...")}
+        <div className="flex-1 min-w-[160px] max-w-[240px]">
+          {renderButton(onNewTerm, "➕", "Novo Termo", "primary")}
+        </div>
+        <div className="flex-1 min-w-[160px] max-w-[240px]">
+          {renderButton(onViewAllTerms, "👥", "Ver Todos", "secondary")}
+        </div>
+      </>
+    ),
     audit: role === "admin" && (
       <>
         {renderInput("Usuário / E-mail", "user", "Ex: joao@email.com...")}
@@ -190,7 +204,7 @@ terms: (
 
   // ============ RENDER ============
   return (
-    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-6 transition-colors hover:border-[#4D6BFE]/30">
+    <div className={`border rounded-xl p-6 mb-6 transition-colors hover:border-[#4D6BFE]/30 ${containerBg}`}>
       <div className="flex flex-wrap gap-3 items-end">
         {isUserDetailView ? (
           <>
@@ -215,7 +229,11 @@ terms: (
               <div className="flex-1 min-w-[160px] max-w-[240px]">
                 <button
                   onClick={onClear}
-                  className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                  className={`flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 ${
+                    isDark
+                      ? 'bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-600/20'
+                      : 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200'
+                  }`}
                   disabled={actionLoading}
                 >
                   <span>🧹</span>

@@ -15,8 +15,60 @@ export default function GroupDetail({
   allAvailablePermissions = [],
   currentUserId,
   isSystemAdmin,
+  isDark = false, // 🔥 NOVA PROP
 }) {
   const [emailToAdd, setEmailToAdd] = useState("");
+
+  // ============ CLASSES DE TEMA ============
+  const bgPage = isDark ? 'bg-slate-900' : 'bg-gray-100';
+  const bgHeader = isDark 
+    ? 'from-slate-800/50 to-slate-900/50 border-slate-700/50' 
+    : 'from-gray-100/80 to-white border-gray-200';
+  const bgCard = isDark 
+    ? 'bg-slate-800/50 border-slate-700/50' 
+    : 'bg-white/80 border-gray-200';
+  const bgCardHeader = isDark 
+    ? 'bg-slate-800/30 border-slate-700/50' 
+    : 'bg-gray-100/80 border-gray-200';
+  const bgTableHeader = isDark ? 'bg-slate-800/50' : 'bg-gray-100/80';
+  const borderRow = isDark 
+    ? 'border-slate-700/30 hover:bg-slate-800/30' 
+    : 'border-gray-100 hover:bg-gray-50';
+  const textHeading = isDark ? 'text-white' : 'text-gray-800';
+  const textSub = isDark ? 'text-slate-400' : 'text-gray-500';
+  const textMuted = isDark ? 'text-slate-500' : 'text-gray-400';
+  const textBody = isDark ? 'text-slate-200' : 'text-gray-700';
+  const textLabel = isDark ? 'text-slate-400' : 'text-gray-500';
+  const borderColor = isDark ? 'border-slate-700/50' : 'border-gray-200';
+  const bgInput = isDark 
+    ? 'bg-slate-800/50 border-slate-700/50 text-slate-200 placeholder-slate-500' 
+    : 'bg-white border-gray-300 text-gray-800 placeholder-gray-400';
+  const focusRing = 'focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50';
+  const btnBack = isDark 
+    ? 'border-slate-700/50 text-slate-400 hover:bg-slate-800/50 hover:text-slate-200' 
+    : 'border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-800';
+  const btnDelete = isDark 
+    ? 'text-red-400 bg-red-500/10 border-red-500/20 hover:bg-red-500/20 hover:text-red-300' 
+    : 'text-red-600 bg-red-50 border-red-200 hover:bg-red-100 hover:text-red-700';
+  const badgeAdmin = isDark 
+    ? 'bg-purple-500/20 text-purple-400' 
+    : 'bg-purple-100 text-purple-700';
+  const badgeMember = isDark 
+    ? 'bg-slate-700/50 text-slate-300' 
+    : 'bg-gray-200 text-gray-700';
+  const btnPromote = isDark 
+    ? 'text-green-400 bg-green-500/10 border-green-500/20 hover:bg-green-500/20' 
+    : 'text-green-700 bg-green-50 border-green-200 hover:bg-green-100';
+  const btnDemote = isDark 
+    ? 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20 hover:bg-yellow-500/20' 
+    : 'text-yellow-700 bg-yellow-50 border-yellow-200 hover:bg-yellow-100';
+  const btnRemove = isDark 
+    ? 'text-red-400 bg-red-500/10 border-red-500/20 hover:bg-red-500/20' 
+    : 'text-red-600 bg-red-50 border-red-200 hover:bg-red-100';
+  const dangerZoneBg = isDark 
+    ? 'bg-slate-800/50 border-red-500/20' 
+    : 'bg-gray-50 border-red-200';
+  const textEmpty = isDark ? 'text-slate-400' : 'text-gray-500';
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -35,13 +87,13 @@ export default function GroupDetail({
   // ============ LOADING ============
   if (!group) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-slate-900 rounded-xl">
+      <div className={`flex flex-col items-center justify-center min-h-[60vh] ${bgPage} rounded-xl`}>
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
-          <p className="text-slate-400">Carregando dados do grupo...</p>
+          <p className={`${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Carregando dados do grupo...</p>
           <button
             onClick={onBack}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-700/50 bg-transparent text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-all"
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-transparent transition-all ${btnBack}`}
           >
             ← Voltar
           </button>
@@ -57,34 +109,34 @@ export default function GroupDetail({
 
   // ============ RENDER ============
   return (
-    <div className="bg-slate-900 rounded-xl min-h-screen">
+    <div className={`${bgPage} rounded-xl min-h-screen`}>
       {/* ============ HEADER ============ */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-5 bg-gradient-to-r from-slate-800/50 to-slate-900/50 border-b border-slate-700/50 rounded-t-xl">
+      <div className={`flex flex-wrap items-center justify-between gap-3 px-6 py-5 bg-gradient-to-r ${bgHeader} border-b rounded-t-xl`}>
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <button
             onClick={onBack}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-700/50 bg-transparent text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-all whitespace-nowrap text-sm"
+            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border bg-transparent transition-all whitespace-nowrap text-sm ${btnBack}`}
           >
             ← Voltar
           </button>
 
-          <div className="w-px h-8 bg-slate-700/50"></div>
+          <div className={`w-px h-8 ${isDark ? 'bg-slate-700/50' : 'bg-gray-300'}`}></div>
 
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 min-w-[56px] rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-2xl font-bold text-white shadow-lg shadow-blue-500/20">
               {group.name?.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">
+              <h2 className={`text-xl font-bold ${textHeading}`}>
                 Gerenciar Grupo: <span className="text-blue-400">{group.name?.toUpperCase()}</span>
               </h2>
-              <div className="flex flex-wrap items-center gap-3 text-sm text-slate-400">
+              <div className={`flex flex-wrap items-center gap-3 text-sm ${textSub}`}>
                 <span className="font-mono text-xs">ID: {group.id}</span>
                 <span className="flex items-center gap-1">
                   👥 {group.users?.length || 0} membros
                 </span>
                 {group.description && (
-                  <span className="text-slate-500">{group.description}</span>
+                  <span className={`${isDark ? 'text-slate-500' : 'text-gray-400'}`}>{group.description}</span>
                 )}
               </div>
             </div>
@@ -96,7 +148,7 @@ export default function GroupDetail({
             <button
               onClick={handleDelete}
               disabled={actionLoading}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 hover:text-red-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border transition-all disabled:opacity-50 disabled:cursor-not-allowed ${btnDelete}`}
             >
               🗑️ {actionLoading ? "..." : "Excluir Grupo"}
             </button>
@@ -108,24 +160,26 @@ export default function GroupDetail({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
         {/* ============ COLUNA ESQUERDA - MEMBROS ============ */}
         <div className="lg:col-span-2">
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700/50 bg-slate-800/30">
-              <h5 className="text-sm font-bold text-white flex items-center gap-2">
+          <div className={`border rounded-xl overflow-hidden ${bgCard}`}>
+            <div className={`flex items-center justify-between px-6 py-4 border-b ${bgCardHeader}`}>
+              <h5 className={`text-sm font-bold flex items-center gap-2 ${textHeading}`}>
                 👥 Membros Atuais
               </h5>
-              <span className="text-xs font-semibold text-blue-400 bg-blue-500/15 px-3 py-1 rounded-full">
+              <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                isDark ? 'text-blue-400 bg-blue-500/15' : 'text-blue-700 bg-blue-100'
+              }`}>
                 {group.users?.length || 0} membros
               </span>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm">
-                <thead className="bg-slate-800/50">
+                <thead className={bgTableHeader}>
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">NOME</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">FUNÇÃO</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">E-MAIL</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-400">AÇÕES</th>
+                    <th className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide ${textLabel}`}>NOME</th>
+                    <th className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide ${textLabel}`}>FUNÇÃO</th>
+                    <th className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide ${textLabel}`}>E-MAIL</th>
+                    <th className={`px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide ${textLabel}`}>AÇÕES</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -135,15 +189,17 @@ export default function GroupDetail({
                       const canManageUser = canManage && !isCurrentUser;
 
                       return (
-                        <tr key={user.id} className="border-b border-slate-700/30 hover:bg-slate-800/30 transition-all">
+                        <tr key={user.id} className={`border-b transition-all ${borderRow}`}>
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-2">
                               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-xs font-bold text-white">
                                 {user.name?.charAt(0).toUpperCase()}
                               </div>
-                              <strong className="text-white">{user.name}</strong>
+                              <strong className={textHeading}>{user.name}</strong>
                               {isCurrentUser && (
-                                <span className="text-[10px] font-semibold text-blue-400 bg-blue-500/15 px-2 py-0.5 rounded-full">
+                                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                                  isDark ? 'text-blue-400 bg-blue-500/15' : 'text-blue-700 bg-blue-100'
+                                }`}>
                                   Você
                                 </span>
                               )}
@@ -151,14 +207,14 @@ export default function GroupDetail({
                           </td>
                           <td className="px-4 py-3">
                             <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
-                              user.pivot?.role === "admin"
-                                ? "bg-purple-500/20 text-purple-400"
-                                : "bg-slate-700/50 text-slate-300"
+                              user.pivot?.role === "admin" ? badgeAdmin : badgeMember
                             }`}>
                               {user.pivot?.role === "admin" ? "Administrador" : "Membro"}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-slate-400 text-sm">{user.email}</td>
+                          <td className={`px-4 py-3 text-sm ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>
+                            {user.email}
+                          </td>
                           <td className="px-4 py-3 text-right">
                             <div className="flex items-center justify-end gap-1 flex-wrap">
                               {canManageUser && (
@@ -167,7 +223,7 @@ export default function GroupDetail({
                                     <button
                                       onClick={() => onDemoteUser && onDemoteUser(user.id)}
                                       disabled={actionLoading}
-                                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium text-yellow-400 bg-yellow-500/10 border border-yellow-500/20 hover:bg-yellow-500/20 transition-all"
+                                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium border transition-all ${btnDemote}`}
                                       title="Remover privilégios de administrador"
                                     >
                                       🛡️ Revogar Admin
@@ -176,7 +232,7 @@ export default function GroupDetail({
                                     <button
                                       onClick={() => onPromoteUser && onPromoteUser(user.id)}
                                       disabled={actionLoading}
-                                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium text-green-400 bg-green-500/10 border border-green-500/20 hover:bg-green-500/20 transition-all"
+                                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium border transition-all ${btnPromote}`}
                                       title="Promover a administrador"
                                     >
                                       ⭐ Tornar Admin
@@ -185,7 +241,7 @@ export default function GroupDetail({
                                   <button
                                     onClick={() => onRemoveUser(user.id, user.name)}
                                     disabled={actionLoading}
-                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-all"
+                                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium border transition-all ${btnRemove}`}
                                     title="Remover do grupo"
                                   >
                                     ❌ Remover
@@ -193,12 +249,12 @@ export default function GroupDetail({
                                 </>
                               )}
                               {!canManageUser && isCurrentUser && (
-                                <span className="inline-flex items-center gap-1 text-xs text-slate-500">
+                                <span className={`inline-flex items-center gap-1 text-xs ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
                                   🔒 Você
                                 </span>
                               )}
                               {!canManageUser && !isCurrentUser && (
-                                <span className="inline-flex items-center gap-1 text-xs text-slate-500">
+                                <span className={`inline-flex items-center gap-1 text-xs ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
                                   🔒 Restrito
                                 </span>
                               )}
@@ -209,7 +265,7 @@ export default function GroupDetail({
                     })
                   ) : (
                     <tr>
-                      <td colSpan="4" className="px-6 py-8 text-center text-slate-400">
+                      <td colSpan="4" className={`px-6 py-8 text-center ${textEmpty}`}>
                         <div className="flex flex-col items-center gap-2">
                           <span className="text-3xl">👥</span>
                           <p>Nenhum membro vinculado a este grupo.</p>
@@ -225,26 +281,26 @@ export default function GroupDetail({
 
         {/* ============ COLUNA DIREITA - ADICIONAR MEMBRO ============ */}
         <div className="space-y-4">
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
-            <h5 className="text-sm font-bold text-white flex items-center gap-2 mb-4">
+          <div className={`border rounded-xl p-6 ${bgCard}`}>
+            <h5 className={`text-sm font-bold flex items-center gap-2 mb-4 ${textHeading}`}>
               ➕ Adicionar Membro
             </h5>
 
             <form onSubmit={handleSubmit} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
+                <label className={`block text-xs font-semibold uppercase tracking-wide mb-1.5 ${textLabel}`}>
                   📧 E-mail do Usuário
                 </label>
                 <input
                   type="email"
-                  className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`w-full px-3 py-2.5 ${bgInput} rounded-lg text-sm ${focusRing} transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
                   value={emailToAdd}
                   onChange={(e) => setEmailToAdd(e.target.value)}
                   placeholder="usuario@email.com"
                   required
                   disabled={!canManage || actionLoading}
                 />
-                <small className="block text-xs text-slate-500 mt-1">
+                <small className={`block text-xs mt-1 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
                   Digite o e-mail corporativo do usuário para adicioná-lo ao grupo
                 </small>
               </div>
@@ -268,25 +324,27 @@ export default function GroupDetail({
             </form>
 
             {!canManage && (
-              <div className="mt-4 flex items-center gap-2 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-yellow-400 text-sm">
+              <div className={`mt-4 flex items-center gap-2 p-3 rounded-lg text-sm ${
+                isDark ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400' : 'bg-yellow-50 border-yellow-200 text-yellow-700'
+              } border`}>
                 ⚠️ Você não tem permissão para gerenciar este grupo
               </div>
             )}
           </div>
 
           {/* Informações do Grupo */}
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
-            <h5 className="text-sm font-bold text-white flex items-center gap-2 mb-4">
+          <div className={`border rounded-xl p-6 ${bgCard}`}>
+            <h5 className={`text-sm font-bold flex items-center gap-2 mb-4 ${textHeading}`}>
               ℹ️ Informações do Grupo
             </h5>
             <div className="space-y-3">
               <div>
-                <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wide">Criado por</span>
-                <span className="text-slate-200">{group.creator?.name || "Sistema"}</span>
+                <span className={`block text-xs font-semibold uppercase tracking-wide ${textLabel}`}>Criado por</span>
+                <span className={isDark ? 'text-slate-200' : 'text-gray-800'}>{group.creator?.name || "Sistema"}</span>
               </div>
               <div>
-                <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wide">Data de criação</span>
-                <span className="text-slate-200">
+                <span className={`block text-xs font-semibold uppercase tracking-wide ${textLabel}`}>Data de criação</span>
+                <span className={isDark ? 'text-slate-200' : 'text-gray-800'}>
                   {new Date(group.created_at).toLocaleDateString("pt-BR", {
                     day: '2-digit',
                     month: '2-digit',
@@ -296,8 +354,8 @@ export default function GroupDetail({
               </div>
               {group.description && (
                 <div>
-                  <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wide">Descrição</span>
-                  <span className="text-slate-200">{group.description}</span>
+                  <span className={`block text-xs font-semibold uppercase tracking-wide ${textLabel}`}>Descrição</span>
+                  <span className={isDark ? 'text-slate-200' : 'text-gray-800'}>{group.description}</span>
                 </div>
               )}
             </div>
@@ -314,19 +372,20 @@ export default function GroupDetail({
           onRemovePermission={onRemovePermission}
           actionLoading={actionLoading}
           canManage={canManage}
+          isDark={isDark} // 🔥
         />
       </div>
 
       {/* ============ ZONA DE PERIGO ============ */}
       {canManage && (
         <div className="px-6 pb-6">
-          <div className="bg-slate-800/50 border border-red-500/20 rounded-xl p-6 hover:border-red-500/30 transition-all">
+          <div className={`${dangerZoneBg} border rounded-xl p-6 hover:border-red-500/30 transition-all`}>
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex-1 min-w-[200px]">
                 <h5 className="text-sm font-bold text-red-400 flex items-center gap-2">
                   ⚠️ Zona de Perigo
                 </h5>
-                <p className="text-sm text-slate-400">
+                <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
                   Uma vez excluído, o grupo e todos os seus vínculos não podem ser recuperados.
                   Esta ação é irreversível.
                 </p>
@@ -334,7 +393,7 @@ export default function GroupDetail({
               <button
                 onClick={handleDelete}
                 disabled={actionLoading}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 hover:text-red-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold border transition-all disabled:opacity-50 disabled:cursor-not-allowed ${btnDelete}`}
               >
                 🗑️ {actionLoading ? "..." : "Excluir Grupo Permanentemente"}
               </button>

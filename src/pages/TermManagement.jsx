@@ -5,8 +5,7 @@ import api from '../services/api';
 import Swal from 'sweetalert2';
 import TermTable from '../components/dashboard/TermTable';
 
-
-const TermManagement = forwardRef(({ onViewUsers, filters: externalFilters = {} }, ref) => {
+const TermManagement = forwardRef(({ onViewUsers, filters: externalFilters = {}, isDark = false }, ref) => {
   const navigate = useNavigate();
   const [terms, setTerms] = useState([]);
   const [filteredTerms, setFilteredTerms] = useState([]);
@@ -17,38 +16,34 @@ const TermManagement = forwardRef(({ onViewUsers, filters: externalFilters = {} 
   const [acceptanceCounts, setAcceptanceCounts] = useState({});
   const [actionLoading, setActionLoading] = useState(false);
   
-  // Estado local para garantir reatividade caso o componente pai não repasse os filtros corretamente
   const [localFilters, setLocalFilters] = useState({
     version: '',
     status: '',
     creator: ''
   });
 
-  // Mescla os filtros externos com os locais
- // Mescla os filtros externos com os locais
-const filters = { ...localFilters, ...externalFilters };
+  const filters = { ...localFilters, ...externalFilters };
 
-// 🔄 Sincroniza os filtros externos com os locais (para garantir reatividade)
-useEffect(() => {
-  if (externalFilters) {
-    setLocalFilters(prev => ({
-      ...prev,
-      version: externalFilters.version ?? prev.version,
-      status: externalFilters.status ?? prev.status,
-      creator: externalFilters.creator ?? prev.creator,
-    }));
-  }
-}, [externalFilters]);
+  useEffect(() => {
+    if (externalFilters) {
+      setLocalFilters(prev => ({
+        ...prev,
+        version: externalFilters.version ?? prev.version,
+        status: externalFilters.status ?? prev.status,
+        creator: externalFilters.creator ?? prev.creator,
+      }));
+    }
+  }, [externalFilters]);
 
-useImperativeHandle(ref, () => ({
-  openNewTermModal() {
-    resetForm();
-    setShowModal(true);
-  },
-  showAllUsers() {
-    handleViewAllUsers();
-  }
-}));
+  useImperativeHandle(ref, () => ({
+    openNewTermModal() {
+      resetForm();
+      setShowModal(true);
+    },
+    showAllUsers() {
+      handleViewAllUsers();
+    }
+  }));
 
   const [formData, setFormData] = useState({
     content: '',
@@ -56,17 +51,40 @@ useImperativeHandle(ref, () => ({
     is_active: false,
   });
 
+  // 🔥 Ajuste do SweetAlert para tema
   const AxionAlert = Swal.mixin({
-    background: "#111214",
-    color: "#ffffff",
+    background: isDark ? "#111214" : "#ffffff",
+    color: isDark ? "#ffffff" : "#1f2937",
     confirmButtonColor: "#6366f1",
     cancelButtonColor: "#343a40",
     customClass: {
-      popup: "border border-slate-700 rounded-xl",
+      popup: `border ${isDark ? 'border-slate-700' : 'border-gray-200'} rounded-xl`,
       confirmButton: "px-4 py-2 rounded-full font-bold mx-2 bg-indigo-500 hover:bg-indigo-400 transition-colors",
       cancelButton: "px-4 py-2 rounded-full font-bold mx-2 bg-slate-700 hover:bg-slate-600 transition-colors",
     },
   });
+
+  // ============ CLASSES DE TEMA ============
+  const bgCard = isDark 
+    ? 'bg-slate-800/50 border-slate-700/50' 
+    : 'bg-white/80 border-gray-200';
+  const bgHeader = isDark 
+    ? 'bg-slate-800/50' 
+    : 'bg-gray-50';
+  const bgInput = isDark 
+    ? 'bg-slate-800/50 border-slate-700/50 text-slate-200 placeholder-slate-500' 
+    : 'bg-white border-gray-300 text-gray-800 placeholder-gray-400';
+  const bgInputDisabled = isDark 
+    ? 'bg-slate-800/30 border-slate-700/30 text-slate-500' 
+    : 'bg-gray-100 border-gray-200 text-gray-500';
+  const textHeading = isDark ? 'text-white' : 'text-gray-800';
+  const textLabel = isDark ? 'text-slate-400' : 'text-gray-500';
+  const textMuted = isDark ? 'text-slate-400' : 'text-gray-600';
+  const textPlaceholder = isDark ? 'placeholder-slate-500' : 'placeholder-gray-400';
+  const borderColor = isDark ? 'border-slate-700/50' : 'border-gray-200';
+  const focusRing = 'focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50';
+  const modalBg = isDark ? 'bg-slate-800/95 border-slate-700/50' : 'bg-white/95 border-gray-200';
+  const overlayBg = isDark ? 'bg-black/70' : 'bg-black/50';
 
   useEffect(() => {
     loadTerms();
@@ -89,7 +107,6 @@ useImperativeHandle(ref, () => ({
         await loadAcceptanceCounts(termsArray);
       }
     } catch (err) {
-      
       setError(err.response?.data?.message || 'Erro ao carregar termos');
       setTerms([]);
     } finally {
@@ -114,21 +131,19 @@ useImperativeHandle(ref, () => ({
       );
       setAcceptanceCounts(counts);
     } catch (err) {
-
+      // silencioso
     }
   };
 
   const applyFilters = () => {
     let filtered = [...terms];
 
-    // Filtro por Versão
     if (filters.version) {
       filtered = filtered.filter(term => 
         term.version?.toLowerCase().includes(filters.version.toLowerCase())
       );
     }
 
-    // Filtro por Status robusto (suporta 'active', 'inactive', boolean, 1/0)
     if (filters.status && filters.status !== '') {
       const targetIsActive = filters.status === 'active' || filters.status === true || filters.status === '1';
       filtered = filtered.filter(term => {
@@ -137,7 +152,6 @@ useImperativeHandle(ref, () => ({
       });
     }
 
-    // Filtro por Criador
     if (filters.creator) {
       filtered = filtered.filter(term => 
         term.creator?.name?.toLowerCase().includes(filters.creator.toLowerCase())
@@ -186,12 +200,12 @@ useImperativeHandle(ref, () => ({
         const confirmResult = await AxionAlert.fire({
           title: 'Criar Nova Versão?',
           html: `
-            <p class="text-slate-300">Você está criando uma nova versão do termo.</p>
+            <p class="${isDark ? 'text-slate-300' : 'text-gray-600'}">Você está criando uma nova versão do termo.</p>
             <p class="mt-3">
-              <strong class="text-white">Versão atual:</strong> <span class="text-blue-400">v${editingTerm.version}</span><br>
-              <strong class="text-white">Nova versão:</strong> <span class="text-green-400">v${nextVersion}</span>
+              <strong class="${isDark ? 'text-white' : 'text-gray-800'}">Versão atual:</strong> <span class="text-blue-400">v${editingTerm.version}</span><br>
+              <strong class="${isDark ? 'text-white' : 'text-gray-800'}">Nova versão:</strong> <span class="text-green-400">v${nextVersion}</span>
             </p>
-            <p class="mt-3 text-sm text-slate-400">
+            <p class="mt-3 text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}">
               O termo atual será mantido como histórico.
             </p>
           `,
@@ -384,9 +398,9 @@ useImperativeHandle(ref, () => ({
     return (
       <div className="flex justify-center items-center h-64">
         <div className="relative">
-          <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
+          <div className={`w-12 h-12 border-4 ${isDark ? 'border-blue-500/20 border-t-blue-500' : 'border-blue-300/20 border-t-blue-600'} rounded-full animate-spin`}></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-6 h-6 border-4 border-blue-400/30 border-t-blue-400 rounded-full animate-spin" style={{ animationDelay: '150ms' }}></div>
+            <div className={`w-6 h-6 border-4 ${isDark ? 'border-blue-400/30 border-t-blue-400' : 'border-blue-500/30 border-t-blue-500'} rounded-full animate-spin`} style={{ animationDelay: '150ms' }}></div>
           </div>
         </div>
       </div>
@@ -396,7 +410,7 @@ useImperativeHandle(ref, () => ({
   return (
     <div className="p-4 md:p-6">
       {/* Table */}
-      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden transition-colors hover:border-blue-500/30">
+      <div className={`border rounded-xl overflow-hidden transition-colors hover:border-blue-500/30 ${bgCard}`}>
         <TermTable
           terms={filteredTerms}
           acceptanceCounts={acceptanceCounts}
@@ -405,6 +419,7 @@ useImperativeHandle(ref, () => ({
           onEdit={handleEditTerm}
           onDelete={handleDelete}
           loading={loading}
+          isDark={isDark}
         />
       </div>
 
@@ -412,19 +427,19 @@ useImperativeHandle(ref, () => ({
       {showModal && (
         <>
           <div
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[1050]"
+            className={`fixed inset-0 ${overlayBg} backdrop-blur-sm z-[1050]`}
             onClick={() => { setShowModal(false); resetForm(); }}
           />
           <div className="fixed inset-0 flex items-center justify-center z-[1060] p-4">
-            <div className="bg-slate-800/95 border border-slate-700/50 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
-              {/* Header do modal */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700/50 bg-slate-800/50">
-                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+            <div className={`border rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden ${modalBg}`}>
+              {/* Header */}
+              <div className={`flex items-center justify-between px-6 py-4 border-b ${borderColor} ${bgHeader}`}>
+                <h3 className={`text-lg font-bold flex items-center gap-2 ${textHeading}`}>
                   {editingTerm ? '✏️ Criar Nova Versão' : '📄 Novo Termo de Uso'}
                 </h3>
                 <button
                   onClick={() => { setShowModal(false); resetForm(); }}
-                  className="text-slate-400 hover:text-slate-200 transition-colors"
+                  className={`${isDark ? 'text-slate-400 hover:text-slate-200' : 'text-gray-400 hover:text-gray-600'} transition-colors`}
                 >
                   <span className="text-2xl">✕</span>
                 </button>
@@ -432,51 +447,51 @@ useImperativeHandle(ref, () => ({
 
               <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)] custom-scrollbar">
                 {editingTerm && (
-                  <div className="flex items-start gap-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-400 text-sm mb-4">
+                  <div className={`flex items-start gap-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-400 text-sm mb-4`}>
                     <span className="text-lg">ℹ️</span>
                     <span>
-                      Baseado em <strong className="text-white">v{editingTerm.version}</strong> →{' '}
-                      <strong className="text-white">v{getNextVersion(editingTerm.version)}</strong>
+                      Baseado em <strong className={textHeading}>v{editingTerm.version}</strong> →{' '}
+                      <strong className={textHeading}>v{getNextVersion(editingTerm.version)}</strong>
                     </span>
                   </div>
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
+                    <label className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide mb-2 ${textLabel}`}>
                       <span className="text-blue-500">●</span>
-                      Versão {editingTerm && <span className="text-xs text-slate-500 normal-case">(automática)</span>}
+                      Versão {editingTerm && <span className="text-xs normal-case ${textMuted}">(automática)</span>}
                     </label>
                     <input
                       type="text"
                       value={editingTerm ? getNextVersion(editingTerm.version) : formData.version}
                       onChange={(e) => setFormData({ ...formData, version: e.target.value })}
-                      className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className={`w-full px-3 py-2.5 ${bgInput} rounded-lg text-sm ${focusRing} transition-all disabled:opacity-50 disabled:cursor-not-allowed ${textPlaceholder}`}
                       placeholder="Ex: 1.0.0"
                       required
                       disabled={!!editingTerm}
                     />
                     {editingTerm && (
-                      <small className="block text-xs text-slate-500 mt-1">
+                      <small className={`block text-xs ${textMuted} mt-1`}>
                         🔒 A versão é gerada automaticamente ao editar um termo existente
                       </small>
                     )}
                   </div>
 
                   <div>
-                    <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
+                    <label className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide mb-2 ${textLabel}`}>
                       <span className="text-blue-500">●</span>
                       Conteúdo <span className="text-red-400">*</span>
                     </label>
                     <textarea
                       value={formData.content}
                       onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                      className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all resize-y h-64"
+                      className={`w-full px-3 py-2.5 ${bgInput} rounded-lg text-sm ${focusRing} transition-all resize-y h-64 ${textPlaceholder}`}
                       placeholder="Digite os termos de uso..."
                       required
                       disabled={actionLoading}
                     />
-                    <small className="block text-xs text-slate-500 mt-1">
+                    <small className={`block text-xs ${textMuted} mt-1`}>
                       {formData.content.length} caracteres
                     </small>
                   </div>
@@ -487,10 +502,10 @@ useImperativeHandle(ref, () => ({
                       id="is_active"
                       checked={formData.is_active}
                       onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                      className="w-4 h-4 rounded border-slate-600 bg-slate-700/50 text-blue-500 focus:ring-blue-500 focus:ring-offset-0"
+                      className={`w-4 h-4 rounded ${isDark ? 'border-slate-600 bg-slate-700/50' : 'border-gray-300 bg-white'} text-blue-500 focus:ring-blue-500 focus:ring-offset-0`}
                       disabled={actionLoading}
                     />
-                    <label htmlFor="is_active" className="text-sm text-slate-300">
+                    <label className={`text-sm ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
                       Ativar este termo imediatamente
                     </label>
                   </div>
@@ -513,11 +528,15 @@ useImperativeHandle(ref, () => ({
                 </form>
               </div>
 
-              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-700/50 bg-slate-800/50">
+              <div className={`flex items-center justify-end gap-3 px-6 py-4 border-t ${borderColor} ${bgHeader}`}>
                 <button
                   onClick={() => { setShowModal(false); resetForm(); }}
                   disabled={actionLoading}
-                  className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-600/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                    isDark 
+                      ? 'text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-600/50' 
+                      : 'text-gray-600 hover:text-gray-800 bg-gray-200 hover:bg-gray-300'
+                  }`}
                 >
                   Cancelar
                 </button>
@@ -545,4 +564,5 @@ useImperativeHandle(ref, () => ({
     </div>
   );
 });
+
 export default TermManagement;

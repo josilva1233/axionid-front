@@ -3,12 +3,55 @@ import { useState, useEffect, useRef } from "react";
 import api from "../../services/api";
 import Swal from "sweetalert2";
 
-export default function AIChat() {
+export default function AIChat({ isDark = false }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("checking");
   const messagesEndRef = useRef(null);
+
+  // 🔥 SweetAlert com tema
+  const AxionAlert = Swal.mixin({
+    background: isDark ? "#111214" : "#ffffff",
+    color: isDark ? "#ffffff" : "#1f2937",
+    confirmButtonColor: "#6366f1",
+    cancelButtonColor: "#343a40",
+    customClass: {
+      popup: `border ${isDark ? 'border-slate-700' : 'border-gray-200'} rounded-xl`,
+      confirmButton: "px-4 py-2 rounded-full font-bold mx-2 bg-indigo-500 hover:bg-indigo-400 transition-colors",
+      cancelButton: "px-4 py-2 rounded-full font-bold mx-2 bg-slate-700 hover:bg-slate-600 transition-colors",
+    },
+  });
+
+  // ============ CLASSES DE TEMA ============
+  const containerBg = isDark
+    ? 'bg-slate-800/50 border-slate-700/50'
+    : 'bg-white/80 border-gray-200';
+  const headerBg = isDark
+    ? 'bg-slate-800/30 border-slate-700/50'
+    : 'bg-gray-100/80 border-gray-200';
+  const textHeading = isDark ? 'text-white' : 'text-gray-800';
+  const textSub = isDark ? 'text-slate-400' : 'text-gray-500';
+  const inputBg = isDark
+    ? 'bg-slate-800/50 border-slate-700/50 text-slate-200 placeholder-slate-500'
+    : 'bg-white border-gray-300 text-gray-800 placeholder-gray-400';
+  const focusRing = 'focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50';
+  const msgUserBg = isDark ? 'bg-blue-600' : 'bg-blue-600';
+  const msgUserText = isDark ? 'text-white' : 'text-white';
+  const msgAiBg = isDark ? 'bg-slate-700/50' : 'bg-gray-200/80';
+  const msgAiText = isDark ? 'text-slate-200' : 'text-gray-800';
+  const statusText = isDark ? 'text-slate-400' : 'text-gray-500';
+  const emptyText = isDark ? 'text-slate-400' : 'text-gray-500';
+  const emptyTitle = isDark ? 'text-white' : 'text-gray-800';
+  const suggestionBg = isDark ? 'bg-slate-700/50 text-slate-300' : 'bg-gray-200/80 text-gray-700';
+  const btnClear = isDark
+    ? 'text-slate-400 hover:text-red-400 hover:bg-red-500/10'
+    : 'text-gray-500 hover:text-red-600 hover:bg-red-50';
+  const btnSend = 'bg-blue-600 hover:bg-blue-500 text-white';
+  const footerBg = isDark
+    ? 'border-slate-700/50 bg-slate-800/30'
+    : 'border-gray-200 bg-gray-100/80';
+  const metaText = isDark ? 'text-slate-500' : 'text-gray-400';
 
   // Carregar histórico ao montar
   useEffect(() => {
@@ -45,12 +88,10 @@ export default function AIChat() {
   const sendMessage = async () => {
     if (!input.trim()) return;
     if (status === "offline") {
-      Swal.fire({
+      AxionAlert.fire({
         icon: "warning",
         title: "IA Offline",
         text: "A IA está indisponível no momento. Verifique se o Ollama está rodando.",
-        background: "#111214",
-        color: "#ffffff",
         confirmButtonColor: "#6366f1",
       });
       return;
@@ -87,15 +128,13 @@ export default function AIChat() {
 
   // Limpar histórico
   const clearHistory = async () => {
-    const result = await Swal.fire({
+    const result = await AxionAlert.fire({
       title: "Limpar histórico?",
       text: "Todas as conversas serão removidas permanentemente.",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Sim, limpar",
       cancelButtonText: "Cancelar",
-      background: "#111214",
-      color: "#ffffff",
       confirmButtonColor: "#ef4444",
     });
 
@@ -103,21 +142,17 @@ export default function AIChat() {
       try {
         await api.delete("/ai/history");
         setMessages([]);
-        Swal.fire({
+        AxionAlert.fire({
           icon: "success",
           title: "Histórico limpo!",
           timer: 1500,
           showConfirmButton: false,
-          background: "#111214",
-          color: "#ffffff",
         });
       } catch (error) {
-        Swal.fire({
+        AxionAlert.fire({
           icon: "error",
           title: "Erro",
           text: "Não foi possível limpar o histórico.",
-          background: "#111214",
-          color: "#ffffff",
           confirmButtonColor: "#6366f1",
         });
       }
@@ -133,13 +168,13 @@ export default function AIChat() {
   };
 
   return (
-    <div className="flex flex-col h-[600px] bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
+    <div className={`flex flex-col h-[600px] border rounded-xl overflow-hidden ${containerBg}`}>
       {/* ============ HEADER ============ */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700/50 bg-slate-800/30">
+      <div className={`flex items-center justify-between px-6 py-4 border-b ${headerBg}`}>
         <div className="flex items-center gap-3">
           <span className="text-2xl">🤖</span>
           <div>
-            <h3 className="text-white font-bold">Axion AI</h3>
+            <h3 className={`font-bold ${textHeading}`}>Axion AI</h3>
             <span className={`text-xs ${
               status === "online" ? "text-green-400" : status === "offline" ? "text-red-400" : "text-yellow-400"
             }`}>
@@ -149,7 +184,7 @@ export default function AIChat() {
         </div>
         <button
           onClick={clearHistory}
-          className="text-xs text-slate-400 hover:text-red-400 transition-colors px-3 py-1.5 rounded-lg hover:bg-red-500/10"
+          className={`text-xs transition-colors px-3 py-1.5 rounded-lg ${btnClear}`}
           disabled={messages.length === 0}
         >
           🗑️ Limpar
@@ -159,15 +194,15 @@ export default function AIChat() {
       {/* ============ MESSAGES ============ */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
         {messages.length === 0 && (
-          <div className="text-center text-slate-400 mt-10">
+          <div className={`text-center ${emptyText} mt-10`}>
             <p className="text-4xl mb-3">👋</p>
-            <p className="font-medium text-white">Olá! Sou o assistente Axion AI.</p>
-            <p className="text-sm mt-1">Como posso ajudar na sua operação hoje?</p>
+            <p className={`font-medium ${emptyTitle}`}>Olá! Sou o assistente Axion AI.</p>
+            <p className={`text-sm mt-1 ${emptyText}`}>Como posso ajudar na sua operação hoje?</p>
             <div className="flex flex-wrap justify-center gap-2 mt-4">
-              <span className="px-3 py-1.5 bg-slate-700/50 rounded-full text-xs text-slate-300">📊 Estatísticas do sistema</span>
-              <span className="px-3 py-1.5 bg-slate-700/50 rounded-full text-xs text-slate-300">👤 Buscar usuário</span>
-              <span className="px-3 py-1.5 bg-slate-700/50 rounded-full text-xs text-slate-300">🎫 Chamados urgentes</span>
-              <span className="px-3 py-1.5 bg-slate-700/50 rounded-full text-xs text-slate-300">📁 Informações de grupo</span>
+              <span className={`px-3 py-1.5 rounded-full text-xs ${suggestionBg}`}>📊 Estatísticas do sistema</span>
+              <span className={`px-3 py-1.5 rounded-full text-xs ${suggestionBg}`}>👤 Buscar usuário</span>
+              <span className={`px-3 py-1.5 rounded-full text-xs ${suggestionBg}`}>🎫 Chamados urgentes</span>
+              <span className={`px-3 py-1.5 rounded-full text-xs ${suggestionBg}`}>📁 Informações de grupo</span>
             </div>
           </div>
         )}
@@ -180,12 +215,12 @@ export default function AIChat() {
             <div
               className={`max-w-[85%] px-4 py-2.5 rounded-xl ${
                 msg.role === "user"
-                  ? "bg-blue-600 text-white"
-                  : "bg-slate-700/50 text-slate-200"
+                  ? `${msgUserBg} ${msgUserText}`
+                  : `${msgAiBg} ${msgAiText}`
               }`}
             >
               <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-              <span className="text-[10px] opacity-50 mt-1 block">
+              <span className={`text-[10px] opacity-50 mt-1 block ${msg.role === "user" ? 'text-white/70' : isDark ? 'text-slate-400' : 'text-gray-500'}`}>
                 {msg.role === "user" ? "Você" : "Axion AI"}
               </span>
             </div>
@@ -194,7 +229,7 @@ export default function AIChat() {
 
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-slate-700/50 px-4 py-2.5 rounded-xl">
+            <div className={`px-4 py-2.5 rounded-xl ${msgAiBg}`}>
               <span className="flex gap-1">
                 <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></span>
                 <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></span>
@@ -208,7 +243,7 @@ export default function AIChat() {
       </div>
 
       {/* ============ INPUT ============ */}
-      <div className="p-4 border-t border-slate-700/50 bg-slate-800/30">
+      <div className={`p-4 border-t ${footerBg}`}>
         <div className="flex gap-2">
           <input
             type="text"
@@ -221,12 +256,12 @@ export default function AIChat() {
                 : "Digite sua mensagem..."
             }
             disabled={loading || status === "offline"}
-            className="flex-1 px-4 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`flex-1 px-4 py-2.5 ${inputBg} rounded-lg text-sm ${focusRing} transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
           />
           <button
             onClick={sendMessage}
             disabled={loading || status === "offline" || !input.trim()}
-            className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:-translate-y-0.5"
+            className={`px-4 py-2.5 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:-translate-y-0.5 ${btnSend}`}
           >
             {loading ? (
               <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block"></span>
@@ -236,13 +271,13 @@ export default function AIChat() {
           </button>
         </div>
         <div className="flex items-center gap-4 mt-2">
-          <span className="text-[10px] text-slate-500">🧠 Modelo: LLAMA-3.1</span>
+          <span className={`text-[10px] ${metaText}`}>🧠 Modelo: LLAMA-3.1</span>
           <span className={`text-[10px] ${
             status === "online" ? "text-green-400" : "text-red-400"
           }`}>
             {status === "online" ? "● Online" : "● Offline"}
           </span>
-          <span className="text-[10px] text-slate-500">
+          <span className={`text-[10px] ${metaText}`}>
             {messages.length} mensagens
           </span>
         </div>

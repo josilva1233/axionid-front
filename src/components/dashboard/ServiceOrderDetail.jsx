@@ -9,7 +9,7 @@ const STATUS_CONFIG = {
   open: { bg: "bg-blue-500/15", text: "text-blue-400", dot: "bg-blue-400", label: "EM ABERTO", icon: "📂" },
   in_progress: { bg: "bg-indigo-500/15", text: "text-indigo-400", dot: "bg-indigo-400", label: "EM ATENDIMENTO", icon: "🔧" },
   resolved: { bg: "bg-green-500/15", text: "text-green-400", dot: "bg-green-400", label: "RESOLVIDO", icon: "✅" },
-  completed: { bg: "bg-green-500/15", text: "text-green-400", dot: "bg-green-400", label: "RESOLVIDO", icon: "✅" }, // ✅ ADICIONADO
+  completed: { bg: "bg-green-500/15", text: "text-green-400", dot: "bg-green-400", label: "RESOLVIDO", icon: "✅" },
   closed: { bg: "bg-slate-700/30", text: "text-slate-400", dot: "bg-slate-400", label: "FECHADO", icon: "🔒" },
 };
 
@@ -29,7 +29,6 @@ const PRIORITY_CONFIG = {
 };
 
 const StatusBadge = ({ status }) => {
-  // 🔥 Compatibilidade: se for 'completed' ou 'resolved', usa o mesmo estilo
   const normalizedStatus = (status === 'completed' || status === 'resolved') ? 'resolved' : status;
   const item = STATUS_CONFIG[normalizedStatus] || STATUS_CONFIG.pending;
   return (
@@ -48,24 +47,24 @@ const PriorityBadge = ({ priority }) => {
   );
 };
 
-const AttachmentPreview = ({ order, baseUrl }) => {
+const AttachmentPreview = ({ order, baseUrl, isDark }) => {
   const fileName = order.attachment_path?.split("/").pop() || "anexo";
   const fullUrl = `${baseUrl}/storage/${order.attachment_path}`;
 
   if (!order.attachment_path) return null;
 
   return (
-    <div className="mt-4 pt-4 border-t border-slate-700/50">
+    <div className={`mt-4 pt-4 border-t ${isDark ? 'border-slate-700/50' : 'border-gray-200'}`}>
       <h6 className="text-blue-400 mb-3 font-bold flex items-center gap-2">
         <span>📎</span> Anexo da Solicitação
       </h6>
-      <div className="bg-slate-800/30 rounded-2xl p-4">
+      <div className={`${isDark ? 'bg-slate-800/30' : 'bg-gray-100'} rounded-2xl p-4`}>
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
             <span className="text-blue-400 text-4xl">📄</span>
             <div>
-              <h6 className="text-white font-bold mb-1">{fileName}</h6>
-              <small className="text-slate-400">
+              <h6 className={`font-bold mb-1 ${isDark ? 'text-white' : 'text-gray-800'}`}>{fileName}</h6>
+              <small className={isDark ? 'text-slate-400' : 'text-gray-500'}>
                 {order.attachment_path?.includes('.pdf') ? 'Documento PDF' : 'Arquivo anexado'}
               </small>
             </div>
@@ -92,6 +91,7 @@ export default function ServiceOrderDetail({
   actionLoading,
   isSystemAdmin,
   currentUser,
+  isDark = false, // 🔥 NOVA PROP
 }) {
   const baseUrl = import.meta.env.VITE_API_URL || process.env.REACT_APP_API_URL || "http://163.176.168.224";
 
@@ -113,11 +113,34 @@ export default function ServiceOrderDetail({
   const [isResolved, setIsResolved] = useState(false);
   const autoCloseTimerRef = useRef(null);
 
-  // ---- Atualizar estado local quando o order prop mudar ----
+  // ---- SweetAlert com tema ----
+  const SwalMixin = Swal.mixin({
+    background: isDark ? "#111214" : "#ffffff",
+    color: isDark ? "#ffffff" : "#1f2937",
+    confirmButtonColor: "#6366f1",
+    cancelButtonColor: "#343a40",
+    customClass: {
+      popup: `border ${isDark ? 'border-slate-700' : 'border-gray-200'} rounded-xl`,
+      confirmButton: "px-4 py-2 rounded-full font-bold mx-2 bg-indigo-500 hover:bg-indigo-400 transition-colors",
+      cancelButton: "px-4 py-2 rounded-full font-bold mx-2 bg-slate-700 hover:bg-slate-600 transition-colors",
+    },
+  });
+
+  // ============ CLASSES DE TEMA ============
+  const bgPage = isDark ? 'bg-slate-900' : 'bg-gray-100';
+  const bgHeader = isDark ? 'from-slate-900 to-indigo-950/50 border-blue-500/20' : 'from-gray-50 to-white border-blue-200/50';
+  const bgCard = isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200';
+  const bgInput = isDark ? 'bg-slate-800/50 border-blue-500/30 text-white' : 'bg-white border-blue-300/50 text-gray-800';
+  const bgInputDisabled = isDark ? 'bg-slate-800/50 border-slate-700/50 text-slate-200' : 'bg-white border-gray-300 text-gray-800';
+  const textHeading = isDark ? 'text-white' : 'text-gray-800';
+  const textSub = isDark ? 'text-slate-400' : 'text-gray-500';
+  const textMuted = isDark ? 'text-slate-400' : 'text-gray-500';
+  const borderColor = isDark ? 'border-slate-700/50' : 'border-gray-200';
+
+  // ---- Atualizar estado local ----
   useEffect(() => {
     if (order) {
       setLocalOrder(order);
-      // 🔥 Verificar tanto 'completed' quanto 'resolved'
       if ((order.status === 'completed' || order.status === 'resolved') && order.resolved_at) {
         setIsResolved(true);
         const resolvedDate = new Date(order.resolved_at);
@@ -125,73 +148,53 @@ export default function ServiceOrderDetail({
         twoDaysLater.setDate(twoDaysLater.getDate() + 2);
         const now = new Date();
         const timeDiff = twoDaysLater - now;
-        if (timeDiff > 0) {
-          setTimeUntilClose(timeDiff);
-        } else {
-          setTimeUntilClose(0);
-        }
+        setTimeUntilClose(timeDiff > 0 ? timeDiff : 0);
       }
     }
   }, [order]);
 
-  // ---- Carregar mensagens (com paginação) ----
-  const loadMessages = useCallback(
-    async (pageNum = 1, append = false) => {
-      if (!localOrder?.id) return;
-      setLoadingMessages(true);
-      try {
-        const res = await api.get(`/api/v1/service-orders/${localOrder.id}/messages`, {
-          params: { page: pageNum, per_page: 15 },
-        });
-        
-        const { data, current_page, last_page } = res.data.messages;
-        const newMessages = data || [];
-        setMessages((prev) => (append ? [...prev, ...newMessages] : newMessages));
-        setPage(current_page);
-        setTotalPages(last_page);
-        setHasMore(current_page < last_page);
-      } catch (error) {
-        Swal.fire("Erro", "Não foi possível carregar as mensagens.", "error");
-      } finally {
-        setLoadingMessages(false);
-      }
-    },
-    [localOrder?.id]
-  );
+  // ---- Carregar mensagens ----
+  const loadMessages = useCallback(async (pageNum = 1, append = false) => {
+    if (!localOrder?.id) return;
+    setLoadingMessages(true);
+    try {
+      const res = await api.get(`/api/v1/service-orders/${localOrder.id}/messages`, {
+        params: { page: pageNum, per_page: 15 },
+      });
+      const { data, current_page, last_page } = res.data.messages;
+      const newMessages = data || [];
+      setMessages((prev) => (append ? [...prev, ...newMessages] : newMessages));
+      setPage(current_page);
+      setTotalPages(last_page);
+      setHasMore(current_page < last_page);
+    } catch (error) {
+      SwalMixin.fire("Erro", "Não foi possível carregar as mensagens.", "error");
+    } finally {
+      setLoadingMessages(false);
+    }
+  }, [localOrder?.id]);
 
-  // ---- Carregar mais mensagens ----
   const loadMore = () => {
     if (hasMore && !loadingMessages) {
       loadMessages(page + 1, true);
     }
   };
 
-  // ---- Função para fechar automaticamente o chamado ----
+  // ---- Auto-close ----
   const handleAutoClose = useCallback(async () => {
     if (!localOrder?.id || localOrder.status === 'closed') return;
-    
     try {
-      const response = await api.put(`/api/v1/service-orders/${localOrder.id}`, {
-        status: 'closed'
-      });
-      
+      const response = await api.put(`/api/v1/service-orders/${localOrder.id}`, { status: 'closed' });
       const updatedOrder = response.data.data || response.data;
-      
       setLocalOrder(prev => ({ ...prev, ...updatedOrder }));
-      
-      if (onUpdateStatus) {
-        onUpdateStatus(localOrder.id, 'closed', updatedOrder);
-      }
-      
+      if (onUpdateStatus) onUpdateStatus(localOrder.id, 'closed', updatedOrder);
       setIsResolved(false);
       setTimeUntilClose(null);
-      
       if (autoCloseTimerRef.current) {
         clearInterval(autoCloseTimerRef.current);
         autoCloseTimerRef.current = null;
       }
-      
-      Swal.fire({
+      SwalMixin.fire({
         icon: 'info',
         title: 'Chamado Fechado Automaticamente',
         text: 'O chamado foi fechado automaticamente após 2 dias de resolução.',
@@ -199,34 +202,29 @@ export default function ServiceOrderDetail({
         showConfirmButton: false,
       });
     } catch (error) {
+      // silencioso
     }
   }, [localOrder, onUpdateStatus]);
 
-  // ---- Iniciar timer para verificar quando fechar o chamado ----
   useEffect(() => {
     if (autoCloseTimerRef.current) {
       clearInterval(autoCloseTimerRef.current);
       autoCloseTimerRef.current = null;
     }
 
-    // 🔥 Verificar tanto 'completed' quanto 'resolved'
     if (localOrder?.status === 'resolved' || localOrder?.status === 'completed') {
       if (localOrder?.resolved_at) {
         const resolvedDate = new Date(localOrder.resolved_at);
         const twoDaysLater = new Date(resolvedDate);
         twoDaysLater.setDate(twoDaysLater.getDate() + 2);
-        
         const now = new Date();
         const remaining = twoDaysLater - now;
-        
         if (remaining > 0) {
           setIsResolved(true);
           setTimeUntilClose(remaining);
-          
           autoCloseTimerRef.current = setInterval(() => {
             const now2 = new Date();
             const remaining2 = twoDaysLater - now2;
-            
             if (remaining2 <= 0) {
               setTimeUntilClose(0);
               handleAutoClose();
@@ -255,18 +253,14 @@ export default function ServiceOrderDetail({
     };
   }, [localOrder?.status, localOrder?.resolved_at, handleAutoClose]);
 
-  // ---- Formatar tempo restante ----
   const formatTimeRemaining = (milliseconds) => {
     if (!milliseconds || milliseconds <= 0) return "Fechando...";
-    
     const seconds = Math.floor(milliseconds / 1000);
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
-    
     const remainingHours = hours % 24;
     const remainingMinutes = minutes % 60;
-    
     if (days > 0) {
       return `${days}d ${remainingHours}h ${remainingMinutes}min`;
     } else if (hours > 0) {
@@ -276,63 +270,40 @@ export default function ServiceOrderDetail({
     }
   };
 
-  // ---- Enviar mensagem (com suporte a anexo) ----
+  // ---- Enviar mensagem ----
   const sendMessage = useCallback(async () => {
     if (!newMessage.trim() && !newAttachment) return;
-
     setSendingMessage(true);
     try {
       const formData = new FormData();
       formData.append("message", newMessage.trim() || " ");
-      
-      if (newAttachment) {
-        formData.append("attachment", newAttachment);
-      }
+      if (newAttachment) formData.append("attachment", newAttachment);
 
       const res = await api.post(`/api/v1/service-orders/${localOrder.id}/messages`, formData, {
-        headers: { 
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
-      
       const newMsg = res.data.data || res.data;
-      
       if (newMsg && !newMsg.user && currentUser) {
-        newMsg.user = {
-          id: currentUser.id,
-          name: currentUser.name,
-          email: currentUser.email
-        };
+        newMsg.user = { id: currentUser.id, name: currentUser.name, email: currentUser.email };
       }
-      
       setMessages((prev) => [newMsg, ...prev]);
-      
       setNewMessage("");
       setNewAttachment(null);
       const fileInput = document.getElementById("message-attachment");
       if (fileInput) fileInput.value = "";
-      
-      Swal.fire({
-        icon: "success",
-        title: "Mensagem enviada!",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      SwalMixin.fire({ icon: "success", title: "Mensagem enviada!", timer: 1500, showConfirmButton: false });
     } catch (error) {
-      Swal.fire("Erro", error.response?.data?.message || "Falha ao enviar mensagem.", "error");
+      SwalMixin.fire("Erro", error.response?.data?.message || "Falha ao enviar mensagem.", "error");
     } finally {
       setSendingMessage(false);
     }
   }, [newMessage, newAttachment, localOrder?.id, currentUser]);
 
-  // ---- Formatação de data/hora ----
   const formatDateTime = (dateString) => {
     if (!dateString) return "Data inválida";
     try {
       const d = new Date(dateString);
-      if (isNaN(d.getTime())) {
-        return "Data inválida";
-      }
+      if (isNaN(d.getTime())) return "Data inválida";
       return d.toLocaleString("pt-BR", {
         day: "2-digit",
         month: "2-digit",
@@ -345,62 +316,38 @@ export default function ServiceOrderDetail({
     }
   };
 
-  // ---- Carregar mensagens ao montar ----
   useEffect(() => {
-    if (localOrder?.id) {
-      loadMessages(1, false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (localOrder?.id) loadMessages(1, false);
   }, [localOrder?.id]);
 
-  // =========================================================
-  // 🔥 FUNÇÃO PARA MARCAR COMO RESOLVIDO - CORRIGIDA
-  // =========================================================
+  // ---- Marcar como Resolvido ----
   const handleMarkAsResolved = useCallback(async () => {
     if (!localOrder?.id) return;
-    
-    const result = await Swal.fire({
+    const result = await SwalMixin.fire({
       title: "Marcar como Resolvido?",
       text: "O chamado será marcado como resolvido e será fechado automaticamente em 2 dias.",
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "Sim, resolver",
       cancelButtonText: "Cancelar",
-      background: "#111214",
-      color: "#ffffff",
       confirmButtonColor: "#22c55e",
     });
-    
     if (!result.isConfirmed) return;
-    
     try {
       const now = new Date().toISOString();
-      // 🔥 CORRIGIDO: Usar 'completed' em vez de 'resolved'
       const response = await api.put(`/api/v1/service-orders/${localOrder.id}`, {
         status: 'completed',
         resolved_at: now
       });
-      
       const updatedOrder = response.data.data || response.data;
-      
-      setLocalOrder(prev => ({ 
-        ...prev, 
-        ...updatedOrder,
-        status: 'completed',
-        resolved_at: now 
-      }));
-      
-      if (onUpdateStatus) {
-        onUpdateStatus(localOrder.id, 'completed', updatedOrder);
-      }
-      
+      setLocalOrder(prev => ({ ...prev, ...updatedOrder, status: 'completed', resolved_at: now }));
+      if (onUpdateStatus) onUpdateStatus(localOrder.id, 'completed', updatedOrder);
       setIsResolved(true);
       const resolvedDate = new Date(now);
       const twoDaysLater = new Date(resolvedDate);
       twoDaysLater.setDate(twoDaysLater.getDate() + 2);
       setTimeUntilClose(twoDaysLater - new Date());
-      
-      Swal.fire({
+      SwalMixin.fire({
         icon: "success",
         title: "✅ Chamado Resolvido!",
         text: "O chamado será fechado automaticamente em 2 dias.",
@@ -408,22 +355,22 @@ export default function ServiceOrderDetail({
         showConfirmButton: false,
       });
     } catch (error) {
-      Swal.fire(
-        "Erro", 
-        error.response?.data?.message || "Não foi possível marcar o chamado como resolvido.", 
+      SwalMixin.fire(
+        "Erro",
+        error.response?.data?.message || "Não foi possível marcar o chamado como resolvido.",
         "error"
       );
     }
   }, [localOrder, onUpdateStatus]);
 
-  // ---- Se não houver ordem, mostra loading ----
+  // ---- Loading ----
   if (!localOrder) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-8">
+      <div className={`flex flex-col items-center justify-center min-h-[50vh] text-center p-8 ${bgPage}`}>
         <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-4"></div>
-        <h5 className="text-slate-400 mb-4">Carregando detalhes da OS...</h5>
+        <h5 className={textSub}>Carregando detalhes da OS...</h5>
         <button
-          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-slate-700/50 bg-transparent text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-all"
+          className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full border ${isDark ? 'border-slate-700/50 text-slate-400 hover:bg-slate-800/50 hover:text-slate-200' : 'border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-800'} bg-transparent transition-all`}
           onClick={onBack}
         >
           ← Voltar
@@ -433,19 +380,17 @@ export default function ServiceOrderDetail({
   }
 
   const formattedDate = formatDateTime(localOrder.created_at);
-
-  // 🔥 Verificar se está resolvido (completed ou resolved)
   const isResolvedStatus = localOrder.status === 'completed' || localOrder.status === 'resolved';
 
   return (
-    <div className="bg-slate-900 rounded-xl min-h-screen">
+    <div className={`${bgPage} rounded-xl min-h-screen`}>
       {/* ============ HEADER ============ */}
-      <div className="bg-gradient-to-r from-slate-900 to-indigo-950/50 border-b border-blue-500/20 rounded-t-xl">
+      <div className={`bg-gradient-to-r ${bgHeader} border-b rounded-t-xl`}>
         <div className="px-6 py-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <button
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-slate-700/50 bg-transparent text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-all"
+                className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full border ${isDark ? 'border-slate-700/50 text-slate-400 hover:bg-slate-800/50 hover:text-slate-200' : 'border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-800'} bg-transparent transition-all`}
                 onClick={onBack}
               >
                 ← Voltar
@@ -455,8 +400,8 @@ export default function ServiceOrderDetail({
               </div>
             </div>
             <div className="flex-1 min-w-[200px]">
-              <h2 className="text-white text-xl font-bold mb-1">{localOrder.title}</h2>
-              <div className="flex flex-wrap gap-3 text-slate-400 text-sm">
+              <h2 className={`${textHeading} text-xl font-bold mb-1`}>{localOrder.title}</h2>
+              <div className={`flex flex-wrap gap-3 ${textSub} text-sm`}>
                 <span>📅 {formattedDate}</span>
                 <span># ID: {localOrder.id}</span>
               </div>
@@ -479,11 +424,10 @@ export default function ServiceOrderDetail({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* ============ COLUNA PRINCIPAL ============ */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 shadow-lg">
-              <div className="flex flex-wrap gap-3 mb-4 pb-4 border-b border-slate-700/50">
+            <div className={`${bgCard} border rounded-2xl p-6 shadow-lg`}>
+              <div className={`flex flex-wrap gap-3 mb-4 pb-4 border-b ${isDark ? 'border-slate-700/50' : 'border-gray-200'}`}>
                 <StatusBadge status={localOrder.status} />
                 <PriorityBadge priority={localOrder.priority} />
-                
                 {isResolved && timeUntilClose > 0 && (
                   <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold shadow-sm bg-green-500/15 text-green-400">
                     <span>⏳</span> Fecha em: {formatTimeRemaining(timeUntilClose)}
@@ -498,21 +442,23 @@ export default function ServiceOrderDetail({
 
               <div>
                 <h6 className="text-blue-400 font-bold mb-3 flex items-center gap-2">💬 Descrição da Solicitação</h6>
-                <div className="bg-slate-800/30 rounded-2xl p-4">
-                  <p className="text-slate-300 leading-relaxed mb-0">{localOrder.description || "Sem descrição fornecida."}</p>
+                <div className={`${isDark ? 'bg-slate-800/30' : 'bg-gray-100'} rounded-2xl p-4`}>
+                  <p className={`${isDark ? 'text-slate-300' : 'text-gray-700'} leading-relaxed mb-0`}>
+                    {localOrder.description || "Sem descrição fornecida."}
+                  </p>
                 </div>
               </div>
 
-              <AttachmentPreview order={localOrder} baseUrl={baseUrl} />
+              <AttachmentPreview order={localOrder} baseUrl={baseUrl} isDark={isDark} />
             </div>
 
             {/* ======== SEÇÃO DE MENSAGENS ======== */}
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 shadow-lg">
-              <h4 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
+            <div className={`${bgCard} border rounded-2xl p-6 shadow-lg`}>
+              <h4 className={`${textHeading} font-bold text-lg mb-4 flex items-center gap-2`}>
                 💬 Mensagens
-                <span className="text-sm text-slate-400 font-normal">({messages.length})</span>
+                <span className={`text-sm ${textSub} font-normal`}>({messages.length})</span>
                 <button
-                  className="ml-auto text-xs text-slate-400 hover:text-blue-400 transition-colors"
+                  className={`ml-auto text-xs ${textSub} hover:text-blue-400 transition-colors`}
                   onClick={() => loadMessages(1, false)}
                   disabled={loadingMessages}
                 >
@@ -520,10 +466,9 @@ export default function ServiceOrderDetail({
                 </button>
               </h4>
 
-              {/* Campo para nova mensagem COM ANEXO */}
               <div className="flex flex-col gap-3 mb-6">
                 <textarea
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-blue-500/30 rounded-2xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all resize-none"
+                  className={`w-full px-4 py-3 border rounded-2xl text-sm ${focusRing} transition-all resize-none ${bgInput}`}
                   rows="2"
                   placeholder="Digite sua mensagem..."
                   value={newMessage}
@@ -534,13 +479,13 @@ export default function ServiceOrderDetail({
                   <input
                     id="message-attachment"
                     type="file"
-                    className="flex-1 min-w-[200px] px-3 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-500/20 file:text-blue-400 hover:file:bg-blue-500/30 transition-all"
+                    className={`flex-1 min-w-[200px] px-3 py-2 border rounded-lg text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-500/20 file:text-blue-400 hover:file:bg-blue-500/30 transition-all ${bgInput}`}
                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                     onChange={(e) => {
                       const file = e.target.files[0];
                       if (file) {
                         if (file.size > 10 * 1024 * 1024) {
-                          Swal.fire("Erro", "O arquivo não pode ter mais que 10MB.", "error");
+                          SwalMixin.fire("Erro", "O arquivo não pode ter mais que 10MB.", "error");
                           e.target.value = "";
                           return;
                         }
@@ -560,9 +505,7 @@ export default function ServiceOrderDetail({
                 {newAttachment && (
                   <div className="text-sm text-green-400 flex items-center gap-2">
                     <span>✅</span> Anexo selecionado: <strong>{newAttachment.name}</strong>
-                    <span className="text-slate-400">
-                      ({(newAttachment.size / 1024).toFixed(1)} KB)
-                    </span>
+                    <span className={textSub}>({(newAttachment.size / 1024).toFixed(1)} KB)</span>
                   </div>
                 )}
                 {localOrder.status === 'closed' && (
@@ -572,13 +515,12 @@ export default function ServiceOrderDetail({
                 )}
               </div>
 
-              {/* Lista de mensagens */}
               {loadingMessages && messages.length === 0 ? (
                 <div className="flex justify-center py-8">
                   <div className="w-8 h-8 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
                 </div>
               ) : messages.length === 0 ? (
-                <div className="text-center py-8 text-slate-400">Nenhuma mensagem ainda. Seja o primeiro a comentar!</div>
+                <div className={`text-center py-8 ${textSub}`}>Nenhuma mensagem ainda. Seja o primeiro a comentar!</div>
               ) : (
                 <>
                   <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
@@ -586,13 +528,11 @@ export default function ServiceOrderDetail({
                       const messageUser = msg.user || { name: 'Usuário Desconhecido' };
                       const userName = messageUser.name || 'Usuário Desconhecido';
                       const userInitial = userName.charAt(0)?.toUpperCase() || '?';
-                      
                       const messageDate = msg.created_at || msg.created_at_human || msg.formatted_date;
-                      
                       return (
                         <div
                           key={msg.id}
-                          className="bg-slate-800/30 rounded-2xl p-4 border border-slate-700/30 hover:border-slate-600/50 transition-colors"
+                          className={`${isDark ? 'bg-slate-800/30 border-slate-700/30 hover:border-slate-600/50' : 'bg-gray-50 border-gray-200 hover:border-gray-300'} rounded-2xl p-4 border transition-colors`}
                         >
                           <div className="flex items-start gap-3">
                             <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 font-bold flex items-center justify-center text-lg flex-shrink-0">
@@ -601,13 +541,13 @@ export default function ServiceOrderDetail({
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-wrap items-center justify-between gap-2">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-white font-bold text-sm">{userName}</span>
-                                  <span className="text-slate-500 text-xs">
+                                  <span className={`font-bold text-sm ${textHeading}`}>{userName}</span>
+                                  <span className={`${textSub} text-xs`}>
                                     {formatDateTime(messageDate)}
                                   </span>
                                 </div>
                               </div>
-                              <p className="text-slate-300 text-sm mt-1 whitespace-pre-wrap">{msg.message}</p>
+                              <p className={`${isDark ? 'text-slate-300' : 'text-gray-700'} text-sm mt-1 whitespace-pre-wrap`}>{msg.message}</p>
                               {msg.attachment_path && (
                                 <div className="mt-2">
                                   <a
@@ -629,7 +569,7 @@ export default function ServiceOrderDetail({
                   {hasMore && (
                     <div className="flex justify-center mt-4">
                       <button
-                        className="px-6 py-2 rounded-full bg-slate-700 hover:bg-slate-600 text-white text-sm transition-all disabled:opacity-50"
+                        className={`px-6 py-2 rounded-full ${isDark ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-200 hover:bg-gray-300'} ${textHeading} text-sm transition-all disabled:opacity-50`}
                         onClick={loadMore}
                         disabled={loadingMessages}
                       >
@@ -644,54 +584,54 @@ export default function ServiceOrderDetail({
 
           {/* ============ COLUNA LATERAL (Gestão) ============ */}
           <div className="lg:col-span-1">
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 shadow-lg">
-              <h4 className="text-white font-bold text-center mb-4 flex items-center justify-center gap-2">⚙️ Gestão da Ordem</h4>
+            <div className={`${bgCard} border rounded-2xl p-6 shadow-lg`}>
+              <h4 className={`${textHeading} font-bold text-center mb-4 flex items-center justify-center gap-2`}>⚙️ Gestão da Ordem</h4>
 
-              <div className="mb-4 p-3 bg-slate-800/30 rounded-2xl">
+              <div className={`${isDark ? 'bg-slate-800/30' : 'bg-gray-100'} rounded-2xl p-3 mb-4`}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 font-bold flex items-center justify-center text-lg">
                     {localOrder.user?.name?.charAt(0)?.toUpperCase() || "?"}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h6 className="text-white font-bold mb-0.5 truncate">{localOrder.user?.name || "Usuário não identificado"}</h6>
-                    <small className="text-slate-400 truncate block">{localOrder.user?.email || "Email não disponível"}</small>
+                    <h6 className={`${textHeading} font-bold mb-0.5 truncate`}>{localOrder.user?.name || "Usuário não identificado"}</h6>
+                    <small className={`${textSub} truncate block`}>{localOrder.user?.email || "Email não disponível"}</small>
                   </div>
                 </div>
               </div>
 
-              <div className="mb-4 p-3 bg-slate-800/30 rounded-2xl">
+              <div className={`${isDark ? 'bg-slate-800/30' : 'bg-gray-100'} rounded-2xl p-3 mb-4`}>
                 <div className="flex items-center gap-3">
                   <div className="bg-blue-500/10 p-2 rounded-full">
                     <span className="text-blue-400 text-xl">👥</span>
                   </div>
                   <div>
-                    <h6 className="text-slate-400 text-xs uppercase font-semibold mb-0.5">Grupo Responsável</h6>
-                    <p className="text-white font-bold mb-0">{localOrder.group?.name || "Sem grupo vinculado"}</p>
+                    <h6 className={`${textSub} text-xs uppercase font-semibold mb-0.5`}>Grupo Responsável</h6>
+                    <p className={`${textHeading} font-bold mb-0`}>{localOrder.group?.name || "Sem grupo vinculado"}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="mb-4 p-3 bg-slate-800/30 rounded-2xl">
+              <div className={`${isDark ? 'bg-slate-800/30' : 'bg-gray-100'} rounded-2xl p-3 mb-4`}>
                 <div className="flex items-start gap-3">
                   <div className="bg-green-500/10 p-2 rounded-full">
                     <span className="text-green-400 text-xl">👤</span>
                   </div>
                   <div className="flex-1">
-                    <h6 className="text-slate-400 text-xs uppercase font-semibold mb-0.5">Técnico Designado</h6>
+                    <h6 className={`${textSub} text-xs uppercase font-semibold mb-0.5`}>Técnico Designado</h6>
                     {localOrder.technician ? (
                       <div className="flex items-center gap-2 mt-1">
                         <div className="w-8 h-8 rounded-full bg-green-500/20 text-green-400 font-bold flex items-center justify-center text-sm">
                           {localOrder.technician.name?.charAt(0)?.toUpperCase()}
                         </div>
                         <div>
-                          <p className="text-white font-bold mb-0 text-sm">{localOrder.technician.name}</p>
-                          <small className="text-slate-400 text-xs">Responsável pelo atendimento</small>
+                          <p className={`${textHeading} font-bold mb-0 text-sm`}>{localOrder.technician.name}</p>
+                          <small className={`${textSub} text-xs`}>Responsável pelo atendimento</small>
                         </div>
                       </div>
                     ) : (
                       <div className="text-center py-3">
-                        <span className="text-slate-500 text-3xl block mb-2">👤</span>
-                        <p className="text-slate-400 text-sm mb-3">Aguardando técnico</p>
+                        <span className={`${textSub} text-3xl block mb-2`}>👤</span>
+                        <p className={`${textSub} text-sm mb-3`}>Aguardando técnico</p>
                         <button
                           className="w-full py-2.5 rounded-full border border-blue-500/30 bg-transparent text-blue-400 hover:bg-blue-500/10 transition-all font-medium"
                           onClick={() => onUpdateStatus(localOrder.id, "in_progress")}
@@ -705,7 +645,6 @@ export default function ServiceOrderDetail({
                 </div>
               </div>
 
-              {/* 🔥 Botão para marcar como resolvido - verifica 'completed' e 'resolved' */}
               {!isResolvedStatus && localOrder.status !== 'closed' && (
                 <div className="mt-4 mb-4">
                   <button
@@ -715,13 +654,12 @@ export default function ServiceOrderDetail({
                   >
                     ✅ Marcar como Resolvido
                   </button>
-                  <p className="text-xs text-slate-400 text-center mt-2">
+                  <p className={`text-xs ${textSub} text-center mt-2`}>
                     ⏳ Será fechado automaticamente em 2 dias
                   </p>
                 </div>
               )}
 
-              {/* 🔥 Se já estiver resolvido, mostra mensagem */}
               {isResolvedStatus && (
                 <div className="mt-4 mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-xl">
                   <p className="text-green-400 text-sm text-center font-medium">
@@ -735,14 +673,14 @@ export default function ServiceOrderDetail({
                 </div>
               )}
 
-              <div className="mt-4 pt-4 border-t border-slate-700/50">
-                <label className="text-slate-400 text-xs uppercase font-bold block mb-3">Status</label>
+              <div className="mt-4 pt-4 border-t ${borderColor}">
+                <label className={`${textSub} text-xs uppercase font-bold block mb-3`}>Status</label>
                 <select
-                  className="w-full px-4 py-2.5 bg-slate-800/50 border border-blue-500/30 rounded-full text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all appearance-none cursor-pointer"
+                  className={`w-full px-4 py-2.5 border rounded-full text-sm ${focusRing} transition-all appearance-none cursor-pointer ${bgInput}`}
                   value={localOrder.status}
                   onChange={(e) => {
                     if (e.target.value === 'resolved' || e.target.value === 'completed') {
-                      Swal.fire({
+                      SwalMixin.fire({
                         icon: 'info',
                         title: 'Ação não permitida',
                         text: 'O status "Resolvido" não pode ser selecionado manualmente. Use o botão "Marcar como Resolvido".',

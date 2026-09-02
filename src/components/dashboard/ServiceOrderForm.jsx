@@ -3,7 +3,12 @@ import { useState, useEffect } from "react";
 import api from "../../services/api";
 import Swal from "sweetalert2";
 
-export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCancel }) {
+export default function ServiceOrderForm({ 
+  groups: groupsProp, 
+  onSuccess, 
+  onCancel,
+  isDark = false, // 🔥 NOVA PROP
+}) {
   const [loading, setLoading] = useState(false);
   const [loadingGroups, setLoadingGroups] = useState(false);
   const [groups, setGroups] = useState([]);
@@ -15,16 +20,37 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
     attachment: null,
   });
 
+  // 🔥 Ajuste do SweetAlert para tema
   const AxionAlert = Swal.mixin({
-    background: "#111214",
-    color: "#ffffff",
+    background: isDark ? "#111214" : "#ffffff",
+    color: isDark ? "#ffffff" : "#1f2937",
     confirmButtonColor: "#6366f1",
     customClass: {
-      popup: "border border-slate-700 rounded-xl",
+      popup: `border ${isDark ? 'border-slate-700' : 'border-gray-200'} rounded-xl`,
       confirmButton: "px-4 py-2 rounded-full font-bold mx-2 bg-indigo-500 hover:bg-indigo-400 transition-colors",
       cancelButton: "px-4 py-2 rounded-full font-bold mx-2 bg-slate-700 hover:bg-slate-600 transition-colors",
     },
   });
+
+  // ============ CLASSES DE TEMA ============
+  const bgCard = isDark 
+    ? 'bg-slate-800/50 border-slate-700/50' 
+    : 'bg-white/80 border-gray-200';
+  const textHeading = isDark ? 'text-white' : 'text-gray-800';
+  const textLabel = isDark ? 'text-slate-400' : 'text-gray-500';
+  const textMuted = isDark ? 'text-slate-400' : 'text-gray-500';
+  const bgInput = isDark 
+    ? 'bg-slate-800/50 border-slate-700/50 text-slate-200 placeholder-slate-500' 
+    : 'bg-white border-gray-300 text-gray-800 placeholder-gray-400';
+  const bgInputDisabled = isDark 
+    ? 'bg-slate-800/30 border-slate-700/30 text-slate-500' 
+    : 'bg-gray-100 border-gray-200 text-gray-500';
+  const borderColor = isDark ? 'border-slate-700/50' : 'border-gray-200';
+  const focusRing = 'focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50';
+  const textFile = isDark ? 'text-green-400' : 'text-green-600';
+  const btnCancel = isDark 
+    ? 'text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-600/50' 
+    : 'text-gray-600 hover:text-gray-800 bg-gray-200 hover:bg-gray-300';
 
   // 🔥 CARREGAR GRUPOS AO ABRIR O FORMULÁRIO
   useEffect(() => {
@@ -36,10 +62,7 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
     const fetchGroups = async () => {
       setLoadingGroups(true);
       try {
-        
-        // 🔥 USAR /api/v1 (O VERCEL FAZ O PROXY)
         const response = await api.get("/api/v1/service-orders/groups/available");
-        
         
         let groupsData = [];
         if (response.data && response.data.data) {
@@ -56,7 +79,8 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
         
         setGroups(groupsData);
         
-        if (groupsData.length === 0) {;
+        if (groupsData.length === 0) {
+          // sem grupos
         }
       } catch (error) {
         setGroups([]);
@@ -93,7 +117,6 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
       if (formData.group_id) data.append("group_id", formData.group_id);
       if (formData.attachment) data.append("attachment", formData.attachment);
       
-      // 🔥 USAR /api/v1 (O VERCEL FAZ O PROXY)
       const response = await api.post("/api/v1/service-orders", data, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -142,14 +165,14 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
   };
 
   return (
-    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-6 transition-colors hover:border-blue-500/30">
+    <div className={`border rounded-xl p-6 mb-6 transition-colors hover:border-blue-500/30 ${bgCard}`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h4 className="text-sm font-bold text-white flex items-center gap-2">
+        <h4 className={`text-sm font-bold flex items-center gap-2 ${textHeading}`}>
           ➕ Abrir Novo Chamado
         </h4>
         <button
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-600/50 transition-all"
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${btnCancel}`}
           onClick={onCancel}
           disabled={loading}
         >
@@ -159,13 +182,13 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
+          <label className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide mb-1.5 ${textLabel}`}>
             <span className="text-blue-500">●</span>
             Título do Chamado <span className="text-red-400">*</span>
           </label>
           <input
             type="text"
-            className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`w-full px-3 py-2.5 ${bgInput} rounded-lg text-sm ${focusRing} transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
             placeholder="Ex: Problema com acesso ao sistema..."
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -175,13 +198,13 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
         </div>
 
         <div>
-          <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
+          <label className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide mb-1.5 ${textLabel}`}>
             <span className="text-blue-500">●</span>
             Descrição <span className="text-red-400">*</span>
           </label>
           <textarea
             rows={5}
-            className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all resize-y disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`w-full px-3 py-2.5 ${bgInput} rounded-lg text-sm ${focusRing} transition-all resize-y disabled:opacity-50 disabled:cursor-not-allowed`}
             placeholder="Descreva detalhadamente o problema..."
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -192,12 +215,12 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
+            <label className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide mb-1.5 ${textLabel}`}>
               <span className="text-blue-500">●</span>
               Prioridade
             </label>
             <select
-              className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`w-full px-3 py-2.5 ${bgInput} rounded-lg text-sm ${focusRing} transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed`}
               value={formData.priority}
               onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
               disabled={loading}
@@ -210,12 +233,12 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
           </div>
 
           <div>
-            <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
+            <label className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide mb-1.5 ${textLabel}`}>
               <span className="text-blue-500">●</span>
               Grupo Responsável
             </label>
             <select
-              className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`w-full px-3 py-2.5 ${bgInput} rounded-lg text-sm ${focusRing} transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed`}
               value={formData.group_id}
               onChange={(e) => setFormData({ ...formData, group_id: e.target.value })}
               disabled={loading || loadingGroups}
@@ -234,35 +257,35 @@ export default function ServiceOrderForm({ groups: groupsProp, onSuccess, onCanc
               )}
             </select>
             {loadingGroups && (
-              <span className="text-xs text-slate-400 ml-1">Carregando...</span>
+              <span className={`text-xs ml-1 ${textMuted}`}>Carregando...</span>
             )}
           </div>
         </div>
 
         <div>
-          <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
+          <label className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide mb-1.5 ${textLabel}`}>
             <span className="text-blue-500">●</span>
             Anexo (PDF, JPG, PNG - máx 5MB)
           </label>
           <input
             type="file"
-            className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-500/20 file:text-blue-400 hover:file:bg-blue-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`w-full px-3 py-2.5 ${bgInput} rounded-lg text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-500/20 file:text-blue-400 hover:file:bg-blue-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${textLabel}`}
             accept=".pdf,.jpg,.jpeg,.png"
             onChange={handleFileChange}
             disabled={loading}
           />
           {formData.attachment && (
-            <div className="mt-2 flex items-center gap-2 text-sm text-green-400">
+            <div className={`mt-2 flex items-center gap-2 text-sm ${textFile}`}>
               <span>✅</span>
               <span>Arquivo: <strong>{formData.attachment.name}</strong></span>
             </div>
           )}
         </div>
 
-        <div className="flex flex-wrap items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-700/50">
+        <div className={`flex flex-wrap items-center justify-end gap-3 mt-6 pt-4 border-t ${borderColor}`}>
           <button
             type="button"
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-600/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${btnCancel}`}
             onClick={onCancel}
             disabled={loading}
           >
