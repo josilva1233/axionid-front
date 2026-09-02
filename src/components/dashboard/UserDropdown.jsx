@@ -31,7 +31,7 @@ const UserDropdown = ({ user, onLogout }) => {
     document.documentElement.classList.toggle('dark', newIsDark);
 
     try {
-      await api.put('/v1/theme', { theme: newTheme });
+      await api.put('/api/v1/theme', { theme: newTheme });
     } catch (error) {
       console.error('Erro ao salvar tema:', error);
       setIsDark(!newIsDark);
