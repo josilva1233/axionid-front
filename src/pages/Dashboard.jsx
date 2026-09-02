@@ -40,7 +40,7 @@ export default function Dashboard() {
     return document.documentElement.classList.contains('dark');
   });
 
-  // Observa mudanças na classe 'dark' do <html> (ex: quando UserDropdown alterna)
+  // Observa mudanças na classe 'dark' do <html>
   useEffect(() => {
     const observer = new MutationObserver(() => {
       const dark = document.documentElement.classList.contains('dark');
@@ -49,13 +49,6 @@ export default function Dashboard() {
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     return () => observer.disconnect();
   }, []);
-
-  // =============================================================
-  // 🔥 HELPER PARA CLASSES CONDICIONAIS
-  // =============================================================
-  const themeClass = (darkClass, lightClass) => {
-    return isDark ? darkClass : lightClass;
-  };
 
   // =============================================================
   // HANDLE LOGOUT
@@ -181,7 +174,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (!permissionsLoading) {
       if (!canAccessAnyTab()) {
-        // já tratado pelo redirecionamento
+        // já tratado
       } else {
         const firstTab = getFirstAvailableTab();
         if (!canAccessTab(activeTab)) {
@@ -834,7 +827,7 @@ export default function Dashboard() {
   }
 
   // =============================================================
-  // RENDERIZAÇÃO PRINCIPAL (quando tem acesso)
+  // RENDERIZAÇÃO PRINCIPAL
   // =============================================================
   return (
     <div className={`flex min-h-screen ${isDark ? 'bg-slate-900' : 'bg-gray-100'}`}>
@@ -844,7 +837,7 @@ export default function Dashboard() {
         onLogout={handleLogout}
         setActiveTab={handleTabChange}
         onToggle={setSidebarCollapsed}
-        isDark={isDark} 
+        isDark={isDark}
       />
 
       <div
@@ -1109,7 +1102,7 @@ export default function Dashboard() {
                             setActionLoading(false);
                           }
                         }
-                      }}isDark={isDark} 
+                      }}isDark={isDark}
                     />
                   )}
 
@@ -1131,7 +1124,7 @@ export default function Dashboard() {
                           total={ordersPagination.total}
                           onPageChange={handleOrdersPageChange}
                           loading={loading}
-                          isDark={isDark} 
+                          isDark={isDark}
                         />
                       )}
                     </div>
@@ -1142,15 +1135,15 @@ export default function Dashboard() {
               {activeTab === "terms" && isGlobalAdmin && (
                 <div className={`${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/50 border-gray-200'} border rounded-xl overflow-hidden`}>
                   {showTermAcceptances ? (
-                    <TermAcceptances 
+                    <TermAcceptances
                       termId={selectedTermId}
                       onBack={handleBackFromAcceptances}
                       filters={filters}
                       isDark={isDark}
                     />
                   ) : (
-                    <TermManagement 
-                      ref={termManagementRef} 
+                    <TermManagement
+                      ref={termManagementRef}
                       onViewUsers={handleViewTermAcceptances}
                       filters={filters}
                       isDark={isDark}
@@ -1159,11 +1152,11 @@ export default function Dashboard() {
                 </div>
               )}
 
-{activeTab === "ai" && (
-  <div className={`${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200'} border rounded-xl overflow-hidden`}>
-     <OperationView isDark={isDark} />
-  </div>
-)}
+              {activeTab === "ai" && (
+                <div className={`${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200'} border rounded-xl overflow-hidden`}>
+                  <OperationView isDark={isDark} />
+                </div>
+              )}
 
               <div className={`relative ${loading || actionLoading ? "opacity-60 pointer-events-none" : ""}`}>
                 {(loading || actionLoading) && (
@@ -1184,17 +1177,35 @@ export default function Dashboard() {
                           isGlobalAdmin={isGlobalAdmin}
                           isDark={isDark}
                         />
-                        <Pagination currentPage={usersPagination?.current || 1} lastPage={usersPagination?.last || 1} total={usersPagination?.total || 0} onPageChange={handleUsersPageChange} loading={loading} />
+                        <Pagination
+                          currentPage={usersPagination?.current || 1}
+                          lastPage={usersPagination?.last || 1}
+                          total={usersPagination?.total || 0}
+                          onPageChange={handleUsersPageChange}
+                          loading={loading}
+                          isDark={isDark}
+                        />
                       </>
                     ) : (
-                      <OperationView isDark={isDark} />
+                      <div className="text-center py-12 text-slate-400">
+                        <p className="text-lg">🔒 Acesso restrito</p>
+                        <p className="text-sm">Você não tem permissão para gerenciar usuários.</p>
+                        <p className="text-sm mt-2">Utilize o <strong>Assistente</strong> para obter informações sobre chamados e grupos.</p>
+                      </div>
                     )
                   )}
 
                   {activeTab === "audit" && (
                     <>
-                      <AuditTable logs={auditLogs} isDark={isDark}  />
-                      <Pagination currentPage={auditPagination?.current || 1} lastPage={auditPagination?.last || 1} total={auditPagination?.total || 0} onPageChange={handleAuditPageChange} loading={loading} />
+                      <AuditTable logs={auditLogs} isDark={isDark} />
+                      <Pagination
+                        currentPage={auditPagination?.current || 1}
+                        lastPage={auditPagination?.last || 1}
+                        total={auditPagination?.total || 0}
+                        onPageChange={handleAuditPageChange}
+                        loading={loading}
+                        isDark={isDark}
+                      />
                     </>
                   )}
 
@@ -1220,8 +1231,21 @@ export default function Dashboard() {
                       />
                     ) : (
                       <>
-                        <GroupTable groups={groups} onViewDetail={setSelectedGroupId} isGlobalAdmin={isGlobalAdmin} currentUser={currentUser} isDark={isDark} />
-                        <Pagination currentPage={groupsPagination?.current || 1} lastPage={groupsPagination?.last || 1} total={groupsPagination?.total || 0} onPageChange={handleGroupsPageChange} loading={loading} />
+                        <GroupTable
+                          groups={groups}
+                          onViewDetail={setSelectedGroupId}
+                          isGlobalAdmin={isGlobalAdmin}
+                          currentUser={currentUser}
+                          isDark={isDark}
+                        />
+                        <Pagination
+                          currentPage={groupsPagination?.current || 1}
+                          lastPage={groupsPagination?.last || 1}
+                          total={groupsPagination?.total || 0}
+                          onPageChange={handleGroupsPageChange}
+                          loading={loading}
+                          isDark={isDark}
+                        />
                       </>
                     )
                   )}
@@ -1235,12 +1259,27 @@ export default function Dashboard() {
                         onDelete={handleDeletePermission}
                         isSystemAdmin={isGlobalAdmin}
                         actionLoading={actionLoading}
+                        isDark={isDark}
                       />
                     ) : (
                       <>
-                        <PermissionTable permissions={permissions} loading={loading} currentUser={currentUser} onViewDetail={handleOpenPermissionDetail} onDelete={handleDeletePermission} isDark={isDark} />
+                        <PermissionTable
+                          permissions={permissions}
+                          loading={loading}
+                          currentUser={currentUser}
+                          onViewDetail={handleOpenPermissionDetail}
+                          onDelete={handleDeletePermission}
+                          isDark={isDark}
+                        />
                         {permissionsPagination?.last > 1 && (
-                          <Pagination currentPage={permissionsPagination.current} lastPage={permissionsPagination.last} total={permissionsPagination.total} onPageChange={handlePermissionsPageChange} loading={loading} />
+                          <Pagination
+                            currentPage={permissionsPagination.current}
+                            lastPage={permissionsPagination.last}
+                            total={permissionsPagination.total}
+                            onPageChange={handlePermissionsPageChange}
+                            loading={loading}
+                            isDark={isDark}
+                          />
                         )}
                       </>
                     )

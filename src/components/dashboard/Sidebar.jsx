@@ -8,9 +8,8 @@ export default function Sidebar({
   role, 
   onLogout, 
   onToggle,
-  isDark = false, // 🔥 NOVA PROP
+  isDark = false,
 }) {
-  // 🔥 USAR O HOOK DE PERMISSÕES
   const {
     canViewUsers,
     canViewGroups,
@@ -24,7 +23,6 @@ export default function Sidebar({
   const [isHovered, setIsHovered] = useState(false);
   const timeoutRef = useRef(null);
 
-  // Limpeza do timeout
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
@@ -34,7 +32,6 @@ export default function Sidebar({
     };
   }, []);
 
-  // ============ HANDLERS ============
   const handleMouseEnter = () => {
     setIsHovered(true);
     if (timeoutRef.current) {
@@ -61,7 +58,6 @@ export default function Sidebar({
     if (onToggle) onToggle(newState);
   };
 
-  // ============ CLASSES DE TEMA ============
   const bgSidebar = isDark 
     ? 'bg-slate-900/95 border-slate-700/50' 
     : 'bg-white/95 border-gray-200/80';
@@ -80,7 +76,6 @@ export default function Sidebar({
   const textFooter = isDark ? 'text-red-400 hover:text-red-300 hover:bg-red-500/10' : 'text-red-600 hover:text-red-700 hover:bg-red-50';
   const textVersion = isDark ? 'text-slate-500' : 'text-gray-400';
 
-  // ============ NAVEGAÇÃO COM PERMISSÕES ============
   const navItems = [
     {
       id: 'users',
@@ -103,6 +98,14 @@ export default function Sidebar({
       section: 'Atendimento',
       visible: canViewOrders,
     },
+    // 🔥 NOVO: Assistente (visível para todos)
+    {
+      id: 'ai',
+      icon: '🤖',
+      label: 'Assistente',
+      section: 'Principal',
+      visible: true,
+    },
     {
       id: 'audit',
       icon: '📜',
@@ -117,27 +120,17 @@ export default function Sidebar({
       section: 'Segurança',
       visible: canViewPermissions || isAdmin,
     },
-    // 🔥 NOVO: TERMOS DE USO
     {
       id: 'terms',
       icon: '📄',
       label: 'Termos de Uso',
       section: 'Segurança',
-      visible: isAdmin, // Apenas admin pode ver
+      visible: isAdmin,
     },
-    {
-  id: 'ai',
-  icon: '🤖',
-  label: 'Assistente',
-  section: 'Principal',
-  visible: true, // Visível para todos
-},
   ];
 
-  // 🔥 FILTRAR ITENS POR PERMISSÃO
   const filteredNavItems = navItems.filter(item => item.visible);
 
-  // Se não houver itens visíveis, mostrar mensagem
   if (filteredNavItems.length === 0) {
     return (
       <aside className={`fixed left-0 top-0 h-screen w-[70px] z-[1000] ${bgSidebar} border-r`}>
@@ -150,14 +143,12 @@ export default function Sidebar({
     );
   }
 
-  // Agrupa por seção
   const groupedItems = filteredNavItems.reduce((acc, item) => {
     if (!acc[item.section]) acc[item.section] = [];
     acc[item.section].push(item);
     return acc;
   }, {});
 
-  // ============ RENDER ============
   return (
     <aside 
       className={`
@@ -172,7 +163,6 @@ export default function Sidebar({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {/* ============ BRAND ============ */}
       <div className={`relative px-6 py-4 min-h-[70px] border-b ${borderSubtle} flex items-center justify-between`}>
         <div className="flex items-center">
           {!isCollapsed ? (
@@ -187,7 +177,6 @@ export default function Sidebar({
           )}
         </div>
 
-        {/* Toggle Button */}
         <button 
           className={`
             absolute -right-3 top-1/2 -translate-y-1/2
@@ -207,18 +196,14 @@ export default function Sidebar({
         </button>
       </div>
 
-      {/* ============ NAVEGAÇÃO ============ */}
       <nav className="flex-1 overflow-y-auto py-2 px-2 custom-scrollbar">
         {Object.entries(groupedItems).map(([section, items]) => (
           <div key={section} className="mb-3">
-            {/* Título da seção */}
             {!isCollapsed && (
               <p className={`text-[10px] font-semibold uppercase tracking-wider ${textSection} px-3 py-2`}>
                 {section}
               </p>
             )}
-
-            {/* Itens da seção */}
             {items.map((item) => (
               <button
                 key={item.id}
@@ -237,24 +222,17 @@ export default function Sidebar({
                 onClick={() => setActiveTab(item.id)}
                 title={isCollapsed ? item.label : ''}
               >
-                {/* Ícone */}
                 <span className="text-lg w-6 text-center flex-shrink-0">
                   {item.icon}
                 </span>
-
-                {/* Label */}
                 {!isCollapsed && (
                   <span className="text-sm font-medium whitespace-nowrap">
                     {item.label}
                   </span>
                 )}
-
-                {/* Indicador de ativo */}
                 {activeTab === item.id && (
                   <span className={`absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-8 ${indicatorActive} rounded-r`}></span>
                 )}
-
-                {/* Badge para Termos de Uso (se houver termos pendentes) */}
                 {item.id === 'terms' && !isCollapsed && (
                   <span className={`ml-auto text-[10px] px-2 py-0.5 rounded-full ${
                     isDark 
@@ -270,7 +248,6 @@ export default function Sidebar({
         ))}
       </nav>
 
-      {/* ============ FOOTER ============ */}
       <div className={`
         border-t ${borderSubtle}
         ${isCollapsed ? 'px-2 py-3' : 'px-4 py-4'}
@@ -293,7 +270,6 @@ export default function Sidebar({
             </span>
           )}
         </button>
-
         {!isCollapsed && (
           <div className={`text-center text-[10px] ${textVersion} mt-3`}>
             v1.0.4-stable
