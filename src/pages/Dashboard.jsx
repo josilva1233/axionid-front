@@ -28,14 +28,37 @@ import TermManagement from "./TermManagement";
 import TermAcceptances from "./TermAcceptances";
 // Styles
 import '../index.css';
-// 🔥 IMPORTAR A PÁGINA DE ACESSO NEGADO
 import AccessDenied from "./AccessDenied";
 
 export default function Dashboard() {
   const navigate = useNavigate();
 
   // =============================================================
-  // 🔥 DEFINIÇÃO DO HANDLE LOGOUT (CORRIGIDO)
+  // 🔥 TEMA – estado derivado da classe no <html>
+  // =============================================================
+  const [isDark, setIsDark] = useState(() => {
+    return document.documentElement.classList.contains('dark');
+  });
+
+  // Observa mudanças na classe 'dark' do <html> (ex: quando UserDropdown alterna)
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const dark = document.documentElement.classList.contains('dark');
+      setIsDark(dark);
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
+  // =============================================================
+  // 🔥 HELPER PARA CLASSES CONDICIONAIS
+  // =============================================================
+  const themeClass = (darkClass, lightClass) => {
+    return isDark ? darkClass : lightClass;
+  };
+
+  // =============================================================
+  // HANDLE LOGOUT
   // =============================================================
   const handleLogout = useCallback(() => {
     localStorage.clear();
@@ -91,12 +114,12 @@ export default function Dashboard() {
   const [hasAccess, setHasAccess] = useState(null);
 
   const AxionAlert = Swal.mixin({
-    background: "#111214",
-    color: "#ffffff",
+    background: isDark ? "#111214" : "#ffffff",
+    color: isDark ? "#ffffff" : "#1f2937",
     confirmButtonColor: "#6366f1",
     cancelButtonColor: "#343a40",
     customClass: {
-      popup: "border border-gray-700 rounded-xl",
+      popup: `border ${isDark ? 'border-gray-700' : 'border-gray-200'} rounded-xl`,
       confirmButton: "px-4 py-2 rounded-full font-bold mx-2 bg-indigo-500 hover:bg-indigo-400 transition-colors",
       cancelButton: "px-4 py-2 rounded-full font-bold mx-2 bg-gray-700 hover:bg-gray-600 transition-colors",
     },
@@ -139,19 +162,18 @@ export default function Dashboard() {
 
   const isGlobalAdmin = role === "admin" || currentUser?.is_admin === true;
 
-// =========================================================
-// 🔥 VERIFICAR PERMISSÃO DE ACESSO AO SISTEMA
-// =========================================================
-useEffect(() => {
-  if (currentUser && !permissionsLoading) {
-    // Usa canAccessAnyTab() em vez de hasAnyPermission()
-    const access = canAccessAnyTab();
-    setHasAccess(access);
-    if (!access) {
-      navigate('/access-denied', { replace: true });
+  // =========================================================
+  // 🔥 VERIFICAR PERMISSÃO DE ACESSO AO SISTEMA
+  // =========================================================
+  useEffect(() => {
+    if (currentUser && !permissionsLoading) {
+      const access = canAccessAnyTab();
+      setHasAccess(access);
+      if (!access) {
+        navigate('/access-denied', { replace: true });
+      }
     }
-  }
-}, [currentUser, permissionsLoading, canAccessAnyTab, navigate]);
+  }, [currentUser, permissionsLoading, canAccessAnyTab, navigate]);
 
   // =========================================================
   // 🔥 CONTROLAR ABA INICIAL BASEADA NAS PERMISSÕES
@@ -403,8 +425,8 @@ useEffect(() => {
       showCancelButton: true,
       confirmButtonText: "Sim, excluir!",
       cancelButtonText: "Cancelar",
-      background: "#111214",
-      color: "#ffffff",
+      background: isDark ? "#111214" : "#ffffff",
+      color: isDark ? "#ffffff" : "#1f2937",
       confirmButtonColor: "#6366f1",
     });
     if (result.isConfirmed) {
@@ -419,7 +441,7 @@ useEffect(() => {
         setActionLoading(false);
       }
     }
-  }, [AxionAlert, loadServiceOrders, ordersCurrentPage]);
+  }, [AxionAlert, loadServiceOrders, ordersCurrentPage, isDark]);
 
   // ============ HANDLERS DE PERMISSÕES ============
   const handleCreatePermission = useCallback(async (data) => {
@@ -521,6 +543,8 @@ useEffect(() => {
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Sim, remover",
+      background: isDark ? "#111214" : "#ffffff",
+      color: isDark ? "#ffffff" : "#1f2937",
     });
 
     if (result.isConfirmed) {
@@ -535,7 +559,7 @@ useEffect(() => {
         setActionLoading(false);
       }
     }
-  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId]);
+  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId, isDark]);
 
   // ============ CARREGAR DADOS POR ABA ============
   useEffect(() => {
@@ -657,6 +681,8 @@ useEffect(() => {
       showCancelButton: true,
       confirmButtonText: "Sim, excluir",
       cancelButtonText: "Cancelar",
+      background: isDark ? "#111214" : "#ffffff",
+      color: isDark ? "#ffffff" : "#1f2937",
     });
     if (result.isConfirmed) {
       setActionLoading(true);
@@ -671,7 +697,7 @@ useEffect(() => {
         setActionLoading(false);
       }
     }
-  }, [AxionAlert, loadUsers, usersCurrentPage]);
+  }, [AxionAlert, loadUsers, usersCurrentPage, isDark]);
 
   const handleToggleAdmin = useCallback(async (userId, currentStatus) => {
     const endpoint = currentStatus ? "remove-admin" : "promote";
@@ -681,6 +707,8 @@ useEffect(() => {
       text: `Deseja realmente ${actionText}?`,
       icon: "question",
       showCancelButton: true,
+      background: isDark ? "#111214" : "#ffffff",
+      color: isDark ? "#ffffff" : "#1f2937",
     });
     if (result.isConfirmed) {
       setActionLoading(true);
@@ -696,7 +724,7 @@ useEffect(() => {
         setActionLoading(false);
       }
     }
-  }, [AxionAlert, loadUsers, usersCurrentPage]);
+  }, [AxionAlert, loadUsers, usersCurrentPage, isDark]);
 
   const handleToggleStatus = useCallback(async (userId, currentStatus) => {
     const action = currentStatus ? "suspender" : "ativar";
@@ -705,6 +733,8 @@ useEffect(() => {
       text: `Deseja ${action} o acesso deste usuário?`,
       icon: "warning",
       showCancelButton: true,
+      background: isDark ? "#111214" : "#ffffff",
+      color: isDark ? "#ffffff" : "#1f2937",
     });
     if (result.isConfirmed) {
       setActionLoading(true);
@@ -720,7 +750,7 @@ useEffect(() => {
         setActionLoading(false);
       }
     }
-  }, [AxionAlert, loadUsers, usersCurrentPage]);
+  }, [AxionAlert, loadUsers, usersCurrentPage, isDark]);
 
   // ============ HANDLERS DE GRUPOS ============
   const handleGroupMemberRole = useCallback(async (userId, type) => {
@@ -759,6 +789,8 @@ useEffect(() => {
       text: `Deseja remover ${userName}?`,
       icon: "warning",
       showCancelButton: true,
+      background: isDark ? "#111214" : "#ffffff",
+      color: isDark ? "#ffffff" : "#1f2937",
     });
     if (result.isConfirmed) {
       setActionLoading(true);
@@ -772,15 +804,15 @@ useEffect(() => {
         setActionLoading(false);
       }
     }
-  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId]);
+  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId, isDark]);
 
   // ============ COMPONENTE DE LOADING PERSONALIZADO ============
   const LoadingSpinner = () => (
     <div className="flex items-center justify-center p-8">
       <div className="relative">
-        <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
+        <div className={`w-12 h-12 border-4 ${isDark ? 'border-blue-500/20 border-t-blue-500' : 'border-blue-300/20 border-t-blue-600'} rounded-full animate-spin`}></div>
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-6 h-6 border-4 border-blue-400/30 border-t-blue-400 rounded-full animate-spin" style={{ animationDelay: '150ms' }}></div>
+          <div className={`w-6 h-6 border-4 ${isDark ? 'border-blue-400/30 border-t-blue-400' : 'border-blue-500/30 border-t-blue-500'} rounded-full animate-spin`} style={{ animationDelay: '150ms' }}></div>
         </div>
       </div>
     </div>
@@ -791,7 +823,7 @@ useEffect(() => {
   // =============================================================
   if (currentUser === null || permissionsLoading || hasAccess === null) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-900">
+      <div className={`flex items-center justify-center min-h-screen ${isDark ? 'bg-slate-900' : 'bg-gray-100'}`}>
         <LoadingSpinner />
       </div>
     );
@@ -805,7 +837,7 @@ useEffect(() => {
   // RENDERIZAÇÃO PRINCIPAL (quando tem acesso)
   // =============================================================
   return (
-    <div className="flex min-h-screen bg-slate-900">
+    <div className={`flex min-h-screen ${isDark ? 'bg-slate-900' : 'bg-gray-100'}`}>
       <Sidebar
         activeTab={activeTab}
         role={role}
@@ -815,17 +847,17 @@ useEffect(() => {
       />
 
       <div
-        className="flex-1 min-h-screen bg-slate-900 transition-all duration-300"
+        className={`flex-1 min-h-screen ${isDark ? 'bg-slate-900' : 'bg-gray-100'} transition-all duration-300`}
         style={{
           marginLeft: sidebarCollapsed ? '70px' : '250px',
           width: `calc(100% - ${sidebarCollapsed ? '70px' : '250px'})`
         }}
       >
-        <header className="flex justify-between items-center px-8 py-4 bg-slate-800/50 border-b border-slate-700/50 min-h-[72px] sticky top-0 z-50 backdrop-blur-sm">
+        <header className={`flex justify-between items-center px-8 py-4 ${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200/50'} border-b min-h-[72px] sticky top-0 z-50 backdrop-blur-sm`}>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+            <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-800'} flex items-center gap-2`}>
               Axion<span className="text-blue-500">ID</span>
-              <span className={`text-xs font-semibold px-3 py-1 rounded-full ${role === "admin" ? "bg-blue-500/20 text-blue-400" : "bg-slate-700 text-slate-300"}`}>
+              <span className={`text-xs font-semibold px-3 py-1 rounded-full ${role === "admin" ? "bg-blue-500/20 text-blue-400" : isDark ? "bg-slate-700 text-slate-300" : "bg-gray-200 text-gray-600"}`}>
                 {role === "admin" ? "Admin" : "Comum"}
               </span>
             </h1>
@@ -836,12 +868,12 @@ useEffect(() => {
         <main className="p-6 max-w-7xl mx-auto w-full">
           {/* ========== BANNER DE ENDEREÇO INCOMPLETO ========== */}
           {showAddressBanner && currentUser && !currentUser.is_admin && (
-            <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl flex items-center justify-between">
+            <div className={`mb-6 p-4 ${isDark ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-yellow-50 border-yellow-200'} border rounded-xl flex items-center justify-between`}>
               <div className="flex items-center gap-3">
                 <span className="text-yellow-400 text-2xl">⚠️</span>
                 <div>
-                  <p className="text-yellow-200 font-semibold">Endereço incompleto</p>
-                  <p className="text-yellow-200/70 text-sm">Para melhor identificação, complete seu endereço de registro.</p>
+                  <p className={`font-semibold ${isDark ? 'text-yellow-200' : 'text-yellow-700'}`}>Endereço incompleto</p>
+                  <p className={`text-sm ${isDark ? 'text-yellow-200/70' : 'text-yellow-600'}`}>Para melhor identificação, complete seu endereço de registro.</p>
                 </div>
               </div>
               <button onClick={handleOpenAddressModal} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-all">
@@ -853,21 +885,21 @@ useEffect(() => {
           {/* ========== MODAL DE ENDEREÇO ========== */}
           {showAddressModal && (
             <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-              <div className="bg-slate-800/95 border border-slate-700/50 rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700/50">
-                  <h3 className="text-lg font-bold text-white">📍 Completar Endereço</h3>
-                  <button onClick={() => setShowAddressModal(false)} className="text-slate-400 hover:text-slate-200 text-2xl">✕</button>
+              <div className={`${isDark ? 'bg-slate-800/95 border-slate-700/50' : 'bg-white/95 border-gray-200'} border rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden`}>
+                <div className={`flex items-center justify-between px-6 py-4 border-b ${isDark ? 'border-slate-700/50' : 'border-gray-200'}`}>
+                  <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>📍 Completar Endereço</h3>
+                  <button onClick={() => setShowAddressModal(false)} className={`${isDark ? 'text-slate-400 hover:text-slate-200' : 'text-gray-400 hover:text-gray-600'} text-2xl`}>✕</button>
                 </div>
                 <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)] custom-scrollbar">
                   <form className="space-y-4">
                     <div className="relative">
-                      <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">CEP</label>
+                      <label className={`block text-xs font-semibold ${isDark ? 'text-slate-400' : 'text-gray-500'} uppercase tracking-wider mb-1.5`}>CEP</label>
                       <input
                         type="text"
                         value={addressForm.zip_code}
                         onChange={(e) => setAddressForm({ ...addressForm, zip_code: e.target.value })}
                         onBlur={(e) => fetchAddressByCep(e.target.value)}
-                        className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        className={`w-full px-3 py-2.5 ${isDark ? 'bg-slate-800/50 border-slate-700/50 text-slate-200 placeholder-slate-500' : 'bg-gray-50 border-gray-300 text-gray-800 placeholder-gray-400'} border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
                         placeholder="00000-000"
                         disabled={loadingCep}
                       />
@@ -878,74 +910,74 @@ useEffect(() => {
                       )}
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Rua</label>
+                      <label className={`block text-xs font-semibold ${isDark ? 'text-slate-400' : 'text-gray-500'} uppercase tracking-wider mb-1.5`}>Rua</label>
                       <input
                         type="text"
                         value={addressForm.street}
                         onChange={(e) => setAddressForm({ ...addressForm, street: e.target.value })}
-                        className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        className={`w-full px-3 py-2.5 ${isDark ? 'bg-slate-800/50 border-slate-700/50 text-slate-200 placeholder-slate-500' : 'bg-gray-50 border-gray-300 text-gray-800 placeholder-gray-400'} border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
                         placeholder="Rua das Flores"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Número</label>
+                        <label className={`block text-xs font-semibold ${isDark ? 'text-slate-400' : 'text-gray-500'} uppercase tracking-wider mb-1.5`}>Número</label>
                         <input
                           type="text"
                           value={addressForm.number}
                           onChange={(e) => setAddressForm({ ...addressForm, number: e.target.value })}
-                          className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                          className={`w-full px-3 py-2.5 ${isDark ? 'bg-slate-800/50 border-slate-700/50 text-slate-200 placeholder-slate-500' : 'bg-gray-50 border-gray-300 text-gray-800 placeholder-gray-400'} border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
                           placeholder="123"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Bairro</label>
+                        <label className={`block text-xs font-semibold ${isDark ? 'text-slate-400' : 'text-gray-500'} uppercase tracking-wider mb-1.5`}>Bairro</label>
                         <input
                           type="text"
                           value={addressForm.neighborhood}
                           onChange={(e) => setAddressForm({ ...addressForm, neighborhood: e.target.value })}
-                          className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                          className={`w-full px-3 py-2.5 ${isDark ? 'bg-slate-800/50 border-slate-700/50 text-slate-200 placeholder-slate-500' : 'bg-gray-50 border-gray-300 text-gray-800 placeholder-gray-400'} border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
                           placeholder="Centro"
                         />
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Cidade</label>
+                        <label className={`block text-xs font-semibold ${isDark ? 'text-slate-400' : 'text-gray-500'} uppercase tracking-wider mb-1.5`}>Cidade</label>
                         <input
                           type="text"
                           value={addressForm.city}
                           onChange={(e) => setAddressForm({ ...addressForm, city: e.target.value })}
-                          className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                          className={`w-full px-3 py-2.5 ${isDark ? 'bg-slate-800/50 border-slate-700/50 text-slate-200 placeholder-slate-500' : 'bg-gray-50 border-gray-300 text-gray-800 placeholder-gray-400'} border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
                           placeholder="São Paulo"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Estado</label>
+                        <label className={`block text-xs font-semibold ${isDark ? 'text-slate-400' : 'text-gray-500'} uppercase tracking-wider mb-1.5`}>Estado</label>
                         <input
                           type="text"
                           value={addressForm.state}
                           onChange={(e) => setAddressForm({ ...addressForm, state: e.target.value })}
-                          className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                          className={`w-full px-3 py-2.5 ${isDark ? 'bg-slate-800/50 border-slate-700/50 text-slate-200 placeholder-slate-500' : 'bg-gray-50 border-gray-300 text-gray-800 placeholder-gray-400'} border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
                           placeholder="SP"
                           maxLength={2}
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Complemento</label>
+                      <label className={`block text-xs font-semibold ${isDark ? 'text-slate-400' : 'text-gray-500'} uppercase tracking-wider mb-1.5`}>Complemento</label>
                       <input
                         type="text"
                         value={addressForm.complement}
                         onChange={(e) => setAddressForm({ ...addressForm, complement: e.target.value })}
-                        className="w-full px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        className={`w-full px-3 py-2.5 ${isDark ? 'bg-slate-800/50 border-slate-700/50 text-slate-200 placeholder-slate-500' : 'bg-gray-50 border-gray-300 text-gray-800 placeholder-gray-400'} border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
                         placeholder="Apto 101"
                       />
                     </div>
                   </form>
                 </div>
-                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-700/50">
-                  <button onClick={() => setShowAddressModal(false)} disabled={addressLoading} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-600/50 transition-all">Cancelar</button>
+                <div className={`flex items-center justify-end gap-3 px-6 py-4 border-t ${isDark ? 'border-slate-700/50' : 'border-gray-200'}`}>
+                  <button onClick={() => setShowAddressModal(false)} disabled={addressLoading} className={`px-4 py-2 rounded-lg text-sm font-medium ${isDark ? 'text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-600/50' : 'text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200'} transition-all`}>Cancelar</button>
                   <button onClick={handleSaveAddress} disabled={addressLoading} className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 transition-all flex items-center gap-2">
                     {addressLoading ? (
                       <>
@@ -982,6 +1014,7 @@ useEffect(() => {
                 else if (type === "toggle-status") await handleToggleStatus(selectedUser.id, selectedUser.is_active);
                 else if (type === "delete") await handleDeleteUser(selectedUser.id, selectedUser.name);
               }}
+              isDark={isDark}
             />
           ) : selectedGroupId ? (
             <GroupDetail
@@ -1056,8 +1089,8 @@ useEffect(() => {
                           showCancelButton: true,
                           confirmButtonText: "Sim, excluir!",
                           cancelButtonText: "Cancelar",
-                          background: "#111214",
-                          color: "#ffffff",
+                          background: isDark ? "#111214" : "#ffffff",
+                          color: isDark ? "#ffffff" : "#1f2937",
                           confirmButtonColor: "#6366f1",
                         });
                         if (result.isConfirmed) {
@@ -1102,7 +1135,7 @@ useEffect(() => {
               )}
 
               {activeTab === "terms" && isGlobalAdmin && (
-                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
+                <div className={`${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/50 border-gray-200'} border rounded-xl overflow-hidden`}>
                   {showTermAcceptances ? (
                     <TermAcceptances 
                       termId={selectedTermId}
@@ -1120,19 +1153,19 @@ useEffect(() => {
               )}
 
               {activeTab === "ai" && (
-                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
+                <div className={`${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/50 border-gray-200'} border rounded-xl overflow-hidden`}>
                   <AIChat />
                 </div>
               )}
 
               <div className={`relative ${loading || actionLoading ? "opacity-60 pointer-events-none" : ""}`}>
                 {(loading || actionLoading) && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-slate-900/50 rounded-xl z-10">
+                  <div className={`absolute inset-0 flex items-center justify-center ${isDark ? 'bg-slate-900/50' : 'bg-white/50'} rounded-xl z-10`}>
                     <LoadingSpinner />
                   </div>
                 )}
 
-                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden p-6">
+                <div className={`${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200'} border rounded-xl overflow-hidden p-6`}>
                   {activeTab === "users" && (
                     isGlobalAdmin ? (
                       <>
@@ -1142,6 +1175,7 @@ useEffect(() => {
                           onDeleteUser={handleDeleteUser}
                           onToggleAdmin={handleToggleAdmin}
                           isGlobalAdmin={isGlobalAdmin}
+                          isDark={isDark}
                         />
                         <Pagination currentPage={usersPagination?.current || 1} lastPage={usersPagination?.last || 1} total={usersPagination?.total || 0} onPageChange={handleUsersPageChange} loading={loading} />
                       </>
