@@ -14,7 +14,7 @@ export function usePermissions() {
   const canViewAudit = hasPermission('menu.audit.view');
   const canViewPermissions = hasPermission('menu.permissions.view');
   const canViewTerms = hasPermission('menu.terms.view');
-  const canViewAi = true; // 🔥 TODOS PODEM VER O ASSISTENTE
+  const canViewAi = hasPermission('menu.ai.view');
 
   // =========================================================
   // 🔥 PERMISSÕES DE AÇÃO - USUÁRIOS
