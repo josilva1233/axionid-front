@@ -64,7 +64,7 @@ export function useDashboardData(role) {
     }
   }, [isAdmin, filters.name, filters.completed]);
 
-  // ---- GRUPOS ----
+// ---- GRUPOS ----
   const loadGroups = useCallback(async (page = 1) => {
     setLoading(true);
     try {
@@ -84,6 +84,7 @@ export function useDashboardData(role) {
       } else {
         setGroups([]);
       }
+    } catch (err) {
       setGroups([]);
     } finally {
       setLoading(false);
