@@ -23,7 +23,6 @@ import ServiceOrderForm from "../components/dashboard/ServiceOrderForm";
 import ServiceOrderDetail from "../components/dashboard/ServiceOrderDetail";
 import Pagination from "../components/dashboard/Pagination";
 import PermissionDetail from "../components/dashboard/PermissionDetail";
-import AIChat from "../components/dashboard/AIChat";
 import TermManagement from "./TermManagement";
 import TermAcceptances from "./TermAcceptances";
 // Styles

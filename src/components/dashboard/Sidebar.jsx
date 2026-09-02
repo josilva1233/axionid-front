@@ -58,6 +58,7 @@ export default function Sidebar({
     if (onToggle) onToggle(newState);
   };
 
+  // ============ CLASSES DE TEMA ============
   const bgSidebar = isDark 
     ? 'bg-slate-900/95 border-slate-700/50' 
     : 'bg-white/95 border-gray-200/80';
@@ -76,6 +77,7 @@ export default function Sidebar({
   const textFooter = isDark ? 'text-red-400 hover:text-red-300 hover:bg-red-500/10' : 'text-red-600 hover:text-red-700 hover:bg-red-50';
   const textVersion = isDark ? 'text-slate-500' : 'text-gray-400';
 
+  // ============ NAVEGAÇÃO COM PERMISSÕES ============
   const navItems = [
     {
       id: 'users',
@@ -163,6 +165,7 @@ export default function Sidebar({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
+      {/* ============ BRAND ============ */}
       <div className={`relative px-6 py-4 min-h-[70px] border-b ${borderSubtle} flex items-center justify-between`}>
         <div className="flex items-center">
           {!isCollapsed ? (
@@ -196,6 +199,7 @@ export default function Sidebar({
         </button>
       </div>
 
+      {/* ============ NAVEGAÇÃO ============ */}
       <nav className="flex-1 overflow-y-auto py-2 px-2 custom-scrollbar">
         {Object.entries(groupedItems).map(([section, items]) => (
           <div key={section} className="mb-3">
@@ -204,6 +208,7 @@ export default function Sidebar({
                 {section}
               </p>
             )}
+
             {items.map((item) => (
               <button
                 key={item.id}
@@ -234,11 +239,7 @@ export default function Sidebar({
                   <span className={`absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-8 ${indicatorActive} rounded-r`}></span>
                 )}
                 {item.id === 'terms' && !isCollapsed && (
-                  <span className={`ml-auto text-[10px] px-2 py-0.5 rounded-full ${
-                    isDark 
-                      ? 'bg-blue-500/20 text-blue-400' 
-                      : 'bg-blue-100 text-blue-700'
-                  }`}>
+                  <span className={`ml-auto text-[10px] px-2 py-0.5 rounded-full ${isDark ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-700'}`}>
                     Novo
                   </span>
                 )}
@@ -248,10 +249,8 @@ export default function Sidebar({
         ))}
       </nav>
 
-      <div className={`
-        border-t ${borderSubtle}
-        ${isCollapsed ? 'px-2 py-3' : 'px-4 py-4'}
-      `}>
+      {/* ============ FOOTER ============ */}
+      <div className={`border-t ${borderSubtle} ${isCollapsed ? 'px-2 py-3' : 'px-4 py-4'}`}>
         <button
           onClick={onLogout}
           className={`
