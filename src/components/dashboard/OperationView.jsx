@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import api from "../../services/api";
 
 export default function OperationView({ isDark = false }) {
   const [messages, setMessages] = useState([
@@ -7,6 +8,35 @@ export default function OperationView({ isDark = false }) {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(scrollToBottom, [messages]);
+
+  const handleSend = async (e) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+
+    const userMsg = { role: 'user', content: input };
+    setMessages(prev => [...prev, userMsg]);
+    setInput("");
+    setIsTyping(true);
+
+    try {
+      const response = await api.post("/ai/chat", { message: input });
+      const aiMsg = response.data.message || "Desculpe, não consegui processar sua pergunta.";
+      
+      const aiResponse = { role: 'ai', content: aiMsg };
+      setMessages(prev => [...prev, aiResponse]);
+    } catch (error) {
+      const errorMsg = "❌ Erro ao processar sua pergunta. Tente novamente.";
+      setMessages(prev => [...prev, { role: 'ai', content: errorMsg }]);
+    } finally {
+      setIsTyping(false);
+    }
+  };
 
   // ============ CLASSES DE TEMA ============
   const containerBg = isDark 
@@ -39,37 +69,6 @@ export default function OperationView({ isDark = false }) {
   const inputFocus = 'focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50';
   const btnSend = 'bg-blue-600 hover:bg-blue-500 text-white';
   const footerBg = isDark ? 'bg-slate-800/30 border-slate-700/50' : 'bg-gray-50/80 border-gray-200';
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(scrollToBottom, [messages]);
-
-  const handleSend = async (e) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-
-    const userMsg = { role: 'user', content: input };
-    setMessages(prev => [...prev, userMsg]);
-    setInput("");
-    setIsTyping(true);
-
-    setTimeout(() => {
-      let responseText = "";
-      if (input.toLowerCase().includes("status")) {
-        responseText = "Todos os sistemas AxionID estão operando com latência de 24ms. Nenhum incidente reportado.";
-      } else if (input.toLowerCase().includes("ajuda")) {
-        responseText = "Posso ajudar você a localizar usuários, entender permissões ou gerar relatórios de auditoria.";
-      } else {
-        responseText = `Entendi sua solicitação sobre "${input}". Como sou um assistente operacional, estou analisando os dados para fornecer a melhor resposta técnica.`;
-      }
-
-      const aiResponse = { role: 'ai', content: responseText };
-      setMessages(prev => [...prev, aiResponse]);
-      setIsTyping(false);
-    }, 1000);
-  };
 
   return (
     <div className={`rounded-xl overflow-hidden border flex flex-col min-h-[500px] ${containerBg}`}>
