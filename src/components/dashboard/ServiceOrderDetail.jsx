@@ -3,7 +3,6 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import api from "../../services/api";
 import Swal from "sweetalert2";
 
-// ---- Configurações de status e prioridade ----
 const STATUS_CONFIG = {
   pending: { bg: "bg-yellow-500/15", text: "text-yellow-400", dot: "bg-yellow-400", label: "PENDENTE", icon: "⏳" },
   open: { bg: "bg-blue-500/15", text: "text-blue-400", dot: "bg-blue-400", label: "EM ABERTO", icon: "📂" },
@@ -12,14 +11,6 @@ const STATUS_CONFIG = {
   completed: { bg: "bg-green-500/15", text: "text-green-400", dot: "bg-green-400", label: "RESOLVIDO", icon: "✅" },
   closed: { bg: "bg-slate-700/30", text: "text-slate-400", dot: "bg-slate-400", label: "FECHADO", icon: "🔒" },
 };
-
-const SELECTABLE_STATUSES = [
-  { value: 'pending', label: '⏳ Pendente' },
-  { value: 'open', label: '📂 Em Aberto' },
-  { value: 'in_progress', label: '🔧 Em Atendimento' },
-  { value: 'completed', label: '✅ Resolvido' },
-  { value: 'closed', label: '🔒 Fechado' },
-];
 
 const PRIORITY_CONFIG = {
   low: { bg: "bg-green-500/15", text: "text-green-400", dot: "bg-green-400", label: "Baixa", icon: "🔵" },
@@ -47,74 +38,50 @@ const PriorityBadge = ({ priority }) => {
   );
 };
 
-const AttachmentPreview = ({ order, baseUrl, isDark }) => {
-  const fileName = order.attachment_path?.split("/").pop() || "anexo";
-  const fullUrl = `${baseUrl}/storage/${order.attachment_path}`;
-
-  if (!order.attachment_path) return null;
-
-  return (
-    <div className={`mt-4 pt-4 border-t ${isDark ? 'border-slate-700/50' : 'border-gray-200'}`}>
-      <h6 className="text-blue-400 mb-3 font-bold flex items-center gap-2">
-        <span>📎</span> Anexo da Solicitação
-      </h6>
-      <div className={`${isDark ? 'bg-slate-800/30' : 'bg-gray-100'} rounded-2xl p-4`}>
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-3">
-            <span className="text-blue-400 text-4xl">📄</span>
-            <div>
-              <h6 className={`font-bold mb-1 ${isDark ? 'text-white' : 'text-gray-800'}`}>{fileName}</h6>
-              <small className={isDark ? 'text-slate-400' : 'text-gray-500'}>
-                {order.attachment_path?.includes('.pdf') ? 'Documento PDF' : 'Arquivo anexado'}
-              </small>
-            </div>
-          </div>
-          <a
-            href={fullUrl}
-            download={fileName}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all hover:shadow-lg hover:-translate-y-0.5"
-          >
-            ⬇️ Download
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ============ COMPONENTE PRINCIPAL ============
 export default function ServiceOrderDetail({
-  order,
+  order: initialOrder,
   onBack,
   onUpdateStatus,
   onDeleteOrder,
-  actionLoading,
-  isSystemAdmin,
+  actionLoading = false,
+  isSystemAdmin = false,
   currentUser,
-  isDark = false, // 🔥 NOVA PROP
+  isDark = false,
 }) {
   const baseUrl = import.meta.env.VITE_API_URL || process.env.REACT_APP_API_URL || "http://163.176.168.224";
 
-  // ---- Estados para mensagens ----
+  // 🔥 GARANTIR QUE O ORDER EXISTA
+  const [localOrder, setLocalOrder] = useState(initialOrder || null);
   const [messages, setMessages] = useState([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [newAttachment, setNewAttachment] = useState(null);
   const [sendingMessage, setSendingMessage] = useState(false);
-
-  // ---- Paginação das mensagens ----
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [hasMore, setHasMore] = useState(false);
-
-  // ---- Estado LOCAL para controlar o status e tempo ----
-  const [localOrder, setLocalOrder] = useState(order);
   const [timeUntilClose, setTimeUntilClose] = useState(null);
   const [isResolved, setIsResolved] = useState(false);
   const autoCloseTimerRef = useRef(null);
 
-  // ---- SweetAlert com tema ----
-  const SwalMixin = Swal.mixin({
+  // 🔥 SE NÃO TIVER ORDER, MOSTRA CARREGAMENTO
+  if (!initialOrder || !localOrder) {
+    return (
+      <div className={`flex flex-col items-center justify-center min-h-[50vh] text-center p-8 ${isDark ? 'bg-slate-900' : 'bg-gray-100'} rounded-xl`}>
+        <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+        <h5 className={`${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Carregando detalhes da OS...</h5>
+        <button
+          className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full border ${isDark ? 'border-slate-700/50 text-slate-400 hover:bg-slate-800/50 hover:text-slate-200' : 'border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-800'} bg-transparent transition-all mt-4`}
+          onClick={onBack}
+        >
+          ← Voltar
+        </button>
+      </div>
+    );
+  }
+
+  // 🔥 SWEETALERT COM TEMA
+  const AxionAlert = Swal.mixin({
     background: isDark ? "#111214" : "#ffffff",
     color: isDark ? "#ffffff" : "#1f2937",
     confirmButtonColor: "#6366f1",
@@ -131,27 +98,9 @@ export default function ServiceOrderDetail({
   const bgHeader = isDark ? 'from-slate-900 to-indigo-950/50 border-blue-500/20' : 'from-gray-50 to-white border-blue-200/50';
   const bgCard = isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200';
   const bgInput = isDark ? 'bg-slate-800/50 border-blue-500/30 text-white' : 'bg-white border-blue-300/50 text-gray-800';
-  const bgInputDisabled = isDark ? 'bg-slate-800/50 border-slate-700/50 text-slate-200' : 'bg-white border-gray-300 text-gray-800';
   const textHeading = isDark ? 'text-white' : 'text-gray-800';
   const textSub = isDark ? 'text-slate-400' : 'text-gray-500';
-  const textMuted = isDark ? 'text-slate-400' : 'text-gray-500';
   const borderColor = isDark ? 'border-slate-700/50' : 'border-gray-200';
-
-  // ---- Atualizar estado local ----
-  useEffect(() => {
-    if (order) {
-      setLocalOrder(order);
-      if ((order.status === 'completed' || order.status === 'resolved') && order.resolved_at) {
-        setIsResolved(true);
-        const resolvedDate = new Date(order.resolved_at);
-        const twoDaysLater = new Date(resolvedDate);
-        twoDaysLater.setDate(twoDaysLater.getDate() + 2);
-        const now = new Date();
-        const timeDiff = twoDaysLater - now;
-        setTimeUntilClose(timeDiff > 0 ? timeDiff : 0);
-      }
-    }
-  }, [order]);
 
   // ---- Carregar mensagens ----
   const loadMessages = useCallback(async (pageNum = 1, append = false) => {
@@ -161,14 +110,14 @@ export default function ServiceOrderDetail({
       const res = await api.get(`/api/v1/service-orders/${localOrder.id}/messages`, {
         params: { page: pageNum, per_page: 15 },
       });
-      const { data, current_page, last_page } = res.data.messages;
+      const { data, current_page, last_page } = res.data.messages || res.data;
       const newMessages = data || [];
       setMessages((prev) => (append ? [...prev, ...newMessages] : newMessages));
       setPage(current_page);
       setTotalPages(last_page);
       setHasMore(current_page < last_page);
     } catch (error) {
-      SwalMixin.fire("Erro", "Não foi possível carregar as mensagens.", "error");
+      AxionAlert.fire("Erro", "Não foi possível carregar as mensagens.", "error");
     } finally {
       setLoadingMessages(false);
     }
@@ -194,7 +143,7 @@ export default function ServiceOrderDetail({
         clearInterval(autoCloseTimerRef.current);
         autoCloseTimerRef.current = null;
       }
-      SwalMixin.fire({
+      AxionAlert.fire({
         icon: 'info',
         title: 'Chamado Fechado Automaticamente',
         text: 'O chamado foi fechado automaticamente após 2 dias de resolução.',
@@ -270,7 +219,6 @@ export default function ServiceOrderDetail({
     }
   };
 
-  // ---- Enviar mensagem ----
   const sendMessage = useCallback(async () => {
     if (!newMessage.trim() && !newAttachment) return;
     setSendingMessage(true);
@@ -291,9 +239,9 @@ export default function ServiceOrderDetail({
       setNewAttachment(null);
       const fileInput = document.getElementById("message-attachment");
       if (fileInput) fileInput.value = "";
-      SwalMixin.fire({ icon: "success", title: "Mensagem enviada!", timer: 1500, showConfirmButton: false });
+      AxionAlert.fire({ icon: "success", title: "Mensagem enviada!", timer: 1500, showConfirmButton: false });
     } catch (error) {
-      SwalMixin.fire("Erro", error.response?.data?.message || "Falha ao enviar mensagem.", "error");
+      AxionAlert.fire("Erro", error.response?.data?.message || "Falha ao enviar mensagem.", "error");
     } finally {
       setSendingMessage(false);
     }
@@ -320,10 +268,9 @@ export default function ServiceOrderDetail({
     if (localOrder?.id) loadMessages(1, false);
   }, [localOrder?.id]);
 
-  // ---- Marcar como Resolvido ----
   const handleMarkAsResolved = useCallback(async () => {
     if (!localOrder?.id) return;
-    const result = await SwalMixin.fire({
+    const result = await AxionAlert.fire({
       title: "Marcar como Resolvido?",
       text: "O chamado será marcado como resolvido e será fechado automaticamente em 2 dias.",
       icon: "question",
@@ -347,7 +294,7 @@ export default function ServiceOrderDetail({
       const twoDaysLater = new Date(resolvedDate);
       twoDaysLater.setDate(twoDaysLater.getDate() + 2);
       setTimeUntilClose(twoDaysLater - new Date());
-      SwalMixin.fire({
+      AxionAlert.fire({
         icon: "success",
         title: "✅ Chamado Resolvido!",
         text: "O chamado será fechado automaticamente em 2 dias.",
@@ -355,36 +302,16 @@ export default function ServiceOrderDetail({
         showConfirmButton: false,
       });
     } catch (error) {
-      SwalMixin.fire(
-        "Erro",
-        error.response?.data?.message || "Não foi possível marcar o chamado como resolvido.",
-        "error"
-      );
+      AxionAlert.fire("Erro", error.response?.data?.message || "Não foi possível marcar o chamado como resolvido.", "error");
     }
   }, [localOrder, onUpdateStatus]);
-
-  // ---- Loading ----
-  if (!localOrder) {
-    return (
-      <div className={`flex flex-col items-center justify-center min-h-[50vh] text-center p-8 ${bgPage}`}>
-        <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-4"></div>
-        <h5 className={textSub}>Carregando detalhes da OS...</h5>
-        <button
-          className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full border ${isDark ? 'border-slate-700/50 text-slate-400 hover:bg-slate-800/50 hover:text-slate-200' : 'border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-800'} bg-transparent transition-all`}
-          onClick={onBack}
-        >
-          ← Voltar
-        </button>
-      </div>
-    );
-  }
 
   const formattedDate = formatDateTime(localOrder.created_at);
   const isResolvedStatus = localOrder.status === 'completed' || localOrder.status === 'resolved';
 
   return (
     <div className={`${bgPage} rounded-xl min-h-screen`}>
-      {/* ============ HEADER ============ */}
+      {/* Header */}
       <div className={`bg-gradient-to-r ${bgHeader} border-b rounded-t-xl`}>
         <div className="px-6 py-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -409,7 +336,7 @@ export default function ServiceOrderDetail({
             {isSystemAdmin && (
               <button
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-red-500/30 bg-transparent text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all"
-                onClick={() => onDeleteOrder(localOrder.id)}
+                onClick={() => onDeleteOrder && onDeleteOrder(localOrder.id)}
                 disabled={actionLoading}
               >
                 🗑️ Excluir
@@ -419,10 +346,10 @@ export default function ServiceOrderDetail({
         </div>
       </div>
 
-      {/* ============ CONTEÚDO ============ */}
+      {/* Conteúdo */}
       <div className="px-6 py-5">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* ============ COLUNA PRINCIPAL ============ */}
+          {/* Coluna principal */}
           <div className="lg:col-span-2 space-y-6">
             <div className={`${bgCard} border rounded-2xl p-6 shadow-lg`}>
               <div className={`flex flex-wrap gap-3 mb-4 pb-4 border-b ${isDark ? 'border-slate-700/50' : 'border-gray-200'}`}>
@@ -439,7 +366,6 @@ export default function ServiceOrderDetail({
                   </span>
                 )}
               </div>
-
               <div>
                 <h6 className="text-blue-400 font-bold mb-3 flex items-center gap-2">💬 Descrição da Solicitação</h6>
                 <div className={`${isDark ? 'bg-slate-800/30' : 'bg-gray-100'} rounded-2xl p-4`}>
@@ -448,27 +374,48 @@ export default function ServiceOrderDetail({
                   </p>
                 </div>
               </div>
-
-              <AttachmentPreview order={localOrder} baseUrl={baseUrl} isDark={isDark} />
+              {/* Anexo */}
+              {localOrder.attachment_path && (
+                <div className="mt-4 pt-4 border-t borderColor">
+                  <h6 className="text-blue-400 mb-3 font-bold flex items-center gap-2">
+                    <span>📎</span> Anexo da Solicitação
+                  </h6>
+                  <div className={`${isDark ? 'bg-slate-800/30' : 'bg-gray-100'} rounded-2xl p-4`}>
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                      <div className="flex items-center gap-3">
+                        <span className="text-blue-400 text-4xl">📄</span>
+                        <div>
+                          <h6 className={`font-bold mb-1 ${isDark ? 'text-white' : 'text-gray-800'}`}>
+                            {localOrder.attachment_path?.split("/").pop() || "anexo"}
+                          </h6>
+                          <small className={isDark ? 'text-slate-400' : 'text-gray-500'}>
+                            {localOrder.attachment_path?.includes('.pdf') ? 'Documento PDF' : 'Arquivo anexado'}
+                          </small>
+                        </div>
+                      </div>
+                      <a
+                        href={`${baseUrl}/storage/${localOrder.attachment_path}`}
+                        download
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all hover:shadow-lg hover:-translate-y-0.5"
+                      >
+                        ⬇️ Download
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* ======== SEÇÃO DE MENSAGENS ======== */}
+            {/* Mensagens */}
             <div className={`${bgCard} border rounded-2xl p-6 shadow-lg`}>
               <h4 className={`${textHeading} font-bold text-lg mb-4 flex items-center gap-2`}>
                 💬 Mensagens
                 <span className={`text-sm ${textSub} font-normal`}>({messages.length})</span>
-                <button
-                  className={`ml-auto text-xs ${textSub} hover:text-blue-400 transition-colors`}
-                  onClick={() => loadMessages(1, false)}
-                  disabled={loadingMessages}
-                >
-                  🔄 Atualizar
-                </button>
               </h4>
 
               <div className="flex flex-col gap-3 mb-6">
                 <textarea
-                  className={`w-full px-4 py-3 border rounded-2xl text-sm ${focusRing} transition-all resize-none ${bgInput}`}
+                  className={`w-full px-4 py-3 border rounded-2xl text-sm focus:ring-2 focus:ring-blue-500/50 transition-all resize-none ${bgInput}`}
                   rows="2"
                   placeholder="Digite sua mensagem..."
                   value={newMessage}
@@ -485,7 +432,7 @@ export default function ServiceOrderDetail({
                       const file = e.target.files[0];
                       if (file) {
                         if (file.size > 10 * 1024 * 1024) {
-                          SwalMixin.fire("Erro", "O arquivo não pode ter mais que 10MB.", "error");
+                          AxionAlert.fire("Erro", "O arquivo não pode ter mais que 10MB.", "error");
                           e.target.value = "";
                           return;
                         }
@@ -582,7 +529,7 @@ export default function ServiceOrderDetail({
             </div>
           </div>
 
-          {/* ============ COLUNA LATERAL (Gestão) ============ */}
+          {/* Coluna lateral */}
           <div className="lg:col-span-1">
             <div className={`${bgCard} border rounded-2xl p-6 shadow-lg`}>
               <h4 className={`${textHeading} font-bold text-center mb-4 flex items-center justify-center gap-2`}>⚙️ Gestão da Ordem</h4>
@@ -634,7 +581,7 @@ export default function ServiceOrderDetail({
                         <p className={`${textSub} text-sm mb-3`}>Aguardando técnico</p>
                         <button
                           className="w-full py-2.5 rounded-full border border-blue-500/30 bg-transparent text-blue-400 hover:bg-blue-500/10 transition-all font-medium"
-                          onClick={() => onUpdateStatus(localOrder.id, "in_progress")}
+                          onClick={() => onUpdateStatus && onUpdateStatus(localOrder.id, "in_progress")}
                           disabled={actionLoading}
                         >
                           ✅ Assumir este chamado
@@ -673,14 +620,14 @@ export default function ServiceOrderDetail({
                 </div>
               )}
 
-              <div className="mt-4 pt-4 border-t ${borderColor}">
+              <div className="mt-4 pt-4 border-t borderColor">
                 <label className={`${textSub} text-xs uppercase font-bold block mb-3`}>Status</label>
                 <select
-                  className={`w-full px-4 py-2.5 border rounded-full text-sm ${focusRing} transition-all appearance-none cursor-pointer ${bgInput}`}
+                  className={`w-full px-4 py-2.5 border rounded-full text-sm focus:ring-2 focus:ring-blue-500/50 transition-all appearance-none cursor-pointer ${bgInput}`}
                   value={localOrder.status}
                   onChange={(e) => {
                     if (e.target.value === 'resolved' || e.target.value === 'completed') {
-                      SwalMixin.fire({
+                      AxionAlert.fire({
                         icon: 'info',
                         title: 'Ação não permitida',
                         text: 'O status "Resolvido" não pode ser selecionado manualmente. Use o botão "Marcar como Resolvido".',
@@ -689,7 +636,7 @@ export default function ServiceOrderDetail({
                       });
                       return;
                     }
-                    onUpdateStatus(localOrder.id, e.target.value);
+                    onUpdateStatus && onUpdateStatus(localOrder.id, e.target.value);
                   }}
                   disabled={actionLoading || localOrder.status === 'closed' || isResolvedStatus}
                 >
