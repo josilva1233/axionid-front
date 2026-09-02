@@ -1187,7 +1187,8 @@ export default function Dashboard() {
                         <Pagination currentPage={usersPagination?.current || 1} lastPage={usersPagination?.last || 1} total={usersPagination?.total || 0} onPageChange={handleUsersPageChange} loading={loading} />
                       </>
                     ) : (
-                      <OperationView />
+                      <OperationView isDark={isDark} />
+                      
                     )
                   )}
 
