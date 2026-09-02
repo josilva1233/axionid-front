@@ -1188,7 +1188,6 @@ export default function Dashboard() {
                       </>
                     ) : (
                       <OperationView isDark={isDark} />
-                      
                     )
                   )}
 
