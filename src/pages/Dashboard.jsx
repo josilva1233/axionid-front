@@ -586,6 +586,8 @@ useEffect(() => {
     if (activeTab === "groups") {
       loadGroups(1);
       setGroupsCurrentPage(1);
+        setSelectedGroupId(null);
+    setShowGroupForm(false);
     }
   }, [filters.name, loadGroups, activeTab]);
 
