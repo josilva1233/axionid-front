@@ -125,6 +125,13 @@ export default function Sidebar({
       section: 'Segurança',
       visible: isAdmin, // Apenas admin pode ver
     },
+    {
+  id: 'ai',
+  icon: '🤖',
+  label: 'Assistente',
+  section: 'Principal',
+  visible: true, // Visível para todos
+},
   ];
 
   // 🔥 FILTRAR ITENS POR PERMISSÃO

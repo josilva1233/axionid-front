@@ -1161,7 +1161,7 @@ export default function Dashboard() {
 
 {activeTab === "ai" && (
   <div className={`${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200'} border rounded-xl overflow-hidden`}>
-    <AIChat isDark={isDark} />
+     <OperationView isDark={isDark} />
   </div>
 )}
 
