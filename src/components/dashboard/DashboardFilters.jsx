@@ -159,7 +159,7 @@ export default function DashboardFilters({
           { value: "in_progress", label: "Em Andamento" },
           { value: "completed", label: "Concluído / Resolvido" },   // separado
           { value: "closed", label: "Fechado" },                    // separado
-          { value: "canceled", label: "Cancelado" },
+          { value: "cancelled", label: "Cancelado" },
         ])}
         <div className="flex-1 min-w-[160px] max-w-[240px]">
           {renderButton(onNewOrder, "📢", "Abrir Chamado", "primary")}
