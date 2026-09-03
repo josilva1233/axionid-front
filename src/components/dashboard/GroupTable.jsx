@@ -1,7 +1,145 @@
 // components/dashboard/GroupTable.jsx
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Swal from "sweetalert2";
 
+// ============================================================
+// 🔥 COMPONENTE MODAL DE EDIÇÃO (separado)
+// ============================================================
+const EditGroupModal = React.memo(({
+  isOpen,
+  onClose,
+  editingGroup,
+  editForm,
+  setEditForm,
+  onSave,
+  editLoading,
+  isDark,
+}) => {
+  if (!isOpen || !editingGroup) return null;
+
+  // Classes de tema
+  const modalBg = isDark ? 'bg-slate-800/95 border-slate-700/50' : 'bg-white/95 border-gray-200';
+  const modalHeader = isDark ? 'bg-slate-800/50' : 'bg-gray-50';
+  const modalBorder = isDark ? 'border-slate-700/50' : 'border-gray-200';
+  const textHeading = isDark ? 'text-white' : 'text-gray-800';
+  const textLabel = isDark ? 'text-slate-400' : 'text-gray-500';
+  const bgInput = isDark 
+    ? 'bg-slate-800/50 border-slate-700/50 text-slate-200 placeholder-slate-500' 
+    : 'bg-white border-gray-300 text-gray-800 placeholder-gray-400';
+  const focusRing = 'focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50';
+  const btnCancel = isDark 
+    ? 'text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-600/50' 
+    : 'text-gray-600 hover:text-gray-800 bg-gray-200 hover:bg-gray-300';
+  const overlayBg = isDark ? 'bg-black/70' : 'bg-black/50';
+  const infoBoxBg = isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-gray-100/80 border-gray-200';
+  const infoText = isDark ? 'text-slate-200' : 'text-gray-800';
+  const infoLabel = isDark ? 'text-slate-400' : 'text-gray-500';
+
+  return (
+    <>
+      <div className={`fixed inset-0 ${overlayBg} backdrop-blur-sm z-[1050]`} onClick={onClose} />
+      <div className="fixed inset-0 flex items-center justify-center z-[1060] p-4">
+        <div className={`border rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden ${modalBg}`}>
+          <div className={`flex items-center justify-between px-6 py-4 border-b ${modalBorder} ${modalHeader}`}>
+            <h3 className={`text-lg font-bold flex items-center gap-2 ${textHeading}`}>
+              ✏️ Editar Grupo
+            </h3>
+            <button
+              onClick={onClose}
+              className={`${isDark ? 'text-slate-400 hover:text-slate-200' : 'text-gray-400 hover:text-gray-600'} transition-colors`}
+            >
+              <span className="text-2xl">✕</span>
+            </button>
+          </div>
+
+          <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)] custom-scrollbar">
+            <form className="space-y-4">
+              <div>
+                <label className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 ${textLabel}`}>
+                  📌 Nome do Grupo <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  className={`w-full px-3 py-2.5 ${bgInput} rounded-lg text-sm ${focusRing} transition-all`}
+                  placeholder="Ex: Administradores, TI, RH"
+                  autoFocus // 🔥 Adiciona foco automático ao abrir
+                />
+                <small className={`block text-xs mt-1 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
+                  Nome único para identificar o grupo
+                </small>
+              </div>
+
+              <div>
+                <label className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 ${textLabel}`}>
+                  📝 Descrição
+                </label>
+                <textarea
+                  rows={3}
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  className={`w-full px-3 py-2.5 ${bgInput} rounded-lg text-sm ${focusRing} transition-all resize-y`}
+                  placeholder="Descreva a finalidade deste grupo..."
+                />
+                <small className={`block text-xs mt-1 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
+                  Opcional: descreva as responsabilidades do grupo
+                </small>
+              </div>
+
+              <div className={`${infoBoxBg} border rounded-lg p-4 space-y-2`}>
+                <div className="flex justify-between items-center">
+                  <span className={`text-xs font-semibold uppercase tracking-wide flex items-center gap-1 ${infoLabel}`}>
+                    # ID do Grupo
+                  </span>
+                  <span className={`font-mono text-sm ${infoText}`}>
+                    #{editingGroup?.id || "---"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className={`text-xs font-semibold uppercase tracking-wide flex items-center gap-1 ${infoLabel}`}>
+                    👤 Criado por
+                  </span>
+                  <span className={`text-sm ${infoText}`}>
+                    {editingGroup?.creator?.name || "Sistema"}
+                  </span>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div className={`flex items-center justify-end gap-3 px-6 py-4 border-t ${modalBorder} ${modalHeader}`}>
+            <button
+              onClick={onClose}
+              disabled={editLoading}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${btnCancel}`}
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={onSave}
+              disabled={editLoading || !editForm.name.trim()}
+              className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 transition-all hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none disabled:hover:shadow-none flex items-center gap-2"
+            >
+              {editLoading ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  Salvando...
+                </>
+              ) : (
+                <>💾 Salvar Alterações</>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+});
+
+// ============================================================
+// 🔥 COMPONENTE PRINCIPAL
+// ============================================================
 export default function GroupTable({
   groups,
   loading,
@@ -9,17 +147,13 @@ export default function GroupTable({
   onEdit,
   onDelete,
   currentUser,
-  isDark = false, // 🔥 NOVA PROP
+  isDark = false,
 }) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingGroup, setEditingGroup] = useState(null);
-  const [editForm, setEditForm] = useState({
-    name: "",
-    description: ""
-  });
+  const [editForm, setEditForm] = useState({ name: "", description: "" });
   const [editLoading, setEditLoading] = useState(false);
 
-  // 🔥 SweetAlert com tema
   const AxionAlert = Swal.mixin({
     background: isDark ? "#111214" : "#ffffff",
     color: isDark ? "#ffffff" : "#1f2937",
@@ -80,25 +214,10 @@ export default function GroupTable({
     : 'text-red-600 hover:bg-red-50';
   const textReadOnly = isDark ? 'text-slate-500' : 'text-gray-400';
   const textEmpty = isDark ? 'text-slate-400' : 'text-gray-500';
-  const modalBg = isDark ? 'bg-slate-800/95 border-slate-700/50' : 'bg-white/95 border-gray-200';
-  const modalHeader = isDark ? 'bg-slate-800/50' : 'bg-gray-50';
-  const modalBorder = isDark ? 'border-slate-700/50' : 'border-gray-200';
-  const textHeading = isDark ? 'text-white' : 'text-gray-800';
-  const textLabel = isDark ? 'text-slate-400' : 'text-gray-500';
-  const bgInput = isDark 
-    ? 'bg-slate-800/50 border-slate-700/50 text-slate-200 placeholder-slate-500' 
-    : 'bg-white border-gray-300 text-gray-800 placeholder-gray-400';
-  const focusRing = 'focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50';
-  const btnCancel = isDark 
-    ? 'text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-600/50' 
-    : 'text-gray-600 hover:text-gray-800 bg-gray-200 hover:bg-gray-300';
-  const overlayBg = isDark ? 'bg-black/70' : 'bg-black/50';
-  const infoBoxBg = isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-gray-100/80 border-gray-200';
-  const infoText = isDark ? 'text-slate-200' : 'text-gray-800';
-  const infoLabel = isDark ? 'text-slate-400' : 'text-gray-500';
 
-  // ============ ABRIR MODAL DE EDIÇÃO ============
+  // ============ ABRIR MODAL ============
   const handleOpenEditModal = (group) => {
+    setEditLoading(false); // 🔥 RESETA O LOADING
     setEditingGroup(group);
     setEditForm({
       name: group.name || "",
@@ -175,121 +294,12 @@ export default function GroupTable({
 
   const isSystemAdmin = currentUser?.is_admin === 1 || currentUser?.is_admin === true;
 
-  // Função para toggle do dropdown
+  // ============ TOGGLE DROPDOWN ============
   const toggleDropdown = (id) => {
     const dropdown = document.getElementById(`dropdown-${id}`);
     if (dropdown) {
       dropdown.classList.toggle('hidden');
     }
-  };
-
-  // ============ MODAL DE EDIÇÃO ============
-  const EditModal = () => {
-    if (!showEditModal) return null;
-
-    return (
-      <>
-        <div className={`fixed inset-0 ${overlayBg} backdrop-blur-sm z-[1050]`} onClick={handleCloseEditModal} />
-        <div className="fixed inset-0 flex items-center justify-center z-[1060] p-4">
-          <div className={`border rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden ${modalBg}`}>
-            <div className={`flex items-center justify-between px-6 py-4 border-b ${modalBorder} ${modalHeader}`}>
-              <h3 className={`text-lg font-bold flex items-center gap-2 ${textHeading}`}>
-                ✏️ Editar Grupo
-              </h3>
-              <button
-                onClick={handleCloseEditModal}
-                className={`${isDark ? 'text-slate-400 hover:text-slate-200' : 'text-gray-400 hover:text-gray-600'} transition-colors`}
-              >
-                <span className="text-2xl">✕</span>
-              </button>
-            </div>
-
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)] custom-scrollbar">
-              <form className="space-y-4">
-                <div>
-                  <label className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 ${textLabel}`}>
-                    📌 Nome do Grupo <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={editForm.name}
-                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                    className={`w-full px-3 py-2.5 ${bgInput} rounded-lg text-sm ${focusRing} transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
-                    placeholder="Ex: Administradores, TI, RH"
-                    //disabled={editLoading}
-                  />
-                  <small className={`block text-xs mt-1 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
-                    Nome único para identificar o grupo
-                  </small>
-                </div>
-
-                <div>
-                  <label className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 ${textLabel}`}>
-                    📝 Descrição
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={editForm.description}
-                    onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                    className={`w-full px-3 py-2.5 ${bgInput} rounded-lg text-sm ${focusRing} transition-all resize-y disabled:opacity-50 disabled:cursor-not-allowed`}
-                    placeholder="Descreva a finalidade deste grupo..."
-                    //disabled={editLoading}
-                  />
-                  <small className={`block text-xs mt-1 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
-                    Opcional: descreva as responsabilidades do grupo
-                  </small>
-                </div>
-
-                <div className={`${infoBoxBg} border rounded-lg p-4 space-y-2`}>
-                  <div className="flex justify-between items-center">
-                    <span className={`text-xs font-semibold uppercase tracking-wide flex items-center gap-1 ${textLabel}`}>
-                      # ID do Grupo
-                    </span>
-                    <span className={`font-mono text-sm ${infoText}`}>
-                      #{editingGroup?.id || "---"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={`text-xs font-semibold uppercase tracking-wide flex items-center gap-1 ${textLabel}`}>
-                      👤 Criado por
-                    </span>
-                    <span className={`text-sm ${infoText}`}>
-                      {editingGroup?.creator?.name || "Sistema"}
-                    </span>
-                  </div>
-                </div>
-              </form>
-            </div>
-
-            <div className={`flex items-center justify-end gap-3 px-6 py-4 border-t ${modalBorder} ${modalHeader}`}>
-              <button
-                onClick={handleCloseEditModal}
-                disabled={editLoading}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${btnCancel}`}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSaveEdit}
-                disabled={editLoading || !editForm.name.trim()}
-                className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 transition-all hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none disabled:hover:shadow-none flex items-center gap-2"
-              >
-                {editLoading ? (
-                  <>
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    Salvando...
-                  </>
-                ) : (
-                  <>
-                    💾 Salvar Alterações
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      </>
-    );
   };
 
   // ============ RENDER ============
@@ -441,8 +451,17 @@ export default function GroupTable({
         </table>
       </div>
 
-      {/* Modal de Edição */}
-      <EditModal />
+      {/* ========== MODAL DE EDIÇÃO ========== */}
+      <EditGroupModal
+        isOpen={showEditModal}
+        onClose={handleCloseEditModal}
+        editingGroup={editingGroup}
+        editForm={editForm}
+        setEditForm={setEditForm}
+        onSave={handleSaveEdit}
+        editLoading={editLoading}
+        isDark={isDark}
+      />
     </>
   );
 }
