@@ -157,7 +157,7 @@ export default function DashboardFilters({
         {renderSelect("Status", "status", [
           { value: "open", label: "Aberto" },
           { value: "in_progress", label: "Em Andamento" },
-          { value: "completed", label: "Concluído / Resolvido" },   // separado
+          { value: "completed", label: "Resolvido" },   // separado
           { value: "closed", label: "Fechado" },                    // separado
           { value: "cancelled", label: "Cancelado" },
         ])}
