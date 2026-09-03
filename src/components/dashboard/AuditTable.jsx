@@ -179,11 +179,11 @@ export default function AuditTable({
                     Usuário
                   </label>
                   <div className={`px-3 py-2 rounded-lg ${modalValue}`}>
-                    <div className={`font-semibold ${isDark ? 'text-slate-200' : 'text-gray-800'}`}>
+                    <div className={`font-semibold ${isDark ? 'text-slate-200' : 'text-gray-800'} break-words`}>
                       {log.user ? log.user.name : 'Sistema / API'}
                     </div>
                     {log.user && (
-                      <div className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{log.user.email}</div>
+                      <div className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'} break-all`}>{log.user.email}</div>
                     )}
                   </div>
                 </div>
@@ -294,13 +294,13 @@ export default function AuditTable({
               <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap w-[160px] ${textHeader}`}>
                 Data / Hora
               </th>
-              <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap ${textHeader}`}>
+              <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap w-[200px] ${textHeader}`}>
                 Usuário / Origem
               </th>
               <th className={`px-[18px] py-4 text-center text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap w-[100px] ${textHeader}`}>
                 Método
               </th>
-              <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap ${textHeader}`}>
+              <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap min-w-[250px] ${textHeader}`}>
                 Recurso (URL)
               </th>
               <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap w-[140px] ${textHeader}`}>
@@ -327,13 +327,13 @@ export default function AuditTable({
                         ? new Date(log.created_at).toLocaleString('pt-BR') 
                         : 'n/a'}
                     </td>
-                    <td className="px-[18px] py-3.5 align-middle">
+                    <td className="px-[18px] py-3.5 align-middle break-words">
                       <div>
-                        <strong className={textUserName}>
+                        <strong className={`${textUserName} break-words`}>
                           {log.user ? log.user.name : 'Sistema / API'}
                         </strong>
                         <br />
-                        <small className={`text-xs ${textUserEmail}`}>
+                        <small className={`text-xs ${textUserEmail} break-all`}>
                           {log.user ? log.user.email : 'n/a'}
                         </small>
                       </div>
@@ -344,8 +344,8 @@ export default function AuditTable({
                         {log.method?.toUpperCase() || 'N/A'}
                       </span>
                     </td>
-                    <td className="px-[18px] py-3.5 align-middle">
-                      <code className={`font-mono text-xs px-2 py-1 rounded ${textUrl}`}>
+                    <td className="px-[18px] py-3.5 align-middle break-all">
+                      <code className={`font-mono text-xs px-2 py-1 rounded break-all ${textUrl}`}>
                         {log.url}
                       </code>
                     </td>
