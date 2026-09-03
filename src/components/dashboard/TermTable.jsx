@@ -164,19 +164,19 @@ export default function TermTable({
       <table className="w-full min-w-[800px] table-fixed">
         <thead className={`sticky top-0 z-10 ${bgHeader}`}>
           <tr>
-            <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap w-[150px] ${textHeader}`}>
+            <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap min-w-[140px] ${textHeader}`}>
               Versão
             </th>
-            <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap w-[120px] ${textHeader}`}>
+            <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap min-w-[120px] ${textHeader}`}>
               Status
             </th>
-            <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap hidden md:table-cell ${textHeader}`}>
+            <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap hidden md:table-cell min-w-[150px] ${textHeader}`}>
               Criado por
             </th>
-            <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap hidden lg:table-cell w-[130px] ${textHeader}`}>
+            <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap hidden lg:table-cell min-w-[130px] ${textHeader}`}>
               Data
             </th>
-            <th className={`px-[18px] py-4 text-center text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap w-[130px] ${textHeader}`}>
+            <th className={`px-[18px] py-4 text-center text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap min-w-[130px] ${textHeader}`}>
               Usuários
             </th>
             <th className={`px-[18px] py-4 text-right text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap w-[100px] ${textHeader}`}>
@@ -199,7 +199,7 @@ export default function TermTable({
                     VERSÃO
                 ================================================== */}
                 <td className="px-[18px] py-3.5 align-middle">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 whitespace-nowrap">
                     <span
                       className={`font-mono text-sm font-medium ${
                         term.is_active
@@ -224,7 +224,7 @@ export default function TermTable({
                 ================================================== */}
                 <td className="px-[18px] py-3.5 align-middle">
                   <span
-                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
                       term.is_active ? badgeActive : badgeInactive
                     }`}
                   >
@@ -242,14 +242,15 @@ export default function TermTable({
                 {/* ==================================================
                     CRIADO POR
                 ================================================== */}
-                <td className={`px-[18px] py-3.5 align-middle ${textCreator} hidden md:table-cell`}>
+                {/* 🔥 Adicionado break-words para nomes longos */}
+                <td className={`px-[18px] py-3.5 align-middle ${textCreator} hidden md:table-cell break-words`}>
                   {term.creator?.name || "—"}
                 </td>
 
                 {/* ==================================================
                     DATA
                 ================================================== */}
-                <td className={`px-[18px] py-3.5 align-middle ${textDate} hidden lg:table-cell`}>
+                <td className={`px-[18px] py-3.5 align-middle ${textDate} hidden lg:table-cell whitespace-nowrap`}>
                   {formatDate(term.created_at)}
                 </td>
 
@@ -259,7 +260,7 @@ export default function TermTable({
                 <td className="px-[18px] py-3.5 align-middle text-center">
                   <button
                     onClick={() => handleAction(onViewUsers, term.id)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${btnUsers}`}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${btnUsers}`}
                   >
                     <span>{acceptanceCount}</span>
                     <span>usuário{acceptanceCount !== 1 ? "s" : ""}</span>

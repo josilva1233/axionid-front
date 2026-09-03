@@ -95,10 +95,10 @@ export default function PermissionTable({
             <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap w-[70px] ${textHeader}`}>
               ID
             </th>
-            <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap ${textHeader}`}>
+            <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap min-w-[200px] ${textHeader}`}>
               Permissão (Label)
             </th>
-            <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap w-[200px] ${textHeader}`}>
+            <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap min-w-[250px] ${textHeader}`}>
               Chave do Sistema (Slug)
             </th>
             <th className={`px-[18px] py-4 text-center text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap w-[100px] ${textHeader}`}>
@@ -119,16 +119,21 @@ export default function PermissionTable({
                 <td className={`px-[18px] py-3.5 align-middle font-mono text-sm ${textId}`}>
                   #{perm.id}
                 </td>
-                <td className="px-[18px] py-3.5 align-middle">
+                
+                {/* 🔥 Adicionado break-words */}
+                <td className="px-[18px] py-3.5 align-middle break-words">
                   <strong className={`block text-sm ${textLabel}`}>
                     {perm.label?.toUpperCase() || "SEM NOME"}
                   </strong>
                 </td>
-                <td className="px-[18px] py-3.5 align-middle">
-                  <code className={`font-mono text-xs px-2 py-1 rounded ${textSlug}`}>
+                
+                {/* 🔥 Adicionado break-all */}
+                <td className="px-[18px] py-3.5 align-middle break-all">
+                  <code className={`font-mono text-xs px-2 py-1 rounded break-all ${textSlug}`}>
                     {perm.name}
                   </code>
                 </td>
+                
                 <td className="px-[18px] py-3.5 align-middle text-center">
                   <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${badgeType}`}>
                     IAM

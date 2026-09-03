@@ -137,13 +137,13 @@ export default function ServiceOrderTable({
             <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap w-[70px] ${textHeader}`}>
               ID
             </th>
-            <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap w-[140px] ${textHeader}`}>
+            <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap min-w-[130px] ${textHeader}`}>
               Protocolo
             </th>
-            <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap ${textHeader}`}>
+            <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap min-w-[200px] ${textHeader}`}>
               Título / Assunto
             </th>
-            <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap w-[140px] ${textHeader}`}>
+            <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap min-w-[150px] ${textHeader}`}>
               Solicitante
             </th>
             <th className={`px-[18px] py-4 text-center text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap w-[110px] ${textHeader}`}>
@@ -167,12 +167,16 @@ export default function ServiceOrderTable({
                 <td className={`px-[18px] py-3.5 align-middle font-mono text-sm ${textId}`}>
                   #{os.id}
                 </td>
-                <td className="px-[18px] py-3.5 align-middle">
-                  <code className={`font-mono text-xs px-2 py-1 rounded ${textProtocol}`}>
+                
+                {/* 🔥 Adicionado break-all para protocolos longos */}
+                <td className="px-[18px] py-3.5 align-middle break-all">
+                  <code className={`font-mono text-xs px-2 py-1 rounded break-all ${textProtocol}`}>
                     {os.protocol}
                   </code>
                 </td>
-                <td className="px-[18px] py-3.5 align-middle">
+                
+                {/* 🔥 Adicionado break-words para títulos longos */}
+                <td className="px-[18px] py-3.5 align-middle break-words">
                   <div>
                     <strong className={`block text-sm ${textTitle}`}>
                       {os.title?.toUpperCase() || 'SEM TÍTULO'}
@@ -182,14 +186,17 @@ export default function ServiceOrderTable({
                     </small>
                   </div>
                 </td>
-                <td className="px-[18px] py-3.5 align-middle">
+                
+                {/* 🔥 Adicionado break-words para nomes longos */}
+                <td className="px-[18px] py-3.5 align-middle break-words">
                   <div className="flex items-center gap-1.5">
-                    <span className={textUserIcon}>👤</span>
+                    <span className={`flex-shrink-0 ${textUserIcon}`}>👤</span>
                     <span className={`text-sm ${textUserName}`}>
                       {os.user?.name || "Usuário Externo"}
                     </span>
                   </div>
                 </td>
+                
                 <td className="px-[18px] py-3.5 align-middle text-center">
                   {getPriorityBadge(os.priority)}
                 </td>

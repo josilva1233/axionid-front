@@ -312,10 +312,10 @@ export default function GroupTable({
               <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap w-[70px] ${textHeader}`}>
                 ID
               </th>
-              <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap ${textHeader}`}>
+              <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap min-w-[200px] ${textHeader}`}>
                 Nome do Grupo
               </th>
-              <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap w-[150px] ${textHeader}`}>
+              <th className={`px-[18px] py-4 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap min-w-[150px] ${textHeader}`}>
                 Criador
               </th>
               <th className={`px-[18px] py-4 text-center text-[11px] font-semibold uppercase tracking-wide border-b-2 whitespace-nowrap w-[100px] ${textHeader}`}>
@@ -343,23 +343,23 @@ export default function GroupTable({
                     <td className={`px-[18px] py-3.5 align-middle font-mono text-sm ${textId}`}>
                       #{g.id}
                     </td>
-                    <td className="px-[18px] py-3.5 align-middle">
+                    <td className="px-[18px] py-3.5 align-middle break-words">
                       <div>
                         <strong className={`block ${textName}`}>
                           {g.name.toUpperCase()}
                         </strong>
                         {g.description && (
-                          <span className={`text-xs block ${textDesc}`}>
+                          <span className={`text-xs block ${textDesc} break-words`}>
                             {g.description}
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="px-[18px] py-3.5 align-middle">
+                    <td className="px-[18px] py-3.5 align-middle break-words">
                       <div className="flex items-center gap-1.5">
                         <span className={textCreator}>{g.creator?.name || "Sistema"}</span>
                         {g.creator?.id === currentUser?.id && (
-                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${badgeYou}`}>
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${badgeYou}`}>
                             Você
                           </span>
                         )}
