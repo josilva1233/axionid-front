@@ -30,56 +30,6 @@ import '../index.css';
 import AccessDenied from "./AccessDenied";
 
 export default function Dashboard() {
-
-  // ============ HANDLERS DE GRUPOS (EDIÇÃO E EXCLUSÃO) ============
-const handleEditGroup = useCallback(async (groupId, data) => {
-  try {
-    setActionLoading(true);
-    await api.put(`/api/v1/groups/${groupId}`, data);
-    await loadGroups(groupsCurrentPage);
-    AxionAlert.fire({
-      icon: "success",
-      title: "Grupo atualizado!",
-      timer: 1500,
-      showConfirmButton: false,
-    });
-  } catch (err) {
-    AxionAlert.fire({
-      icon: "error",
-      title: "Erro!",
-      text: err.response?.data?.message || "Falha ao atualizar grupo.",
-      confirmButtonColor: "#6366f1",
-    });
-    throw err;
-  } finally {
-    setActionLoading(false);
-  }
-}, [api, loadGroups, groupsCurrentPage, AxionAlert]);
-
-const handleDeleteGroup = useCallback(async (groupId) => {
-  try {
-    setActionLoading(true);
-    await api.delete(`/api/v1/groups/${groupId}`);
-    await loadGroups(groupsCurrentPage);
-    AxionAlert.fire({
-      icon: "success",
-      title: "Grupo excluído!",
-      timer: 1500,
-      showConfirmButton: false,
-    });
-  } catch (err) {
-    AxionAlert.fire({
-      icon: "error",
-      title: "Erro!",
-      text: err.response?.data?.message || "Falha ao excluir grupo.",
-      confirmButtonColor: "#6366f1",
-    });
-    throw err;
-  } finally {
-    setActionLoading(false);
-  }
-}, [api, loadGroups, groupsCurrentPage, AxionAlert]);
-
   const navigate = useNavigate();
 
   // =============================================================
@@ -109,8 +59,7 @@ const handleDeleteGroup = useCallback(async (groupId) => {
 
   const [role] = useState(localStorage.getItem("@AxionID:role"));
   const [activeTab, setActiveTab] = useState(() => {
-  // Restaura a aba salva no localStorage, ou usa "users" como fallback
-  return localStorage.getItem("@AxionID:activeTab") || "users";
+    return localStorage.getItem("@AxionID:activeTab") || "users";
   });
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -158,6 +107,9 @@ const handleDeleteGroup = useCallback(async (groupId) => {
   // 🔥 ESTADO PARA CONTROLAR SE TEM ACESSO
   const [hasAccess, setHasAccess] = useState(null);
 
+  // =============================================================
+  // 🔥 SweetAlert com tema
+  // =============================================================
   const AxionAlert = Swal.mixin({
     background: isDark ? "#111214" : "#ffffff",
     color: isDark ? "#ffffff" : "#1f2937",
@@ -221,9 +173,9 @@ const handleDeleteGroup = useCallback(async (groupId) => {
   }, [currentUser, permissionsLoading, canAccessAnyTab, navigate]);
 
   // Persistir a aba ativa no localStorage
-useEffect(() => {
-  localStorage.setItem("@AxionID:activeTab", activeTab);
-}, [activeTab]);
+  useEffect(() => {
+    localStorage.setItem("@AxionID:activeTab", activeTab);
+  }, [activeTab]);
 
   // =========================================================
   // 🔥 CONTROLAR ABA INICIAL BASEADA NAS PERMISSÕES
@@ -613,6 +565,55 @@ useEffect(() => {
     }
   }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId, isDark]);
 
+  // ============ HANDLERS DE GRUPOS (EDIÇÃO E EXCLUSÃO) ============
+  const handleEditGroup = useCallback(async (groupId, data) => {
+    try {
+      setActionLoading(true);
+      await api.put(`/api/v1/groups/${groupId}`, data);
+      await loadGroups(groupsCurrentPage);
+      AxionAlert.fire({
+        icon: "success",
+        title: "Grupo atualizado!",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      AxionAlert.fire({
+        icon: "error",
+        title: "Erro!",
+        text: err.response?.data?.message || "Falha ao atualizar grupo.",
+        confirmButtonColor: "#6366f1",
+      });
+      throw err;
+    } finally {
+      setActionLoading(false);
+    }
+  }, [api, loadGroups, groupsCurrentPage, AxionAlert]);
+
+  const handleDeleteGroup = useCallback(async (groupId) => {
+    try {
+      setActionLoading(true);
+      await api.delete(`/api/v1/groups/${groupId}`);
+      await loadGroups(groupsCurrentPage);
+      AxionAlert.fire({
+        icon: "success",
+        title: "Grupo excluído!",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      AxionAlert.fire({
+        icon: "error",
+        title: "Erro!",
+        text: err.response?.data?.message || "Falha ao excluir grupo.",
+        confirmButtonColor: "#6366f1",
+      });
+      throw err;
+    } finally {
+      setActionLoading(false);
+    }
+  }, [api, loadGroups, groupsCurrentPage, AxionAlert]);
+
   // ============ CARREGAR DADOS POR ABA ============
   useEffect(() => {
     const loadData = async () => {
@@ -662,8 +663,8 @@ useEffect(() => {
     if (activeTab === "groups") {
       loadGroups(1);
       setGroupsCurrentPage(1);
-        setSelectedGroupId(null);
-    setShowGroupForm(false);
+      setSelectedGroupId(null);
+      setShowGroupForm(false);
     }
   }, [filters.name, loadGroups, activeTab]);
 
@@ -804,7 +805,7 @@ useEffect(() => {
     }
   }, [AxionAlert, loadUsers, usersCurrentPage, isDark]);
 
-  // ============ HANDLERS DE GRUPOS ============
+  // ============ HANDLERS DE GRUPOS (MEMBROS) ============
   const handleGroupMemberRole = useCallback(async (userId, type) => {
     setActionLoading(true);
     try {
@@ -1161,7 +1162,8 @@ useEffect(() => {
                             setActionLoading(false);
                           }
                         }
-                      }}isDark={isDark}
+                      }}
+                      isDark={isDark}
                     />
                   )}
 
@@ -1293,8 +1295,8 @@ useEffect(() => {
                         <GroupTable
                           groups={groups}
                           onViewDetail={setSelectedGroupId}
-                          onEdit={handleEditGroup}       // ✅ ADICIONADO
-                          onDelete={handleDeleteGroup}   // ✅ ADICIONADO
+                          onEdit={handleEditGroup}
+                          onDelete={handleDeleteGroup}
                           isGlobalAdmin={isGlobalAdmin}
                           currentUser={currentUser}
                           isDark={isDark}
