@@ -367,13 +367,6 @@ export default function TermTable({
                     )}
                   </div>
 
-                  {/* AVISO DE ACEITES */}
-                  {acceptanceCount > 0 && (
-                    <div className={`text-[10px] mt-1 flex items-center gap-1 justify-end ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
-                      <span>⚠️</span>
-                      <span>{acceptanceCount} aceitaram</span>
-                    </div>
-                  )}
                 </td>
               </tr>
             );
