@@ -58,7 +58,10 @@ export default function Dashboard() {
   }, [navigate]);
 
   const [role] = useState(localStorage.getItem("@AxionID:role"));
-  const [activeTab, setActiveTab] = useState("users");
+  const [activeTab, setActiveTab] = useState(() => {
+  // Restaura a aba salva no localStorage, ou usa "users" como fallback
+  return localStorage.getItem("@AxionID:activeTab") || "users";
+  });
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
@@ -166,6 +169,11 @@ export default function Dashboard() {
       }
     }
   }, [currentUser, permissionsLoading, canAccessAnyTab, navigate]);
+
+  // Persistir a aba ativa no localStorage
+useEffect(() => {
+  localStorage.setItem("@AxionID:activeTab", activeTab);
+}, [activeTab]);
 
   // =========================================================
   // 🔥 CONTROLAR ABA INICIAL BASEADA NAS PERMISSÕES
