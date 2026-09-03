@@ -1,5 +1,5 @@
 // pages/Dashboard.jsx
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect, useCallback, useRef } from "react";
 import Swal from "sweetalert2";
 import api from "../services/api";
@@ -31,6 +31,7 @@ import AccessDenied from "./AccessDenied";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // =============================================================
   // 🔥 TEMA – estado derivado da classe no <html>
@@ -58,7 +59,6 @@ export default function Dashboard() {
   }, [navigate]);
 
   const [role] = useState(localStorage.getItem("@AxionID:role"));
-  const [activeTab, setActiveTab] = useState("users");
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
@@ -95,31 +95,69 @@ export default function Dashboard() {
   // ========== ESTADO LOCAL PARA TODAS AS PERMISSÕES ==========
   const [allPermissions, setAllPermissions] = useState([]);
 
-  // Estados para paginação
-  const [usersCurrentPage, setUsersCurrentPage] = useState(1);
-  const [groupsCurrentPage, setGroupsCurrentPage] = useState(1);
-  const [auditCurrentPage, setAuditCurrentPage] = useState(1);
-  const [ordersCurrentPage, setOrdersCurrentPage] = useState(1);
-  const [permissionsCurrentPage, setPermissionsCurrentPage] = useState(1);
-
-  // 🔥 ESTADO PARA CONTROLAR SE TEM ACESSO
-  const [hasAccess, setHasAccess] = useState(null);
-
-  const AxionAlert = Swal.mixin({
-    background: isDark ? "#111214" : "#ffffff",
-    color: isDark ? "#ffffff" : "#1f2937",
-    confirmButtonColor: "#6366f1",
-    cancelButtonColor: "#343a40",
-    customClass: {
-      popup: `border ${isDark ? 'border-gray-700' : 'border-gray-200'} rounded-xl`,
-      confirmButton: "px-4 py-2 rounded-full font-bold mx-2 bg-indigo-500 hover:bg-indigo-400 transition-colors",
-      cancelButton: "px-4 py-2 rounded-full font-bold mx-2 bg-gray-700 hover:bg-gray-600 transition-colors",
-    },
+  // ========== INICIALIZAÇÃO DOS ESTADOS VIA URL ==========
+  // activeTab
+  const [activeTab, setActiveTab] = useState(() => {
+    return searchParams.get('tab') || 'users';
   });
 
-  // =========================================================
-  // 🔥 HOOK DE PERMISSÕES
-  // =========================================================
+  // Filtros
+  const initialFilters = {
+    name: searchParams.get('name') || '',
+    completed: searchParams.get('completed') || '',
+    user: searchParams.get('user') || '',
+    url: searchParams.get('url') || '',
+    method: searchParams.get('method') || '',
+    start_date: searchParams.get('start_date') || '',
+    end_date: searchParams.get('end_date') || '',
+    protocol: searchParams.get('protocol') || '',
+    title: searchParams.get('title') || '',
+    applicant: searchParams.get('applicant') || '',
+    priority: searchParams.get('priority') || '',
+    status: searchParams.get('status') || '',
+    label: searchParams.get('label') || '',
+    perm_name: searchParams.get('perm_name') || '',
+    version: searchParams.get('version') || '',
+    creator: searchParams.get('creator') || ''
+  };
+  const [filters, setFilters] = useState(initialFilters);
+
+  // Paginação
+  const [usersCurrentPage, setUsersCurrentPage] = useState(() => Number(searchParams.get('usersPage')) || 1);
+  const [groupsCurrentPage, setGroupsCurrentPage] = useState(() => Number(searchParams.get('groupsPage')) || 1);
+  const [auditCurrentPage, setAuditCurrentPage] = useState(() => Number(searchParams.get('auditPage')) || 1);
+  const [ordersCurrentPage, setOrdersCurrentPage] = useState(() => Number(searchParams.get('ordersPage')) || 1);
+  const [permissionsCurrentPage, setPermissionsCurrentPage] = useState(() => Number(searchParams.get('permsPage')) || 1);
+
+  // ========== SINCRONIZAÇÃO COM A URL ==========
+  useEffect(() => {
+    const params = new URLSearchParams();
+    // Tab
+    params.set('tab', activeTab);
+    // Filtros (ignora vazios)
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params.set(key, value);
+    });
+    // Paginação (só salva se > 1)
+    if (usersCurrentPage > 1) params.set('usersPage', String(usersCurrentPage));
+    if (groupsCurrentPage > 1) params.set('groupsPage', String(groupsCurrentPage));
+    if (auditCurrentPage > 1) params.set('auditPage', String(auditCurrentPage));
+    if (ordersCurrentPage > 1) params.set('ordersPage', String(ordersCurrentPage));
+    if (permissionsCurrentPage > 1) params.set('permsPage', String(permissionsCurrentPage));
+
+    setSearchParams(params);
+  }, [
+    activeTab,
+    filters,
+    usersCurrentPage,
+    groupsCurrentPage,
+    auditCurrentPage,
+    ordersCurrentPage,
+    permissionsCurrentPage,
+    setSearchParams
+  ]);
+
+  // ========== HOOK DE PERMISSÕES ==========
   const {
     canAccessTab,
     canAccessAnyTab,
@@ -143,8 +181,7 @@ export default function Dashboard() {
     auditPagination,
     ordersPagination,
     permissionsPagination,
-    filters,
-    setFilters,
+    setFilters: setDashboardFilters,
     loadUsers,
     loadGroups,
     loadAuditLogs,
@@ -157,6 +194,8 @@ export default function Dashboard() {
   // =========================================================
   // 🔥 VERIFICAR PERMISSÃO DE ACESSO AO SISTEMA
   // =========================================================
+  const [hasAccess, setHasAccess] = useState(null);
+
   useEffect(() => {
     if (currentUser && !permissionsLoading) {
       const access = canAccessAnyTab();
@@ -242,7 +281,7 @@ export default function Dashboard() {
     } finally {
       setLoadingCep(false);
     }
-  }, [AxionAlert]);
+  }, []);
 
   // ============ LOAD PROFILE ============
   useEffect(() => {
@@ -318,6 +357,7 @@ export default function Dashboard() {
     setSelectedPermission(null);
     setShowTermAcceptances(false);
     setSelectedTermId(null);
+    // Reset de paginação para 1 ao mudar de aba
     setUsersCurrentPage(1);
     setGroupsCurrentPage(1);
     setAuditCurrentPage(1);
@@ -326,7 +366,7 @@ export default function Dashboard() {
   }, []);
 
   const handleClearFilters = useCallback(() => {
-    setFilters({
+    const emptyFilters = {
       name: "",
       completed: "",
       user: "",
@@ -343,13 +383,15 @@ export default function Dashboard() {
       perm_name: "",
       version: "",
       creator: ""
-    });
+    };
+    setFilters(emptyFilters);
+    // Reset paginação para 1 ao limpar filtros
     setUsersCurrentPage(1);
     setGroupsCurrentPage(1);
     setAuditCurrentPage(1);
     setOrdersCurrentPage(1);
     setPermissionsCurrentPage(1);
-  }, [setFilters]);
+  }, []);
 
   // ============ HANDLERS PARA TERMOS DE USO ============
   const handleViewTermAcceptances = useCallback((termId) => {
@@ -375,7 +417,7 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  }, [AxionAlert]);
+  }, []);
 
   const onUpdateStatus = useCallback(async (orderId, newStatus) => {
     if (!orderId) {
@@ -394,7 +436,7 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  }, [AxionAlert, loadServiceOrders, ordersCurrentPage]);
+  }, [loadServiceOrders, ordersCurrentPage]);
 
   const handleEditOrder = useCallback(async (orderId, data) => {
     try {
@@ -407,7 +449,7 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  }, [AxionAlert, loadServiceOrders, ordersCurrentPage]);
+  }, [loadServiceOrders, ordersCurrentPage]);
 
   const handleDeleteOrder = useCallback(async (orderId) => {
     const result = await AxionAlert.fire({
@@ -433,7 +475,7 @@ export default function Dashboard() {
         setActionLoading(false);
       }
     }
-  }, [AxionAlert, loadServiceOrders, ordersCurrentPage, isDark]);
+  }, [loadServiceOrders, ordersCurrentPage, isDark]);
 
   // ============ HANDLERS DE PERMISSÕES ============
   const handleCreatePermission = useCallback(async (data) => {
@@ -450,7 +492,7 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  }, [AxionAlert, loadPermissions, permissionsCurrentPage]);
+  }, [loadPermissions, permissionsCurrentPage]);
 
   const handleOpenPermissionDetail = useCallback(async (permissionId) => {
     try {
@@ -462,7 +504,7 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  }, [AxionAlert]);
+  }, []);
 
   const handleEditPermission = useCallback(async (permissionId, data) => {
     try {
@@ -479,7 +521,7 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  }, [AxionAlert, loadPermissions, permissionsCurrentPage]);
+  }, [loadPermissions, permissionsCurrentPage]);
 
   const handleDeletePermission = useCallback(async (permissionId) => {
     try {
@@ -495,7 +537,7 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  }, [AxionAlert, loadPermissions, permissionsCurrentPage]);
+  }, [loadPermissions, permissionsCurrentPage]);
 
   // ============ HANDLERS DE PERMISSÕES EM GRUPOS ============
   const handleAddPermissionToGroup = useCallback(async (permissionId, permissionName) => {
@@ -515,7 +557,7 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId]);
+  }, [loadGroups, groupsCurrentPage, selectedGroupId]);
 
   const handleRemovePermissionFromGroup = useCallback(async (permissionId) => {
     if (!selectedGroupId) {
@@ -551,7 +593,7 @@ export default function Dashboard() {
         setActionLoading(false);
       }
     }
-  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId, isDark]);
+  }, [loadGroups, groupsCurrentPage, selectedGroupId, isDark]);
 
   // ============ CARREGAR DADOS POR ABA ============
   useEffect(() => {
@@ -583,43 +625,49 @@ export default function Dashboard() {
     loadServiceOrders,
   ]);
 
-  // ============ RECARREGAR QUANDO FILTROS MUDAREM ============
+  // ============ RECARREGAR QUANDO FILTROS MUDAREM (sem depender de página) ============
+  // Usamos useCallback para evitar loops, mas os efeitos já disparam corretamente.
   useEffect(() => {
     if (activeTab === "orders") {
       loadServiceOrders(1);
       setOrdersCurrentPage(1);
     }
-  }, [filters.protocol, filters.title, filters.applicant, filters.priority, filters.status, loadServiceOrders, activeTab]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.protocol, filters.title, filters.applicant, filters.priority, filters.status, activeTab]);
 
   useEffect(() => {
     if (activeTab === "users") {
       loadUsers(1);
       setUsersCurrentPage(1);
     }
-  }, [filters.name, filters.completed, loadUsers, activeTab]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.name, filters.completed, activeTab]);
 
   useEffect(() => {
     if (activeTab === "groups") {
       loadGroups(1);
       setGroupsCurrentPage(1);
-        setSelectedGroupId(null);
-    setShowGroupForm(false);
+      setSelectedGroupId(null);
+      setShowGroupForm(false);
     }
-  }, [filters.name, loadGroups, activeTab]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.name, activeTab]);
 
   useEffect(() => {
     if (activeTab === "audit") {
       loadAuditLogs(1);
       setAuditCurrentPage(1);
     }
-  }, [filters.user, filters.url, filters.method, filters.start_date, filters.end_date, loadAuditLogs, activeTab]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.user, filters.url, filters.method, filters.start_date, filters.end_date, activeTab]);
 
   useEffect(() => {
     if (activeTab === "permissions") {
       loadPermissions(1);
       setPermissionsCurrentPage(1);
     }
-  }, [filters.label, filters.perm_name, loadPermissions, activeTab]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.label, filters.perm_name, activeTab]);
 
   // ============ ATUALIZAR FORM DATA QUANDO USUÁRIO SELECIONADO ============
   useEffect(() => {
@@ -663,7 +711,7 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  }, [AxionAlert, loadUsers, usersCurrentPage]);
+  }, [loadUsers, usersCurrentPage]);
 
   const handleDeleteUser = useCallback(async (userId, userName) => {
     const result = await AxionAlert.fire({
@@ -689,7 +737,7 @@ export default function Dashboard() {
         setActionLoading(false);
       }
     }
-  }, [AxionAlert, loadUsers, usersCurrentPage, isDark]);
+  }, [loadUsers, usersCurrentPage, isDark]);
 
   const handleToggleAdmin = useCallback(async (userId, currentStatus) => {
     const endpoint = currentStatus ? "remove-admin" : "promote";
@@ -716,7 +764,7 @@ export default function Dashboard() {
         setActionLoading(false);
       }
     }
-  }, [AxionAlert, loadUsers, usersCurrentPage, isDark]);
+  }, [loadUsers, usersCurrentPage, isDark]);
 
   const handleToggleStatus = useCallback(async (userId, currentStatus) => {
     const action = currentStatus ? "suspender" : "ativar";
@@ -742,7 +790,7 @@ export default function Dashboard() {
         setActionLoading(false);
       }
     }
-  }, [AxionAlert, loadUsers, usersCurrentPage, isDark]);
+  }, [loadUsers, usersCurrentPage, isDark]);
 
   // ============ HANDLERS DE GRUPOS ============
   const handleGroupMemberRole = useCallback(async (userId, type) => {
@@ -756,7 +804,7 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId]);
+  }, [loadGroups, groupsCurrentPage, selectedGroupId]);
 
   const handleAddUserToGroup = useCallback(async (email) => {
     if (!selectedGroupId) return;
@@ -773,7 +821,7 @@ export default function Dashboard() {
     } finally {
       setActionLoading(false);
     }
-  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId, users]);
+  }, [loadGroups, groupsCurrentPage, selectedGroupId, users]);
 
   const handleRemoveUserFromGroup = useCallback(async (userId, userName) => {
     const result = await AxionAlert.fire({
@@ -796,7 +844,7 @@ export default function Dashboard() {
         setActionLoading(false);
       }
     }
-  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId, isDark]);
+  }, [loadGroups, groupsCurrentPage, selectedGroupId, isDark]);
 
   // ============ COMPONENTE DE LOADING PERSONALIZADO ============
   const LoadingSpinner = () => (
@@ -809,6 +857,19 @@ export default function Dashboard() {
       </div>
     </div>
   );
+
+  // ============ INSTÂNCIA DO SWEETALERT COM TEMA ============
+  const AxionAlert = Swal.mixin({
+    background: isDark ? "#111214" : "#ffffff",
+    color: isDark ? "#ffffff" : "#1f2937",
+    confirmButtonColor: "#6366f1",
+    cancelButtonColor: "#343a40",
+    customClass: {
+      popup: `border ${isDark ? 'border-gray-700' : 'border-gray-200'} rounded-xl`,
+      confirmButton: "px-4 py-2 rounded-full font-bold mx-2 bg-indigo-500 hover:bg-indigo-400 transition-colors",
+      cancelButton: "px-4 py-2 rounded-full font-bold mx-2 bg-gray-700 hover:bg-gray-600 transition-colors",
+    },
+  });
 
   // =============================================================
   // 🔥 RENDERIZAÇÃO CONDICIONAL – SE NÃO TIVER ACESSO, MOSTRA DENIED
