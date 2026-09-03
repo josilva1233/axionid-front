@@ -1,5 +1,5 @@
 // components/dashboard/ServiceOrderDetail.jsx
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import api from "../../services/api";
 import Swal from "sweetalert2";
 
@@ -52,7 +52,6 @@ export default function ServiceOrderDetail({
 }) {
   const baseUrl = import.meta.env.VITE_API_URL || process.env.REACT_APP_API_URL || "http://163.176.168.224";
 
-  // 🔥 GARANTIR QUE O ORDER EXISTA
   const [localOrder, setLocalOrder] = useState(initialOrder || null);
   const [messages, setMessages] = useState([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
@@ -66,8 +65,8 @@ export default function ServiceOrderDetail({
   const [isResolved, setIsResolved] = useState(false);
   const autoCloseTimerRef = useRef(null);
 
-  // 🔥 SWEETALERT COM TEMA (DEFINIDO ANTES DE SER USADO)
-  const AxionAlert = Swal.mixin({
+  // ✅ CORREÇÃO APLICADA: Usamos useMemo para o AxionAlert não ser recriado a cada render
+  const AxionAlert = useMemo(() => Swal.mixin({
     background: isDark ? "#111214" : "#ffffff",
     color: isDark ? "#ffffff" : "#1f2937",
     confirmButtonColor: "#6366f1",
@@ -77,7 +76,7 @@ export default function ServiceOrderDetail({
       confirmButton: "px-4 py-2 rounded-full font-bold mx-2 bg-indigo-500 hover:bg-indigo-400 transition-colors",
       cancelButton: "px-4 py-2 rounded-full font-bold mx-2 bg-slate-700 hover:bg-slate-600 transition-colors",
     },
-  });
+  }), [isDark]);
 
   // ============ HANDLE CANCELAR ============
   const handleCancelOrder = useCallback(async () => {
@@ -108,7 +107,6 @@ export default function ServiceOrderDetail({
     }
   }, [localOrder, onCancelOrder, AxionAlert]);
 
-  // 🔥 SE NÃO TIVER ORDER, MOSTRA CARREGAMENTO
   if (!initialOrder || !localOrder) {
     return (
       <div className={`flex flex-col items-center justify-center min-h-[50vh] text-center p-8 ${isDark ? 'bg-slate-900' : 'bg-gray-100'} rounded-xl`}>
@@ -124,7 +122,6 @@ export default function ServiceOrderDetail({
     );
   }
 
-  // ============ CLASSES DE TEMA ============
   const bgPage = isDark ? 'bg-slate-900' : 'bg-gray-100';
   const bgHeader = isDark ? 'from-slate-900 to-indigo-950/50 border-blue-500/20' : 'from-gray-50 to-white border-blue-200/50';
   const bgCard = isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200';
