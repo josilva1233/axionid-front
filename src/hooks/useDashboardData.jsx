@@ -13,6 +13,8 @@ export function useDashboardData(role) {
   const [filters, setFilters] = useState({
     name: "",
     completed: "",
+    cpf: "",          
+    email: "",  
     user: "",
     url: "",
     method: "",
@@ -43,6 +45,8 @@ export function useDashboardData(role) {
       const params = new URLSearchParams({ page, per_page: 10 });
       if (filters.name) params.append("name", filters.name);
       if (filters.completed !== "") params.append("completed", filters.completed);
+      if (filters.cpf) params.append("cpf", filters.cpf);        
+      if (filters.email) params.append("email", filters.email);
 
       const res = await api.get(`/api/v1/admin/users?${params.toString()}`);
       const data = res.data;
@@ -62,7 +66,7 @@ export function useDashboardData(role) {
     } finally {
       setLoading(false);
     }
-  }, [isAdmin, filters.name, filters.completed]);
+  }, [isAdmin, filters.name, filters.completed, filters.cpf, filters.email]);
 
 // ---- GRUPOS ----
   const loadGroups = useCallback(async (page = 1) => {

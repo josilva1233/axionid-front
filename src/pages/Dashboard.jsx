@@ -337,6 +337,8 @@ useEffect(() => {
     setFilters({
       name: "",
       completed: "",
+      cpf: "",
+      email: "",
       user: "",
       url: "",
       method: "",

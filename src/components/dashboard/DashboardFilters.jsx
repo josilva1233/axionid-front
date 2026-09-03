@@ -19,7 +19,7 @@ export default function DashboardFilters({
   handleSave,
   actionLoading,
   user,
-  isDark = false, // 🔥 NOVA PROP
+  isDark = false,
 }) {
   const isUserDetailView = !!user;
 
@@ -37,14 +37,14 @@ export default function DashboardFilters({
   const focusRing = 'focus:ring-2 focus:ring-[#4D6BFE]/50 focus:border-[#4D6BFE]/50';
 
   // ============ RENDERIZADORES ============
-  const renderInput = (label, name, placeholder = "") => (
+  const renderInput = (label, name, placeholder = "", type = "text", min = "", max = "") => (
     <div className="flex-1 min-w-[160px] max-w-[240px]" key={name}>
       <label className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide mb-2 ${labelClass}`}>
         <span className="text-[#4D6BFE]">●</span>
         {label}
       </label>
       <input
-        type="text"
+        type={type}
         name={name}
         value={filters[name] ?? ""}
         onChange={(e) => {
@@ -53,6 +53,8 @@ export default function DashboardFilters({
         className={`w-full px-3 py-2.5 ${inputBg} rounded-lg text-sm ${focusRing} transition-all`}
         placeholder={placeholder}
         disabled={actionLoading}
+        min={min}
+        max={max}
       />
     </div>
   );
@@ -116,8 +118,10 @@ export default function DashboardFilters({
   const tabConfigs = {
     users: role === "admin" && (
       <>
-        {renderInput("Buscar por Nome", "name", "Ex: João Silva...")}
-        {renderSelect("Status Perfil", "completed", [
+          {renderInput("Buscar por Nome", "name", "Ex: João Silva...")}
+          {renderInput("CPF/CNPJ", "cpf", "Ex: 123456...")}
+          {renderInput("E-mail", "email", "Ex: joao@email.com...")}
+          {renderSelect("Status Perfil", "completed", [
           { value: "1", label: "✅ Completo" },
           { value: "0", label: "⚠️ Incompleto" },
         ])}
@@ -164,8 +168,8 @@ export default function DashboardFilters({
     terms: showTermAcceptances ? (
       <>
         {renderInput("Buscar Usuário", "user", "Digite o nome...")}
-        {renderInput("Data Início", "start_date", "YYYY-MM-DD")}
-        {renderInput("Data Fim", "end_date", "YYYY-MM-DD")}
+        {renderInput("Data Início", "start_date", "", "date")}
+        {renderInput("Data Fim", "end_date", "", "date")}
       </>
     ) : (
       <>
@@ -194,8 +198,8 @@ export default function DashboardFilters({
           { value: "PATCH", label: "PATCH" },
           { value: "DELETE", label: "DELETE" },
         ])}
-        {renderInput("Data Início", "start_date", "YYYY-MM-DD")}
-        {renderInput("Data Fim", "end_date", "YYYY-MM-DD")}
+        {renderInput("Data Início", "start_date", "", "date")}
+        {renderInput("Data Fim", "end_date", "", "date")}
       </>
     ),
   };
