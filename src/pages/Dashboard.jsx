@@ -30,6 +30,56 @@ import '../index.css';
 import AccessDenied from "./AccessDenied";
 
 export default function Dashboard() {
+
+  // ============ HANDLERS DE GRUPOS (EDIÇÃO E EXCLUSÃO) ============
+const handleEditGroup = useCallback(async (groupId, data) => {
+  try {
+    setActionLoading(true);
+    await api.put(`/api/v1/groups/${groupId}`, data);
+    await loadGroups(groupsCurrentPage);
+    AxionAlert.fire({
+      icon: "success",
+      title: "Grupo atualizado!",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+  } catch (err) {
+    AxionAlert.fire({
+      icon: "error",
+      title: "Erro!",
+      text: err.response?.data?.message || "Falha ao atualizar grupo.",
+      confirmButtonColor: "#6366f1",
+    });
+    throw err;
+  } finally {
+    setActionLoading(false);
+  }
+}, [api, loadGroups, groupsCurrentPage, AxionAlert]);
+
+const handleDeleteGroup = useCallback(async (groupId) => {
+  try {
+    setActionLoading(true);
+    await api.delete(`/api/v1/groups/${groupId}`);
+    await loadGroups(groupsCurrentPage);
+    AxionAlert.fire({
+      icon: "success",
+      title: "Grupo excluído!",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+  } catch (err) {
+    AxionAlert.fire({
+      icon: "error",
+      title: "Erro!",
+      text: err.response?.data?.message || "Falha ao excluir grupo.",
+      confirmButtonColor: "#6366f1",
+    });
+    throw err;
+  } finally {
+    setActionLoading(false);
+  }
+}, [api, loadGroups, groupsCurrentPage, AxionAlert]);
+
   const navigate = useNavigate();
 
   // =============================================================
@@ -1243,6 +1293,8 @@ useEffect(() => {
                         <GroupTable
                           groups={groups}
                           onViewDetail={setSelectedGroupId}
+                          onEdit={handleEditGroup}       // ✅ ADICIONADO
+                          onDelete={handleDeleteGroup}   // ✅ ADICIONADO
                           isGlobalAdmin={isGlobalAdmin}
                           currentUser={currentUser}
                           isDark={isDark}
