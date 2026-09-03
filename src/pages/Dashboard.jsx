@@ -871,6 +871,34 @@ export default function Dashboard() {
     </div>
   );
 
+  // ============ HANDLER PARA CANCELAR ORDEM ============
+const handleCancelOrder = useCallback(async (orderId) => {
+  if (!orderId) return;
+  setActionLoading(true);
+  try {
+    const res = await api.put(`/api/v1/service-orders/${orderId}/cancel`);
+    const updatedOrder = res.data.data || res.data;
+    setSelectedOrder(updatedOrder);
+    await loadServiceOrders(ordersCurrentPage);
+    AxionAlert.fire({
+      icon: "success",
+      title: "✅ Chamado cancelado!",
+      text: "O chamado foi cancelado com sucesso.",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  } catch (err) {
+    AxionAlert.fire({
+      icon: "error",
+      title: "Erro ao cancelar",
+      text: err.response?.data?.message || "Não foi possível cancelar o chamado.",
+      confirmButtonColor: "#6366f1",
+    });
+  } finally {
+    setActionLoading(false);
+  }
+}, [api, loadServiceOrders, ordersCurrentPage, AxionAlert]);
+
   // =============================================================
   // 🔥 RENDERIZAÇÃO CONDICIONAL – SE NÃO TIVER ACESSO, MOSTRA DENIED
   // =============================================================
@@ -1137,6 +1165,7 @@ export default function Dashboard() {
                       onUpdateStatus={onUpdateStatus}
                       isSystemAdmin={isGlobalAdmin}
                       currentUser={currentUser}
+                      onCancelOrder={handleCancelOrder} 
                       onDeleteOrder={async (id) => {
                         const result = await AxionAlert.fire({
                           title: "Excluir OS?",
