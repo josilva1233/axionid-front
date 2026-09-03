@@ -216,7 +216,7 @@ export default function GroupTable({
                     onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                     className={`w-full px-3 py-2.5 ${bgInput} rounded-lg text-sm ${focusRing} transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
                     placeholder="Ex: Administradores, TI, RH"
-                    disabled={editLoading}
+                    //disabled={editLoading}
                   />
                   <small className={`block text-xs mt-1 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
                     Nome único para identificar o grupo
@@ -233,7 +233,7 @@ export default function GroupTable({
                     onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                     className={`w-full px-3 py-2.5 ${bgInput} rounded-lg text-sm ${focusRing} transition-all resize-y disabled:opacity-50 disabled:cursor-not-allowed`}
                     placeholder="Descreva a finalidade deste grupo..."
-                    disabled={editLoading}
+                    //disabled={editLoading}
                   />
                   <small className={`block text-xs mt-1 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
                     Opcional: descreva as responsabilidades do grupo
