@@ -10,6 +10,7 @@ const STATUS_CONFIG = {
   resolved: { bg: "bg-green-500/15", text: "text-green-400", dot: "bg-green-400", label: "RESOLVIDO", icon: "✅" },
   completed: { bg: "bg-green-500/15", text: "text-green-400", dot: "bg-green-400", label: "RESOLVIDO", icon: "✅" },
   closed: { bg: "bg-slate-700/30", text: "text-slate-400", dot: "bg-slate-400", label: "FECHADO", icon: "🔒" },
+  cancelled: { bg: "bg-red-500/15", text: "text-red-400", dot: "bg-red-400", label: "CANCELADO", icon: "🚫" },
 };
 
 const PRIORITY_CONFIG = {
@@ -20,7 +21,7 @@ const PRIORITY_CONFIG = {
 };
 
 const StatusBadge = ({ status }) => {
-  const normalizedStatus = (status === 'completed' || status === 'resolved') ? 'resolved' : status;
+  const normalizedStatus = status === 'completed' || status === 'resolved' ? 'resolved' : status;
   const item = STATUS_CONFIG[normalizedStatus] || STATUS_CONFIG.pending;
   return (
     <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold shadow-sm ${item.bg} ${item.text}`}>
@@ -43,6 +44,7 @@ export default function ServiceOrderDetail({
   onBack,
   onUpdateStatus,
   onDeleteOrder,
+  onCancelOrder,
   actionLoading = false,
   isSystemAdmin = false,
   currentUser,
@@ -64,6 +66,48 @@ export default function ServiceOrderDetail({
   const [isResolved, setIsResolved] = useState(false);
   const autoCloseTimerRef = useRef(null);
 
+  // 🔥 SWEETALERT COM TEMA (DEFINIDO ANTES DE SER USADO)
+  const AxionAlert = Swal.mixin({
+    background: isDark ? "#111214" : "#ffffff",
+    color: isDark ? "#ffffff" : "#1f2937",
+    confirmButtonColor: "#6366f1",
+    cancelButtonColor: "#343a40",
+    customClass: {
+      popup: `border ${isDark ? 'border-slate-700' : 'border-gray-200'} rounded-xl`,
+      confirmButton: "px-4 py-2 rounded-full font-bold mx-2 bg-indigo-500 hover:bg-indigo-400 transition-colors",
+      cancelButton: "px-4 py-2 rounded-full font-bold mx-2 bg-slate-700 hover:bg-slate-600 transition-colors",
+    },
+  });
+
+  // ============ HANDLE CANCELAR ============
+  const handleCancelOrder = useCallback(async () => {
+    if (!localOrder?.id) return;
+    const result = await AxionAlert.fire({
+      title: "Cancelar Chamado?",
+      text: "Tem certeza que deseja cancelar este chamado? Esta ação não pode ser desfeita.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sim, cancelar",
+      cancelButtonText: "Não",
+      confirmButtonColor: "#ef4444",
+    });
+    if (!result.isConfirmed) return;
+
+    if (onCancelOrder) {
+      try {
+        await onCancelOrder(localOrder.id);
+        AxionAlert.fire({
+          icon: "success",
+          title: "Chamado cancelado!",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } catch (error) {
+        AxionAlert.fire("Erro", error.response?.data?.message || "Não foi possível cancelar o chamado.", "error");
+      }
+    }
+  }, [localOrder, onCancelOrder, AxionAlert]);
+
   // 🔥 SE NÃO TIVER ORDER, MOSTRA CARREGAMENTO
   if (!initialOrder || !localOrder) {
     return (
@@ -79,19 +123,6 @@ export default function ServiceOrderDetail({
       </div>
     );
   }
-
-  // 🔥 SWEETALERT COM TEMA
-  const AxionAlert = Swal.mixin({
-    background: isDark ? "#111214" : "#ffffff",
-    color: isDark ? "#ffffff" : "#1f2937",
-    confirmButtonColor: "#6366f1",
-    cancelButtonColor: "#343a40",
-    customClass: {
-      popup: `border ${isDark ? 'border-slate-700' : 'border-gray-200'} rounded-xl`,
-      confirmButton: "px-4 py-2 rounded-full font-bold mx-2 bg-indigo-500 hover:bg-indigo-400 transition-colors",
-      cancelButton: "px-4 py-2 rounded-full font-bold mx-2 bg-slate-700 hover:bg-slate-600 transition-colors",
-    },
-  });
 
   // ============ CLASSES DE TEMA ============
   const bgPage = isDark ? 'bg-slate-900' : 'bg-gray-100';
@@ -121,7 +152,7 @@ export default function ServiceOrderDetail({
     } finally {
       setLoadingMessages(false);
     }
-  }, [localOrder?.id]);
+  }, [localOrder?.id, AxionAlert]);
 
   const loadMore = () => {
     if (hasMore && !loadingMessages) {
@@ -153,7 +184,7 @@ export default function ServiceOrderDetail({
     } catch (error) {
       // silencioso
     }
-  }, [localOrder, onUpdateStatus]);
+  }, [localOrder, onUpdateStatus, AxionAlert]);
 
   useEffect(() => {
     if (autoCloseTimerRef.current) {
@@ -245,7 +276,7 @@ export default function ServiceOrderDetail({
     } finally {
       setSendingMessage(false);
     }
-  }, [newMessage, newAttachment, localOrder?.id, currentUser]);
+  }, [newMessage, newAttachment, localOrder?.id, currentUser, AxionAlert]);
 
   const formatDateTime = (dateString) => {
     if (!dateString) return "Data inválida";
@@ -266,7 +297,7 @@ export default function ServiceOrderDetail({
 
   useEffect(() => {
     if (localOrder?.id) loadMessages(1, false);
-  }, [localOrder?.id]);
+  }, [localOrder?.id, loadMessages]);
 
   const handleMarkAsResolved = useCallback(async () => {
     if (!localOrder?.id) return;
@@ -304,10 +335,13 @@ export default function ServiceOrderDetail({
     } catch (error) {
       AxionAlert.fire("Erro", error.response?.data?.message || "Não foi possível marcar o chamado como resolvido.", "error");
     }
-  }, [localOrder, onUpdateStatus]);
+  }, [localOrder, onUpdateStatus, AxionAlert]);
 
   const formattedDate = formatDateTime(localOrder.created_at);
   const isResolvedStatus = localOrder.status === 'completed' || localOrder.status === 'resolved';
+  const isCancelled = localOrder.status === 'cancelled';
+  const canCancel = !isResolvedStatus && !isCancelled && localOrder.status !== 'closed' && 
+                    (localOrder.user_id === currentUser?.id || isSystemAdmin);
 
   return (
     <div className={`${bgPage} rounded-xl min-h-screen`}>
@@ -420,7 +454,7 @@ export default function ServiceOrderDetail({
                   placeholder="Digite sua mensagem..."
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  disabled={sendingMessage || localOrder.status === 'closed'}
+                  disabled={sendingMessage || localOrder.status === 'closed' || isCancelled}
                 />
                 <div className="flex flex-wrap items-center gap-3">
                   <input
@@ -439,12 +473,12 @@ export default function ServiceOrderDetail({
                         setNewAttachment(file);
                       }
                     }}
-                    disabled={sendingMessage || localOrder.status === 'closed'}
+                    disabled={sendingMessage || localOrder.status === 'closed' || isCancelled}
                   />
                   <button
                     className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={sendMessage}
-                    disabled={(!newMessage.trim() && !newAttachment) || sendingMessage || localOrder.status === 'closed'}
+                    disabled={(!newMessage.trim() && !newAttachment) || sendingMessage || localOrder.status === 'closed' || isCancelled}
                   >
                     {sendingMessage ? "Enviando..." : "📤 Enviar"}
                   </button>
@@ -458,6 +492,11 @@ export default function ServiceOrderDetail({
                 {localOrder.status === 'closed' && (
                   <div className="text-sm text-yellow-400 flex items-center gap-2">
                     <span>⚠️</span> Chamado fechado - não é possível enviar mensagens
+                  </div>
+                )}
+                {isCancelled && (
+                  <div className="text-sm text-red-400 flex items-center gap-2">
+                    <span>🚫</span> Chamado cancelado - não é possível enviar mensagens
                   </div>
                 )}
               </div>
@@ -582,7 +621,7 @@ export default function ServiceOrderDetail({
                         <button
                           className="w-full py-2.5 rounded-full border border-blue-500/30 bg-transparent text-blue-400 hover:bg-blue-500/10 transition-all font-medium"
                           onClick={() => onUpdateStatus && onUpdateStatus(localOrder.id, "in_progress")}
-                          disabled={actionLoading}
+                          disabled={actionLoading || isCancelled}
                         >
                           ✅ Assumir este chamado
                         </button>
@@ -592,7 +631,33 @@ export default function ServiceOrderDetail({
                 </div>
               </div>
 
-              {!isResolvedStatus && localOrder.status !== 'closed' && (
+              {/* Botão Cancelar Chamado */}
+              {canCancel && (
+                <div className="mt-4 mb-4">
+                  <button
+                    className="w-full py-2.5 rounded-full border border-red-500/50 bg-transparent text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleCancelOrder}
+                    disabled={actionLoading}
+                  >
+                    ❌ Cancelar Chamado
+                  </button>
+                  <p className={`text-xs ${textSub} text-center mt-2`}>
+                    Apenas o solicitante pode cancelar
+                  </p>
+                </div>
+              )}
+
+              {/* Mensagem de cancelado */}
+              {isCancelled && (
+                <div className="mt-4 mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl">
+                  <p className="text-red-400 text-sm text-center font-medium">🚫 Chamado cancelado</p>
+                  <p className="text-red-300/70 text-xs text-center mt-1">
+                    Este chamado foi cancelado pelo solicitante
+                  </p>
+                </div>
+              )}
+
+              {!isResolvedStatus && !isCancelled && localOrder.status !== 'closed' && (
                 <div className="mt-4 mb-4">
                   <button
                     className="w-full py-2.5 rounded-full bg-green-600 hover:bg-green-500 text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -607,7 +672,7 @@ export default function ServiceOrderDetail({
                 </div>
               )}
 
-              {isResolvedStatus && (
+              {isResolvedStatus && !isCancelled && (
                 <div className="mt-4 mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-xl">
                   <p className="text-green-400 text-sm text-center font-medium">
                     ✅ Chamado resolvido em {formatDateTime(localOrder.resolved_at)}
@@ -638,7 +703,7 @@ export default function ServiceOrderDetail({
                     }
                     onUpdateStatus && onUpdateStatus(localOrder.id, e.target.value);
                   }}
-                  disabled={actionLoading || localOrder.status === 'closed' || isResolvedStatus}
+                  disabled={actionLoading || localOrder.status === 'closed' || isResolvedStatus || isCancelled}
                 >
                   <option value="pending">Selecionar Status</option>
                   <option value="pending">⏳ Pendente</option>
