@@ -116,17 +116,17 @@ export default function DashboardFilters({
 
   // ============ CONFIGURAÇÃO DAS ABAS ============
   const tabConfigs = {
-    users: role === "admin" && (
-      <>
-          {renderInput("Buscar por Nome", "name", "Ex: João Silva...")}
-          {renderInput("CPF/CNPJ", "cpf", "Ex: 123456...")}
-          {renderInput("E-mail", "email", "Ex: joao@email.com...")}
-          {renderSelect("Status Perfil", "completed", [
-          { value: "1", label: "✅ Completo" },
-          { value: "0", label: "⚠️ Incompleto" },
-        ])}
-      </>
-    ),
+users: role === "admin" && (
+  <>
+    {renderInput("Buscar por Nome", "name", "Ex: João Silva...")}
+    {renderInput("CPF/CNPJ", "cpf", "Ex: 123456...")}
+    {renderInput("E-mail", "email", "Ex: joao@email.com...")}
+    {renderSelect("Status Perfil", "completed", [
+      { value: "1", label: "✅ Completo" },
+      { value: "0", label: "⚠️ Incompleto" },
+    ])}
+  </>
+),
     groups: (
       <>
         {renderInput("Buscar Grupos/Membros", "name", "Digite o nome do grupo...")}
