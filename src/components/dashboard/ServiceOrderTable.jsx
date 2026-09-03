@@ -69,6 +69,7 @@ export default function ServiceOrderTable({
       completed: { bg: "bg-green-500/15", text: "text-green-400", dot: "bg-green-400", label: "Resolvido" },
       closed: { bg: "bg-slate-700/30", text: "text-slate-400", dot: "bg-slate-400", label: "Fechado" },
       canceled: { bg: "bg-red-500/15", text: "text-red-400", dot: "bg-red-400", label: "Cancelado" },
+      cancelled: { bg: "bg-red-500/15", text: "text-red-400", dot: "bg-red-400", label: "Cancelado" },
     };
     const current = styles[status] || styles.open;
     return (
