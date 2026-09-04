@@ -79,9 +79,6 @@ export default function OperationView({ isDark = false }) {
           <p className={`text-sm mb-0 ${textSub}`}>Assistente operacional de nova geração</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`inline-flex px-3 py-1.5 rounded-full text-xs font-semibold border ${badgeStatus}`}>
-            LLAMA-3.1
-          </span>
           <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${badgeActive}`}>
             <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
             ACTIVE
