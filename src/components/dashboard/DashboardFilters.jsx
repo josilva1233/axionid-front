@@ -230,7 +230,7 @@ export default function DashboardFilters({
         ) : (
           <>
             {hasConfig}
-            {!isUserDetailView && (
+            {!isUserDetailView && activeTab !== 'ai' && (
               <div className="flex-1 min-w-[160px] max-w-[240px]">
                 <button
                   onClick={onClear}
