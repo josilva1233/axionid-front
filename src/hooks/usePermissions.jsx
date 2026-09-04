@@ -15,6 +15,7 @@ export function usePermissions() {
   const canViewPermissions = hasPermission('menu.permissions.view');
   const canViewTerms = hasPermission('menu.terms.view');
   const canViewAi = hasPermission('menu.ai.view');
+  const canViewCategories = hasPermission('menu.categories.view'); // 🔥 NOVO
 
   // =========================================================
   // 🔥 PERMISSÕES DE AÇÃO - USUÁRIOS
@@ -61,6 +62,14 @@ export function usePermissions() {
   const canManageTerms = hasPermission('terms.manage');
 
   // =========================================================
+  // 🔥 PERMISSÕES DE AÇÃO - CATEGORIAS (NOVO)
+  // =========================================================
+  
+  const canCreateCategory = hasPermission('categories.create');
+  const canEditCategory = hasPermission('categories.edit');
+  const canDeleteCategory = hasPermission('categories.delete');
+
+  // =========================================================
   // 🔥 UTILITÁRIOS
   // =========================================================
 
@@ -72,17 +81,19 @@ export function usePermissions() {
       'audit': canViewAudit,
       'permissions': canViewPermissions,
       'terms': canViewTerms,
-      'ai': canViewAi, // 🔥 ADICIONADO
+      'ai': canViewAi,
+      'categories': canViewCategories, // 🔥 NOVO
     };
     return tabPermissions[tab] || false;
   };
 
   const canAccessAnyTab = () => {
-    return canViewUsers || canViewGroups || canViewOrders || canViewAudit || canViewPermissions || canViewTerms || canViewAi; // 🔥 ADICIONADO
+    return canViewUsers || canViewGroups || canViewOrders || canViewAudit || 
+           canViewPermissions || canViewTerms || canViewAi || canViewCategories; // 🔥 NOVO
   };
 
   const getFirstAvailableTab = () => {
-    const tabs = ['users', 'groups', 'orders', 'ai', 'audit', 'permissions', 'terms']; // 🔥 INCLUIR 'ai'
+    const tabs = ['users', 'groups', 'orders', 'ai', 'audit', 'permissions', 'terms', 'categories']; // 🔥 NOVO
     for (const tab of tabs) {
       if (canAccessTab(tab)) {
         return tab;
@@ -103,7 +114,8 @@ export function usePermissions() {
     canViewAudit,
     canViewPermissions,
     canViewTerms,
-    canViewAi, // 🔥 EXPORTADO
+    canViewAi,
+    canViewCategories, // 🔥 EXPORTADO
     
     // Ações - Usuários
     canCreateUser,
@@ -130,6 +142,11 @@ export function usePermissions() {
     
     // Ações - Termos
     canManageTerms,
+    
+    // Ações - Categorias (NOVO)
+    canCreateCategory,
+    canEditCategory,
+    canDeleteCategory,
     
     // Utilitários
     canAccessTab,

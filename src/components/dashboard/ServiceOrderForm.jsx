@@ -3,24 +3,27 @@ import { useState, useEffect } from "react";
 import api from "../../services/api";
 import Swal from "sweetalert2";
 
-export default function ServiceOrderForm({ 
-  groups: groupsProp, 
-  onSuccess, 
+export default function ServiceOrderForm({
+  groups: groupsProp,
+  onSuccess,
   onCancel,
-  isDark = false, // 🔥 NOVA PROP
+  isDark = false,
 }) {
   const [loading, setLoading] = useState(false);
   const [loadingGroups, setLoadingGroups] = useState(false);
   const [groups, setGroups] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     priority: "medium",
     group_id: "",
+    category_id: "",
     attachment: null,
   });
 
-  // 🔥 Ajuste do SweetAlert para tema
+  // 🔥 SweetAlert com tema
   const AxionAlert = Swal.mixin({
     background: isDark ? "#111214" : "#ffffff",
     color: isDark ? "#ffffff" : "#1f2937",
@@ -33,26 +36,42 @@ export default function ServiceOrderForm({
   });
 
   // ============ CLASSES DE TEMA ============
-  const bgCard = isDark 
-    ? 'bg-slate-800/50 border-slate-700/50' 
+  const bgCard = isDark
+    ? 'bg-slate-800/50 border-slate-700/50'
     : 'bg-white/80 border-gray-200';
   const textHeading = isDark ? 'text-white' : 'text-gray-800';
   const textLabel = isDark ? 'text-slate-400' : 'text-gray-500';
   const textMuted = isDark ? 'text-slate-400' : 'text-gray-500';
-  const bgInput = isDark 
-    ? 'bg-slate-800/50 border-slate-700/50 text-slate-200 placeholder-slate-500' 
+  const bgInput = isDark
+    ? 'bg-slate-800/50 border-slate-700/50 text-slate-200 placeholder-slate-500'
     : 'bg-white border-gray-300 text-gray-800 placeholder-gray-400';
-  const bgInputDisabled = isDark 
-    ? 'bg-slate-800/30 border-slate-700/30 text-slate-500' 
+  const bgInputDisabled = isDark
+    ? 'bg-slate-800/30 border-slate-700/30 text-slate-500'
     : 'bg-gray-100 border-gray-200 text-gray-500';
   const borderColor = isDark ? 'border-slate-700/50' : 'border-gray-200';
   const focusRing = 'focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50';
   const textFile = isDark ? 'text-green-400' : 'text-green-600';
-  const btnCancel = isDark 
-    ? 'text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-600/50' 
+  const btnCancel = isDark
+    ? 'text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-600/50'
     : 'text-gray-600 hover:text-gray-800 bg-gray-200 hover:bg-gray-300';
 
-  // 🔥 CARREGAR GRUPOS AO ABRIR O FORMULÁRIO
+  // 🔥 CARREGAR CATEGORIAS
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setLoadingCategories(true);
+      try {
+        const res = await api.get('/api/v1/categories');
+        setCategories(res.data);
+      } catch (err) {
+        console.error('Erro ao carregar categorias', err);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // 🔥 CARREGAR GRUPOS
   useEffect(() => {
     if (groupsProp && Array.isArray(groupsProp) && groupsProp.length > 0) {
       setGroups(groupsProp);
@@ -63,66 +82,59 @@ export default function ServiceOrderForm({
       setLoadingGroups(true);
       try {
         const response = await api.get("/api/v1/service-orders/groups/available");
-        
         let groupsData = [];
         if (response.data && response.data.data) {
           groupsData = response.data.data;
         } else if (response.data && Array.isArray(response.data)) {
           groupsData = response.data;
-        } else {
-          groupsData = [];
         }
-        
-        if (!Array.isArray(groupsData)) {
-          groupsData = [];
-        }
-        
+        if (!Array.isArray(groupsData)) groupsData = [];
         setGroups(groupsData);
-        
-        if (groupsData.length === 0) {
-          // sem grupos
-        }
       } catch (error) {
         setGroups([]);
       } finally {
         setLoadingGroups(false);
       }
     };
-    
     fetchGroups();
   }, [groupsProp]);
 
   const groupsArray = Array.isArray(groups) ? groups : [];
 
+  // ============ HANDLE SUBMIT ============
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.title.trim()) {
       AxionAlert.fire("Erro", "O título é obrigatório.", "error");
       return;
     }
-    
     if (!formData.description.trim()) {
       AxionAlert.fire("Erro", "A descrição é obrigatória.", "error");
       return;
     }
+    if (!formData.category_id) {
+      AxionAlert.fire("Erro", "Selecione uma categoria.", "error");
+      return;
+    }
 
     setLoading(true);
-    
+
     try {
       const data = new FormData();
       data.append("title", formData.title);
       data.append("description", formData.description);
       data.append("priority", formData.priority);
+      data.append("category_id", formData.category_id);
       if (formData.group_id) data.append("group_id", formData.group_id);
       if (formData.attachment) data.append("attachment", formData.attachment);
-      
+
       const response = await api.post("/api/v1/service-orders", data, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-      
+
       AxionAlert.fire({
         icon: "success",
         title: "Chamado criado!",
@@ -130,9 +142,8 @@ export default function ServiceOrderForm({
         timer: 2000,
         showConfirmButton: false,
       });
-      
+
       if (onSuccess) onSuccess();
-      
     } catch (err) {
       AxionAlert.fire(
         "Erro",
@@ -152,14 +163,12 @@ export default function ServiceOrderForm({
         e.target.value = "";
         return;
       }
-      
       const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
       if (!allowedTypes.includes(file.type)) {
         AxionAlert.fire("Erro", "Apenas arquivos PDF, JPG ou PNG são permitidos.", "error");
         e.target.value = "";
         return;
       }
-      
       setFormData({ ...formData, attachment: file });
     }
   };
@@ -181,6 +190,37 @@ export default function ServiceOrderForm({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Categoria (primeiro) */}
+        <div>
+          <label className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide mb-1.5 ${textLabel}`}>
+            <span className="text-blue-500">●</span>
+            Categoria <span className="text-red-400">*</span>
+          </label>
+          <select
+            className={`w-full px-3 py-2.5 ${bgInput} rounded-lg text-sm ${focusRing} transition-all appearance-none`}
+            value={formData.category_id}
+            onChange={(e) => {
+              const catId = e.target.value;
+              const cat = categories.find(c => c.id === parseInt(catId));
+              setFormData({
+                ...formData,
+                category_id: catId,
+                priority: cat?.default_priority || 'medium',
+                group_id: cat?.default_group_id || '',
+              });
+            }}
+            disabled={loading || loadingCategories}
+          >
+            <option value="">Selecione uma categoria</option>
+            {categories.map(cat => (
+              <option key={cat.id} value={cat.id}>
+                {'—'.repeat(cat.level || 0)} {cat.name}
+              </option>
+            ))}
+          </select>
+          {loadingCategories && <span className="text-xs text-slate-400">Carregando categorias...</span>}
+        </div>
+
         <div>
           <label className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide mb-1.5 ${textLabel}`}>
             <span className="text-blue-500">●</span>
@@ -291,7 +331,7 @@ export default function ServiceOrderForm({
           >
             ✕ Cancelar
           </button>
-          
+
           <button
             type="submit"
             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 transition-all hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"

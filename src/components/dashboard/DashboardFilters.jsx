@@ -10,6 +10,7 @@ export default function DashboardFilters({
   onNewGroup,
   onNewPermission,
   onNewOrder,
+  onNewCategory,      // 🔥 ADICIONADO
   onNewTerm,
   onViewAllTerms,
   showTermAcceptances,
@@ -157,8 +158,8 @@ export default function DashboardFilters({
         {renderSelect("Status", "status", [
           { value: "open", label: "Aberto" },
           { value: "in_progress", label: "Em Andamento" },
-          { value: "completed", label: "Resolvido" },   // separado
-          { value: "closed", label: "Fechado" },                    // separado
+          { value: "completed", label: "Resolvido" },
+          { value: "closed", label: "Fechado" },
           { value: "cancelled", label: "Cancelado" },
         ])}
         <div className="flex-1 min-w-[160px] max-w-[240px]">
@@ -201,6 +202,14 @@ export default function DashboardFilters({
         ])}
         {renderInput("Data Início", "start_date", "", "date")}
         {renderInput("Data Fim", "end_date", "", "date")}
+      </>
+    ),
+    categories: role === "admin" && (
+      <>
+        {renderInput("Buscar Categoria", "name", "Digite o nome...")}
+        <div className="flex-1 min-w-[160px] max-w-[240px]">
+          {renderButton(onNewCategory, "➕", "Nova Categoria", "primary")}
+        </div>
       </>
     ),
   };

@@ -5,6 +5,8 @@ import Swal from "sweetalert2";
 import api from "../services/api";
 import { useDashboardData } from "../hooks/useDashboardData";
 import { usePermissions } from "../hooks/usePermissions";
+import CategoryTable from '../components/dashboard/CategoryTable';
+import CategoryForm from '../components/dashboard/CategoryForm';
 // Components
 import Sidebar from "../components/dashboard/Sidebar";
 import UserTable from "../components/dashboard/UserTable";
@@ -33,13 +35,12 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   // =============================================================
-  // 🔥 TEMA – estado derivado da classe no <html>
+  // 🔥 TEMA
   // =============================================================
   const [isDark, setIsDark] = useState(() => {
     return document.documentElement.classList.contains('dark');
   });
 
-  // Observa mudanças na classe 'dark' do <html>
   useEffect(() => {
     const observer = new MutationObserver(() => {
       const dark = document.documentElement.classList.contains('dark');
@@ -47,6 +48,26 @@ export default function Dashboard() {
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     return () => observer.disconnect();
+  }, []);
+
+  // =============================================================
+  // 🔥 STATE CATEGORIAS
+  // =============================================================
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [showCategoryForm, setShowCategoryForm] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  const loadCategories = useCallback(async () => {
+    setCategoriesLoading(true);
+    try {
+      const res = await api.get('/api/v1/categories');
+      setCategories(res.data);
+    } catch (err) {
+      console.error('Erro ao carregar categorias', err);
+    } finally {
+      setCategoriesLoading(false);
+    }
   }, []);
 
   // =============================================================
@@ -275,345 +296,6 @@ export default function Dashboard() {
     loadProfile();
   }, [navigate]);
 
-  // ============ HANDLERS PARA ENDEREÇO ============
-  const handleOpenAddressModal = () => {
-    const address = currentUser?.address || {};
-    setAddressForm({
-      zip_code: address.zip_code || "",
-      street: address.street || "",
-      number: address.number || "",
-      neighborhood: address.neighborhood || "",
-      city: address.city || "",
-      state: address.state || "",
-      complement: address.complement || "",
-    });
-    setShowAddressModal(true);
-    setShowAddressBanner(false);
-  };
-
-  const handleSaveAddress = async () => {
-    setAddressLoading(true);
-    try {
-      await api.put("/api/v1/update-profile", addressForm);
-      const res = await api.get("/api/v1/me");
-      setCurrentUser(res.data);
-      setShowAddressModal(false);
-      setShowAddressBanner(false);
-      AxionAlert.fire({
-        icon: "success",
-        title: "Endereço atualizado!",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-    } catch (err) {
-      AxionAlert.fire({
-        icon: "error",
-        title: "Erro ao salvar",
-        text: err.response?.data?.message || "Não foi possível salvar o endereço. Tente novamente.",
-        confirmButtonColor: "#6366f1",
-      });
-    } finally {
-      setAddressLoading(false);
-    }
-  };
-
-  // ============ HANDLERS PARA TABS E FILTROS ============
-  const handleTabChange = useCallback((tab) => {
-    setActiveTab(tab);
-    setSelectedUser(null);
-    setSelectedGroupId(null);
-    setShowPermissionModal(false);
-    setShowGroupForm(false);
-    setSelectedOrder(null);
-    setSelectedPermission(null);
-    setShowTermAcceptances(false);
-    setSelectedTermId(null);
-    setUsersCurrentPage(1);
-    setGroupsCurrentPage(1);
-    setAuditCurrentPage(1);
-    setOrdersCurrentPage(1);
-    setPermissionsCurrentPage(1);
-  }, []);
-
-  const handleClearFilters = useCallback(() => {
-    setFilters({
-      name: "",
-      completed: "",
-      cpf: "",
-      email: "",
-      user: "",
-      url: "",
-      method: "",
-      start_date: "",
-      end_date: "",
-      protocol: "",
-      title: "",
-      applicant: "",
-      priority: "",
-      status: "",
-      label: "",
-      perm_name: "",
-      version: "",
-      creator: ""
-    });
-    setUsersCurrentPage(1);
-    setGroupsCurrentPage(1);
-    setAuditCurrentPage(1);
-    setOrdersCurrentPage(1);
-    setPermissionsCurrentPage(1);
-  }, [setFilters]);
-
-  // ============ HANDLERS PARA TERMOS DE USO ============
-  const handleViewTermAcceptances = useCallback((termId) => {
-    setSelectedTermId(termId);
-    setShowTermAcceptances(true);
-    setActiveTab('terms');
-  }, []);
-
-  const handleBackFromAcceptances = useCallback(() => {
-    setShowTermAcceptances(false);
-    setSelectedTermId(null);
-  }, []);
-
-  // ============ HANDLERS DE ORDENS DE SERVIÇO ============
-  const handleOpenOrderDetail = useCallback(async (orderId) => {
-    setActionLoading(true);
-    setShowOrderForm(false);
-    try {
-      const res = await api.get(`/api/v1/service-orders/${orderId}`);
-      setSelectedOrder(res.data.data || res.data);
-    } catch (err) {
-      AxionAlert.fire("Erro", "Não foi possível carregar os detalhes desta OS.", "error");
-    } finally {
-      setActionLoading(false);
-    }
-  }, [AxionAlert]);
-
-  const onUpdateStatus = useCallback(async (orderId, newStatus) => {
-    if (!orderId) {
-      return AxionAlert.fire("Erro", "Não foi possível identificar o ID da OS.", "error");
-    }
-
-    try {
-      setActionLoading(true);
-      const res = await api.put(`/api/v1/service-orders/${orderId}`, { status: newStatus });
-      const updatedOrder = res.data.data || res.data;
-      setSelectedOrder(updatedOrder);
-      await loadServiceOrders(ordersCurrentPage);
-      AxionAlert.fire({ icon: "success", title: "Status Atualizado!", timer: 1500, showConfirmButton: false });
-    } catch (err) {
-      AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao atualizar no servidor.", "error");
-    } finally {
-      setActionLoading(false);
-    }
-  }, [AxionAlert, loadServiceOrders, ordersCurrentPage]);
-
-  const handleEditOrder = useCallback(async (orderId, data) => {
-    try {
-      setActionLoading(true);
-      await api.put(`/api/v1/service-orders/${orderId}`, data);
-      await loadServiceOrders(ordersCurrentPage);
-      AxionAlert.fire({ icon: "success", title: "OS atualizada!", timer: 1500, showConfirmButton: false });
-    } catch (err) {
-      AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao atualizar OS.", "error");
-    } finally {
-      setActionLoading(false);
-    }
-  }, [AxionAlert, loadServiceOrders, ordersCurrentPage]);
-
-  const handleDeleteOrder = useCallback(async (orderId) => {
-    const result = await AxionAlert.fire({
-      title: "Excluir OS?",
-      text: "Esta ação não pode ser desfeita!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Sim, excluir!",
-      cancelButtonText: "Cancelar",
-      background: isDark ? "#111214" : "#ffffff",
-      color: isDark ? "#ffffff" : "#1f2937",
-      confirmButtonColor: "#6366f1",
-    });
-    if (result.isConfirmed) {
-      try {
-        setActionLoading(true);
-        await api.delete(`/api/v1/service-orders/${orderId}`);
-        await loadServiceOrders(ordersCurrentPage);
-        AxionAlert.fire({ icon: "success", title: "Deletado!", text: "Ordem de serviço removida.", timer: 1500, showConfirmButton: false });
-      } catch (e) {
-        AxionAlert.fire("Erro", "Falha ao excluir a OS.", "error");
-      } finally {
-        setActionLoading(false);
-      }
-    }
-  }, [AxionAlert, loadServiceOrders, ordersCurrentPage, isDark]);
-
-  // ============ HANDLERS DE PERMISSÕES ============
-  const handleCreatePermission = useCallback(async (data) => {
-    setActionLoading(true);
-    try {
-      await api.post("/api/v1/admin/permissions", data);
-      AxionAlert.fire({ icon: "success", title: "Criada!", text: "Permissão registrada.", timer: 2000, showConfirmButton: false });
-      setShowPermissionModal(false);
-      loadPermissions(permissionsCurrentPage);
-      const res = await api.get('/api/v1/admin/permissions?per_page=1000');
-      setAllPermissions(res.data.data || res.data);
-    } catch (err) {
-      AxionAlert.fire("Erro!", "Não foi possível criar a permissão.", "error");
-    } finally {
-      setActionLoading(false);
-    }
-  }, [AxionAlert, loadPermissions, permissionsCurrentPage]);
-
-  const handleOpenPermissionDetail = useCallback(async (permissionId) => {
-    try {
-      setActionLoading(true);
-      const res = await api.get(`/api/v1/admin/permissions/${permissionId}`);
-      setSelectedPermission(res.data.data || res.data);
-    } catch (err) {
-      AxionAlert.fire("Erro", "Não foi possível carregar os detalhes da permissão.", "error");
-    } finally {
-      setActionLoading(false);
-    }
-  }, [AxionAlert]);
-
-  const handleEditPermission = useCallback(async (permissionId, data) => {
-    try {
-      setActionLoading(true);
-      await api.put(`/api/v1/admin/permissions/${permissionId}`, data);
-      await loadPermissions(permissionsCurrentPage);
-      const res = await api.get(`/api/v1/admin/permissions/${permissionId}`);
-      setSelectedPermission(res.data.data || res.data);
-      const allRes = await api.get('/api/v1/admin/permissions?per_page=1000');
-      setAllPermissions(allRes.data.data || allRes.data);
-      AxionAlert.fire({ icon: "success", title: "Permissão atualizada!", timer: 1500, showConfirmButton: false });
-    } catch (err) {
-      AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao atualizar permissão.", "error");
-    } finally {
-      setActionLoading(false);
-    }
-  }, [AxionAlert, loadPermissions, permissionsCurrentPage]);
-
-  const handleDeletePermission = useCallback(async (permissionId) => {
-    try {
-      setActionLoading(true);
-      await api.delete(`/api/v1/admin/permissions/${permissionId}`);
-      setSelectedPermission(null);
-      await loadPermissions(permissionsCurrentPage);
-      const res = await api.get('/api/v1/admin/permissions?per_page=1000');
-      setAllPermissions(res.data.data || res.data);
-      AxionAlert.fire({ icon: "success", title: "Permissão excluída!", timer: 1500, showConfirmButton: false });
-    } catch (err) {
-      AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao excluir permissão.", "error");
-    } finally {
-      setActionLoading(false);
-    }
-  }, [AxionAlert, loadPermissions, permissionsCurrentPage]);
-
-  // ============ HANDLERS DE PERMISSÕES EM GRUPOS ============
-  const handleAddPermissionToGroup = useCallback(async (permissionId, permissionName) => {
-    if (!selectedGroupId || !permissionName) {
-      AxionAlert.fire("Erro", "Dados inválidos para vincular permissão.", "error");
-      return;
-    }
-
-    setActionLoading(true);
-    try {
-      await api.post(`/api/v1/admin/groups/${selectedGroupId}/permissions`, { permission_name: permissionName });
-      AxionAlert.fire({ icon: "success", title: "Permissão Atribuída", text: "A chave foi vinculada ao grupo.", timer: 1500, showConfirmButton: false });
-      await loadGroups(groupsCurrentPage);
-    } catch (err) {
-      const message = err.response?.data?.message || "Não foi possível vincular a permissão.";
-      AxionAlert.fire("Erro", message, "error");
-    } finally {
-      setActionLoading(false);
-    }
-  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId]);
-
-  const handleRemovePermissionFromGroup = useCallback(async (permissionId) => {
-    if (!selectedGroupId) {
-      AxionAlert.fire("Erro", "Grupo não selecionado.", "error");
-      return;
-    }
-
-    const numericId = Number(permissionId);
-    if (isNaN(numericId)) {
-      AxionAlert.fire("Erro", "ID da permissão inválido.", "error");
-      return;
-    }
-
-    const result = await AxionAlert.fire({
-      title: "Remover Permissão?",
-      text: "O grupo perderá acesso a esta funcionalidade.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Sim, remover",
-      background: isDark ? "#111214" : "#ffffff",
-      color: isDark ? "#ffffff" : "#1f2937",
-    });
-
-    if (result.isConfirmed) {
-      setActionLoading(true);
-      try {
-        await api.delete(`/api/v1/admin/groups/${selectedGroupId}/permissions/${numericId}`);
-        AxionAlert.fire("Removido!", "Permissão desvinculada.", "success");
-        await loadGroups(groupsCurrentPage);
-      } catch (err) {
-        AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao remover permissão.", "error");
-      } finally {
-        setActionLoading(false);
-      }
-    }
-  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId, isDark]);
-
-  // ============ HANDLERS DE GRUPOS (EDIÇÃO E EXCLUSÃO) ============
-  const handleEditGroup = useCallback(async (groupId, data) => {
-    try {
-      setActionLoading(true);
-      await api.put(`/api/v1/groups/${groupId}`, data);
-      await loadGroups(groupsCurrentPage);
-      AxionAlert.fire({
-        icon: "success",
-        title: "Grupo atualizado!",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-    } catch (err) {
-      AxionAlert.fire({
-        icon: "error",
-        title: "Erro!",
-        text: err.response?.data?.message || "Falha ao atualizar grupo.",
-        confirmButtonColor: "#6366f1",
-      });
-      throw err;
-    } finally {
-      setActionLoading(false);
-    }
-  }, [api, loadGroups, groupsCurrentPage, AxionAlert]);
-
-  const handleDeleteGroup = useCallback(async (groupId) => {
-    try {
-      setActionLoading(true);
-      await api.delete(`/api/v1/groups/${groupId}`);
-      await loadGroups(groupsCurrentPage);
-      AxionAlert.fire({
-        icon: "success",
-        title: "Grupo excluído!",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-    } catch (err) {
-      AxionAlert.fire({
-        icon: "error",
-        title: "Erro!",
-        text: err.response?.data?.message || "Falha ao excluir grupo.",
-        confirmButtonColor: "#6366f1",
-      });
-      throw err;
-    } finally {
-      setActionLoading(false);
-    }
-  }, [api, loadGroups, groupsCurrentPage, AxionAlert]);
-
   // ============ CARREGAR DADOS POR ABA ============
   useEffect(() => {
     const loadData = async () => {
@@ -627,6 +309,8 @@ export default function Dashboard() {
         await loadPermissions(permissionsCurrentPage);
       } else if (activeTab === "orders") {
         await loadServiceOrders(ordersCurrentPage);
+      } else if (activeTab === "categories") {
+        await loadCategories();
       }
     };
     loadData();
@@ -642,6 +326,7 @@ export default function Dashboard() {
     loadAuditLogs,
     loadPermissions,
     loadServiceOrders,
+    loadCategories,
   ]);
 
   // ============ RECARREGAR QUANDO FILTROS MUDAREM ============
@@ -859,6 +544,374 @@ export default function Dashboard() {
     }
   }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId, isDark]);
 
+  // ============ HANDLERS DE GRUPOS (EDIÇÃO E EXCLUSÃO) ============
+  const handleEditGroup = useCallback(async (groupId, data) => {
+    try {
+      setActionLoading(true);
+      await api.put(`/api/v1/groups/${groupId}`, data);
+      await loadGroups(groupsCurrentPage);
+      AxionAlert.fire({
+        icon: "success",
+        title: "Grupo atualizado!",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      AxionAlert.fire({
+        icon: "error",
+        title: "Erro!",
+        text: err.response?.data?.message || "Falha ao atualizar grupo.",
+        confirmButtonColor: "#6366f1",
+      });
+      throw err;
+    } finally {
+      setActionLoading(false);
+    }
+  }, [api, loadGroups, groupsCurrentPage, AxionAlert]);
+
+  const handleDeleteGroup = useCallback(async (groupId) => {
+    try {
+      setActionLoading(true);
+      await api.delete(`/api/v1/groups/${groupId}`);
+      await loadGroups(groupsCurrentPage);
+      AxionAlert.fire({
+        icon: "success",
+        title: "Grupo excluído!",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      AxionAlert.fire({
+        icon: "error",
+        title: "Erro!",
+        text: err.response?.data?.message || "Falha ao excluir grupo.",
+        confirmButtonColor: "#6366f1",
+      });
+      throw err;
+    } finally {
+      setActionLoading(false);
+    }
+  }, [api, loadGroups, groupsCurrentPage, AxionAlert]);
+
+  // ============ HANDLERS DE PERMISSÕES ============
+  const handleCreatePermission = useCallback(async (data) => {
+    setActionLoading(true);
+    try {
+      await api.post("/api/v1/admin/permissions", data);
+      AxionAlert.fire({ icon: "success", title: "Criada!", text: "Permissão registrada.", timer: 2000, showConfirmButton: false });
+      setShowPermissionModal(false);
+      loadPermissions(permissionsCurrentPage);
+      const res = await api.get('/api/v1/admin/permissions?per_page=1000');
+      setAllPermissions(res.data.data || res.data);
+    } catch (err) {
+      AxionAlert.fire("Erro!", "Não foi possível criar a permissão.", "error");
+    } finally {
+      setActionLoading(false);
+    }
+  }, [AxionAlert, loadPermissions, permissionsCurrentPage]);
+
+  const handleOpenPermissionDetail = useCallback(async (permissionId) => {
+    try {
+      setActionLoading(true);
+      const res = await api.get(`/api/v1/admin/permissions/${permissionId}`);
+      setSelectedPermission(res.data.data || res.data);
+    } catch (err) {
+      AxionAlert.fire("Erro", "Não foi possível carregar os detalhes da permissão.", "error");
+    } finally {
+      setActionLoading(false);
+    }
+  }, [AxionAlert]);
+
+  const handleEditPermission = useCallback(async (permissionId, data) => {
+    try {
+      setActionLoading(true);
+      await api.put(`/api/v1/admin/permissions/${permissionId}`, data);
+      await loadPermissions(permissionsCurrentPage);
+      const res = await api.get(`/api/v1/admin/permissions/${permissionId}`);
+      setSelectedPermission(res.data.data || res.data);
+      const allRes = await api.get('/api/v1/admin/permissions?per_page=1000');
+      setAllPermissions(allRes.data.data || allRes.data);
+      AxionAlert.fire({ icon: "success", title: "Permissão atualizada!", timer: 1500, showConfirmButton: false });
+    } catch (err) {
+      AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao atualizar permissão.", "error");
+    } finally {
+      setActionLoading(false);
+    }
+  }, [AxionAlert, loadPermissions, permissionsCurrentPage]);
+
+  const handleDeletePermission = useCallback(async (permissionId) => {
+    try {
+      setActionLoading(true);
+      await api.delete(`/api/v1/admin/permissions/${permissionId}`);
+      setSelectedPermission(null);
+      await loadPermissions(permissionsCurrentPage);
+      const res = await api.get('/api/v1/admin/permissions?per_page=1000');
+      setAllPermissions(res.data.data || res.data);
+      AxionAlert.fire({ icon: "success", title: "Permissão excluída!", timer: 1500, showConfirmButton: false });
+    } catch (err) {
+      AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao excluir permissão.", "error");
+    } finally {
+      setActionLoading(false);
+    }
+  }, [AxionAlert, loadPermissions, permissionsCurrentPage]);
+
+  // ============ HANDLERS DE PERMISSÕES EM GRUPOS ============
+  const handleAddPermissionToGroup = useCallback(async (permissionId, permissionName) => {
+    if (!selectedGroupId || !permissionName) {
+      AxionAlert.fire("Erro", "Dados inválidos para vincular permissão.", "error");
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      await api.post(`/api/v1/admin/groups/${selectedGroupId}/permissions`, { permission_name: permissionName });
+      AxionAlert.fire({ icon: "success", title: "Permissão Atribuída", text: "A chave foi vinculada ao grupo.", timer: 1500, showConfirmButton: false });
+      await loadGroups(groupsCurrentPage);
+    } catch (err) {
+      const message = err.response?.data?.message || "Não foi possível vincular a permissão.";
+      AxionAlert.fire("Erro", message, "error");
+    } finally {
+      setActionLoading(false);
+    }
+  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId]);
+
+  const handleRemovePermissionFromGroup = useCallback(async (permissionId) => {
+    if (!selectedGroupId) {
+      AxionAlert.fire("Erro", "Grupo não selecionado.", "error");
+      return;
+    }
+
+    const numericId = Number(permissionId);
+    if (isNaN(numericId)) {
+      AxionAlert.fire("Erro", "ID da permissão inválido.", "error");
+      return;
+    }
+
+    const result = await AxionAlert.fire({
+      title: "Remover Permissão?",
+      text: "O grupo perderá acesso a esta funcionalidade.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sim, remover",
+      background: isDark ? "#111214" : "#ffffff",
+      color: isDark ? "#ffffff" : "#1f2937",
+    });
+
+    if (result.isConfirmed) {
+      setActionLoading(true);
+      try {
+        await api.delete(`/api/v1/admin/groups/${selectedGroupId}/permissions/${numericId}`);
+        AxionAlert.fire("Removido!", "Permissão desvinculada.", "success");
+        await loadGroups(groupsCurrentPage);
+      } catch (err) {
+        AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao remover permissão.", "error");
+      } finally {
+        setActionLoading(false);
+      }
+    }
+  }, [AxionAlert, loadGroups, groupsCurrentPage, selectedGroupId, isDark]);
+
+  // ============ HANDLERS DE ORDENS DE SERVIÇO ============
+  const handleOpenOrderDetail = useCallback(async (orderId) => {
+    setActionLoading(true);
+    setShowOrderForm(false);
+    try {
+      const res = await api.get(`/api/v1/service-orders/${orderId}`);
+      setSelectedOrder(res.data.data || res.data);
+    } catch (err) {
+      AxionAlert.fire("Erro", "Não foi possível carregar os detalhes desta OS.", "error");
+    } finally {
+      setActionLoading(false);
+    }
+  }, [AxionAlert]);
+
+  const onUpdateStatus = useCallback(async (orderId, newStatus) => {
+    if (!orderId) {
+      return AxionAlert.fire("Erro", "Não foi possível identificar o ID da OS.", "error");
+    }
+
+    try {
+      setActionLoading(true);
+      const res = await api.put(`/api/v1/service-orders/${orderId}`, { status: newStatus });
+      const updatedOrder = res.data.data || res.data;
+      setSelectedOrder(updatedOrder);
+      await loadServiceOrders(ordersCurrentPage);
+      AxionAlert.fire({ icon: "success", title: "Status Atualizado!", timer: 1500, showConfirmButton: false });
+    } catch (err) {
+      AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao atualizar no servidor.", "error");
+    } finally {
+      setActionLoading(false);
+    }
+  }, [AxionAlert, loadServiceOrders, ordersCurrentPage]);
+
+  const handleEditOrder = useCallback(async (orderId, data) => {
+    try {
+      setActionLoading(true);
+      await api.put(`/api/v1/service-orders/${orderId}`, data);
+      await loadServiceOrders(ordersCurrentPage);
+      AxionAlert.fire({ icon: "success", title: "OS atualizada!", timer: 1500, showConfirmButton: false });
+    } catch (err) {
+      AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao atualizar OS.", "error");
+    } finally {
+      setActionLoading(false);
+    }
+  }, [AxionAlert, loadServiceOrders, ordersCurrentPage]);
+
+  const handleDeleteOrder = useCallback(async (orderId) => {
+    const result = await AxionAlert.fire({
+      title: "Excluir OS?",
+      text: "Esta ação não pode ser desfeita!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sim, excluir!",
+      cancelButtonText: "Cancelar",
+      background: isDark ? "#111214" : "#ffffff",
+      color: isDark ? "#ffffff" : "#1f2937",
+      confirmButtonColor: "#6366f1",
+    });
+    if (result.isConfirmed) {
+      try {
+        setActionLoading(true);
+        await api.delete(`/api/v1/service-orders/${orderId}`);
+        await loadServiceOrders(ordersCurrentPage);
+        AxionAlert.fire({ icon: "success", title: "Deletado!", text: "Ordem de serviço removida.", timer: 1500, showConfirmButton: false });
+      } catch (e) {
+        AxionAlert.fire("Erro", "Falha ao excluir a OS.", "error");
+      } finally {
+        setActionLoading(false);
+      }
+    }
+  }, [AxionAlert, loadServiceOrders, ordersCurrentPage, isDark]);
+
+  const handleCancelOrder = useCallback(async (orderId) => {
+    if (!orderId) return;
+    setActionLoading(true);
+    try {
+      const res = await api.put(`/api/v1/service-orders/${orderId}/cancel`);
+      const updatedOrder = res.data.data || res.data;
+      setSelectedOrder(updatedOrder);
+      await loadServiceOrders(ordersCurrentPage);
+      AxionAlert.fire({
+        icon: "success",
+        title: "✅ Chamado cancelado!",
+        text: "O chamado foi cancelado com sucesso.",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      AxionAlert.fire({
+        icon: "error",
+        title: "Erro ao cancelar",
+        text: err.response?.data?.message || "Não foi possível cancelar o chamado.",
+        confirmButtonColor: "#6366f1",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  }, [api, loadServiceOrders, ordersCurrentPage, AxionAlert]);
+
+  // ============ HANDLERS PARA ENDEREÇO ============
+  const handleOpenAddressModal = () => {
+    const address = currentUser?.address || {};
+    setAddressForm({
+      zip_code: address.zip_code || "",
+      street: address.street || "",
+      number: address.number || "",
+      neighborhood: address.neighborhood || "",
+      city: address.city || "",
+      state: address.state || "",
+      complement: address.complement || "",
+    });
+    setShowAddressModal(true);
+    setShowAddressBanner(false);
+  };
+
+  const handleSaveAddress = async () => {
+    setAddressLoading(true);
+    try {
+      await api.put("/api/v1/update-profile", addressForm);
+      const res = await api.get("/api/v1/me");
+      setCurrentUser(res.data);
+      setShowAddressModal(false);
+      setShowAddressBanner(false);
+      AxionAlert.fire({
+        icon: "success",
+        title: "Endereço atualizado!",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      AxionAlert.fire({
+        icon: "error",
+        title: "Erro ao salvar",
+        text: err.response?.data?.message || "Não foi possível salvar o endereço. Tente novamente.",
+        confirmButtonColor: "#6366f1",
+      });
+    } finally {
+      setAddressLoading(false);
+    }
+  };
+
+  // ============ HANDLERS PARA TABS E FILTROS ============
+  const handleTabChange = useCallback((tab) => {
+    setActiveTab(tab);
+    setSelectedUser(null);
+    setSelectedGroupId(null);
+    setShowPermissionModal(false);
+    setShowGroupForm(false);
+    setSelectedOrder(null);
+    setSelectedPermission(null);
+    setShowTermAcceptances(false);
+    setSelectedTermId(null);
+    setShowCategoryForm(false);
+    setSelectedCategory(null);
+    setUsersCurrentPage(1);
+    setGroupsCurrentPage(1);
+    setAuditCurrentPage(1);
+    setOrdersCurrentPage(1);
+    setPermissionsCurrentPage(1);
+  }, []);
+
+  const handleClearFilters = useCallback(() => {
+    setFilters({
+      name: "",
+      completed: "",
+      cpf: "",
+      email: "",
+      user: "",
+      url: "",
+      method: "",
+      start_date: "",
+      end_date: "",
+      protocol: "",
+      title: "",
+      applicant: "",
+      priority: "",
+      status: "",
+      label: "",
+      perm_name: "",
+      version: "",
+      creator: ""
+    });
+    setUsersCurrentPage(1);
+    setGroupsCurrentPage(1);
+    setAuditCurrentPage(1);
+    setOrdersCurrentPage(1);
+    setPermissionsCurrentPage(1);
+  }, [setFilters]);
+
+  // ============ HANDLERS PARA TERMOS DE USO ============
+  const handleViewTermAcceptances = useCallback((termId) => {
+    setSelectedTermId(termId);
+    setShowTermAcceptances(true);
+    setActiveTab('terms');
+  }, []);
+
+  const handleBackFromAcceptances = useCallback(() => {
+    setShowTermAcceptances(false);
+    setSelectedTermId(null);
+  }, []);
+
   // ============ COMPONENTE DE LOADING PERSONALIZADO ============
   const LoadingSpinner = () => (
     <div className="flex items-center justify-center p-8">
@@ -870,34 +923,6 @@ export default function Dashboard() {
       </div>
     </div>
   );
-
-  // ============ HANDLER PARA CANCELAR ORDEM ============
-const handleCancelOrder = useCallback(async (orderId) => {
-  if (!orderId) return;
-  setActionLoading(true);
-  try {
-    const res = await api.put(`/api/v1/service-orders/${orderId}/cancel`);
-    const updatedOrder = res.data.data || res.data;
-    setSelectedOrder(updatedOrder);
-    await loadServiceOrders(ordersCurrentPage);
-    AxionAlert.fire({
-      icon: "success",
-      title: "✅ Chamado cancelado!",
-      text: "O chamado foi cancelado com sucesso.",
-      timer: 2000,
-      showConfirmButton: false,
-    });
-  } catch (err) {
-    AxionAlert.fire({
-      icon: "error",
-      title: "Erro ao cancelar",
-      text: err.response?.data?.message || "Não foi possível cancelar o chamado.",
-      confirmButtonColor: "#6366f1",
-    });
-  } finally {
-    setActionLoading(false);
-  }
-}, [api, loadServiceOrders, ordersCurrentPage, AxionAlert]);
 
   // =============================================================
   // 🔥 RENDERIZAÇÃO CONDICIONAL – SE NÃO TIVER ACESSO, MOSTRA DENIED
@@ -1133,6 +1158,7 @@ const handleCancelOrder = useCallback(async (orderId) => {
                 onClear={handleClearFilters}
                 onNewGroup={() => setShowGroupForm(true)}
                 onNewPermission={() => setShowPermissionModal(true)}
+                onNewCategory={() => { setSelectedCategory(null); setShowCategoryForm(true); }}
                 isEditing={isEditing}
                 setIsEditing={setIsEditing}
                 actionLoading={actionLoading}
@@ -1148,6 +1174,65 @@ const handleCancelOrder = useCallback(async (orderId) => {
                 isDark={isDark}
               />
 
+              {/* ========== ABA CATEGORIAS ========== */}
+              {activeTab === "categories" && (
+                <>
+                  {showCategoryForm && (
+                    <CategoryForm
+                      category={selectedCategory}
+                      onSuccess={() => {
+                        setShowCategoryForm(false);
+                        setSelectedCategory(null);
+                        loadCategories();
+                      }}
+                      onCancel={() => {
+                        setShowCategoryForm(false);
+                        setSelectedCategory(null);
+                      }}
+                      isDark={isDark}
+                    />
+                  )}
+                  {!showCategoryForm && (
+                    <>
+                      <CategoryTable
+                        categories={categories}
+                        loading={categoriesLoading || actionLoading}
+                        onViewDetail={(cat) => {
+                          setSelectedCategory(cat);
+                          setShowCategoryForm(true);
+                        }}
+                        onDelete={async (id) => {
+                          const confirm = await AxionAlert.fire({
+                            title: "Excluir Categoria?",
+                            text: "Isso removerá a categoria permanentemente.",
+                            icon: "warning",
+                            showCancelButton: true,
+                            confirmButtonText: "Sim, excluir",
+                            cancelButtonText: "Cancelar",
+                            background: isDark ? "#111214" : "#fff",
+                            color: isDark ? "#fff" : "#1f2937",
+                          });
+                          if (confirm.isConfirmed) {
+                            setActionLoading(true);
+                            try {
+                              await api.delete(`/api/v1/admin/categories/${id}`);
+                              AxionAlert.fire("Excluída!", "Categoria removida.", "success");
+                              await loadCategories();
+                            } catch (err) {
+                              AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao excluir.", "error");
+                            } finally {
+                              setActionLoading(false);
+                            }
+                          }
+                        }}
+                        isDark={isDark}
+                      />
+                    </>
+                  )}
+                </>
+              )}
+
+              {/* ========== DEMAIS ABAS ========== */}
               {activeTab === "permissions" && showPermissionModal && (
                 <PermissionForm loading={actionLoading} onCancel={() => setShowPermissionModal(false)} onSave={handleCreatePermission} isDark={isDark} />
               )}
@@ -1165,7 +1250,7 @@ const handleCancelOrder = useCallback(async (orderId) => {
                       onUpdateStatus={onUpdateStatus}
                       isSystemAdmin={isGlobalAdmin}
                       currentUser={currentUser}
-                      onCancelOrder={handleCancelOrder} 
+                      onCancelOrder={handleCancelOrder}
                       onDeleteOrder={async (id) => {
                         const result = await AxionAlert.fire({
                           title: "Excluir OS?",

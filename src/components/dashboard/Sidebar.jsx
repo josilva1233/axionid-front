@@ -101,6 +101,7 @@ export default function Sidebar({
       visible: canViewOrders,
     },
     // 🔥 NOVO: Assistente (visível para todos)
+    
     {
       id: 'ai',
       icon: '🤖',
@@ -129,6 +130,13 @@ export default function Sidebar({
       section: 'Segurança',
       visible: isAdmin,
     },
+    {
+  id: 'categories',
+  icon: '📂',
+  label: 'Categorias',
+  section: 'Administração',
+  visible: isAdmin, // ou canViewCategories se tiver permissão
+},
   ];
 
   const filteredNavItems = navItems.filter(item => item.visible);

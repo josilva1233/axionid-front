@@ -9,12 +9,13 @@ export function useDashboardData(role) {
   const [auditLogs, setAuditLogs] = useState([]);
   const [serviceOrders, setServiceOrders] = useState([]);
   const [permissions, setPermissions] = useState([]);
+  const [categories, setCategories] = useState([]); // 🔥 NOVO
 
   const [filters, setFilters] = useState({
     name: "",
     completed: "",
-    cpf: "",          
-    email: "",  
+    cpf: "",
+    email: "",
     user: "",
     url: "",
     method: "",
@@ -27,6 +28,10 @@ export function useDashboardData(role) {
     status: "",
     label: "",
     perm_name: "",
+    version: "",      // 🔥 NOVO (para termos)
+    creator: "",      // 🔥 NOVO (para termos)
+    category_name: "", // 🔥 NOVO (para categorias)
+    category_status: "", // 🔥 NOVO (para categorias)
   });
 
   const [usersPagination, setUsersPagination] = useState({ current: 1, last: 1, total: 0, perPage: 10 });
@@ -34,6 +39,7 @@ export function useDashboardData(role) {
   const [auditPagination, setAuditPagination] = useState({ current: 1, last: 1, total: 0, perPage: 20 });
   const [ordersPagination, setOrdersPagination] = useState({ current: 1, last: 1, total: 0, perPage: 10 });
   const [permissionsPagination, setPermissionsPagination] = useState({ current: 1, last: 1, total: 0, perPage: 10 });
+  const [categoriesPagination, setCategoriesPagination] = useState({ current: 1, last: 1, total: 0, perPage: 10 }); // 🔥 NOVO
 
   const isAdmin = role === "admin";
 
@@ -45,7 +51,7 @@ export function useDashboardData(role) {
       const params = new URLSearchParams({ page, per_page: 10 });
       if (filters.name) params.append("name", filters.name);
       if (filters.completed !== "") params.append("completed", filters.completed);
-      if (filters.cpf) params.append("cpf", filters.cpf);        
+      if (filters.cpf) params.append("cpf", filters.cpf);
       if (filters.email) params.append("email", filters.email);
 
       const res = await api.get(`/api/v1/admin/users?${params.toString()}`);
@@ -68,7 +74,7 @@ export function useDashboardData(role) {
     }
   }, [isAdmin, filters.name, filters.completed, filters.cpf, filters.email]);
 
-// ---- GRUPOS ----
+  // ---- GRUPOS ----
   const loadGroups = useCallback(async (page = 1) => {
     setLoading(true);
     try {
@@ -121,8 +127,6 @@ export function useDashboardData(role) {
         setAuditLogs([]);
       }
     } catch (err) {
-      if (err.response) {
-      }
       setAuditLogs([]);
     } finally {
       setLoading(false);
@@ -189,6 +193,35 @@ export function useDashboardData(role) {
     }
   }, [isAdmin, filters.label, filters.perm_name]);
 
+  // ---- CATEGORIAS (NOVO) ----
+  const loadCategories = useCallback(async (page = 1) => {
+    if (!isAdmin) return;
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({ page, per_page: 10 });
+      if (filters.category_name) params.append("name", filters.category_name);
+      if (filters.category_status) params.append("is_active", filters.category_status);
+
+      const res = await api.get(`/api/v1/admin/categories?${params.toString()}`);
+      const data = res.data;
+      if (data.data) {
+        setCategories(data.data);
+        setCategoriesPagination({
+          current: data.current_page || 1,
+          last: data.last_page || 1,
+          total: data.total || 0,
+          perPage: data.per_page || 10,
+        });
+      } else {
+        setCategories([]);
+      }
+    } catch (err) {
+      setCategories([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [isAdmin, filters.category_name, filters.category_status]);
+
   return {
     loading,
     users,
@@ -196,11 +229,13 @@ export function useDashboardData(role) {
     auditLogs,
     serviceOrders,
     permissions,
+    categories, // 🔥 NOVO
     usersPagination,
     groupsPagination,
     auditPagination,
     ordersPagination,
     permissionsPagination,
+    categoriesPagination, // 🔥 NOVO
     filters,
     setFilters,
     loadUsers,
@@ -208,5 +243,6 @@ export function useDashboardData(role) {
     loadAuditLogs,
     loadServiceOrders,
     loadPermissions,
+    loadCategories, // 🔥 NOVO
   };
 }
