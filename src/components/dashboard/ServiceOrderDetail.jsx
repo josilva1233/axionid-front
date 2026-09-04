@@ -52,6 +52,7 @@ export default function ServiceOrderDetail({
 }) {
   const baseUrl = import.meta.env.VITE_API_URL || process.env.REACT_APP_API_URL || "http://163.176.168.224";
 
+  // === ESTADOS EXISTENTES ===
   const [localOrder, setLocalOrder] = useState(initialOrder || null);
   const [messages, setMessages] = useState([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
@@ -65,7 +66,14 @@ export default function ServiceOrderDetail({
   const [isResolved, setIsResolved] = useState(false);
   const autoCloseTimerRef = useRef(null);
 
-  // ✅ CORREÇÃO APLICADA: Usamos useMemo para o AxionAlert não ser recriado a cada render
+  // === NOVOS ESTADOS PARA CATEGORIA ===
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [showRecategorizeModal, setShowRecategorizeModal] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState("");
+  const [recategorizeLoading, setRecategorizeLoading] = useState(false);
+
+  // ✅ SweetAlert com tema
   const AxionAlert = useMemo(() => Swal.mixin({
     background: isDark ? "#111214" : "#ffffff",
     color: isDark ? "#ffffff" : "#1f2937",
@@ -78,50 +86,7 @@ export default function ServiceOrderDetail({
     },
   }), [isDark]);
 
-  // ============ HANDLE CANCELAR ============
-  const handleCancelOrder = useCallback(async () => {
-    if (!localOrder?.id) return;
-    const result = await AxionAlert.fire({
-      title: "Cancelar Chamado?",
-      text: "Tem certeza que deseja cancelar este chamado? Esta ação não pode ser desfeita.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Sim, cancelar",
-      cancelButtonText: "Não",
-      confirmButtonColor: "#ef4444",
-    });
-    if (!result.isConfirmed) return;
-
-    if (onCancelOrder) {
-      try {
-        await onCancelOrder(localOrder.id);
-        AxionAlert.fire({
-          icon: "success",
-          title: "Chamado cancelado!",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-      } catch (error) {
-        AxionAlert.fire("Erro", error.response?.data?.message || "Não foi possível cancelar o chamado.", "error");
-      }
-    }
-  }, [localOrder, onCancelOrder, AxionAlert]);
-
-  if (!initialOrder || !localOrder) {
-    return (
-      <div className={`flex flex-col items-center justify-center min-h-[50vh] text-center p-8 ${isDark ? 'bg-slate-900' : 'bg-gray-100'} rounded-xl`}>
-        <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-4"></div>
-        <h5 className={`${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Carregando detalhes da OS...</h5>
-        <button
-          className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full border ${isDark ? 'border-slate-700/50 text-slate-400 hover:bg-slate-800/50 hover:text-slate-200' : 'border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-800'} bg-transparent transition-all mt-4`}
-          onClick={onBack}
-        >
-          ← Voltar
-        </button>
-      </div>
-    );
-  }
-
+  // ============ CLASSES DE TEMA ============
   const bgPage = isDark ? 'bg-slate-900' : 'bg-gray-100';
   const bgHeader = isDark ? 'from-slate-900 to-indigo-950/50 border-blue-500/20' : 'from-gray-50 to-white border-blue-200/50';
   const bgCard = isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200';
@@ -130,6 +95,7 @@ export default function ServiceOrderDetail({
   const textSub = isDark ? 'text-slate-400' : 'text-gray-500';
   const borderColor = isDark ? 'border-slate-700/50' : 'border-gray-200';
 
+  // ============ FUNÇÕES EXISTENTES ============
   // ---- Carregar mensagens ----
   const loadMessages = useCallback(async (pageNum = 1, append = false) => {
     if (!localOrder?.id) return;
@@ -247,6 +213,7 @@ export default function ServiceOrderDetail({
     }
   };
 
+  // ---- Enviar mensagem ----
   const sendMessage = useCallback(async () => {
     if (!newMessage.trim() && !newAttachment) return;
     setSendingMessage(true);
@@ -292,10 +259,66 @@ export default function ServiceOrderDetail({
     }
   };
 
+  // ============ FUNÇÕES PARA CATEGORIA ============
+  const loadCategories = useCallback(async () => {
+    setLoadingCategories(true);
+    try {
+      const res = await api.get('/api/v1/categories');
+      setCategories(res.data);
+    } catch (err) {
+      console.error('Erro ao carregar categorias', err);
+    } finally {
+      setLoadingCategories(false);
+    }
+  }, []);
+
+  const handleRecategorize = useCallback(async () => {
+    if (!selectedCategoryId) {
+      AxionAlert.fire('Aviso', 'Selecione uma categoria.', 'warning');
+      return;
+    }
+    setRecategorizeLoading(true);
+    try {
+      await api.put(`/api/v1/service-orders/${localOrder.id}`, {
+        category_id: selectedCategoryId
+      });
+      const updatedOrder = { ...localOrder, category_id: parseInt(selectedCategoryId) };
+      const cat = categories.find(c => c.id === parseInt(selectedCategoryId));
+      if (cat) {
+        updatedOrder.category = cat;
+      }
+      setLocalOrder(updatedOrder);
+      setShowRecategorizeModal(false);
+      AxionAlert.fire({
+        icon: 'success',
+        title: 'Categoria atualizada!',
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      AxionAlert.fire('Erro', err.response?.data?.message || 'Falha ao recategorizar.', 'error');
+    } finally {
+      setRecategorizeLoading(false);
+    }
+  }, [selectedCategoryId, localOrder, categories, AxionAlert]);
+
+  useEffect(() => {
+    if (showRecategorizeModal) {
+      loadCategories();
+      if (localOrder?.category_id) {
+        setSelectedCategoryId(localOrder.category_id.toString());
+      } else {
+        setSelectedCategoryId("");
+      }
+    }
+  }, [showRecategorizeModal, loadCategories, localOrder]);
+
+  // ---- Carregar mensagens ao montar ----
   useEffect(() => {
     if (localOrder?.id) loadMessages(1, false);
   }, [localOrder?.id, loadMessages]);
 
+  // ---- Marcar como resolvido ----
   const handleMarkAsResolved = useCallback(async () => {
     if (!localOrder?.id) return;
     const result = await AxionAlert.fire({
@@ -333,6 +356,51 @@ export default function ServiceOrderDetail({
       AxionAlert.fire("Erro", error.response?.data?.message || "Não foi possível marcar o chamado como resolvido.", "error");
     }
   }, [localOrder, onUpdateStatus, AxionAlert]);
+
+  // ---- Cancelar chamado ----
+  const handleCancelOrder = useCallback(async () => {
+    if (!localOrder?.id) return;
+    const result = await AxionAlert.fire({
+      title: "Cancelar Chamado?",
+      text: "Tem certeza que deseja cancelar este chamado? Esta ação não pode ser desfeita.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sim, cancelar",
+      cancelButtonText: "Não",
+      confirmButtonColor: "#ef4444",
+    });
+    if (!result.isConfirmed) return;
+
+    if (onCancelOrder) {
+      try {
+        await onCancelOrder(localOrder.id);
+        AxionAlert.fire({
+          icon: "success",
+          title: "Chamado cancelado!",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } catch (error) {
+        AxionAlert.fire("Erro", error.response?.data?.message || "Não foi possível cancelar o chamado.", "error");
+      }
+    }
+  }, [localOrder, onCancelOrder, AxionAlert]);
+
+  // ============ RENDER ============
+  if (!initialOrder || !localOrder) {
+    return (
+      <div className={`flex flex-col items-center justify-center min-h-[50vh] text-center p-8 ${isDark ? 'bg-slate-900' : 'bg-gray-100'} rounded-xl`}>
+        <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+        <h5 className={`${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Carregando detalhes da OS...</h5>
+        <button
+          className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full border ${isDark ? 'border-slate-700/50 text-slate-400 hover:bg-slate-800/50 hover:text-slate-200' : 'border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-800'} bg-transparent transition-all mt-4`}
+          onClick={onBack}
+        >
+          ← Voltar
+        </button>
+      </div>
+    );
+  }
 
   const formattedDate = formatDateTime(localOrder.created_at);
   const isResolvedStatus = localOrder.status === 'completed' || localOrder.status === 'resolved';
@@ -570,6 +638,90 @@ export default function ServiceOrderDetail({
             <div className={`${bgCard} border rounded-2xl p-6 shadow-lg`}>
               <h4 className={`${textHeading} font-bold text-center mb-4 flex items-center justify-center gap-2`}>⚙️ Gestão da Ordem</h4>
 
+              {/* ===== CATEGORIA ===== */}
+              <div className={`${isDark ? 'bg-slate-800/30' : 'bg-gray-100'} rounded-2xl p-3 mb-4`}>
+                <div className="flex items-center gap-3">
+                  <div className="bg-purple-500/10 p-2 rounded-full">
+                    <span className="text-purple-400 text-xl">📂</span>
+                  </div>
+                  <div className="flex-1">
+                    <h6 className={`${textSub} text-xs uppercase font-semibold mb-0.5`}>Categoria</h6>
+                    <p className={`${textHeading} font-bold mb-0`}>
+                      {localOrder.category?.name || localOrder.category_id ? 'Carregando...' : 'Sem categoria'}
+                    </p>
+                  </div>
+                  <button
+                    className="px-3 py-1.5 rounded-full bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-all text-xs font-semibold"
+                    onClick={() => setShowRecategorizeModal(true)}
+                    disabled={actionLoading || recategorizeLoading || isCancelled || localOrder.status === 'closed'}
+                  >
+                    🔄 Recategorizar
+                  </button>
+                </div>
+              </div>
+
+              {/* ===== MODAL RECATEGORIZAR ===== */}
+              {showRecategorizeModal && (
+                <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+                  <div className={`${isDark ? 'bg-slate-800/95 border-slate-700/50' : 'bg-white/95 border-gray-200'} border rounded-xl shadow-2xl max-w-md w-full`}>
+                    <div className={`flex items-center justify-between px-6 py-4 border-b ${isDark ? 'border-slate-700/50' : 'border-gray-200'}`}>
+                      <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>🔄 Recategorizar Chamado</h3>
+                      <button
+                        onClick={() => setShowRecategorizeModal(false)}
+                        className={`${isDark ? 'text-slate-400 hover:text-slate-200' : 'text-gray-400 hover:text-gray-600'} text-2xl`}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <div className="p-6">
+                      <p className={`text-sm ${textSub} mb-4`}>
+                        Selecione a nova categoria para o chamado <strong>#{localOrder.protocol}</strong>
+                      </p>
+                      <select
+                        className={`w-full px-3 py-2.5 ${isDark ? 'bg-slate-800/50 border-slate-700/50 text-slate-200' : 'bg-white border-gray-300 text-gray-800'} border rounded-lg text-sm focus:ring-2 focus:ring-blue-500/50`}
+                        value={selectedCategoryId}
+                        onChange={(e) => setSelectedCategoryId(e.target.value)}
+                        disabled={loadingCategories || recategorizeLoading}
+                      >
+                        <option value="">Selecione uma categoria</option>
+                        {categories.map(cat => (
+                          <option key={cat.id} value={cat.id}>
+                            {'—'.repeat(cat.level || 0)} {cat.name}
+                          </option>
+                        ))}
+                      </select>
+                      {loadingCategories && (
+                        <p className="text-xs text-slate-400 mt-2">Carregando categorias...</p>
+                      )}
+                    </div>
+                    <div className={`flex items-center justify-end gap-3 px-6 py-4 border-t ${isDark ? 'border-slate-700/50' : 'border-gray-200'}`}>
+                      <button
+                        onClick={() => setShowRecategorizeModal(false)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium ${isDark ? 'text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-600/50' : 'text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200'} transition-all`}
+                        disabled={recategorizeLoading}
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={handleRecategorize}
+                        disabled={!selectedCategoryId || recategorizeLoading || loadingCategories}
+                        className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 transition-all flex items-center gap-2 disabled:opacity-50"
+                      >
+                        {recategorizeLoading ? (
+                          <>
+                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                            Salvando...
+                          </>
+                        ) : (
+                          '💾 Recategorizar'
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Informações do solicitante */}
               <div className={`${isDark ? 'bg-slate-800/30' : 'bg-gray-100'} rounded-2xl p-3 mb-4`}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 font-bold flex items-center justify-center text-lg">
@@ -582,6 +734,7 @@ export default function ServiceOrderDetail({
                 </div>
               </div>
 
+              {/* Grupo */}
               <div className={`${isDark ? 'bg-slate-800/30' : 'bg-gray-100'} rounded-2xl p-3 mb-4`}>
                 <div className="flex items-center gap-3">
                   <div className="bg-blue-500/10 p-2 rounded-full">
@@ -594,6 +747,7 @@ export default function ServiceOrderDetail({
                 </div>
               </div>
 
+              {/* Técnico */}
               <div className={`${isDark ? 'bg-slate-800/30' : 'bg-gray-100'} rounded-2xl p-3 mb-4`}>
                 <div className="flex items-start gap-3">
                   <div className="bg-green-500/10 p-2 rounded-full">
@@ -654,6 +808,7 @@ export default function ServiceOrderDetail({
                 </div>
               )}
 
+              {/* Botão Marcar como Resolvido */}
               {!isResolvedStatus && !isCancelled && localOrder.status !== 'closed' && (
                 <div className="mt-4 mb-4">
                   <button
@@ -669,6 +824,7 @@ export default function ServiceOrderDetail({
                 </div>
               )}
 
+              {/* Chamado resolvido */}
               {isResolvedStatus && !isCancelled && (
                 <div className="mt-4 mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-xl">
                   <p className="text-green-400 text-sm text-center font-medium">
@@ -682,6 +838,7 @@ export default function ServiceOrderDetail({
                 </div>
               )}
 
+              {/* Select de Status */}
               <div className="mt-4 pt-4 border-t borderColor">
                 <label className={`${textSub} text-xs uppercase font-bold block mb-3`}>Status</label>
                 <select
