@@ -654,13 +654,22 @@ export default function ServiceOrderDetail({
                       {categoryName}
                     </p>
                   </div>
-                  <button
-                    className="px-3 py-1.5 rounded-full bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-all text-xs font-semibold whitespace-nowrap"
-                    onClick={() => setShowRecategorizeModal(true)}
-                    disabled={actionLoading || recategorizeLoading || isCancelled || localOrder.status === 'closed'}
-                  >
-                    🔄 Recategorizar
-                  </button>
+<button
+  className={`
+    inline-flex items-center gap-1.5 px-2.5 py-1 
+    rounded-full text-xs font-medium 
+    transition-all duration-200 
+    ${actionLoading || recategorizeLoading || isCancelled || localOrder.status === 'closed'
+      ? 'opacity-40 cursor-not-allowed text-slate-500'
+      : 'text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 active:bg-blue-500/20'
+    }
+  `}
+  onClick={() => setShowRecategorizeModal(true)}
+  disabled={actionLoading || recategorizeLoading || isCancelled || localOrder.status === 'closed'}
+>
+  <span className="text-sm">🔄</span>
+  Recategorizar
+</button>
                 </div>
               </div>
 
