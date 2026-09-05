@@ -9,6 +9,9 @@ export default function Sidebar({
   onLogout, 
   onToggle,
   isDark = false,
+  isMobile = false,        // 🔥 NOVO: indica se está em tela mobile
+  isMobileOpen = false,    // 🔥 NOVO: controla abertura em mobile
+  onMobileToggle = null,   // 🔥 NOVO: callback para abrir/fechar mobile
 }) {
   const {
     canViewUsers,
@@ -19,6 +22,7 @@ export default function Sidebar({
     isAdmin,
   } = usePermissions();
 
+  // Estado interno para colapso (desktop) – não usado em mobile
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const timeoutRef = useRef(null);
@@ -32,7 +36,9 @@ export default function Sidebar({
     };
   }, []);
 
+  // 🔥 Comportamento de hover: desabilitado em mobile
   const handleMouseEnter = () => {
+    if (isMobile) return;
     setIsHovered(true);
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -43,6 +49,7 @@ export default function Sidebar({
   };
 
   const handleMouseLeave = () => {
+    if (isMobile) return;
     setIsHovered(false);
     timeoutRef.current = setTimeout(() => {
       if (!isHovered) {
@@ -52,7 +59,12 @@ export default function Sidebar({
     }, 300);
   };
 
+  // 🔥 Toggle: em mobile, chama o callback externo; em desktop, alterna colapso
   const toggleSidebar = () => {
+    if (isMobile) {
+      if (onMobileToggle) onMobileToggle(!isMobileOpen);
+      return;
+    }
     const newState = !isCollapsed;
     setIsCollapsed(newState);
     if (onToggle) onToggle(newState);
@@ -100,8 +112,6 @@ export default function Sidebar({
       section: 'Atendimento',
       visible: canViewOrders,
     },
-    // 🔥 NOVO: Assistente (visível para todos)
-    
     {
       id: 'ai',
       icon: '🤖',
@@ -131,12 +141,12 @@ export default function Sidebar({
       visible: isAdmin,
     },
     {
-  id: 'categories',
-  icon: '📂',
-  label: 'Categorias',
-  section: 'Administração',
-  visible: isAdmin, // ou canViewCategories se tiver permissão
-},
+      id: 'categories',
+      icon: '📂',
+      label: 'Categorias',
+      section: 'Administração',
+      visible: isAdmin,
+    },
   ];
 
   const filteredNavItems = navItems.filter(item => item.visible);
@@ -159,6 +169,11 @@ export default function Sidebar({
     return acc;
   }, {});
 
+  // 🔥 Largura da sidebar: em mobile, sempre 250px quando aberta; em desktop, segue colapso
+  const sidebarWidth = isMobile 
+    ? 'w-[250px]' 
+    : (isCollapsed ? 'w-[70px]' : 'w-[250px]');
+
   return (
     <aside 
       className={`
@@ -168,7 +183,8 @@ export default function Sidebar({
         transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
         overflow-hidden
         flex flex-col
-        ${isCollapsed ? 'w-[70px]' : 'w-[250px]'}
+        ${sidebarWidth}
+        ${isMobile ? (isMobileOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'}
       `}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -176,7 +192,7 @@ export default function Sidebar({
       {/* ============ BRAND ============ */}
       <div className={`relative px-6 py-4 min-h-[70px] border-b ${borderSubtle} flex items-center justify-between`}>
         <div className="flex items-center">
-          {!isCollapsed ? (
+          {!isCollapsed || isMobile ? (
             <h1 className={`text-2xl font-bold ${textBrand} flex items-center gap-2`}>
               Axion<span className={textBrandSpan}>ID</span>
               <small className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full ${badgeRole}`}>
@@ -188,6 +204,7 @@ export default function Sidebar({
           )}
         </div>
 
+        {/* 🔥 Botão toggle: em mobile, aparece como "✕" para fechar; em desktop, é o ◀ normal */}
         <button 
           className={`
             absolute -right-3 top-1/2 -translate-y-1/2
@@ -198,12 +215,12 @@ export default function Sidebar({
             transition-all duration-300
             opacity-70 hover:opacity-100
             shadow-lg
-            ${isCollapsed ? 'rotate-180' : ''}
+            ${isMobile ? 'rotate-180' : (isCollapsed ? 'rotate-180' : '')}
           `}
           onClick={toggleSidebar}
-          title={isCollapsed ? 'Expandir menu' : 'Recolher menu'}
+          title={isMobile ? (isMobileOpen ? 'Fechar menu' : 'Abrir menu') : (isCollapsed ? 'Expandir menu' : 'Recolher menu')}
         >
-          ◀
+          {isMobile ? '✕' : '◀'}
         </button>
       </div>
 
@@ -211,7 +228,7 @@ export default function Sidebar({
       <nav className="flex-1 overflow-y-auto py-2 px-2 custom-scrollbar">
         {Object.entries(groupedItems).map(([section, items]) => (
           <div key={section} className="mb-3">
-            {!isCollapsed && (
+            {(!isCollapsed || isMobile) && (
               <p className={`text-[10px] font-semibold uppercase tracking-wider ${textSection} px-3 py-2`}>
                 {section}
               </p>
@@ -226,19 +243,25 @@ export default function Sidebar({
                   transition-all duration-200
                   cursor-pointer
                   relative
-                  ${isCollapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5'}
+                  ${(isCollapsed && !isMobile) ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5'}
                   ${activeTab === item.id 
                     ? textNavActive
                     : textNavDefault
                   }
                 `}
-                onClick={() => setActiveTab(item.id)}
-                title={isCollapsed ? item.label : ''}
+                onClick={() => {
+                  setActiveTab(item.id);
+                  // 🔥 Fecha sidebar mobile ao clicar em um item
+                  if (isMobile && isMobileOpen && onMobileToggle) {
+                    onMobileToggle(false);
+                  }
+                }}
+                title={(isCollapsed && !isMobile) ? item.label : ''}
               >
                 <span className="text-lg w-6 text-center flex-shrink-0">
                   {item.icon}
                 </span>
-                {!isCollapsed && (
+                {(!isCollapsed || isMobile) && (
                   <span className="text-sm font-medium whitespace-nowrap">
                     {item.label}
                   </span>
@@ -246,7 +269,7 @@ export default function Sidebar({
                 {activeTab === item.id && (
                   <span className={`absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-8 ${indicatorActive} rounded-r`}></span>
                 )}
-                {item.id === 'terms' && !isCollapsed && (
+                {item.id === 'terms' && (!isCollapsed || isMobile) && (
                   <span className={`ml-auto text-[10px] px-2 py-0.5 rounded-full ${isDark ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-700'}`}>
                     Novo
                   </span>
@@ -258,7 +281,7 @@ export default function Sidebar({
       </nav>
 
       {/* ============ FOOTER ============ */}
-      <div className={`border-t ${borderSubtle} ${isCollapsed ? 'px-2 py-3' : 'px-4 py-4'}`}>
+      <div className={`border-t ${borderSubtle} ${(isCollapsed && !isMobile) ? 'px-2 py-3' : 'px-4 py-4'}`}>
         <button
           onClick={onLogout}
           className={`
@@ -266,18 +289,18 @@ export default function Sidebar({
             w-full rounded-md
             transition-all duration-200
             ${textFooter}
-            ${isCollapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5'}
+            ${(isCollapsed && !isMobile) ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5'}
           `}
-          title={isCollapsed ? 'Sair do Sistema' : ''}
+          title={(isCollapsed && !isMobile) ? 'Sair do Sistema' : ''}
         >
           <span className="text-lg w-6 text-center flex-shrink-0">🚪</span>
-          {!isCollapsed && (
+          {(!isCollapsed || isMobile) && (
             <span className="text-sm font-medium whitespace-nowrap">
               Sair do Sistema
             </span>
           )}
         </button>
-        {!isCollapsed && (
+        {(!isCollapsed || isMobile) && (
           <div className={`text-center text-[10px] ${textVersion} mt-3`}>
             v1.0.4-stable
           </div>
