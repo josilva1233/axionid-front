@@ -14,16 +14,20 @@ export default function ServiceOrderForm({
   const [groups, setGroups] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [canCreateForOthers, setCanCreateForOthers] = useState(false);
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     priority: "medium",
     group_id: "",
     category_id: "",
+    user_id: "",
     attachment: null,
   });
 
-  // 🔥 SweetAlert com tema
   const AxionAlert = Swal.mixin({
     background: isDark ? "#111214" : "#ffffff",
     color: isDark ? "#ffffff" : "#1f2937",
@@ -36,18 +40,13 @@ export default function ServiceOrderForm({
   });
 
   // ============ CLASSES DE TEMA ============
-  const bgCard = isDark
-    ? 'bg-slate-800/50 border-slate-700/50'
-    : 'bg-white/80 border-gray-200';
+  const bgCard = isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200';
   const textHeading = isDark ? 'text-white' : 'text-gray-800';
   const textLabel = isDark ? 'text-slate-400' : 'text-gray-500';
   const textMuted = isDark ? 'text-slate-400' : 'text-gray-500';
   const bgInput = isDark
     ? 'bg-slate-800/50 border-slate-700/50 text-slate-200 placeholder-slate-500'
     : 'bg-white border-gray-300 text-gray-800 placeholder-gray-400';
-  const bgInputDisabled = isDark
-    ? 'bg-slate-800/30 border-slate-700/30 text-slate-500'
-    : 'bg-gray-100 border-gray-200 text-gray-500';
   const borderColor = isDark ? 'border-slate-700/50' : 'border-gray-200';
   const focusRing = 'focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50';
   const textFile = isDark ? 'text-green-400' : 'text-green-600';
@@ -55,7 +54,9 @@ export default function ServiceOrderForm({
     ? 'text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-600/50'
     : 'text-gray-600 hover:text-gray-800 bg-gray-200 hover:bg-gray-300';
 
-  // 🔥 CARREGAR CATEGORIAS
+  // ============ CARREGAR DADOS ============
+
+  // Categorias
   useEffect(() => {
     const fetchCategories = async () => {
       setLoadingCategories(true);
@@ -71,7 +72,7 @@ export default function ServiceOrderForm({
     fetchCategories();
   }, []);
 
-  // 🔥 CARREGAR GRUPOS
+  // Grupos
   useEffect(() => {
     if (groupsProp && Array.isArray(groupsProp) && groupsProp.length > 0) {
       setGroups(groupsProp);
@@ -99,9 +100,32 @@ export default function ServiceOrderForm({
     fetchGroups();
   }, [groupsProp]);
 
-  const groupsArray = Array.isArray(groups) ? groups : [];
+  // Usuários (apenas se tiver permissão)
+  useEffect(() => {
+    const checkPermissionAndLoadUsers = async () => {
+      try {
+        // Verificar permissão via API (ou via hook usePermissions)
+        const res = await api.get('/api/v1/me/permissions');
+        const perms = res.data.permissions || [];
+        const hasPermission = perms.includes('orders.create_for_others') || perms.includes('*');
+        setCanCreateForOthers(hasPermission);
 
-  // ============ HANDLE SUBMIT ============
+        if (hasPermission) {
+          setLoadingUsers(true);
+          const usersRes = await api.get('/api/v1/admin/users?per_page=1000');
+          setUsers(usersRes.data.data || []);
+          setLoadingUsers(false);
+        }
+      } catch (err) {
+        console.error('Erro ao verificar permissões', err);
+        setCanCreateForOthers(false);
+      }
+    };
+    checkPermissionAndLoadUsers();
+  }, []);
+
+  // ============ HANDLERS ============
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -127,6 +151,7 @@ export default function ServiceOrderForm({
       data.append("priority", formData.priority);
       data.append("category_id", formData.category_id);
       if (formData.group_id) data.append("group_id", formData.group_id);
+      if (formData.user_id) data.append("user_id", formData.user_id);
       if (formData.attachment) data.append("attachment", formData.attachment);
 
       const response = await api.post("/api/v1/service-orders", data, {
@@ -173,9 +198,10 @@ export default function ServiceOrderForm({
     }
   };
 
+  const groupsArray = Array.isArray(groups) ? groups : [];
+
   return (
     <div className={`border rounded-xl p-6 mb-6 transition-colors hover:border-blue-500/30 ${bgCard}`}>
-      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h4 className={`text-sm font-bold flex items-center gap-2 ${textHeading}`}>
           ➕ Abrir Novo Chamado
@@ -190,7 +216,7 @@ export default function ServiceOrderForm({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Categoria (primeiro) */}
+        {/* Categoria */}
         <div>
           <label className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide mb-1.5 ${textLabel}`}>
             <span className="text-blue-500">●</span>
@@ -221,6 +247,7 @@ export default function ServiceOrderForm({
           {loadingCategories && <span className="text-xs text-slate-400">Carregando categorias...</span>}
         </div>
 
+        {/* Título */}
         <div>
           <label className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide mb-1.5 ${textLabel}`}>
             <span className="text-blue-500">●</span>
@@ -237,6 +264,7 @@ export default function ServiceOrderForm({
           />
         </div>
 
+        {/* Descrição */}
         <div>
           <label className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide mb-1.5 ${textLabel}`}>
             <span className="text-blue-500">●</span>
@@ -253,7 +281,8 @@ export default function ServiceOrderForm({
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Campos de prioridade, grupo e solicitante */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide mb-1.5 ${textLabel}`}>
               <span className="text-blue-500">●</span>
@@ -290,18 +319,44 @@ export default function ServiceOrderForm({
                 <option value="" disabled>❌ Nenhum grupo disponível</option>
               ) : (
                 groupsArray.map((group) => (
-                  <option key={group.id} value={group.id}>
-                    {group.name}
-                  </option>
+                  <option key={group.id} value={group.id}>{group.name}</option>
                 ))
               )}
             </select>
-            {loadingGroups && (
-              <span className={`text-xs ml-1 ${textMuted}`}>Carregando...</span>
-            )}
+            {loadingGroups && <span className={`text-xs ml-1 ${textMuted}`}>Carregando...</span>}
           </div>
+
+          {/* 🔥 CAMPO DE SOLICITANTE (visível apenas com permissão) */}
+          {canCreateForOthers && (
+            <div>
+              <label className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide mb-1.5 ${textLabel}`}>
+                <span className="text-blue-500">●</span>
+                Solicitante (opcional)
+              </label>
+              <select
+                className={`w-full px-3 py-2.5 ${bgInput} rounded-lg text-sm ${focusRing} transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed`}
+                value={formData.user_id}
+                onChange={(e) => setFormData({ ...formData, user_id: e.target.value })}
+                disabled={loading || loadingUsers}
+              >
+                <option value="">Mesmo usuário (eu)</option>
+                {loadingUsers ? (
+                  <option value="" disabled>⏳ Carregando usuários...</option>
+                ) : (
+                  users.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.name} ({u.email})
+                    </option>
+                  ))
+                )}
+              </select>
+              {loadingUsers && <span className={`text-xs ml-1 ${textMuted}`}>Carregando...</span>}
+              <p className={`text-[10px] ${textMuted} mt-1`}>Apenas administradores e técnicos autorizados podem escolher outro usuário.</p>
+            </div>
+          )}
         </div>
 
+        {/* Anexo */}
         <div>
           <label className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide mb-1.5 ${textLabel}`}>
             <span className="text-blue-500">●</span>
@@ -322,6 +377,7 @@ export default function ServiceOrderForm({
           )}
         </div>
 
+        {/* Botões */}
         <div className={`flex flex-wrap items-center justify-end gap-3 mt-6 pt-4 border-t ${borderColor}`}>
           <button
             type="button"
@@ -331,7 +387,6 @@ export default function ServiceOrderForm({
           >
             ✕ Cancelar
           </button>
-
           <button
             type="submit"
             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 transition-all hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
