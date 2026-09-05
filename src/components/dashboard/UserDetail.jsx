@@ -14,7 +14,7 @@ export default function UserDetail({
   onBack = () => {},
   setIsEditing = () => {},
   handleSave = () => {},
-  isDark = false, // 🔥 NOVA PROP
+  isDark = false,
 }) {
   // 🔥 Estados para permissões
   const [userPermissions, setUserPermissions] = useState([]);
@@ -45,7 +45,6 @@ export default function UserDetail({
       });
       setAllAvailablePermissions(response.data.data || []);
     } catch (error) {
-      // Fallback: usar permissões do mock
       setAllAvailablePermissions([
         { id: 1, name: 'users.view', label: 'Visualizar Usuários', description: 'Permite visualizar usuários' },
         { id: 2, name: 'users.create', label: 'Criar Usuários', description: 'Permite criar novos usuários' },
@@ -126,7 +125,6 @@ export default function UserDetail({
       });
     }
     
-    // 🔥 Carregar permissões quando o usuário mudar
     if (user?.id) {
       loadUserPermissions(user.id);
       loadAllPermissions();
@@ -151,6 +149,7 @@ export default function UserDetail({
           }));
         }
       } catch (error) {
+        // silencioso
       }
     }
   };
@@ -176,29 +175,29 @@ export default function UserDetail({
   return (
     <div className={`${bgPage} rounded-xl min-h-screen`}>
       {/* ============ HEADER ============ */}
-      <div className={`flex flex-wrap items-center justify-between gap-3 px-6 py-5 bg-gradient-to-r ${isDark ? 'from-slate-800/50 to-slate-900/50 border-b border-slate-700/50' : 'from-gray-50/80 to-white border-b border-gray-200'} rounded-t-xl`}>
-        <div className="flex items-center gap-3 flex-1 min-w-0">
+      <div className={`flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-4 sm:py-5 bg-gradient-to-r ${isDark ? 'from-slate-800/50 to-slate-900/50 border-b border-slate-700/50' : 'from-gray-50/80 to-white border-b border-gray-200'} rounded-t-xl`}>
+        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
           <button
             onClick={onBack}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border ${isDark ? 'border-slate-700/50 bg-transparent text-slate-400 hover:bg-slate-800/50 hover:text-slate-200' : 'border-gray-300 bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-800'} transition-all whitespace-nowrap text-sm`}
+            className={`inline-flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border ${isDark ? 'border-slate-700/50 bg-transparent text-slate-400 hover:bg-slate-800/50 hover:text-slate-200' : 'border-gray-300 bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-800'} transition-all whitespace-nowrap text-xs sm:text-sm`}
           >
             ← Voltar
           </button>
 
-          <div className={`w-px h-8 ${isDark ? 'bg-slate-700/50' : 'bg-gray-300'}`}></div>
+          <div className={`w-px h-6 sm:h-8 ${isDark ? 'bg-slate-700/50' : 'bg-gray-300'}`}></div>
 
-          <div>
-            <h2 className={`text-xl font-bold ${textHeading}`}>
+          <div className="min-w-0">
+            <h2 className={`text-base sm:text-xl font-bold ${textHeading} truncate`}>
               {user.name}
             </h2>
             <span className={`font-mono text-xs ${textMuted}`}>ID: {user.id}</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {!isEditing ? (
             <button
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-all hover:shadow-lg hover:-translate-y-0.5"
+              className="inline-flex items-center gap-1 sm:gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs sm:text-sm transition-all hover:shadow-lg hover:-translate-y-0.5 whitespace-nowrap"
               onClick={() => setIsEditing(true)}
             >
               ✏️ Editar
@@ -206,25 +205,23 @@ export default function UserDetail({
           ) : (
             <>
               <button
-                className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full ${isDark ? 'bg-slate-700/50 hover:bg-slate-600/50 text-slate-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'} font-semibold text-sm transition-all hover:-translate-y-0.5`}
+                className={`inline-flex items-center gap-1 sm:gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full ${isDark ? 'bg-slate-700/50 hover:bg-slate-600/50 text-slate-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'} font-semibold text-xs sm:text-sm transition-all hover:-translate-y-0.5 whitespace-nowrap`}
                 onClick={() => setIsEditing(false)}
               >
                 Cancelar
               </button>
               <button
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-green-600 hover:bg-green-500 text-white font-semibold text-sm transition-all hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1 sm:gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-green-600 hover:bg-green-500 text-white font-semibold text-xs sm:text-sm transition-all hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                 onClick={handleSave}
                 disabled={actionLoading}
               >
                 {actionLoading ? (
                   <>
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    <span className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                     Salvando...
                   </>
                 ) : (
-                  <>
-                    💾 Salvar Alterações
-                  </>
+                  <>💾 Salvar</>
                 )}
               </button>
             </>
@@ -233,14 +230,14 @@ export default function UserDetail({
       </div>
 
       {/* ============ GRID PRINCIPAL ============ */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 p-3 sm:p-6">
         {/* ============ COLUNA ESQUERDA ============ */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Card Principal */}
-          <div className={`${bgCard} border rounded-xl p-6 transition-all ${isEditing ? bgCardEditing : ''}`}>
+          <div className={`${bgCard} border rounded-xl p-4 sm:p-6 transition-all ${isEditing ? bgCardEditing : ''}`}>
             {/* Profile Header */}
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 min-w-[64px] rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-2xl font-bold text-white shadow-lg shadow-blue-500/20">
+            <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 min-w-[48px] sm:min-w-[64px] rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-lg sm:text-2xl font-bold text-white shadow-lg shadow-blue-500/20">
                 {user.name?.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
@@ -250,24 +247,14 @@ export default function UserDetail({
                   value={formData.name || ""}
                   onChange={handleChange}
                   disabled={!isEditing}
-                  className={`w-full px-3 py-2 ${isDark ? 'bg-slate-800/50 border-slate-700/50 text-white placeholder-slate-500' : 'bg-white border-gray-300 text-gray-800 placeholder-gray-400'} border rounded-lg text-lg font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all ${
-                    isEditing ? 'border-blue-500/50' : 'border-transparent'
-                  } disabled:opacity-100 disabled:cursor-default`}
+                  className={`w-full px-2 sm:px-3 py-1.5 sm:py-2 ${isDark ? 'bg-slate-800/50 border-slate-700/50 text-white placeholder-slate-500' : 'bg-white border-gray-300 text-gray-800 placeholder-gray-400'} border rounded-lg text-base sm:text-lg font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all ${isEditing ? 'border-blue-500/50' : 'border-transparent'} disabled:opacity-100 disabled:cursor-default`}
                 />
-                <div className="flex flex-wrap items-center gap-2 mt-1.5">
-                  <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
-                    user.is_admin
-                      ? isDark
-                        ? "bg-purple-500/20 text-purple-400"
-                        : "bg-purple-100 text-purple-700"
-                      : isDark
-                        ? "bg-slate-700/50 text-slate-300"
-                        : "bg-gray-200 text-gray-700"
-                  }`}>
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1.5">
+                  <span className={`inline-flex px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${user.is_admin ? isDark ? "bg-purple-500/20 text-purple-400" : "bg-purple-100 text-purple-700" : isDark ? "bg-slate-700/50 text-slate-300" : "bg-gray-200 text-gray-700"}`}>
                     {user.is_admin ? "Administrador" : "Operacional"}
                   </span>
                   {!user.is_active && (
-                    <span className="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-400">
+                    <span className="inline-flex px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-red-500/20 text-red-400">
                       Suspenso
                     </span>
                   )}
@@ -276,9 +263,9 @@ export default function UserDetail({
             </div>
 
             {/* Informações */}
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div>
-                <label className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 ${textLabel}`}>
+                <label className={`block text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1 sm:mb-1.5 ${textLabel}`}>
                   📧 E-mail Corporativo
                 </label>
                 <input
@@ -287,18 +274,18 @@ export default function UserDetail({
                   value={formData.email || ""}
                   onChange={handleChange}
                   disabled={!isEditing}
-                  className={`w-full px-3 py-2.5 ${bgInput} rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-60 disabled:cursor-default`}
+                  className={`w-full px-2 sm:px-3 py-2 sm:py-2.5 ${bgInput} rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-60 disabled:cursor-default`}
                 />
               </div>
               <div>
-                <label className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 ${textLabel}`}>
+                <label className={`block text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1 sm:mb-1.5 ${textLabel}`}>
                   📄 Documento
                 </label>
                 <input
                   type="text"
                   value={user.cpf_cnpj || "Não informado"}
                   disabled
-                  className={`w-full px-3 py-2.5 ${bgInputDisabled} rounded-lg text-sm cursor-not-allowed`}
+                  className={`w-full px-2 sm:px-3 py-2 sm:py-2.5 ${bgInputDisabled} rounded-lg text-xs sm:text-sm cursor-not-allowed`}
                 />
               </div>
             </div>
@@ -306,16 +293,16 @@ export default function UserDetail({
         </div>
 
         {/* ============ COLUNA DIREITA ============ */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Endereço */}
-          <div className={`${bgCard} border rounded-xl p-6 transition-all ${isEditing ? bgCardEditing : ''}`}>
-            <h4 className={`text-sm font-bold flex items-center gap-2 mb-4 ${textHeading}`}>
+          <div className={`${bgCard} border rounded-xl p-4 sm:p-6 transition-all ${isEditing ? bgCardEditing : ''}`}>
+            <h4 className={`text-xs sm:text-sm font-bold flex items-center gap-2 mb-3 sm:mb-4 ${textHeading}`}>
               📍 Endereço de Registro
             </h4>
 
-            <div className="grid grid-cols-6 gap-3">
-              <div className="col-span-2">
-                <label className={`block text-[10px] font-semibold uppercase tracking-wider mb-1 ${textLabel}`}>
+            <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 sm:gap-3">
+              <div className="col-span-2 sm:col-span-2">
+                <label className={`block text-[10px] font-semibold uppercase tracking-wider mb-0.5 sm:mb-1 ${textLabel}`}>
                   CEP
                 </label>
                 <input
@@ -325,12 +312,12 @@ export default function UserDetail({
                   onChange={handleChange}
                   onBlur={handleCepBlur}
                   disabled={!isEditing}
-                  className={`w-full px-3 py-2 ${bgInput} rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-60 disabled:cursor-default`}
+                  className={`w-full px-2 sm:px-3 py-1.5 sm:py-2 ${bgInput} rounded-lg font-mono text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-60 disabled:cursor-default`}
                   placeholder="00000-000"
                 />
               </div>
-              <div className="col-span-4">
-                <label className={`block text-[10px] font-semibold uppercase tracking-wider mb-1 ${textLabel}`}>
+              <div className="col-span-4 sm:col-span-4">
+                <label className={`block text-[10px] font-semibold uppercase tracking-wider mb-0.5 sm:mb-1 ${textLabel}`}>
                   Rua
                 </label>
                 <input
@@ -339,11 +326,11 @@ export default function UserDetail({
                   value={formData.street || ""}
                   onChange={handleChange}
                   disabled={!isEditing}
-                  className={`w-full px-3 py-2 ${bgInput} rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-60 disabled:cursor-default`}
+                  className={`w-full px-2 sm:px-3 py-1.5 sm:py-2 ${bgInput} rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-60 disabled:cursor-default`}
                 />
               </div>
               <div className="col-span-1">
-                <label className={`block text-[10px] font-semibold uppercase tracking-wider mb-1 ${textLabel}`}>
+                <label className={`block text-[10px] font-semibold uppercase tracking-wider mb-0.5 sm:mb-1 ${textLabel}`}>
                   Nº
                 </label>
                 <input
@@ -352,11 +339,11 @@ export default function UserDetail({
                   value={formData.number || ""}
                   onChange={handleChange}
                   disabled={!isEditing}
-                  className={`w-full px-3 py-2 ${bgInput} rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-60 disabled:cursor-default`}
+                  className={`w-full px-2 sm:px-3 py-1.5 sm:py-2 ${bgInput} rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-60 disabled:cursor-default`}
                 />
               </div>
               <div className="col-span-5">
-                <label className={`block text-[10px] font-semibold uppercase tracking-wider mb-1 ${textLabel}`}>
+                <label className={`block text-[10px] font-semibold uppercase tracking-wider mb-0.5 sm:mb-1 ${textLabel}`}>
                   Bairro
                 </label>
                 <input
@@ -365,11 +352,11 @@ export default function UserDetail({
                   value={formData.neighborhood || ""}
                   onChange={handleChange}
                   disabled={!isEditing}
-                  className={`w-full px-3 py-2 ${bgInput} rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-60 disabled:cursor-default`}
+                  className={`w-full px-2 sm:px-3 py-1.5 sm:py-2 ${bgInput} rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-60 disabled:cursor-default`}
                 />
               </div>
-              <div className="col-span-4">
-                <label className={`block text-[10px] font-semibold uppercase tracking-wider mb-1 ${textLabel}`}>
+              <div className="col-span-3">
+                <label className={`block text-[10px] font-semibold uppercase tracking-wider mb-0.5 sm:mb-1 ${textLabel}`}>
                   Cidade
                 </label>
                 <input
@@ -378,11 +365,11 @@ export default function UserDetail({
                   value={formData.city || ""}
                   onChange={handleChange}
                   disabled={!isEditing}
-                  className={`w-full px-3 py-2 ${bgInput} rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-60 disabled:cursor-default`}
+                  className={`w-full px-2 sm:px-3 py-1.5 sm:py-2 ${bgInput} rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-60 disabled:cursor-default`}
                 />
               </div>
               <div className="col-span-2">
-                <label className={`block text-[10px] font-semibold uppercase tracking-wider mb-1 ${textLabel}`}>
+                <label className={`block text-[10px] font-semibold uppercase tracking-wider mb-0.5 sm:mb-1 ${textLabel}`}>
                   UF
                 </label>
                 <input
@@ -392,11 +379,11 @@ export default function UserDetail({
                   onChange={handleChange}
                   disabled={!isEditing}
                   maxLength="2"
-                  className={`w-full px-3 py-2 ${bgInput} rounded-lg text-sm uppercase focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-60 disabled:cursor-default`}
+                  className={`w-full px-2 sm:px-3 py-1.5 sm:py-2 ${bgInput} rounded-lg text-xs sm:text-sm uppercase focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-60 disabled:cursor-default`}
                 />
               </div>
               <div className="col-span-6">
-                <label className={`block text-[10px] font-semibold uppercase tracking-wider mb-1 ${textLabel}`}>
+                <label className={`block text-[10px] font-semibold uppercase tracking-wider mb-0.5 sm:mb-1 ${textLabel}`}>
                   Complemento
                 </label>
                 <input
@@ -405,7 +392,7 @@ export default function UserDetail({
                   value={formData.complement || ""}
                   onChange={handleChange}
                   disabled={!isEditing}
-                  className={`w-full px-3 py-2 ${bgInput} rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-60 disabled:cursor-default`}
+                  className={`w-full px-2 sm:px-3 py-1.5 sm:py-2 ${bgInput} rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all disabled:opacity-60 disabled:cursor-default`}
                 />
               </div>
             </div>
@@ -414,7 +401,7 @@ export default function UserDetail({
       </div>
 
       {/* ============ GERENCIADOR DE PERMISSÕES ============ */}
-      <div className="px-6 pb-6">
+      <div className="px-3 sm:px-6 pb-4 sm:pb-6">
         <UserPermissionManager
           user={user}
           userPermissions={userPermissions}
@@ -422,22 +409,22 @@ export default function UserDetail({
           onAddPermission={handleAddPermission}
           onRemovePermission={handleRemovePermission}
           actionLoading={permissionsLoading || actionLoading}
-          isDark={isDark} // 🔥 PASSA O TEMA
+          isDark={isDark}
         />
       </div>
 
       {/* ============ AÇÕES CRÍTICAS ============ */}
-      <div className="px-6 pb-6">
-        <div className={`${bgCard} border rounded-xl p-6`}>
-          <h4 className={`text-sm font-bold flex items-center gap-2 mb-4 ${textHeading}`}>
+      <div className="px-3 sm:px-6 pb-4 sm:pb-6">
+        <div className={`${bgCard} border rounded-xl p-4 sm:p-6`}>
+          <h4 className={`text-xs sm:text-sm font-bold flex items-center gap-2 mb-3 sm:mb-4 ${textHeading}`}>
             ⚡ Gestão de Acesso e Privilégios
           </h4>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             {user.is_admin ? (
               <button
                 onClick={() => onAction("remove-admin")}
                 disabled={actionLoading}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-yellow-400 bg-yellow-500/10 border border-yellow-500/20 hover:bg-yellow-500/20 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1 sm:gap-2 px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-lg text-[11px] sm:text-sm font-semibold text-yellow-400 bg-yellow-500/10 border border-yellow-500/20 hover:bg-yellow-500/20 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
               >
                 Revogar Privilégios Admin
               </button>
@@ -445,7 +432,7 @@ export default function UserDetail({
               <button
                 onClick={() => onAction("promote")}
                 disabled={actionLoading}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-blue-400 bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1 sm:gap-2 px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-lg text-[11px] sm:text-sm font-semibold text-blue-400 bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
               >
                 Promover a Administrador
               </button>
@@ -453,14 +440,14 @@ export default function UserDetail({
             <button
               onClick={() => onAction("toggle-status")}
               disabled={actionLoading}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-orange-400 bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/20 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1 sm:gap-2 px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-lg text-[11px] sm:text-sm font-semibold text-orange-400 bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/20 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             >
               {user.is_active ? "Suspender Acesso" : "Reativar Acesso"}
             </button>
             <button
               onClick={() => onAction("delete")}
               disabled={actionLoading}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1 sm:gap-2 px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-lg text-[11px] sm:text-sm font-semibold text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             >
               {actionLoading ? "Processando..." : "Excluir Identidade"}
             </button>
