@@ -12,13 +12,25 @@ export default function CategoryTable({
   const textHeader = isDark ? 'text-slate-400 border-slate-700/50' : 'text-gray-500 border-gray-200';
   const borderRow = isDark ? 'border-slate-700/30 hover:bg-slate-800/30' : 'border-gray-100 hover:bg-gray-50';
 
+  // 🔥 Função para exibir o pai com ícone
+  const renderParent = (cat) => {
+    if (!cat.parent) return <span className="text-slate-400 text-xs">—</span>;
+    return (
+      <span className="flex items-center gap-1 text-xs">
+        <span className="text-blue-400">📁</span>
+        {cat.parent.name}
+      </span>
+    );
+  };
+
   return (
     <div className={`overflow-x-auto rounded-xl border transition-colors hover:border-blue-500/30 ${bgTable}`}>
-      <table className="w-full border-collapse text-sm min-w-[700px]">
+      <table className="w-full border-collapse text-sm min-w-[800px]">
         <thead className={`sticky top-0 z-10 ${bgHeader}`}>
           <tr>
             <th className={`px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 ${textHeader}`}>ID</th>
             <th className={`px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 ${textHeader}`}>Nome</th>
+            <th className={`px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 ${textHeader}`}>Categoria Pai</th> {/* NOVO */}
             <th className={`px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 ${textHeader}`}>Descrição</th>
             <th className={`px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide border-b-2 ${textHeader}`}>Grupo Padrão</th>
             <th className={`px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wide border-b-2 ${textHeader}`}>SLA (1ª resp)</th>
@@ -39,8 +51,18 @@ export default function CategoryTable({
               <tr key={cat.id} className={`border-b transition-all ${borderRow}`}>
                 <td className="px-4 py-3 align-middle font-mono text-sm">{cat.id}</td>
                 <td className="px-4 py-3 align-middle">
-                  <span className="font-medium">{indent} {cat.name}</span>
-                  {cat.children?.length > 0 && <span className="ml-2 text-xs text-blue-400">({cat.children.length} sub)</span>}
+                  <span className="font-medium flex items-center gap-1">
+                    {indent && <span className="text-slate-400 text-xs">{indent}</span>}
+                    <span>{cat.name}</span>
+                    {cat.children?.length > 0 && (
+                      <span className="ml-1 text-xs text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded-full">
+                        {cat.children.length}
+                      </span>
+                    )}
+                  </span>
+                </td>
+                <td className="px-4 py-3 align-middle text-xs">
+                  {renderParent(cat)}
                 </td>
                 <td className="px-4 py-3 align-middle text-xs truncate max-w-[150px]">{cat.description || '-'}</td>
                 <td className="px-4 py-3 align-middle text-xs">{cat.default_group?.name || '-'}</td>
@@ -53,20 +75,20 @@ export default function CategoryTable({
                   </span>
                 </td>
                 <td className="px-4 py-3 align-middle text-right">
-                  <button onClick={() => onViewDetail(cat)} className="text-blue-400 hover:text-blue-300 mr-2">✏️</button>
-                  <button onClick={() => onDelete(cat.id)} className="text-red-400 hover:text-red-300">🗑️</button>
+                  <button onClick={() => onViewDetail(cat)} className="text-blue-400 hover:text-blue-300 mr-2 transition-all hover:scale-110">✏️</button>
+                  <button onClick={() => onDelete(cat.id)} className="text-red-400 hover:text-red-300 transition-all hover:scale-110">🗑️</button>
                 </td>
               </tr>
             );
           })}
           {categories.length === 0 && !loading && (
             <tr>
-              <td colSpan="9" className="py-8 text-center text-slate-400">Nenhuma categoria cadastrada.</td>
+              <td colSpan="10" className="py-8 text-center text-slate-400">Nenhuma categoria cadastrada.</td>
             </tr>
           )}
           {loading && (
             <tr>
-              <td colSpan="9" className="py-8 text-center text-slate-400">Carregando...</td>
+              <td colSpan="10" className="py-8 text-center text-slate-400">Carregando...</td>
             </tr>
           )}
         </tbody>
