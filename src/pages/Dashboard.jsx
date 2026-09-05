@@ -71,6 +71,22 @@ export default function Dashboard() {
   }, []);
 
   // =============================================================
+  // 🔥 RESPONSIVIDADE MOBILE – Sidebar
+  // =============================================================
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile) setIsMobileOpen(false);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // =============================================================
   // HANDLE LOGOUT
   // =============================================================
   const handleLogout = useCallback(() => {
@@ -870,7 +886,9 @@ export default function Dashboard() {
     setAuditCurrentPage(1);
     setOrdersCurrentPage(1);
     setPermissionsCurrentPage(1);
-  }, []);
+    // Fechar sidebar mobile ao trocar de aba
+    if (isMobile) setIsMobileOpen(false);
+  }, [isMobile]);
 
   const handleClearFilters = useCallback(() => {
     setFilters({
@@ -944,25 +962,54 @@ export default function Dashboard() {
   // =============================================================
   return (
     <div className={`flex min-h-screen ${isDark ? 'bg-slate-900' : 'bg-gray-100'}`}>
-      <Sidebar
-        activeTab={activeTab}
-        role={role}
-        onLogout={handleLogout}
-        setActiveTab={handleTabChange}
-        onToggle={setSidebarCollapsed}
-        isDark={isDark}
-      />
+      {/* Sidebar – com visibilidade controlada em mobile */}
+      <div
+        className={`
+          fixed top-0 left-0 h-screen z-[1000] transition-transform duration-300 ease-in-out
+          ${isMobile ? (isMobileOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'}
+        `}
+        style={{
+          width: sidebarCollapsed ? '70px' : '250px',
+        }}
+      >
+        <Sidebar
+          activeTab={activeTab}
+          role={role}
+          onLogout={handleLogout}
+          setActiveTab={handleTabChange}
+          onToggle={setSidebarCollapsed}
+          isDark={isDark}
+        />
+      </div>
+
+      {/* Overlay para fechar sidebar em mobile */}
+      {isMobile && isMobileOpen && (
+        <div
+          className="fixed inset-0 z-[999] bg-black/50 backdrop-blur-sm"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
 
       <div
         className={`flex-1 min-h-screen ${isDark ? 'bg-slate-900' : 'bg-gray-100'} transition-all duration-300`}
         style={{
-          marginLeft: sidebarCollapsed ? '70px' : '250px',
-          width: `calc(100% - ${sidebarCollapsed ? '70px' : '250px'})`
+          marginLeft: isMobile ? 0 : (sidebarCollapsed ? '70px' : '250px'),
+          width: isMobile ? '100%' : `calc(100% - ${sidebarCollapsed ? '70px' : '250px'})`,
         }}
       >
-        <header className={`flex justify-between items-center px-8 py-4 ${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200/50'} border-b min-h-[72px] sticky top-0 z-50 backdrop-blur-sm`}>
+        <header className={`flex flex-wrap items-center justify-between gap-3 px-4 sm:px-8 py-4 ${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200/50'} border-b min-h-[72px] sticky top-0 z-50 backdrop-blur-sm`}>
           <div className="flex items-center gap-3">
-            <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-800'} flex items-center gap-2`}>
+            {/* 🔥 Botão hambúrguer (mobile) */}
+            {isMobile && (
+              <button
+                className="p-2 text-2xl hover:bg-blue-500/10 rounded-lg transition-colors"
+                onClick={() => setIsMobileOpen(!isMobileOpen)}
+                aria-label="Abrir menu"
+              >
+                ☰
+              </button>
+            )}
+            <h1 className={`text-xl sm:text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-800'} flex items-center gap-2`}>
               Axion<span className="text-blue-500">ID</span>
               <span className={`text-xs font-semibold px-3 py-1 rounded-full ${role === "admin" ? "bg-blue-500/20 text-blue-400" : isDark ? "bg-slate-700 text-slate-300" : "bg-gray-200 text-gray-600"}`}>
                 {role === "admin" ? "Admin" : "Comum"}
@@ -972,18 +1019,18 @@ export default function Dashboard() {
           {currentUser && <UserDropdown user={currentUser} onLogout={handleLogout} />}
         </header>
 
-        <main className="p-6 max-w-7xl mx-auto w-full">
+        <main className="p-3 sm:p-6 max-w-7xl mx-auto w-full">
           {/* ========== BANNER DE ENDEREÇO INCOMPLETO ========== */}
           {showAddressBanner && currentUser && !currentUser.is_admin && (
-            <div className={`mb-6 p-4 ${isDark ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-yellow-50 border-yellow-200'} border rounded-xl flex items-center justify-between`}>
+            <div className={`mb-4 sm:mb-6 p-3 sm:p-4 ${isDark ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-yellow-50 border-yellow-200'} border rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3`}>
               <div className="flex items-center gap-3">
                 <span className="text-yellow-400 text-2xl">⚠️</span>
                 <div>
                   <p className={`font-semibold ${isDark ? 'text-yellow-200' : 'text-yellow-700'}`}>Endereço incompleto</p>
-                  <p className={`text-sm ${isDark ? 'text-yellow-200/70' : 'text-yellow-600'}`}>Para melhor identificação, complete seu endereço de registro.</p>
+                  <p className={`text-sm ${isDark ? 'text-yellow-200/70' : 'text-yellow-600'}`}>Complete seu endereço de registro.</p>
                 </div>
               </div>
-              <button onClick={handleOpenAddressModal} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-all">
+              <button onClick={handleOpenAddressModal} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-all text-sm w-full sm:w-auto">
                 Completar Endereço ➜
               </button>
             </div>
@@ -1340,7 +1387,7 @@ export default function Dashboard() {
                   </div>
                 )}
 
-                <div className={`${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200'} border rounded-xl overflow-hidden p-6`}>
+                <div className={`${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200'} border rounded-xl overflow-hidden p-4 sm:p-6`}>
                   {activeTab === "users" && (
                     isGlobalAdmin ? (
                       <>
