@@ -66,7 +66,7 @@ export default function ServiceOrderDetail({
   const [isResolved, setIsResolved] = useState(false);
   const autoCloseTimerRef = useRef(null);
 
-  // === NOVOS ESTADOS PARA CATEGORIA ===
+  // === ESTADOS PARA CATEGORIA ===
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [showRecategorizeModal, setShowRecategorizeModal] = useState(false);
@@ -282,12 +282,12 @@ export default function ServiceOrderDetail({
       await api.put(`/api/v1/service-orders/${localOrder.id}`, {
         category_id: selectedCategoryId
       });
-      const updatedOrder = { ...localOrder, category_id: parseInt(selectedCategoryId) };
       const cat = categories.find(c => c.id === parseInt(selectedCategoryId));
-      if (cat) {
-        updatedOrder.category = cat;
-      }
-      setLocalOrder(updatedOrder);
+      setLocalOrder(prev => ({
+        ...prev,
+        category_id: parseInt(selectedCategoryId),
+        category: cat || null
+      }));
       setShowRecategorizeModal(false);
       AxionAlert.fire({
         icon: 'success',
@@ -407,6 +407,9 @@ export default function ServiceOrderDetail({
   const isCancelled = localOrder.status === 'cancelled';
   const canCancel = !isResolvedStatus && !isCancelled && localOrder.status !== 'closed' && 
                     (localOrder.user_id === currentUser?.id || isSystemAdmin);
+
+  // 🔥 Nome da categoria (evita "Carregando...")
+  const categoryName = localOrder.category?.name || 'Sem categoria';
 
   return (
     <div className={`${bgPage} rounded-xl min-h-screen`}>
@@ -639,19 +642,20 @@ export default function ServiceOrderDetail({
               <h4 className={`${textHeading} font-bold text-center mb-4 flex items-center justify-center gap-2`}>⚙️ Gestão da Ordem</h4>
 
               {/* ===== CATEGORIA ===== */}
-              <div className={`${isDark ? 'bg-slate-800/30' : 'bg-gray-100'} rounded-2xl p-3 mb-4`}>
+              <div className={`${isDark ? 'bg-slate-800/30' : 'bg-gray-100'} rounded-2xl p-3 mb-4 border-l-4 border-purple-500`}>
                 <div className="flex items-center gap-3">
                   <div className="bg-purple-500/10 p-2 rounded-full">
                     <span className="text-purple-400 text-xl">📂</span>
                   </div>
                   <div className="flex-1">
                     <h6 className={`${textSub} text-xs uppercase font-semibold mb-0.5`}>Categoria</h6>
-                    <p className={`${textHeading} font-bold mb-0`}>
-                      {localOrder.category?.name || localOrder.category_id ? 'Carregando...' : 'Sem categoria'}
+                    <p className={`${textHeading} font-bold mb-0 flex items-center gap-2`}>
+                      <span className="inline-block w-2 h-2 rounded-full bg-purple-500"></span>
+                      {categoryName}
                     </p>
                   </div>
                   <button
-                    className="px-3 py-1.5 rounded-full bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-all text-xs font-semibold"
+                    className="px-3 py-1.5 rounded-full bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-all text-xs font-semibold whitespace-nowrap"
                     onClick={() => setShowRecategorizeModal(true)}
                     disabled={actionLoading || recategorizeLoading || isCancelled || localOrder.status === 'closed'}
                   >
