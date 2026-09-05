@@ -641,37 +641,23 @@ export default function ServiceOrderDetail({
             <div className={`${bgCard} border rounded-2xl p-6 shadow-lg`}>
               <h4 className={`${textHeading} font-bold text-center mb-4 flex items-center justify-center gap-2`}>⚙️ Gestão da Ordem</h4>
 
-              {/* ===== CATEGORIA ===== */}
-              <div className={`${isDark ? 'bg-slate-800/30' : 'bg-gray-100'} rounded-2xl p-3 mb-4 border-l-4 border-purple-500`}>
-                <div className="flex items-center gap-3">
-                  <div className="bg-purple-500/10 p-2 rounded-full">
-                    <span className="text-purple-400 text-xl">📂</span>
-                  </div>
-                  <div className="flex-1">
-                    <h6 className={`${textSub} text-xs uppercase font-semibold mb-0.5`}>Categoria</h6>
-                    <p className={`${textHeading} font-bold mb-0 flex items-center gap-2`}>
-                      <span className="inline-block w-2 h-2 rounded-full bg-purple-500"></span>
-                      {categoryName}
-                    </p>
-                  </div>
-<button
-  className={`
-    inline-flex items-center gap-1.5 px-2.5 py-1 
-    rounded-full text-xs font-medium 
-    transition-all duration-200 
-    ${actionLoading || recategorizeLoading || isCancelled || localOrder.status === 'closed'
-      ? 'opacity-40 cursor-not-allowed text-slate-500'
-      : 'text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 active:bg-blue-500/20'
-    }
-  `}
-  onClick={() => setShowRecategorizeModal(true)}
-  disabled={actionLoading || recategorizeLoading || isCancelled || localOrder.status === 'closed'}
->
-  <span className="text-sm">🔄</span>
-  Recategorizar
-</button>
-                </div>
-              </div>
+                 <div className={`${isDark ? 'bg-slate-800/30' : 'bg-gray-100'} rounded-2xl p-3 mb-4 border-l-4 border-purple-500`}>
+  <div className="flex items-center gap-3">
+    <div className="bg-purple-500/10 p-2 rounded-full">
+      <span className="text-purple-400 text-xl">📂</span>
+    </div>
+    <div className="flex-1">
+      <h6 className={`${textSub} text-xs uppercase font-semibold mb-0.5`}>Categoria</h6>
+      <p className={`${textHeading} font-bold mb-0 flex items-center gap-2`}>
+        <span className="inline-block w-2 h-2 rounded-full bg-purple-500"></span>
+        {categoryName}
+      </p>
+    </div>
+    <button>
+      🔄 Recategorizar
+    </button>
+  </div>
+</div>
 
               {/* ===== MODAL RECATEGORIZAR ===== */}
               {showRecategorizeModal && (
