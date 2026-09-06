@@ -15,7 +15,8 @@ export function usePermissions() {
   const canViewPermissions = hasPermission('menu.permissions.view');
   const canViewTerms = hasPermission('menu.terms.view');
   const canViewAi = hasPermission('menu.ai.view');
-  const canViewCategories = hasPermission('menu.categories.view'); // 🔥 NOVO
+  const canViewCategories = hasPermission('menu.categories.view');
+  const canViewReports = hasPermission('menu.reports.view'); // 🔥 NOVO
 
   // =========================================================
   // 🔥 PERMISSÕES DE AÇÃO - USUÁRIOS
@@ -29,8 +30,6 @@ export function usePermissions() {
   // 🔥 PERMISSÕES DE AÇÃO - GRUPOS
   // =========================================================
 
-  const canViewReports = hasPermission('menu.reports.view');
-  
   const canCreateGroup = hasPermission('groups.create');
   const canEditGroup = hasPermission('groups.edit');
   const canDeleteGroup = hasPermission('groups.delete');
@@ -84,18 +83,19 @@ export function usePermissions() {
       'permissions': canViewPermissions,
       'terms': canViewTerms,
       'ai': canViewAi,
-      'categories': canViewCategories, // 🔥 NOVO
+      'categories': canViewCategories,
+      'reports': canViewReports, // 🔥 NOVO
     };
     return tabPermissions[tab] || false;
   };
 
   const canAccessAnyTab = () => {
     return canViewUsers || canViewGroups || canViewOrders || canViewAudit || 
-           canViewPermissions || canViewTerms || canViewAi || canViewCategories; // 🔥 NOVO
+           canViewPermissions || canViewTerms || canViewAi || canViewCategories || canViewReports; // 🔥 NOVO
   };
 
   const getFirstAvailableTab = () => {
-    const tabs = ['users', 'groups', 'orders', 'ai', 'audit', 'permissions', 'terms', 'categories']; // 🔥 NOVO
+    const tabs = ['users', 'groups', 'orders', 'ai', 'reports', 'audit', 'permissions', 'terms', 'categories']; // 🔥 NOVO
     for (const tab of tabs) {
       if (canAccessTab(tab)) {
         return tab;
@@ -117,7 +117,8 @@ export function usePermissions() {
     canViewPermissions,
     canViewTerms,
     canViewAi,
-    canViewCategories, // 🔥 EXPORTADO
+    canViewCategories,
+    canViewReports, // 🔥 EXPORTADO
     
     // Ações - Usuários
     canCreateUser,
@@ -145,7 +146,7 @@ export function usePermissions() {
     // Ações - Termos
     canManageTerms,
     
-    // Ações - Categorias (NOVO)
+    // Ações - Categorias
     canCreateCategory,
     canEditCategory,
     canDeleteCategory,
