@@ -30,6 +30,7 @@ import TermAcceptances from "./TermAcceptances";
 // Styles
 import '../index.css';
 import AccessDenied from "./AccessDenied";
+import ReportsDashboard from '../components/dashboard/ReportsDashboard';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -1278,6 +1279,13 @@ export default function Dashboard() {
                   )}
                 </>
               )}
+
+              // ... dentro do render, após a aba "ai" ou "categories"
+{activeTab === 'reports' && (
+  <div className={`${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200'} border rounded-xl overflow-hidden p-4`}>
+    <ReportsDashboard isDark={isDark} />
+  </div>
+)}
 
               {/* ========== DEMAIS ABAS ========== */}
               {activeTab === "permissions" && showPermissionModal && (

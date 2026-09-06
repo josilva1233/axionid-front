@@ -147,6 +147,13 @@ export default function Sidebar({
       section: 'Administração',
       visible: isAdmin,
     },
+    {
+  id: 'reports',
+  icon: '📊',
+  label: 'Relatórios',
+  section: 'Principal',
+  visible: isAdmin || canViewReports, // crie a permissão se quiser
+},
   ];
 
   const filteredNavItems = navItems.filter(item => item.visible);

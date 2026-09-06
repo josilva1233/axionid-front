@@ -28,6 +28,8 @@ export function usePermissions() {
   // =========================================================
   // 🔥 PERMISSÕES DE AÇÃO - GRUPOS
   // =========================================================
+
+  const canViewReports = hasPermission('menu.reports.view');
   
   const canCreateGroup = hasPermission('groups.create');
   const canEditGroup = hasPermission('groups.edit');
