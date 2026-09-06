@@ -9,9 +9,9 @@ export default function Sidebar({
   onLogout, 
   onToggle,
   isDark = false,
-  isMobile = false,        // 🔥 NOVO: indica se está em tela mobile
-  isMobileOpen = false,    // 🔥 NOVO: controla abertura em mobile
-  onMobileToggle = null,   // 🔥 NOVO: callback para abrir/fechar mobile
+  isMobile = false,
+  isMobileOpen = false,
+  onMobileToggle = null,
 }) {
   const {
     canViewUsers,
@@ -19,10 +19,10 @@ export default function Sidebar({
     canViewOrders,
     canViewAudit,
     canViewPermissions,
+    canViewReports, // 🔥 NOVO
     isAdmin,
   } = usePermissions();
 
-  // Estado interno para colapso (desktop) – não usado em mobile
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const timeoutRef = useRef(null);
@@ -36,7 +36,6 @@ export default function Sidebar({
     };
   }, []);
 
-  // 🔥 Comportamento de hover: desabilitado em mobile
   const handleMouseEnter = () => {
     if (isMobile) return;
     setIsHovered(true);
@@ -59,7 +58,6 @@ export default function Sidebar({
     }, 300);
   };
 
-  // 🔥 Toggle: em mobile, chama o callback externo; em desktop, alterna colapso
   const toggleSidebar = () => {
     if (isMobile) {
       if (onMobileToggle) onMobileToggle(!isMobileOpen);
@@ -119,6 +117,14 @@ export default function Sidebar({
       section: 'Principal',
       visible: true,
     },
+    // 🔥 NOVO: Relatórios
+    {
+      id: 'reports',
+      icon: '📊',
+      label: 'Relatórios',
+      section: 'Principal',
+      visible: isAdmin || canViewReports,
+    },
     {
       id: 'audit',
       icon: '📜',
@@ -147,13 +153,6 @@ export default function Sidebar({
       section: 'Administração',
       visible: isAdmin,
     },
-    {
-  id: 'reports',
-  icon: '📊',
-  label: 'Relatórios',
-  section: 'Principal',
-  visible: isAdmin || canViewReports, // crie a permissão se quiser
-},
   ];
 
   const filteredNavItems = navItems.filter(item => item.visible);
@@ -176,7 +175,6 @@ export default function Sidebar({
     return acc;
   }, {});
 
-  // 🔥 Largura da sidebar: em mobile, sempre 250px quando aberta; em desktop, segue colapso
   const sidebarWidth = isMobile 
     ? 'w-[250px]' 
     : (isCollapsed ? 'w-[70px]' : 'w-[250px]');
@@ -211,7 +209,6 @@ export default function Sidebar({
           )}
         </div>
 
-        {/* 🔥 Botão toggle: em mobile, aparece como "✕" para fechar; em desktop, é o ◀ normal */}
         <button 
           className={`
             absolute -right-3 top-1/2 -translate-y-1/2
@@ -258,7 +255,6 @@ export default function Sidebar({
                 `}
                 onClick={() => {
                   setActiveTab(item.id);
-                  // 🔥 Fecha sidebar mobile ao clicar em um item
                   if (isMobile && isMobileOpen && onMobileToggle) {
                     onMobileToggle(false);
                   }

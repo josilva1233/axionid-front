@@ -27,10 +27,10 @@ import Pagination from "../components/dashboard/Pagination";
 import PermissionDetail from "../components/dashboard/PermissionDetail";
 import TermManagement from "./TermManagement";
 import TermAcceptances from "./TermAcceptances";
+import ReportsDashboard from '../components/dashboard/ReportsDashboard'; // 🔥 NOVO
 // Styles
 import '../index.css';
 import AccessDenied from "./AccessDenied";
-import ReportsDashboard from '../components/dashboard/ReportsDashboard';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -887,7 +887,6 @@ export default function Dashboard() {
     setAuditCurrentPage(1);
     setOrdersCurrentPage(1);
     setPermissionsCurrentPage(1);
-    // Fechar sidebar mobile ao trocar de aba
     if (isMobile) setIsMobileOpen(false);
   }, [isMobile]);
 
@@ -980,6 +979,9 @@ export default function Dashboard() {
           setActiveTab={handleTabChange}
           onToggle={setSidebarCollapsed}
           isDark={isDark}
+          isMobile={isMobile}
+          isMobileOpen={isMobileOpen}
+          onMobileToggle={setIsMobileOpen}
         />
       </div>
 
@@ -1000,7 +1002,6 @@ export default function Dashboard() {
       >
         <header className={`flex flex-wrap items-center justify-between gap-3 px-4 sm:px-8 py-4 ${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200/50'} border-b min-h-[72px] sticky top-0 z-50 backdrop-blur-sm`}>
           <div className="flex items-center gap-3">
-            {/* 🔥 Botão hambúrguer (mobile) */}
             {isMobile && (
               <button
                 className="p-2 text-2xl hover:bg-blue-500/10 rounded-lg transition-colors"
@@ -1241,51 +1242,49 @@ export default function Dashboard() {
                     />
                   )}
                   {!showCategoryForm && (
-                    <>
-                      <CategoryTable
-                        categories={categories}
-                        loading={categoriesLoading || actionLoading}
-                        onViewDetail={(cat) => {
-                          setSelectedCategory(cat);
-                          setShowCategoryForm(true);
-                        }}
-                        onDelete={async (id) => {
-                          const confirm = await AxionAlert.fire({
-                            title: "Excluir Categoria?",
-                            text: "Isso removerá a categoria permanentemente.",
-                            icon: "warning",
-                            showCancelButton: true,
-                            confirmButtonText: "Sim, excluir",
-                            cancelButtonText: "Cancelar",
-                            background: isDark ? "#111214" : "#fff",
-                            color: isDark ? "#fff" : "#1f2937",
-                          });
-                          if (confirm.isConfirmed) {
-                            setActionLoading(true);
-                            try {
-                              await api.delete(`/api/v1/admin/categories/${id}`);
-                              AxionAlert.fire("Excluída!", "Categoria removida.", "success");
-                              await loadCategories();
-                            } catch (err) {
-                              AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao excluir.", "error");
-                            } finally {
-                              setActionLoading(false);
-                            }
+                    <CategoryTable
+                      categories={categories}
+                      loading={categoriesLoading || actionLoading}
+                      onViewDetail={(cat) => {
+                        setSelectedCategory(cat);
+                        setShowCategoryForm(true);
+                      }}
+                      onDelete={async (id) => {
+                        const confirm = await AxionAlert.fire({
+                          title: "Excluir Categoria?",
+                          text: "Isso removerá a categoria permanentemente.",
+                          icon: "warning",
+                          showCancelButton: true,
+                          confirmButtonText: "Sim, excluir",
+                          cancelButtonText: "Cancelar",
+                          background: isDark ? "#111214" : "#fff",
+                          color: isDark ? "#fff" : "#1f2937",
+                        });
+                        if (confirm.isConfirmed) {
+                          setActionLoading(true);
+                          try {
+                            await api.delete(`/api/v1/admin/categories/${id}`);
+                            AxionAlert.fire("Excluída!", "Categoria removida.", "success");
+                            await loadCategories();
+                          } catch (err) {
+                            AxionAlert.fire("Erro", err.response?.data?.message || "Falha ao excluir.", "error");
+                          } finally {
+                            setActionLoading(false);
                           }
-                        }}
-                        isDark={isDark}
-                      />
-                    </>
+                        }
+                      }}
+                      isDark={isDark}
+                    />
                   )}
                 </>
               )}
 
-              // ... dentro do render, após a aba "ai" ou "categories"
-{activeTab === 'reports' && (
-  <div className={`${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200'} border rounded-xl overflow-hidden p-4`}>
-    <ReportsDashboard isDark={isDark} />
-  </div>
-)}
+              {/* ========== ABA RELATÓRIOS ========== */}
+              {activeTab === "reports" && (
+                <div className={`${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200'} border rounded-xl overflow-hidden p-4`}>
+                  <ReportsDashboard isDark={isDark} />
+                </div>
+              )}
 
               {/* ========== DEMAIS ABAS ========== */}
               {activeTab === "permissions" && showPermissionModal && (
