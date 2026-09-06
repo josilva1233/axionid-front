@@ -1,4 +1,4 @@
-// components/dashboard/ReportsDashboard.jsx
+// src/components/dashboard/ReportsDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { Bar, Line, Doughnut } from 'react-chartjs-2';
@@ -16,6 +16,7 @@ import {
 } from 'chart.js';
 import Swal from 'sweetalert2';
 
+// 🔥 REGISTRO OBRIGATÓRIO
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -78,39 +79,47 @@ export default function ReportsDashboard({ isDark = false }) {
     }
   };
 
-  // Gráficos
+  // 🔥 SAFEGUARDS – Verifica se data existe antes de acessar
+  const totals = data?.totals || { orders: 0, users: 0, categories: 0, groups: 0 };
+  const slaBreached = data?.sla_breached || 0;
+  const ordersByStatus = data?.orders_by_status || {};
+  const ordersByPriority = data?.orders_by_priority || {};
+  const ordersByCategory = data?.orders_by_category || [];
+  const last7Days = data?.last_7_days || {};
+
+  // Dados para gráficos (com fallback vazio)
   const statusChartData = {
-    labels: Object.keys(data?.orders_by_status || {}),
+    labels: Object.keys(ordersByStatus).length ? Object.keys(ordersByStatus) : ['Nenhum'],
     datasets: [{
       label: 'Chamados por Status',
-      data: Object.values(data?.orders_by_status || {}),
+      data: Object.keys(ordersByStatus).length ? Object.values(ordersByStatus) : [0],
       backgroundColor: ['#3b82f6', '#f59e0b', '#22c55e', '#ef4444', '#8b5cf6'],
     }]
   };
 
   const priorityChartData = {
-    labels: Object.keys(data?.orders_by_priority || {}),
+    labels: Object.keys(ordersByPriority).length ? Object.keys(ordersByPriority) : ['Nenhum'],
     datasets: [{
       label: 'Chamados por Prioridade',
-      data: Object.values(data?.orders_by_priority || {}),
+      data: Object.keys(ordersByPriority).length ? Object.values(ordersByPriority) : [0],
       backgroundColor: ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444'],
     }]
   };
 
   const categoryChartData = {
-    labels: data?.orders_by_category?.map(item => item.category) || [],
+    labels: ordersByCategory.length ? ordersByCategory.map(item => item.category) : ['Nenhum'],
     datasets: [{
       label: 'Top Categorias',
-      data: data?.orders_by_category?.map(item => item.total) || [],
+      data: ordersByCategory.length ? ordersByCategory.map(item => item.total) : [0],
       backgroundColor: '#8b5cf6',
     }]
   };
 
   const last7DaysData = {
-    labels: Object.keys(data?.last_7_days || {}),
+    labels: Object.keys(last7Days).length ? Object.keys(last7Days) : ['Nenhum'],
     datasets: [{
       label: 'Chamados nos últimos 7 dias',
-      data: Object.values(data?.last_7_days || {}),
+      data: Object.keys(last7Days).length ? Object.values(last7Days) : [0],
       borderColor: '#3b82f6',
       backgroundColor: 'rgba(59,130,246,0.1)',
       fill: true,
@@ -134,19 +143,19 @@ export default function ReportsDashboard({ isDark = false }) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200'}`}>
           <p className="text-sm text-slate-400">Total Chamados</p>
-          <p className="text-2xl font-bold">{data?.totals?.orders || 0}</p>
+          <p className="text-2xl font-bold">{totals.orders}</p>
         </div>
         <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200'}`}>
           <p className="text-sm text-slate-400">Usuários</p>
-          <p className="text-2xl font-bold">{data?.totals?.users || 0}</p>
+          <p className="text-2xl font-bold">{totals.users}</p>
         </div>
         <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200'}`}>
           <p className="text-sm text-slate-400">Categorias</p>
-          <p className="text-2xl font-bold">{data?.totals?.categories || 0}</p>
+          <p className="text-2xl font-bold">{totals.categories}</p>
         </div>
         <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200'}`}>
           <p className="text-sm text-slate-400">SLAs Estourados</p>
-          <p className="text-2xl font-bold text-red-400">{data?.sla_breached || 0}</p>
+          <p className="text-2xl font-bold text-red-400">{slaBreached}</p>
         </div>
       </div>
 
@@ -185,24 +194,25 @@ export default function ReportsDashboard({ isDark = false }) {
               </tr>
             </thead>
             <tbody>
-              {technicians.map((tech) => (
-                <tr key={tech.id} className={`border-b ${isDark ? 'border-slate-700/30' : 'border-gray-100'}`}>
-                  <td className="py-2 px-3">{tech.name}</td>
-                  <td className="text-center py-2 px-3">{tech.total_assigned}</td>
-                  <td className="text-center py-2 px-3">{tech.total_completed}</td>
-                  <td className="text-center py-2 px-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      tech.completion_rate >= 80 ? 'bg-green-500/20 text-green-400' :
-                      tech.completion_rate >= 50 ? 'bg-yellow-500/20 text-yellow-400' :
-                      'bg-red-500/20 text-red-400'
-                    }`}>
-                      {tech.completion_rate}%
-                    </span>
-                  </td>
-                  <td className="text-center py-2 px-3">{tech.avg_resolution_hours}h</td>
-                </tr>
-              ))}
-              {technicians.length === 0 && (
+              {technicians.length > 0 ? (
+                technicians.map((tech) => (
+                  <tr key={tech.id} className={`border-b ${isDark ? 'border-slate-700/30' : 'border-gray-100'}`}>
+                    <td className="py-2 px-3">{tech.name}</td>
+                    <td className="text-center py-2 px-3">{tech.total_assigned}</td>
+                    <td className="text-center py-2 px-3">{tech.total_completed}</td>
+                    <td className="text-center py-2 px-3">
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                        tech.completion_rate >= 80 ? 'bg-green-500/20 text-green-400' :
+                        tech.completion_rate >= 50 ? 'bg-yellow-500/20 text-yellow-400' :
+                        'bg-red-500/20 text-red-400'
+                      }`}>
+                        {tech.completion_rate}%
+                      </span>
+                    </td>
+                    <td className="text-center py-2 px-3">{tech.avg_resolution_hours}h</td>
+                  </tr>
+                ))
+              ) : (
                 <tr>
                   <td colSpan="5" className="text-center py-4 text-slate-400">Nenhum técnico com chamados.</td>
                 </tr>
@@ -212,7 +222,7 @@ export default function ReportsDashboard({ isDark = false }) {
         </div>
       </div>
 
-      {/* Relatório de Chamados com Filtro de Data */}
+      {/* Relatório de Chamados */}
       <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/80 border-gray-200'}`}>
         <h3 className="font-semibold mb-3">📋 Relatório de Chamados</h3>
         <div className="flex flex-wrap gap-3 mb-4">
@@ -248,26 +258,27 @@ export default function ReportsDashboard({ isDark = false }) {
               </tr>
             </thead>
             <tbody>
-              {reportOrders.map((order) => (
-                <tr key={order.id} className={`border-b ${isDark ? 'border-slate-700/30' : 'border-gray-100'}`}>
-                  <td className="py-2 px-3 font-mono text-xs">{order.protocol}</td>
-                  <td className="py-2 px-3">{order.title}</td>
-                  <td className="py-2 px-3">{order.user?.name}</td>
-                  <td className="text-center py-2 px-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      order.status === 'open' ? 'bg-blue-500/20 text-blue-400' :
-                      order.status === 'in_progress' ? 'bg-yellow-500/20 text-yellow-400' :
-                      order.status === 'completed' ? 'bg-green-500/20 text-green-400' :
-                      'bg-red-500/20 text-red-400'
-                    }`}>
-                      {order.status}
-                    </span>
-                  </td>
-                  <td className="text-center py-2 px-3">{order.priority}</td>
-                  <td className="text-center py-2 px-3">{new Date(order.created_at).toLocaleDateString()}</td>
-                </tr>
-              ))}
-              {reportOrders.length === 0 && (
+              {reportOrders.length > 0 ? (
+                reportOrders.map((order) => (
+                  <tr key={order.id} className={`border-b ${isDark ? 'border-slate-700/30' : 'border-gray-100'}`}>
+                    <td className="py-2 px-3 font-mono text-xs">{order.protocol}</td>
+                    <td className="py-2 px-3">{order.title}</td>
+                    <td className="py-2 px-3">{order.user?.name}</td>
+                    <td className="text-center py-2 px-3">
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                        order.status === 'open' ? 'bg-blue-500/20 text-blue-400' :
+                        order.status === 'in_progress' ? 'bg-yellow-500/20 text-yellow-400' :
+                        order.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                        'bg-red-500/20 text-red-400'
+                      }`}>
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="text-center py-2 px-3">{order.priority}</td>
+                    <td className="text-center py-2 px-3">{new Date(order.created_at).toLocaleDateString()}</td>
+                  </tr>
+                ))
+              ) : (
                 <tr>
                   <td colSpan="6" className="text-center py-4 text-slate-400">Nenhum chamado encontrado.</td>
                 </tr>
